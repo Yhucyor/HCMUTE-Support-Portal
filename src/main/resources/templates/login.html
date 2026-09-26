@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCMUTE - Student Portal | Đăng nhập</title>
+    <!-- Google Fonts for Classic Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="login-body">
+
+    <!-- Header (Simple version for login page) -->
+    <header class="header login-header">
+        <div class="logo">
+            <a th:href="@{/}"><img src="/images/logo.png" alt="HCMUTE Logo"></a>
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a th:href="@{/}">← Quay lại trang chủ</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="login-container">
+        <div class="login-card">
+            <h2 class="login-title">Student Portal</h2>
+            <p class="login-subtitle">Vui lòng đăng nhập bằng tài khoản sinh viên</p>
+            
+            <form action="#" method="post">
+                <div class="input-group">
+                    <label for="username">Mã số sinh viên (MSSV)</label>
+                    <input type="text" id="username" name="username" placeholder="Nhập MSSV của bạn" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Mật khẩu</label>
+                    <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" required>
+                </div>
+                
+                <div class="login-options">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember"> Nhớ mật khẩu
+                    </label>
+                    <a href="#" class="forgot-password">Quên mật khẩu?</a>
+                </div>
+
+                <button type="submit" class="btn-primary btn-full">Đăng nhập</button>
+            </form>
+            
+            <div class="login-footer">
+                <p>Bạn chưa có tài khoản? <a href="#">Liên hệ Phòng Đào Tạo</a></p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
