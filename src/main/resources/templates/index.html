@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCMUTE - Student Portal</title>
+    <!-- Google Fonts for Classic Typography (Serif & Sans-serif) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <img src="/images/logo.png" alt="HCMUTE Logo">
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="#">Trang chủ</a></li>
+                <li><a href="#">Tuyển sinh</a></li>
+                <li><a href="#">Đào tạo</a></li>
+                <li><a href="#">Nghiên cứu</a></li>
+                <li><a href="#">Khám phá</a></li>
+                <li><a href="#" class="no-underline" style="color: #ffffff; border: 2px solid #ffffff; padding: 8px 20px; border-radius: 3px; font-weight: bold;">Đăng nhập</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <!-- Slider Images -->
+        <div class="hero-slide active" style="background-image: url('/images/hero1.jpg');"></div>
+        <div class="hero-slide" style="background-image: url('/images/hero2.jpg');"></div>
+
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h2>Welcome to HCMUTE</h2>
+            <p>"Truth, Excellence, and Innovation"</p>
+            <a href="#" class="btn-primary">Explore Programs</a>
+        </div>
+    </section>
+
+    <!-- News & Events Section -->
+    <section class="news-section">
+        <h3 class="section-title">Latest Updates</h3>
+        <div class="news-grid">
+            <!-- News Item 1 -->
+            <article class="news-card">
+                <div class="news-image" style="background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
+                <div class="news-content">
+                    <span class="news-date">September 26, 2026</span>
+                    <h4 class="news-title">New AI Research Center Opens on Campus</h4>
+                    <p class="news-excerpt">The university inaugurates a state-of-the-art facility dedicated to advancing artificial intelligence and machine learning research.</p>
+                </div>
+            </article>
+
+            <!-- News Item 2 -->
+            <article class="news-card">
+                <div class="news-image" style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
+                <div class="news-content">
+                    <span class="news-date">September 20, 2026</span>
+                    <h4 class="news-title">Global Leaders Summit 2026</h4>
+                    <p class="news-excerpt">Join us for a three-day summit bringing together world leaders, academics, and innovators to discuss future global challenges.</p>
+                </div>
+            </article>
+
+            <!-- News Item 3 -->
+            <article class="news-card">
+                <div class="news-image" style="background-image: url('https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
+                <div class="news-content">
+                    <span class="news-date">September 15, 2026</span>
+                    <h4 class="news-title">Fall Semester Commencement</h4>
+                    <p class="news-excerpt">Welcoming thousands of new and returning students to the historic campus for the beginning of a new academic year.</p>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>Information For</h4>
+                <ul>
+                    <li><a href="#">Prospective Students</a></li>
+                    <li><a href="#">Current Students</a></li>
+                    <li><a href="#">Faculty & Staff</a></li>
+                    <li><a href="#">Alumni</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#">Library</a></li>
+                    <li><a href="#">Campus Map</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Contact</h4>
+                <ul>
+                    <li>1 Vo Van Ngan Street</li>
+                    <li>Thu Duc City, HCMC</li>
+                    <li>Vietnam</li>
+                    <li>(028) 3896 8641</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Ho Chi Minh City University of Technology and Education. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Slider Script -->
+    <script>
+        const slides = document.querySelectorAll('.hero-slide');
+        let currentSlide = 0;
+
+        setInterval(() => {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }, 4000); // Đổi ảnh mỗi 4 giây
+    </script>
+</body>
+</html>
