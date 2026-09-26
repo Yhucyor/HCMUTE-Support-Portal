@@ -1,0 +1,50 @@
+
+services:
+  # Container cho Database MySQL
+  db:
+    image: mysql:8.0
+    container_name: qaute_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: qaute_portal
+      MYSQL_USER: qaute_user
+      MYSQL_PASSWORD: qautepassword
+    ports:
+      # Map port 3307 trên máy của bạn vào port 3306 của container
+      # (Điều này giúp TRÁNH XUNG ĐỘT nếu máy bạn đã cài sẵn MySQL chạy ở port 3306)
+      - "3307:3306"
+    volumes:
+      # Lưu trữ data xuống ổ cứng thật để không bị mất dữ liệu khi xóa container
+      - qaute_db_data:/var/lib/mysql
+      # Chạy script khởi tạo data nếu có
+      # - ./docs/database/srs_schema.sql:/docker-entrypoint-initdb.d/srs_schema.sql
+    networks:
+      - qaute_network
+
+  # Container cho Ứng dụng Spring Boot
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qaute_app
+    restart: on-failure
+    ports:
+      # Map port 8088 ở ngoài vào port 8080 ở trong để tránh trùng port 8080 của máy bạn (nếu có)
+      - "8088:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/qaute_portal?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=qaute_user
+      - SPRING_DATASOURCE_PASSWORD=qautepassword
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      - db
+    networks:
+      - qaute_network
+
+volumes:
+  qaute_db_data:
+
+networks:
+  qaute_network:
+    driver: bridge

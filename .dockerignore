@@ -1,0 +1,21 @@
+# Các thư mục không cần thiết đưa vào Docker context
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!target/*.jar
+*~
+
+# Cấu hình IDE
+.idea/
+.vscode/
+*.iml
+.project
+.settings/
+.classpath
+
+# Git
+.git/
+.gitignore
+
+# OS generated files
+.DS_Store
+Thumbs.db
