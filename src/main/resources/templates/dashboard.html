@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCMUTE - Student Dashboard</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Boxicons (Icon Library) -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Portal CSS -->
+    <link rel="stylesheet" th:href="@{/css/portal.css}">
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>HCMUTE Portal</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a th:href="@{/dashboard}" class="active">
+                    <i class='bx bxs-dashboard'></i>
+                    <span>Tổng quan</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <i class='bx bx-bot'></i>
+                    <span>Trợ lý AI (Counseling)</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <i class='bx bx-support'></i>
+                    <span>Yêu cầu hỗ trợ (Ticket)</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <i class='bx bx-news'></i>
+                    <span>Bảng tin sinh viên</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <i class='bx bx-user'></i>
+                    <span>Hồ sơ cá nhân</span>
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <a th:href="@{/}">
+                <i class='bx bx-log-out'></i>
+                <span>Đăng xuất</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="main-wrapper">
+        
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="search-bar">
+                <i class='bx bx-search' style="color: var(--text-gray);"></i>
+                <input type="text" placeholder="Tìm kiếm dịch vụ, bài viết...">
+            </div>
+            
+            <div class="topbar-right">
+                <div class="topbar-icon">
+                    <i class='bx bx-bell'></i>
+                    <span class="badge">3</span>
+                </div>
+                
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=A51C30&color=fff" alt="Avatar">
+                    <div class="user-info">
+                        <span class="user-name">Nguyễn Văn A</span>
+                        <span class="user-role">Sinh viên K23</span>
+                    </div>
+                    <i class='bx bx-chevron-down' style="color: var(--text-gray);"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- PAGE CONTENT -->
+        <main class="page-content">
+            <div class="page-header">
+                <h1 class="page-title">Chào mừng trở lại, Văn A! 👋</h1>
+                <span class="breadcrumb">Cổng thông tin hỗ trợ sinh viên trường ĐH Sư Phạm Kỹ Thuật</span>
+            </div>
+
+            <!-- Thống kê tổng quan -->
+            <div class="dashboard-cards">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #e8f5e9; color: #4caf50;">
+                        <i class='bx bx-check-circle'></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>0</h3>
+                        <p>Yêu cầu đã xử lý</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #fff3e0; color: #ff9800;">
+                        <i class='bx bx-time-five'></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>2</h3>
+                        <p>Yêu cầu đang chờ</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #e3f2fd; color: #2196f3;">
+                        <i class='bx bx-message-square-dots'></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>14</h3>
+                        <p>Thông báo mới</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #f3e5f5; color: #9c27b0;">
+                        <i class='bx bx-bot'></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>5</h3>
+                        <p>Phiên chat AI</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Khu vực nội dung hiển thị sau này -->
+            <div style="margin-top: 2.5rem; background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); min-height: 400px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                <img src="https://illustrations.popsy.co/red/remote-work.svg" alt="Illustration" style="width: 250px; opacity: 0.7;">
+                <h3 style="color: var(--text-dark); margin-bottom: 5px;">Chưa có hoạt động mới</h3>
+                <p style="color: var(--text-gray);">Bảng tin của bạn hiện tại chưa có cập nhật nào. Hãy thử đặt câu hỏi cho Trợ lý AI nhé.</p>
+                <button style="margin-top: 15px; padding: 10px 20px; background: var(--crimson); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;"><i class='bx bx-bot'></i> Chat với AI ngay</button>
+            </div>
+        </main>
+        
+    </div>
+
+</body>
+</html>

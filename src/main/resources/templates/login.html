@@ -29,7 +29,7 @@
             <h2 class="login-title">Student Portal</h2>
             <p class="login-subtitle">Vui lòng đăng nhập bằng tài khoản sinh viên</p>
             
-            <form action="#" method="post">
+            <form th:action="@{/dashboard}" method="get">
                 <div class="input-group">
                     <label for="username">Mã số sinh viên (MSSV)</label>
                     <input type="text" id="username" name="username" placeholder="Nhập MSSV của bạn" required>
