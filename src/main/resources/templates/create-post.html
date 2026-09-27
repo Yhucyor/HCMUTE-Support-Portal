@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCMUTE - Tạo bài viết mới</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Portal CSS -->
+    <link rel="stylesheet" th:href="@{/css/portal.css}">
+    <style>
+        .compose-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .compose-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .compose-header h2 {
+            margin: 0;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--crimson);
+        }
+
+        textarea.form-control {
+            min-height: 250px;
+            resize: vertical;
+        }
+
+        .editor-toolbar {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .editor-toolbar button {
+            background: transparent;
+            border: none;
+            font-size: 1.2rem;
+            color: #555;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .editor-toolbar button:hover {
+            background: #e2e6ea;
+            color: var(--crimson);
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-gray);
+            cursor: pointer;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .upload-area:hover {
+            background: #fdf2f4;
+            border-color: var(--crimson);
+            color: var(--crimson);
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 2rem;
+        }
+
+        .btn-cancel {
+            background: white;
+            border: 1px solid var(--border-color);
+            color: var(--text-dark);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+        }
+        .btn-cancel:hover { background: #f5f5f5; }
+
+        .btn-publish {
+            background: var(--crimson);
+            border: none;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-publish:hover { background: #8a1525; }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class='bx bx-menu menu-icon'></i>
+            <span class="logo-text">Portal</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a th:href="@{/dashboard}">
+                    <i class='bx bxs-dashboard'></i>
+                    <span>Tổng quan</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <i class='bx bx-bot'></i>
+                    <span>Trợ lý AI</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <i class='bx bx-support'></i>
+                    <span>Yêu cầu hỗ trợ</span>
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/feed}" class="active">
+                    <i class='bx bx-news'></i>
+                    <span>Bảng tin sinh viên</span>
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/profile}">
+                    <i class='bx bx-user'></i>
+                    <span>Hồ sơ cá nhân</span>
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <a th:href="@{/}">
+                <i class='bx bx-log-out'></i>
+                <span>Đăng xuất</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="main-wrapper">
+        
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="search-bar">
+                <i class='bx bx-search' style="color: var(--text-gray);"></i>
+                <input type="text" placeholder="Tìm kiếm...">
+            </div>
+            
+            <div class="topbar-right">
+                <div class="topbar-icon">
+                    <i class='bx bx-bell'></i>
+                    <span class="badge">3</span>
+                </div>
+                
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=A51C30&color=fff" alt="Avatar">
+                    <div class="user-info">
+                        <span class="user-name">Nguyễn Văn A</span>
+                        <span class="user-role">Sinh viên K23</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- PAGE CONTENT -->
+        <main class="page-content">
+            
+            <div class="compose-container">
+                <div class="compose-header">
+                    <h2><i class='bx bx-edit' style="color: var(--crimson);"></i> Tạo bài viết mới</h2>
+                </div>
+
+                <form action="#" method="post">
+                    <div class="form-group">
+                        <label for="post-title">Tiêu đề bài viết</label>
+                        <input type="text" id="post-title" class="form-control" placeholder="Nhập tiêu đề ngắn gọn, súc tích..." required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="post-category">Chủ đề (Phân loại)</label>
+                        <select id="post-category" class="form-control">
+                            <option value="qa">Hỏi đáp & Thảo luận</option>
+                            <option value="event">Sự kiện & Hoạt động</option>
+                            <option value="academic">Học tập & Đồ án</option>
+                            <option value="lost-found">Tìm đồ thất lạc</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nội dung</label>
+                        <div class="editor-toolbar">
+                            <button type="button" title="In đậm"><i class='bx bx-bold'></i></button>
+                            <button type="button" title="In nghiêng"><i class='bx bx-italic'></i></button>
+                            <button type="button" title="Gạch chân"><i class='bx bx-underline'></i></button>
+                            <button type="button" title="Danh sách"><i class='bx bx-list-ul'></i></button>
+                            <button type="button" title="Chèn link"><i class='bx bx-link'></i></button>
+                        </div>
+                        <textarea class="form-control" style="border-radius: 0 0 8px 8px;" placeholder="Viết nội dung bài đăng của bạn ở đây..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Đính kèm hình ảnh / File</label>
+                        <div class="upload-area">
+                            <i class='bx bx-cloud-upload' style="font-size: 3rem;"></i>
+                            <p>Kéo thả file vào đây hoặc <strong>nhấn để chọn file</strong></p>
+                            <span style="font-size: 0.85rem; color: #999;">Hỗ trợ: JPG, PNG, PDF, DOCX (Tối đa 10MB)</span>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a th:href="@{/feed}" class="btn-cancel">Hủy bỏ</a>
+                        <button type="submit" class="btn-publish"><i class='bx bx-send'></i> Đăng bài</button>
+                    </div>
+                </form>
+            </div>
+            
+        </main>
+        
+    </div>
+
+</body>
+</html>
