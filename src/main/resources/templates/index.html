@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <!-- Custom CSS -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
@@ -133,5 +135,10 @@
             slides[currentSlide].classList.add('active');
         }, 4000); // Đổi ảnh mỗi 4 giây
     </script>
+
+    <!-- AI Support Widget -->
+    <div class="ai-widget-btn" onclick="alert('Tính năng Chatbot AI đang được phát triển!')">
+        <i class='bx bx-bot'></i>
+    </div>
 </body>
 </html>
