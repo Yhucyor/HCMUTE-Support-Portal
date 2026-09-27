@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCMUTE - Khám phá</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .explore-hero {
+            height: 60vh;
+            background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1523580494863-6f3031224c94?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .explore-hero h1 {
+            font-size: 4.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            font-family: var(--font-serif);
+        }
+
+        .explore-hero p {
+            font-size: 1.5rem;
+            font-style: italic;
+        }
+
+        .section-container {
+            padding: 5rem 5%;
+            background: white;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .bg-light-section {
+            background: var(--bg-light);
+        }
+
+        .center-heading {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        /* Facilities Grid */
+        .facility-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .facility-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .facility-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .facility-img {
+            height: 250px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .facility-info {
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .facility-info h3 {
+            color: var(--crimson);
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+        }
+
+        .facility-info p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* Clubs Section */
+        .clubs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .club-item {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            text-align: center;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            font-weight: 600;
+            color: var(--text-main);
+            transition: background 0.3s, color 0.3s;
+            cursor: pointer;
+        }
+
+        .club-item:hover {
+            background: var(--crimson);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header" style="background: rgba(0,0,0,0.85); position: sticky;">
+        <div class="logo">
+            <a th:href="@{/}"><img src="/images/logo.png" alt="HCMUTE Logo"></a>
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a th:href="@{/}">Trang chủ</a></li>
+                <li><a th:href="@{/admission}">Tuyển sinh</a></li>
+                <li><a th:href="@{/about}">Đào tạo</a></li>
+                <li><a th:href="@{/research}">Nghiên cứu</a></li>
+                <li><a th:href="@{/explore}" style="color: var(--crimson); text-shadow: none;">Khám phá</a></li>
+                <li><a th:href="@{/login}" class="no-underline" style="color: #ffffff; border: 2px solid #ffffff; padding: 8px 20px; border-radius: 3px; font-weight: bold;">Đăng nhập</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero -->
+    <section class="explore-hero">
+        <div>
+            <h1>Khám Phá HCMUTE</h1>
+            <p>"Trải nghiệm cuộc sống sinh viên năng động và sáng tạo"</p>
+        </div>
+    </section>
+
+    <!-- Facilities Section -->
+    <section class="section-container bg-light-section">
+        <div class="center-heading">
+            <h2 class="section-title">Cơ Sở Vật Chất Hiện Đại</h2>
+            <p style="color: #666; font-size: 1.1rem; max-width: 800px; margin: 0 auto;">Khuôn viên trường rộng lớn, xanh mát với hệ thống phòng học, thư viện và khu tự học được trang bị công nghệ tiên tiến nhất.</p>
+        </div>
+        
+        <div class="facility-grid">
+            <div class="facility-card">
+                <div class="facility-img" style="background-image: url('https://images.unsplash.com/photo-1568667256549-094345857637?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
+                <div class="facility-info">
+                    <h3>Thư Viện Trung Tâm</h3>
+                    <p>Không gian yên tĩnh với hàng ngàn đầu sách kỹ thuật chuyên ngành và hệ thống mượn sách tự động (RFID).</p>
+                </div>
+            </div>
+            <div class="facility-card">
+                <div class="facility-img" style="background-image: url('https://images.unsplash.com/photo-1541336032412-2048a678540d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
+                <div class="facility-info">
+                    <h3>Khu Tự Học (Maker Space)</h3>
+                    <p>Khu vực mở 24/7 dành riêng cho sinh viên làm đồ án, với máy in 3D và các công cụ hỗ trợ chế tạo.</p>
+                </div>
+            </div>
+            <div class="facility-card">
+                <div class="facility-img" style="background-image: url('https://images.unsplash.com/photo-1511884642898-4c92249e20b6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
+                <div class="facility-info">
+                    <h3>Cảnh Quan Xanh (Campus)</h3>
+                    <p>Khuôn viên với nhiều mảng xanh, hồ nước, mang lại không gian thư giãn tuyệt vời sau những giờ học căng thẳng.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Student Life & Clubs -->
+    <section class="section-container">
+        <div class="center-heading">
+            <h2 class="section-title">Hoạt Động Phong Trào & Đội Nhóm</h2>
+            <p style="color: #666; font-size: 1.1rem; max-width: 800px; margin: 0 auto;">Phát triển kỹ năng mềm toàn diện qua hơn 50 câu lạc bộ học thuật, văn hóa, thể thao và kỹ năng trực thuộc Đoàn Thanh niên - Hội Sinh viên.</p>
+        </div>
+        
+        <div class="clubs-grid">
+            <div class="club-item">CLB Robotics</div>
+            <div class="club-item">CLB Khởi Nghiệp Tương Lai</div>
+            <div class="club-item">Đội Công Tác Xã Hội</div>
+            <div class="club-item">CLB Âm Nhạc (Guitar UTE)</div>
+            <div class="club-item">CLB Kỹ Năng Sống</div>
+            <div class="club-item">Đội Múa Tiên Phong</div>
+            <div class="club-item">CLB Thể Thao Điện Tử (Esports)</div>
+            <div class="club-item">Đoàn - Hội Sinh Viên</div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>Thông tin liên hệ</h4>
+                <ul>
+                    <li>Phòng Công tác Sinh viên (CTSV)</li>
+                    <li>Hotline: (028) 3896 8641</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Ho Chi Minh City University of Technology and Education. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
