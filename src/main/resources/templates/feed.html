@@ -210,8 +210,10 @@
                 <!-- Create Post Box -->
                 <div class="post-card create-post">
                     <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=A51C30&color=fff" alt="Avatar" style="width: 45px; border-radius: 50%;">
-                    <input type="text" placeholder="Bạn có câu hỏi gì cần trao đổi hôm nay?">
-                    <button style="background: var(--crimson); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: 600; cursor: pointer;">Đăng bài</button>
+                    <a th:href="@{/post/create}" style="flex-grow: 1; text-decoration: none;">
+                        <input type="text" placeholder="Bạn có câu hỏi gì cần trao đổi hôm nay?" style="width: 100%; pointer-events: none; cursor: pointer;">
+                    </a>
+                    <a th:href="@{/post/create}" style="background: var(--crimson); color: white; padding: 10px 20px; border-radius: 20px; font-weight: 600; text-decoration: none;">Đăng bài</a>
                 </div>
 
                 <!-- Post 1 (Urgent) -->
