@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCMUTE - Yêu cầu hỗ trợ</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Portal CSS -->
+    <link rel="stylesheet" th:href="@{/css/portal.css}">
+    <style>
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-header h2 {
+            margin: 0;
+            color: var(--text-dark);
+            font-size: 1.5rem;
+        }
+
+        .btn-primary {
+            background: var(--crimson);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+        .btn-primary:hover { background: #8a1525; }
+
+        .ticket-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+
+        /* Data Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th, .data-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .data-table th {
+            color: var(--text-gray);
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+        .data-table td {
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+        .data-table tbody tr {
+            transition: background 0.2s;
+        }
+        .data-table tbody tr:hover {
+            background: #fdf2f4;
+        }
+
+        /* Badges */
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-pending { background: #fff3e0; color: #e65100; }
+        .badge-processing { background: #e3f2fd; color: #1565c0; }
+        .badge-resolved { background: #e8f5e9; color: #2e7d32; }
+        .badge-closed { background: #eeeeee; color: #616161; }
+
+        .ticket-link {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+        .ticket-link:hover {
+            color: var(--crimson);
+        }
+
+        .text-gray {
+            color: var(--text-gray);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class='bx bx-menu menu-icon'></i>
+            <span class="logo-text">Portal</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a th:href="@{/dashboard}"><i class='bx bxs-dashboard'></i><span>Tổng quan</span></a></li>
+            <li><a th:href="@{/ai-chat}"><i class='bx bx-bot'></i><span>Trợ lý AI</span></a></li>
+            <li><a th:href="@{/ticket}" class="active"><i class='bx bx-support'></i><span>Yêu cầu hỗ trợ</span></a></li>
+            <li><a th:href="@{/feed}"><i class='bx bx-news'></i><span>Bảng tin chung</span></a></li>
+            <li><a th:href="@{/group}"><i class='bx bx-group'></i><span>Nhóm Khoa</span></a></li>
+            <li><a th:href="@{/profile}"><i class='bx bx-user'></i><span>Hồ sơ cá nhân</span></a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a th:href="@{/}"><i class='bx bx-log-out'></i><span>Đăng xuất</span></a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="main-wrapper">
+        
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="search-bar">
+                <i class='bx bx-search' style="color: var(--text-gray);"></i>
+                <input type="text" placeholder="Tìm mã Ticket...">
+            </div>
+            
+            <div class="topbar-right">
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=A51C30&color=fff" alt="Avatar">
+                    <div class="user-info">
+                        <span class="user-name">Nguyễn Văn A</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- PAGE CONTENT -->
+        <main class="page-content">
+            
+            <div class="page-header">
+                <h2>Lịch sử Yêu cầu hỗ trợ (Tickets)</h2>
+                <button class="btn-primary" onclick="alert('Tính năng form tạo Ticket dạng popup sẽ được thêm vào sau!')">
+                    <i class='bx bx-plus'></i> Tạo yêu cầu mới
+                </button>
+            </div>
+
+            <div class="ticket-card">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Mã Ticket</th>
+                            <th>Tiêu đề / Vấn đề</th>
+                            <th>Phòng ban xử lý</th>
+                            <th>Trạng thái</th>
+                            <th>Cập nhật cuối</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a th:href="@{/ticket/TK-1045}" class="ticket-link">#TK-1045</a></td>
+                            <td>
+                                <a th:href="@{/ticket/TK-1045}" class="ticket-link">Xin cấp lại bảng điểm Tiếng Anh đầu ra</a><br>
+                                <span class="text-gray">Loại: Giấy tờ & Chứng chỉ</span>
+                            </td>
+                            <td>Phòng Đào Tạo</td>
+                            <td><span class="badge badge-pending">Chờ tiếp nhận</span></td>
+                            <td>Hôm nay, 08:30</td>
+                        </tr>
+                        <tr>
+                            <td><a th:href="@{/ticket/TK-1022}" class="ticket-link">#TK-1022</a></td>
+                            <td>
+                                <a th:href="@{/ticket/TK-1022}" class="ticket-link">Hỏi về việc chuyển đổi môn học tương đương</a><br>
+                                <span class="text-gray">Loại: Học vụ</span>
+                            </td>
+                            <td>Khoa CNTT</td>
+                            <td><span class="badge badge-processing">Đang xử lý</span></td>
+                            <td>Hôm qua, 14:15</td>
+                        </tr>
+                        <tr>
+                            <td><a th:href="@{/ticket/TK-0980}" class="ticket-link">#TK-0980</a></td>
+                            <td>
+                                <a th:href="@{/ticket/TK-0980}" class="ticket-link">Báo lỗi không đóng được học phí qua Momo</a><br>
+                                <span class="text-gray">Loại: Học phí & Tài chính</span>
+                            </td>
+                            <td>Phòng Kế hoạch Tài chính</td>
+                            <td><span class="badge badge-resolved">Đã giải quyết</span></td>
+                            <td>20/09/2026</td>
+                        </tr>
+                        <tr>
+                            <td><a th:href="@{/ticket/TK-0850}" class="ticket-link">#TK-0850</a></td>
+                            <td>
+                                <a th:href="@{/ticket/TK-0850}" class="ticket-link">Xin giấy xác nhận sinh viên để vay vốn</a><br>
+                                <span class="text-gray">Loại: Giấy tờ & Chứng chỉ</span>
+                            </td>
+                            <td>Phòng CTSV</td>
+                            <td><span class="badge badge-closed">Đã đóng</span></td>
+                            <td>15/08/2026</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+        </main>
+        
+    </div>
+
+</body>
+</html>
