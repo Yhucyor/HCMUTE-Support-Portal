@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCMUTE - Hồ sơ cá nhân</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Boxicons (Icon Library) -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Portal CSS -->
+    <link rel="stylesheet" th:href="@{/css/portal.css}">
+    <style>
+        .profile-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .profile-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+
+        .avatar-section {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .avatar-lg {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--portal-bg);
+            margin-bottom: 1rem;
+        }
+
+        .upload-btn {
+            background: var(--portal-bg);
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        .upload-btn:hover { background: #e0e6ed; }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            color: var(--text-dark);
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--crimson);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .btn-save {
+            background: var(--crimson);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-save:hover { background: #8a1525; }
+
+        .section-header {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-dark);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class='bx bx-menu menu-icon'></i>
+            <span class="logo-text">Portal</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a th:href="@{/dashboard}">
+                    <i class='bx bxs-dashboard'></i>
+                    <span>Tổng quan</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <i class='bx bx-bot'></i>
+                    <span>Trợ lý AI</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <i class='bx bx-support'></i>
+                    <span>Yêu cầu hỗ trợ</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <i class='bx bx-news'></i>
+                    <span>Bảng tin sinh viên</span>
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/profile}" class="active">
+                    <i class='bx bx-user'></i>
+                    <span>Hồ sơ cá nhân</span>
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <a th:href="@{/}">
+                <i class='bx bx-log-out'></i>
+                <span>Đăng xuất</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="main-wrapper">
+        
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="search-bar">
+                <i class='bx bx-search' style="color: var(--text-gray);"></i>
+                <input type="text" placeholder="Tìm kiếm dịch vụ, bài viết...">
+            </div>
+            
+            <div class="topbar-right">
+                <div class="topbar-icon">
+                    <i class='bx bx-bell'></i>
+                    <span class="badge">3</span>
+                </div>
+                
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=A51C30&color=fff" alt="Avatar">
+                    <div class="user-info">
+                        <span class="user-name">Nguyễn Văn A</span>
+                        <span class="user-role">Sinh viên K23</span>
+                    </div>
+                    <i class='bx bx-chevron-down' style="color: var(--text-gray);"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- PAGE CONTENT -->
+        <main class="page-content">
+            <div class="page-header">
+                <h1 class="page-title">Hồ sơ cá nhân</h1>
+                <span class="breadcrumb">Quản lý thông tin tài khoản và bảo mật</span>
+            </div>
+
+            <div class="profile-container">
+                <!-- Cột trái: Avatar & Thông tin ngắn -->
+                <div class="profile-card avatar-section">
+                    <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=A51C30&color=fff&size=200" alt="Avatar" class="avatar-lg">
+                    <h3 style="margin-bottom: 5px;">Nguyễn Văn A</h3>
+                    <p style="color: var(--text-gray); margin-top: 0;">Sinh viên - Khoa CNTT</p>
+                    <button class="upload-btn"><i class='bx bx-upload'></i> Tải ảnh lên</button>
+                </div>
+
+                <!-- Cột phải: Form cập nhật thông tin -->
+                <div class="profile-card">
+                    <h3 class="section-header">Thông tin chi tiết</h3>
+                    <form action="#" method="post">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fullname">Họ và tên</label>
+                                <input type="text" id="fullname" class="form-control" value="Nguyễn Văn A">
+                            </div>
+                            <div class="form-group">
+                                <label for="studentId">Mã số sinh viên (MSSV)</label>
+                                <input type="text" id="studentId" class="form-control" value="23110001" disabled style="background: #f5f5f5;">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email">Email trường</label>
+                                <input type="email" id="email" class="form-control" value="23110001@student.hcmute.edu.vn" disabled style="background: #f5f5f5;">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Số điện thoại</label>
+                                <input type="text" id="phone" class="form-control" value="0901234567">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="address">Địa chỉ liên hệ</label>
+                            <input type="text" id="address" class="form-control" value="1 Võ Văn Ngân, Phường Linh Chiểu, Thủ Đức">
+                        </div>
+
+                        <h3 class="section-header" style="margin-top: 2.5rem;">Đổi mật khẩu</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="oldPassword">Mật khẩu hiện tại</label>
+                                <input type="password" id="oldPassword" class="form-control" placeholder="••••••••">
+                            </div>
+                            <div class="form-group">
+                                <label for="newPassword">Mật khẩu mới</label>
+                                <input type="password" id="newPassword" class="form-control" placeholder="Tạo mật khẩu mới">
+                            </div>
+                        </div>
+
+                        <div style="text-align: right; margin-top: 1rem;">
+                            <button type="submit" class="btn-save">Lưu thay đổi</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+        </main>
+        
+    </div>
+
+</body>
+</html>
