@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCMUTE - Nghiên Cứu Khoa Học</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .research-hero {
+            height: 60vh;
+            background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .research-hero h1 {
+            font-size: 4.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .research-hero p {
+            font-size: 1.5rem;
+            font-family: var(--font-serif);
+            font-style: italic;
+        }
+
+        .section-container {
+            padding: 5rem 5%;
+            background: white;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .bg-light-section {
+            background: var(--bg-light);
+        }
+
+        .center-heading {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .lab-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+
+        .lab-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .lab-img {
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .lab-content {
+            padding: 1.5rem;
+        }
+
+        .lab-content h3 {
+            color: var(--crimson);
+            margin-bottom: 0.8rem;
+            font-size: 1.3rem;
+        }
+
+        .lab-content p {
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+        
+        /* Stats Section */
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            text-align: center;
+            padding: 4rem 2rem;
+            background-color: var(--crimson);
+            color: white;
+        }
+        
+        .stat-item h4 {
+            font-size: 3.5rem;
+            margin: 0;
+            font-family: var(--font-serif);
+        }
+        
+        .stat-item p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header" style="background: rgba(0,0,0,0.85); position: sticky;">
+        <div class="logo">
+            <a th:href="@{/}"><img src="/images/logo.png" alt="HCMUTE Logo"></a>
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a th:href="@{/}">Trang chủ</a></li>
+                <li><a th:href="@{/admission}">Tuyển sinh</a></li>
+                <li><a th:href="@{/about}">Đào tạo</a></li>
+                <li><a th:href="@{/research}" style="color: var(--crimson); text-shadow: none;">Nghiên cứu</a></li>
+                <li><a href="#">Khám phá</a></li>
+                <li><a th:href="@{/login}" class="no-underline" style="color: #ffffff; border: 2px solid #ffffff; padding: 8px 20px; border-radius: 3px; font-weight: bold;">Đăng nhập</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero -->
+    <section class="research-hero">
+        <div>
+            <h1>Nghiên Cứu & Đổi Mới Sáng Tạo</h1>
+            <p>"Đẩy mạnh nghiên cứu ứng dụng, phục vụ sự phát triển của xã hội"</p>
+        </div>
+    </section>
+
+    <!-- Stats Banner -->
+    <section class="stats-container">
+        <div class="stat-item">
+            <h4>150+</h4>
+            <p>Dự án Cấp Nhà Nước & Tỉnh</p>
+        </div>
+        <div class="stat-item">
+            <h4>25</h4>
+            <p>Phòng Thí Nghiệm Trọng Điểm</p>
+        </div>
+        <div class="stat-item">
+            <h4>500+</h4>
+            <p>Bài báo Quốc tế (ISI/Scopus)</p>
+        </div>
+        <div class="stat-item">
+            <h4>10</h4>
+            <p>Trung Tâm Chuyển Giao Công Nghệ</p>
+        </div>
+    </section>
+
+    <!-- Labs & Centers -->
+    <section class="section-container bg-light-section">
+        <div class="center-heading">
+            <h2 class="section-title">Trung Tâm & Phòng Thí Nghiệm Trọng Điểm</h2>
+            <p style="color: #666; font-size: 1.1rem; max-width: 800px; margin: 0 auto;">Các cơ sở nghiên cứu được đầu tư trang thiết bị hiện đại, đáp ứng nhu cầu thực hành và nghiên cứu chuyên sâu của Giảng viên và Sinh viên.</p>
+        </div>
+        
+        <div class="grid-3">
+            <div class="lab-card">
+                <div class="lab-img" style="background-image: url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
+                <div class="lab-content">
+                    <h3>Trung Tâm Trí Tuệ Nhân Tạo (AI)</h3>
+                    <p>Tập trung nghiên cứu Học máy, Xử lý ngôn ngữ tự nhiên và Thị giác máy tính ứng dụng vào Smart City.</p>
+                </div>
+            </div>
+            <div class="lab-card">
+                <div class="lab-img" style="background-image: url('https://images.unsplash.com/photo-1563804812328-3e5fa0db55fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
+                <div class="lab-content">
+                    <h3>Phòng Thí Nghiệm Năng Lượng Tái Tạo</h3>
+                    <p>Nghiên cứu các giải pháp năng lượng sạch, pin mặt trời và hệ thống lưu trữ điện năng tiên tiến.</p>
+                </div>
+            </div>
+            <div class="lab-card">
+                <div class="lab-img" style="background-image: url('https://images.unsplash.com/photo-1581092160562-40aa08e78837?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
+                <div class="lab-content">
+                    <h3>Xưởng Chế Tạo Robot (Robotics Lab)</h3>
+                    <p>Thiết kế và lập trình Robot công nghiệp, Drone và thiết bị tự hành phục vụ y tế, nông nghiệp.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>Thông tin liên hệ</h4>
+                <ul>
+                    <li>Phòng Khoa học Công nghệ và Quan hệ Quốc tế</li>
+                    <li>Hotline: (028) 3896 8641 - Nhánh 3</li>
+                    <li>Email: khcn@hcmute.edu.vn</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Ho Chi Minh City University of Technology and Education. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
