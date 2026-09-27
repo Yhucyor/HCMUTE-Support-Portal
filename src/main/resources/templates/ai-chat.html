@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCMUTE - Trợ lý AI</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Portal CSS -->
+    <link rel="stylesheet" th:href="@{/css/portal.css}">
+    <style>
+        .main-wrapper {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: white;
+        }
+
+        /* Topbar needs to be absolute or hidden, let's keep it but simplified */
+        .ai-topbar {
+            height: 60px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            font-weight: 600;
+            color: var(--text-dark);
+            background: white;
+            z-index: 10;
+        }
+
+        /* Chat Layout */
+        .chat-container {
+            display: flex;
+            flex-grow: 1;
+            height: calc(100vh - 60px);
+        }
+
+        /* History Sidebar */
+        .chat-history {
+            width: 260px;
+            background: #f9f9f9;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .new-chat-btn {
+            margin: 15px;
+            padding: 10px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .new-chat-btn:hover { border-color: var(--crimson); color: var(--crimson); }
+
+        .history-list {
+            list-style: none;
+            padding: 0 15px;
+            margin: 0;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .history-list li {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .history-list li:hover { background: #eee; }
+        .history-list li.active { background: #e0e0e0; font-weight: 500; }
+
+        /* Main Chat Area */
+        .chat-main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-bottom: 120px; /* Space for input */
+        }
+
+        .message-row {
+            padding: 30px 20px;
+            display: flex;
+            justify-content: center;
+            border-bottom: 1px solid transparent;
+        }
+
+        .message-row.ai {
+            background: #fdf2f4;
+            border-bottom: 1px solid rgba(165, 28, 48, 0.1);
+        }
+
+        .message-content {
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            gap: 20px;
+        }
+
+        .avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .avatar-ai { background: var(--crimson); color: white; font-size: 1.5rem; }
+        .avatar-user { background: #1976d2; color: white; overflow: hidden; }
+
+        .message-text {
+            color: var(--text-dark);
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+        
+        .message-text p { margin-top: 0; }
+
+        /* Input Area */
+        .chat-input-wrapper {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to top, rgba(255,255,255,1) 70%, rgba(255,255,255,0));
+            padding: 30px 20px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .chat-input-box {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .chat-input-box input {
+            flex-grow: 1;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            padding: 10px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .chat-input-box button {
+            background: var(--crimson);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: background 0.3s;
+        }
+
+        .chat-input-box button:hover {
+            background: #8a1525;
+        }
+
+        .disclaimer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-gray);
+            position: absolute;
+            bottom: 5px;
+            width: 100%;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: none;
+            gap: 5px;
+            padding-top: 8px;
+        }
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: var(--crimson);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MAIN SIDEBAR (From Portal Layout) -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class='bx bx-menu menu-icon'></i>
+            <span class="logo-text">Portal</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a th:href="@{/dashboard}"><i class='bx bxs-dashboard'></i><span>Tổng quan</span></a></li>
+            <li><a th:href="@{/ai-chat}" class="active"><i class='bx bx-bot'></i><span>Trợ lý AI</span></a></li>
+            <li><a href="#"><i class='bx bx-support'></i><span>Yêu cầu hỗ trợ</span></a></li>
+            <li><a th:href="@{/feed}"><i class='bx bx-news'></i><span>Bảng tin chung</span></a></li>
+            <li><a th:href="@{/group}"><i class='bx bx-group'></i><span>Nhóm Khoa</span></a></li>
+            <li><a th:href="@{/profile}"><i class='bx bx-user'></i><span>Hồ sơ cá nhân</span></a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a th:href="@{/}"><i class='bx bx-log-out'></i><span>Đăng xuất</span></a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="main-wrapper" style="flex-direction: column;">
+        
+        <div class="ai-topbar">
+            Trợ lý Thông minh HCMUTE
+        </div>
+
+        <div class="chat-container">
+            <!-- Chat History -->
+            <div class="chat-history">
+                <button class="new-chat-btn">
+                    <i class='bx bx-plus'></i> Cuộc trò chuyện mới
+                </button>
+                <div style="padding: 10px 15px; font-size: 0.8rem; font-weight: 600; color: #888;">GẦN ĐÂY</div>
+                <ul class="history-list">
+                    <li class="active"><i class='bx bx-message-rounded'></i> Quy chế học vụ 2026</li>
+                    <li><i class='bx bx-message-rounded'></i> Hỏi về học phí kỳ I</li>
+                    <li><i class='bx bx-message-rounded'></i> Thủ tục đăng ký ký túc xá</li>
+                    <li><i class='bx bx-message-rounded'></i> Địa chỉ phòng khám trường</li>
+                </ul>
+            </div>
+
+            <!-- Chat Main -->
+            <div class="chat-main">
+                <div class="chat-messages" id="chat-messages">
+                    
+                    <!-- System Welcome -->
+                    <div class="message-row ai">
+                        <div class="message-content">
+                            <div class="avatar avatar-ai"><i class='bx bx-bot'></i></div>
+                            <div class="message-text">
+                                <p>Xin chào! Tôi là Trợ lý AI của HCMUTE. Tôi được huấn luyện để giải đáp các thắc mắc về học vụ, thủ tục hành chính, và tư vấn học tập cho sinh viên.</p>
+                                <p>Bạn đang thắc mắc về vấn đề gì?</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Message -->
+                    <div class="message-row">
+                        <div class="message-content">
+                            <div class="avatar avatar-user">
+                                <img src="https://ui-avatars.com/api/?name=Văn+A&background=1976d2&color=fff" style="width:100%;">
+                            </div>
+                            <div class="message-text">
+                                <p>Bạn có thể cho mình biết điều kiện để được cấp học bổng Khuyến khích học tập là gì không?</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Response -->
+                    <div class="message-row ai">
+                        <div class="message-content">
+                            <div class="avatar avatar-ai"><i class='bx bx-bot'></i></div>
+                            <div class="message-text">
+                                <p>Để được xét cấp Học bổng Khuyến khích học tập (HB KKHT) tại HCMUTE, bạn cần đáp ứng các điều kiện cơ bản sau đây:</p>
+                                <ol>
+                                    <li><strong>Điểm trung bình học kỳ (GPA):</strong> Đạt từ 7.0 trở lên (không có môn nào dưới 5.0).</li>
+                                    <li><strong>Điểm rèn luyện:</strong> Đạt từ loại Khá trở lên (từ 70 điểm).</li>
+                                    <li><strong>Tín chỉ:</strong> Tích lũy đủ số tín chỉ tối thiểu theo quy định của chương trình đào tạo trong học kỳ xét (thường là 14 tín chỉ).</li>
+                                    <li><strong>Kỷ luật:</strong> Không bị kỷ luật từ mức Khiển trách trở lên trong học kỳ xét học bổng.</li>
+                                </ol>
+                                <p><em>Lưu ý:</em> Học bổng sẽ được xét từ cao xuống thấp cho đến khi hết quỹ học bổng của Khoa.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Typing Indicator Row (Hidden by default) -->
+                    <div class="message-row ai" id="typing-indicator-row" style="display: none; padding-bottom: 20px;">
+                        <div class="message-content">
+                            <div class="avatar avatar-ai"><i class='bx bx-bot'></i></div>
+                            <div class="message-text">
+                                <div class="typing-indicator" style="display: flex;">
+                                    <span></span><span></span><span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Input Area -->
+                <div class="chat-input-wrapper">
+                    <div style="width: 100%; max-width: 800px; position: relative;">
+                        <div class="chat-input-box">
+                            <input type="text" id="chat-input" placeholder="Nhập câu hỏi của bạn tại đây...">
+                            <button id="send-btn"><i class='bx bx-send'></i></button>
+                        </div>
+                        <div class="disclaimer">AI có thể cung cấp thông tin chưa chính xác. Vui lòng tham khảo thêm từ Phòng Đào Tạo.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JS for typing effect and mock chat
+        const input = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const messagesContainer = document.getElementById('chat-messages');
+        const indicatorRow = document.getElementById('typing-indicator-row');
+
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function appendUserMessage(text) {
+            const html = `
+                <div class="message-row">
+                    <div class="message-content">
+                        <div class="avatar avatar-user">
+                            <img src="https://ui-avatars.com/api/?name=Văn+A&background=1976d2&color=fff" style="width:100%;">
+                        </div>
+                        <div class="message-text">
+                            <p>${text}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            indicatorRow.insertAdjacentHTML('beforebegin', html);
+            scrollToBottom();
+        }
+
+        function appendAIMessage(text) {
+            const html = `
+                <div class="message-row ai">
+                    <div class="message-content">
+                        <div class="avatar avatar-ai"><i class='bx bx-bot'></i></div>
+                        <div class="message-text mock-typing"></div>
+                    </div>
+                </div>
+            `;
+            indicatorRow.insertAdjacentHTML('beforebegin', html);
+            scrollToBottom();
+            
+            const messageElements = document.querySelectorAll('.mock-typing');
+            const targetElement = messageElements[messageElements.length - 1];
+            
+            let i = 0;
+            const speed = 20; // ms per char
+            function typeWriter() {
+                if (i < text.length) {
+                    targetElement.innerHTML += text.charAt(i);
+                    i++;
+                    if(i % 5 === 0) scrollToBottom(); // smooth scroll
+                    setTimeout(typeWriter, speed);
+                } else {
+                    targetElement.classList.remove('mock-typing');
+                }
+            }
+            typeWriter();
+        }
+
+        function handleSend() {
+            const text = input.value.trim();
+            if(!text) return;
+            
+            // 1. Show user message
+            appendUserMessage(text);
+            input.value = '';
+            
+            // 2. Show typing indicator
+            indicatorRow.style.display = 'flex';
+            scrollToBottom();
+            
+            // 3. Mock AI processing delay
+            setTimeout(() => {
+                indicatorRow.style.display = 'none';
+                appendAIMessage("Cảm ơn câu hỏi của bạn. Hệ thống AI đang được nâng cấp để trả lời các câu hỏi thực tế. Tạm thời đây là bản demo tính năng gõ chữ (typing effect). Bạn có cần hỗ trợ gì thêm không?");
+            }, 1200);
+        }
+
+        sendBtn.addEventListener('click', handleSend);
+        input.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') handleSend();
+        });
+        
+        // Initial scroll
+        scrollToBottom();
+    </script>
+</body>
+</html>
