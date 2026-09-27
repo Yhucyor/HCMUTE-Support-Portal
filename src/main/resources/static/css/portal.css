@@ -1,6 +1,7 @@
 :root {
     --portal-bg: #f4f7fa;
     --sidebar-width: 260px;
+    --sidebar-collapsed: 80px;
     --topbar-height: 70px;
     --crimson: #A51C30;
     --text-dark: #333;
@@ -18,7 +19,7 @@ body {
 
 /* Sidebar */
 .sidebar {
-    width: var(--sidebar-width);
+    width: var(--sidebar-collapsed);
     background-color: #ffffff;
     height: 100vh;
     position: fixed;
@@ -28,6 +29,14 @@ body {
     display: flex;
     flex-direction: column;
     z-index: 1000;
+    transition: width 0.3s ease;
+    overflow-x: hidden;
+    white-space: nowrap;
+}
+
+.sidebar:hover {
+    width: var(--sidebar-width);
+    box-shadow: 5px 0 15px rgba(0,0,0,0.05);
 }
 
 .sidebar-header {
@@ -38,11 +47,24 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
-.sidebar-header h2 {
+.sidebar-header i.menu-icon {
+    font-size: 2rem;
+    color: var(--crimson);
+    min-width: 32px;
+    text-align: center;
+}
+
+.sidebar-header span.logo-text {
     color: var(--crimson);
     font-family: 'Playfair Display', serif;
     font-size: 1.5rem;
-    margin: 0;
+    margin-left: 10px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar:hover .sidebar-header span.logo-text {
+    opacity: 1;
 }
 
 .sidebar-menu {
@@ -80,9 +102,19 @@ body {
 }
 
 .sidebar-menu i {
-    font-size: 1.3rem;
-    width: 24px;
+    font-size: 1.5rem;
+    min-width: 32px;
     text-align: center;
+}
+
+.sidebar-menu a span {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    margin-left: 5px;
+}
+
+.sidebar:hover .sidebar-menu a span {
+    opacity: 1;
 }
 
 .sidebar-footer {
@@ -106,10 +138,26 @@ body {
     background-color: #fdf2f4;
 }
 
+.sidebar-footer i {
+    font-size: 1.5rem;
+    min-width: 32px;
+    text-align: center;
+}
+
+.sidebar-footer a span {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    margin-left: 5px;
+}
+
+.sidebar:hover .sidebar-footer a span {
+    opacity: 1;
+}
+
 /* Main Content Wrapper */
 .main-wrapper {
     flex-grow: 1;
-    margin-left: var(--sidebar-width);
+    margin-left: var(--sidebar-collapsed);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
