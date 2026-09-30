@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/head :: publicHead('Thông báo lỗi')}"></th:block>
+    <style>
+        .error-container {
+            min-height: 70vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+        .error-card {
+            background: white;
+            padding: 3rem 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            max-width: 550px;
+            width: 100%;
+        }
+        .error-badge {
+            font-size: 4.5rem;
+            font-weight: 800;
+            color: var(--crimson, #a51c30);
+            line-height: 1;
+            margin-bottom: 1rem;
+        }
+        .error-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        .error-desc {
+            color: #666;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        .error-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .btn-action {
+            display: inline-block;
+            padding: 10px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-home {
+            background: var(--crimson, #a51c30);
+            color: white;
+        }
+        .btn-home:hover {
+            background: #871626;
+        }
+        .btn-back {
+            background: #f0f0f0;
+            color: #444;
+        }
+        .btn-back:hover {
+            background: #e4e4e4;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Navbar Fragment -->
+    <header th:replace="~{fragments/navbar :: navbar('error')}"></header>
+
+    <div class="error-container">
+        <div class="error-card">
+            <div class="error-badge" th:text="${errorCode != null ? errorCode : '500'}">500</div>
+            <h2 class="error-title">Rất tiếc! Đã xảy ra sự cố</h2>
+            <p class="error-desc" th:text="${errorMessage != null ? errorMessage : 'Hệ thống không thể xử lý yêu cầu này lúc này. Vui lòng thử lại sau.'}">
+                Đã xảy ra lỗi nội bộ máy chủ.
+            </p>
+            <div class="error-actions">
+                <a href="javascript:history.back()" class="btn-action btn-back">Quay lại</a>
+                <a th:href="@{/}" class="btn-action btn-home">Về Trang chủ</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Fragment -->
+    <th:block th:replace="~{fragments/footer :: footer}"></th:block>
+
+</body>
+</html>

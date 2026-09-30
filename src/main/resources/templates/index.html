@@ -1,36 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HCMUTE - Student Portal</title>
-    <!-- Google Fonts for Classic Typography (Serif & Sans-serif) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
-    <!-- Boxicons -->
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <!-- Custom CSS -->
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <th:block th:replace="~{fragments/head :: publicHead('Trang chủ')}"></th:block>
 </head>
 <body>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="logo">
-            <img src="/images/logo.png" alt="HCMUTE Logo">
-        </div>
-        <nav>
-            <ul class="nav-links">
-                <li><a href="#">Trang chủ</a></li>
-                <li><a th:href="@{/admission}">Tuyển sinh</a></li>
-                <li><a th:href="@{/about}">Đào tạo</a></li>
-                <li><a th:href="@{/research}">Nghiên cứu</a></li>
-                <li><a th:href="@{/explore}">Khám phá</a></li>
-                <li><a th:href="@{/login}" class="no-underline" style="color: #ffffff; border: 2px solid #ffffff; padding: 8px 20px; border-radius: 3px; font-weight: bold;">Đăng nhập</a></li>
-            </ul>
-        </nav>
-    </header>
+    <!-- Header / Navbar Fragment -->
+    <header th:replace="~{fragments/navbar :: navbar('home')}"></header>
 
     <!-- Hero Section -->
     <section class="hero">
@@ -88,41 +64,8 @@
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-grid">
-            <div class="footer-col">
-                <h4>Information For</h4>
-                <ul>
-                    <li><a href="#">Prospective Students</a></li>
-                    <li><a href="#">Current Students</a></li>
-                    <li><a href="#">Faculty & Staff</a></li>
-                    <li><a href="#">Alumni</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Quick Links</h4>
-                <ul>
-                    <li><a href="#">Library</a></li>
-                    <li><a href="#">Campus Map</a></li>
-                    <li><a href="#">Careers</a></li>
-                    <li><a href="#">Contact Us</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Contact</h4>
-                <ul>
-                    <li>1 Vo Van Ngan Street</li>
-                    <li>Thu Duc City, HCMC</li>
-                    <li>Vietnam</li>
-                    <li>(028) 3896 8641</li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 Ho Chi Minh City University of Technology and Education. All rights reserved.</p>
-        </div>
-    </footer>
+    <!-- Footer & AI Widget Fragment -->
+    <th:block th:replace="~{fragments/footer :: footer}"></th:block>
 
     <!-- Slider Script -->
     <script>
@@ -135,10 +78,5 @@
             slides[currentSlide].classList.add('active');
         }, 4000); // Đổi ảnh mỗi 4 giây
     </script>
-
-    <!-- AI Support Widget -->
-    <div class="ai-widget-btn" onclick="window.location.href='/ai-chat'">
-        <i class='bx bx-bot'></i>
-    </div>
 </body>
 </html>

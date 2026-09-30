@@ -1,98 +1,18 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HCMUTE - Student Dashboard</title>
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-    <!-- Boxicons (Icon Library) -->
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <!-- Portal CSS -->
-    <link rel="stylesheet" th:href="@{/css/portal.css}">
+    <th:block th:replace="~{fragments/head :: portalHead('Tổng quan')}"></th:block>
 </head>
 <body>
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <i class='bx bx-menu menu-icon'></i>
-            <span class="logo-text">Portal</span>
-        </div>
-        <ul class="sidebar-menu">
-            <li>
-                <a th:href="@{/dashboard}" class="active">
-                    <i class='bx bxs-dashboard'></i>
-                    <span>Tổng quan</span>
-                </a>
-            </li>
-            <li>
-                <a th:href="@{/ai-chat}">
-                    <i class='bx bx-bot'></i>
-                    <span>Trợ lý AI (Counseling)</span>
-                </a>
-            </li>
-            <li>
-                <a th:href="@{/ticket}">
-                    <i class='bx bx-support'></i>
-                    <span>Yêu cầu hỗ trợ (Ticket)</span>
-                </a>
-            </li>
-            <li>
-                <a th:href="@{/feed}">
-                    <i class='bx bx-news'></i>
-                    <span>Bảng tin sinh viên</span>
-                </a>
-            </li>
-            <li>
-                <a th:href="@{/group}">
-                    <i class='bx bx-group'></i>
-                    <span>Nhóm Khoa</span>
-                </a>
-            </li>
-            <li>
-                <a th:href="@{/profile}">
-                    <i class='bx bx-user'></i>
-                    <span>Hồ sơ cá nhân</span>
-                </a>
-            </li>
-        </ul>
-        <div class="sidebar-footer">
-            <a th:href="@{/}">
-                <i class='bx bx-log-out'></i>
-                <span>Đăng xuất</span>
-            </a>
-        </div>
-    </aside>
+    <!-- SIDEBAR FRAGMENT -->
+    <aside th:replace="~{fragments/sidebar :: sidebar('dashboard')}"></aside>
 
     <!-- MAIN CONTENT WRAPPER -->
     <div class="main-wrapper">
         
-        <!-- TOPBAR -->
-        <header class="topbar">
-            <div class="search-bar">
-                <i class='bx bx-search' style="color: var(--text-gray);"></i>
-                <input type="text" placeholder="Tìm kiếm dịch vụ, bài viết...">
-            </div>
-            
-            <div class="topbar-right">
-                <div class="topbar-icon">
-                    <i class='bx bx-bell'></i>
-                    <span class="badge">3</span>
-                </div>
-                
-                <div class="user-profile">
-                    <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=A51C30&color=fff" alt="Avatar">
-                    <div class="user-info">
-                        <span class="user-name">Nguyễn Văn A</span>
-                        <span class="user-role">Sinh viên K23</span>
-                    </div>
-                    <i class='bx bx-chevron-down' style="color: var(--text-gray);"></i>
-                </div>
-            </div>
-        </header>
+        <!-- TOPBAR FRAGMENT -->
+        <header th:replace="~{fragments/topbar :: topbar}"></header>
 
         <!-- PAGE CONTENT -->
         <main class="page-content">
