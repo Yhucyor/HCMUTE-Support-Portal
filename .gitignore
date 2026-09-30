@@ -38,6 +38,10 @@ hs_err_pid*
 .idea/
 *.iml
 .vscode/
+
+# Local sensitive configuration (prevent leaking passwords to GitHub)
+*application-local.properties
+.env
 .classpath
 .project
 .settings/
