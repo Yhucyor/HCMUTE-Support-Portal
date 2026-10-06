@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
 <body>
     <!-- Public Header / Navbar Fragment -->
     <header class="header" th:fragment="navbar(activePage)">
@@ -14,25 +15,32 @@
                     <a th:href="@{/}" th:classappend="${activePage == 'home'} ? 'active' : ''">Trang chủ</a>
                 </li>
                 <li>
-                    <a th:href="@{/admission}" th:classappend="${activePage == 'admission'} ? 'active' : ''">Tuyển sinh</a>
+                    <a th:href="@{/admission}" th:classappend="${activePage == 'admission'} ? 'active' : ''">Tuyển
+                        sinh</a>
                 </li>
                 <li>
                     <a th:href="@{/about}" th:classappend="${activePage == 'about'} ? 'active' : ''">Đào tạo</a>
                 </li>
                 <li>
-                    <a th:href="@{/research}" th:classappend="${activePage == 'research'} ? 'active' : ''">Nghiên cứu</a>
+                    <a th:href="@{/research}" th:classappend="${activePage == 'research'} ? 'active' : ''">Nghiên
+                        cứu</a>
                 </li>
                 <li>
                     <a th:href="@{/explore}" th:classappend="${activePage == 'explore'} ? 'active' : ''">Khám phá</a>
                 </li>
                 <li>
-                    <a th:href="@{/dashboard}" class="no-underline" style="color: #ffffff; background: rgba(255,255,255,0.15); border: 2px solid #ffffff; padding: 7px 16px; border-radius: 4px; font-weight: 600; margin-right: 8px;">Portal SV</a>
+                    <a th:href="@{/dashboard}" class="no-underline"
+                        style="color: #ffffff; background: rgba(255,255,255,0.15); border: 2px solid #ffffff; padding: 7px 16px; border-radius: 4px; font-weight: 600; margin-right: 8px;">Portal
+                        SV</a>
                 </li>
                 <li>
-                    <a th:href="@{/login}" class="no-underline" style="color: #ffffff; border: 2px solid #ffffff; padding: 7px 16px; border-radius: 4px; font-weight: bold;">Đăng nhập</a>
+                    <a th:href="@{/login}" class="no-underline"
+                        style="color: #ffffff; border: 2px solid #ffffff; padding: 7px 16px; border-radius: 4px; font-weight: bold;">Đăng
+                        nhập</a>
                 </li>
             </ul>
         </nav>
     </header>
 </body>
+
 </html>

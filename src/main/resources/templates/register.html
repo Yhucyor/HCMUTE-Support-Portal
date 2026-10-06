@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,12 @@
     <!-- Google Fonts for Classic Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
+
 <body class="login-body">
 
     <!-- Header -->
@@ -28,7 +32,7 @@
         <div class="login-card">
             <h2 class="login-title">Student Portal</h2>
             <p class="login-subtitle">Đăng ký tài khoản Sinh viên mới</p>
-            
+
             <form action="#" method="post">
                 <div class="input-group">
                     <label for="fullname">Họ và tên</label>
@@ -46,10 +50,10 @@
                     <label for="password">Mật khẩu</label>
                     <input type="password" id="password" name="password" placeholder="Tạo mật khẩu" required>
                 </div>
-                
+
                 <button type="submit" class="btn-primary btn-full" style="margin-top: 1rem;">Đăng ký</button>
             </form>
-            
+
             <div class="login-footer">
                 <p>Đã có tài khoản? <a th:href="@{/login}">Đăng nhập ngay</a></p>
             </div>
@@ -57,4 +61,5 @@
     </div>
 
 </body>
+
 </html>

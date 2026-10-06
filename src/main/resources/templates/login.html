@@ -1,21 +1,41 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HCMUTE - Student Portal | Đăng nhập</title>
-    <!-- Google Fonts for Classic Typography -->
+    <title>HCMUTE Support Portal | Đăng nhập</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .alert-box {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .alert-error {
+            background-color: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+        .alert-success {
+            background-color: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+    </style>
 </head>
 <body class="login-body">
 
-    <!-- Header (Simple version for login page) -->
     <header class="header login-header">
         <div class="logo">
-            <a th:href="@{/}"><img src="/images/logo.png" alt="HCMUTE Logo"></a>
+            <a th:href="@{/}"><img th:src="@{/images/logo.png}" alt="HCMUTE Logo" onerror="this.style.display='none'"> <strong>HCMUTE Portal</strong></a>
         </div>
         <nav>
             <ul class="nav-links">
@@ -26,13 +46,22 @@
 
     <div class="login-container">
         <div class="login-card">
-            <h2 class="login-title">Student Portal</h2>
-            <p class="login-subtitle">Vui lòng đăng nhập bằng tài khoản sinh viên</p>
+            <h2 class="login-title">Cổng Thông Tin HCMUTE</h2>
+            <p class="login-subtitle">Đăng nhập để sử dụng các dịch vụ tư vấn & học vụ</p>
             
-            <form th:action="@{/dashboard}" method="get">
+            <div th:if="${errorMessage}" class="alert-box alert-error">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
+            <div th:if="${successMessage}" class="alert-box alert-success">
+                <i class="fa-solid fa-circle-check"></i>
+                <span th:text="${successMessage}"></span>
+            </div>
+
+            <form th:action="@{/auth/login}" method="post">
                 <div class="input-group">
-                    <label for="username">Mã số sinh viên (MSSV)</label>
-                    <input type="text" id="username" name="username" placeholder="Nhập MSSV của bạn" required>
+                    <label for="username">Tên đăng nhập hoặc Email</label>
+                    <input type="text" id="username" name="username" placeholder="Nhập tài khoản hoặc email" required autofocus>
                 </div>
                 <div class="input-group">
                     <label for="password">Mật khẩu</label>
@@ -41,7 +70,7 @@
                 
                 <div class="login-options">
                     <label class="remember-me">
-                        <input type="checkbox" name="remember"> Nhớ mật khẩu
+                        <input type="checkbox" name="remember-me"> Nhớ tài khoản
                     </label>
                     <a href="#" class="forgot-password">Quên mật khẩu?</a>
                 </div>
@@ -50,7 +79,7 @@
             </form>
             
             <div class="login-footer">
-                <p>Bạn chưa có tài khoản? <a th:href="@{/register}">Đăng ký ngay</a></p>
+                <p>Bạn chưa có tài khoản? <a th:href="@{/auth/register}">Đăng ký ngay</a></p>
             </div>
         </div>
     </div>

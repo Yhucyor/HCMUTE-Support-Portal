@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,9 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet">
     <!-- Boxicons (Icon Library) -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <!-- Portal CSS -->
@@ -24,7 +27,7 @@
             background: white;
             padding: 2rem;
             border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
         }
 
         .avatar-section {
@@ -54,7 +57,10 @@
             margin-top: 10px;
             transition: background 0.3s;
         }
-        .upload-btn:hover { background: #e0e6ed; }
+
+        .upload-btn:hover {
+            background: #e0e6ed;
+        }
 
         .form-group {
             margin-bottom: 1.5rem;
@@ -102,7 +108,10 @@
             cursor: pointer;
             transition: background 0.3s;
         }
-        .btn-save:hover { background: #8a1525; }
+
+        .btn-save:hover {
+            background: #8a1525;
+        }
 
         .section-header {
             margin-top: 0;
@@ -113,6 +122,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <!-- SIDEBAR -->
@@ -163,20 +173,20 @@
 
     <!-- MAIN CONTENT WRAPPER -->
     <div class="main-wrapper">
-        
+
         <!-- TOPBAR -->
         <header class="topbar">
             <div class="search-bar">
                 <i class='bx bx-search' style="color: var(--text-gray);"></i>
                 <input type="text" placeholder="Tìm kiếm dịch vụ, bài viết...">
             </div>
-            
+
             <div class="topbar-right">
                 <div class="topbar-icon">
                     <i class='bx bx-bell'></i>
                     <span class="badge">3</span>
                 </div>
-                
+
                 <div class="user-profile">
                     <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=A51C30&color=fff" alt="Avatar">
                     <div class="user-info">
@@ -198,7 +208,8 @@
             <div class="profile-container">
                 <!-- Cột trái: Avatar & Thông tin ngắn -->
                 <div class="profile-card avatar-section">
-                    <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=A51C30&color=fff&size=200" alt="Avatar" class="avatar-lg">
+                    <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=A51C30&color=fff&size=200"
+                        alt="Avatar" class="avatar-lg">
                     <h3 style="margin-bottom: 5px;">Nguyễn Văn A</h3>
                     <p style="color: var(--text-gray); margin-top: 0;">Sinh viên - Khoa CNTT</p>
                     <button class="upload-btn"><i class='bx bx-upload'></i> Tải ảnh lên</button>
@@ -215,24 +226,27 @@
                             </div>
                             <div class="form-group">
                                 <label for="studentId">Mã số sinh viên (MSSV)</label>
-                                <input type="text" id="studentId" class="form-control" value="23110001" disabled style="background: #f5f5f5;">
+                                <input type="text" id="studentId" class="form-control" value="23110001" disabled
+                                    style="background: #f5f5f5;">
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="email">Email trường</label>
-                                <input type="email" id="email" class="form-control" value="23110001@student.hcmute.edu.vn" disabled style="background: #f5f5f5;">
+                                <input type="email" id="email" class="form-control"
+                                    value="23110001@student.hcmute.edu.vn" disabled style="background: #f5f5f5;">
                             </div>
                             <div class="form-group">
                                 <label for="phone">Số điện thoại</label>
                                 <input type="text" id="phone" class="form-control" value="0901234567">
                             </div>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="address">Địa chỉ liên hệ</label>
-                            <input type="text" id="address" class="form-control" value="1 Võ Văn Ngân, Phường Linh Chiểu, Thủ Đức">
+                            <input type="text" id="address" class="form-control"
+                                value="1 Võ Văn Ngân, Phường Linh Chiểu, Thủ Đức">
                         </div>
 
                         <h3 class="section-header" style="margin-top: 2.5rem;">Đổi mật khẩu</h3>
@@ -243,7 +257,8 @@
                             </div>
                             <div class="form-group">
                                 <label for="newPassword">Mật khẩu mới</label>
-                                <input type="password" id="newPassword" class="form-control" placeholder="Tạo mật khẩu mới">
+                                <input type="password" id="newPassword" class="form-control"
+                                    placeholder="Tạo mật khẩu mới">
                             </div>
                         </div>
 
@@ -253,10 +268,11 @@
                     </form>
                 </div>
             </div>
-            
+
         </main>
-        
+
     </div>
 
 </body>
+
 </html>
