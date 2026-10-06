@@ -1,107 +1,90 @@
-# BẢNG PHÂN BỔ TRÁCH NHIỆM & KHÓA HỢP ĐỒNG CODE: DEV B
+# 📋 PHÂN CÔNG NHIỆM VỤ: DEV B (FRONTEND LEAD & QA/TESTING SPECIALIST)
 
-* **Kỹ sư đảm nhiệm:** Dev B (Frontend/Fullstack & Feed/Integration Specialist)
-* **Phạm vi trách nhiệm:** Module Bảng tin chính thức (Staff đăng thông báo kèm PDF/Word/Excel/MP4), Diễn đàn sinh viên (Feed, PENDING_APPROVAL, Comment, Like), Xử lý Báo cáo vi phạm (Report), Storage Service (Cloudinary & Local), Tích hợp Node.js Video Webhook.
-* **Tài liệu tham chiếu:** [docs/brief.md](file:///d:/CauHinh_Java/workspace_sts/luyentap/doancuoiki_demo1/docs/brief.md) và [docs/team/engineering-rules.md](file:///d:/CauHinh_Java/workspace_sts/luyentap/doancuoiki_demo1/docs/team/engineering-rules.md)
-
----
-
-## 1. Quyền Sở Hữu Tuyệt Đối (Ownership Package & Files)
-
-> [!IMPORTANT]
-> **Quy tắc bất khả xâm phạm:** Dev B nắm toàn quyền phát triển và bảo trì các package sau. Dev A tuyệt đối không sửa đổi hoặc commit vào các package này mà không có sự đồng thuận.
-
-```text
-com.school.counseling
-  ├── common/storage/                   (IStorageService, CloudinaryStorageServiceImpl, LocalStorageServiceImpl)
-  ├── config/
-  │     ├── StorageConfig.java          (Cấu hình Cloudinary Bean & Local Storage)
-  │     └── WebMvcConfig.java           (Resource Handlers cho Local Uploads)
-  ├── module/
-  │     ├── feed/                       (Toàn bộ Controller, Service, DTO, Repository cho Post, Comment, Reaction, Moderation, Reports)
-  │     └── integration/                (NodejsWebhookController, WebhookSecurityService, VideoAttachmentService)
-  └── templates/
-        ├── layout/                     (main.html, header.html, footer.html, navbar.html)
-        ├── feed/                       (official-list.html, official-detail.html, forum.html, create-post.html)
-        ├── moderation/                 (pending-posts.html, reports-list.html)
-        └── error/                      (403.html, 404.html, 500.html)
-```
+* **Họ và tên:** Dev B
+* **Vị trí đảm nhận:** Frontend Lead & QA / Testing Specialist
+* **Phạm vi trách nhiệm:** Toàn bộ Giao diện người dùng (Thymeleaf UI/UX) & Hệ thống Kiểm thử Toàn diện (Unit Test, Integration Test, Security Test)
+* **Tài liệu quy chuẩn tham chiếu:** [engineering-rules.md](file:///d:/HK5/LapTrinhWeb/doancuoiki/HCMUTE-Support-Portal/docs/team/engineering-rules.md)
 
 ---
 
-## 2. Locked Interface Contract (Hợp Đồng Code Khóa Cứng Cho Dev B)
+## 🎯 1. TỔNG QUAN PHẠM VI CÔNG VIỆC
 
-Dev B bắt buộc phải triển khai hoặc cung cấp các Interface chuẩn sau để Dev A và toàn hệ thống sử dụng:
-
-### 2.1. `IStorageService` (Dịch vụ Lưu trữ Tệp Tin Đa Nền Tảng)
-```java
-package com.school.counseling.common.storage;
-
-import org.springframework.web.multipart.MultipartFile;
-
-public interface IStorageService {
-    StorageResult uploadFile(MultipartFile file, String targetFolder);
-    boolean deleteFile(String fileUrlOrPublicId);
-    String getPublicUrl(String fileIdentifier);
-
-    record StorageResult(
-        String originalFileName,
-        String publicUrl,
-        String fileType, // PDF, DOCX, XLSX, MP4, IMAGE
-        long fileSizeBytes,
-        boolean isSuccess,
-        String errorMessage
-    ) {}
-}
-```
-
-### 2.2. `IModerationService` (Dịch vụ Phê Duyệt Bài Viết & Báo Cáo Vi Phạm)
-```java
-package com.school.counseling.module.feed.service;
-
-import java.util.List;
-
-public interface IModerationService {
-    void approvePost(Long postId, Long reviewerUserId);
-    void rejectPost(Long postId, Long reviewerUserId, String reason);
-    void reportPost(Long postId, Long reporterUserId, String reason, String details);
-    void resolveReport(Long reportId, Long reviewerUserId, String resolutionAction); // KEEP_POST, HIDE_POST, LOCK_USER
-    long countPendingPostsByDepartment(Long departmentId);
-}
-```
-
-### 2.3. `INodejsVideoWebhookService` (Tiếp Nhận Video Tự Động Từ Microservice Node.js)
-```java
-package com.school.counseling.module.integration.service;
-
-public interface INodejsVideoWebhookService {
-    boolean verifyWebhookSignature(String signatureHeader, String requestBody);
-    void processVideoRenderedWebhook(VideoWebhookPayload payload);
-
-    record VideoWebhookPayload(
-        String signature,
-        Long postId,
-        String videoUrl,
-        String thumbnailUrl,
-        int durationSeconds,
-        long fileSizeBytes
-    ) {}
-}
-```
+Dev B chịu trách nhiệm xây dựng toàn bộ hệ thống giao diện người dùng (Thymeleaf Templates, Stylesheet CSS, Responsive Web Design, Client Javascript, Realtime STOMP WebSockets) đồng thời đóng vai trò Kỹ sư Đảm bảo Chất lượng (QA/QC), xây dựng bộ kiểm thử tự động toàn diện từ tầng Unit Test đến Integration Test và Security Test.
 
 ---
 
-## 3. Danh Mục Deliverables Của Dev B Theo Sprint
+## 🎨 2. GIAO DIỆN NGƯỜI DÙNG (FRONTEND & UI/UX ARCHITECTURE)
 
-* **Sprint 1:**
-  * Xây dựng layout chuẩn tối giản (`layout/main.html`, `navbar.html`, `footer.html`) bằng Bootstrap 5 nguyên bản, đảm bảo màu sắc trang nhã dịu mắt (#f8f9fa, #1e3a8a).
-  * Triển khai `IStorageService` (Dual mode: Cloudinary + Local) kèm kiểm tra Magic Bytes chống tấn công upload.
-  * Thiết kế các trang lỗi tập trung (`403.html`, `404.html`, `500.html`).
-* **Sprint 3:**
-  * Xây dựng Module Bảng tin chính thức (Staff đăng bài đính kèm PDF, Word, Excel, MP4).
-  * Diễn đàn sinh viên (Dòng thời gian, đăng bài ở trạng thái `PENDING_APPROVAL`, Like, Comment nhiều cấp).
-  * Màn hình Kiểm duyệt bài viết (`/moderation/posts`) và Trung tâm xử lý Báo cáo vi phạm (`/moderation/reports`).
-  * Endpoint Webhook `/api/v1/integration/video-webhook` bảo mật HMAC-SHA256 nhận Video từ Node.js.
-* **Sprint 5:**
-  * Đồng bộ và tối ưu UI/UX toàn hệ thống, tinh chỉnh CSS Bootstrap chuẩn.
-  * Phối hợp với Dev A kiểm thử tích hợp (E2E Testing).
+Dev B xây dựng toàn bộ hệ sinh thái giao diện theo chuẩn thẩm mỹ hiện đại của Trường Đại học Sư phạm Kỹ thuật TP.HCM (HCMUTE):
+
+### 2.1. Hệ Thống Layout & Component Tái Sử Dụng (Thymeleaf Dialect)
+- `templates/layout/main.html`: Master layout chứa khung cấu trúc chuẩn (HTML5, Meta SEO, Font Inter/Playfair).
+- `templates/fragments/navbar.html`: Thanh điều hướng thông minh (hiển thị trạng thái đăng nhập, avatar, menu phân quyền).
+- `templates/fragments/sidebar.html`: Thanh công cụ bên hông cho Cán bộ & Quản trị viên (quản lý Ticket, Duyệt bài, Thống kê).
+- `templates/fragments/footer.html`: Chân trang thông tin liên hệ các Khoa/Phòng ban và bản quyền HCMUTE.
+
+### 2.2. Chi Tiết Toàn Bộ 18 Trang Giao Diện (Templates)
+1. **Cổng Thông Tin Công Khai (Public Portal):**
+   - `index.html`: Trang chủ tích hợp banner giới thiệu, lối tắt đến các dịch vụ tư vấn, tin tức nóng và thống kê nhanh.
+   - `about.html`: Giới thiệu sứ mệnh hệ thống tư vấn học vụ và thông tin các Khoa/Phòng ban.
+   - `admission.html`: Cẩm nang hướng dẫn tuyển sinh, đề án và câu hỏi thường gặp.
+   - `research.html`: Hướng dẫn đồ án tốt nghiệp, đề tài nghiên cứu khoa học sinh viên.
+   - `explore.html`: Khám phá chi tiết các Khoa và bộ phận hỗ trợ trong trường.
+
+2. **Xác Thực & Quản Lý Hồ Sơ (Authentication & Profile):**
+   - `login.html`: Đăng nhập bằng MSSV/Email, ghi nhớ phiên đăng nhập, cảnh báo lỗi thẩm mỹ.
+   - `register.html`: Đăng ký tài khoản sinh viên kèm lựa chọn Khoa/Ngành.
+   - `profile.html`: Quản lý thông tin cá nhân, cập nhật số điện thoại, đổi mật khẩu và đổi ảnh đại diện.
+
+3. **Hệ Thống Tiếp Nhận & Xử Lý Phiếu Tư Vấn (Ticket Support Desk):**
+   - `ticket-list.html`: Danh sách phiếu tư vấn theo tab (Tất cả, Chờ xử lý, Đang xử lý, Đã giải quyết), có bộ lọc Khoa và mức độ ưu tiên.
+   - `ticket-detail.html`: Chi tiết phiếu tư vấn, dòng thời gian trao đổi (Message Timeline), khu vực tải tệp đính kèm, nút Đánh giá mức độ hài lòng (1-5 sao) và nút Chuyển khoa/Đóng phiếu.
+
+4. **Diễn Đàn Sinh Viên & Cộng Đồng Khoa (Community & Feed):**
+   - `feed.html`: Bảng tin sinh viên dạng thẻ bài viết (Card view), tích hợp thả tim (Like), đếm bình luận và nút báo cáo bài viết.
+   - `group.html`: Không gian diễn đàn riêng theo từng Khoa/Phòng ban.
+   - `create-post.html`: Soạn thảo bài viết mới với trình đính kèm hình ảnh trực quan.
+
+5. **Trợ Lý Ảo AI & Hỏi Đáp Thông Minh (AI Chatbot & FAQ):**
+   - `ai-chat.html`: Giao diện trò chuyện tương tác trực tuyến với Trợ lý ảo AI QAUTE, bong bóng tin nhắn mượt mà, danh sách câu hỏi FAQ gợi ý nhanh và nút bấm "Tạo Ticket ngay" khi AI không giải đáp được.
+
+6. **Bảng Điều Khiển Quản Trị & Thống Kê (Dashboard & Admin Desk):**
+   - `dashboard.html`: Biểu đồ tổng quan KPI, tiến độ SLA của từng Khoa, tỷ lệ hài lòng của sinh viên.
+   - `error.html`: Trang thông báo lỗi thân thiện (403 Forbidden, 404 Not Found, 500 Error).
+
+### 2.3. Client-Side Javascript & Realtime WebSocket
+- Tích hợp thư viện SockJS và STOMP.js để nhận tín hiệu thông báo realtime từ Server.
+- Hiệu ứng Badge chuông thông báo đỏ nhấp nháy khi có phản hồi ticket mới.
+- Kiểm tra tính hợp lệ dữ liệu biểu mẫu (Client-side validation) mượt mà trước khi submit.
+
+---
+
+## 🧪 3. KIỂM THỬ TOÀN DIỆN (FULL TESTING & QA SUITE)
+
+Dev B xây dựng toàn bộ bộ kiểm thử tự động (Test Automation Suite) cho hệ thống:
+
+### 3.1. Unit Testing (JUnit 5 & Mockito)
+- `AuthServiceTest`: Kiểm thử luồng đăng ký tài khoản hợp lệ, trùng username/email, kiểm thử đăng nhập sai mật khẩu, kiểm thử cơ chế OTP.
+- `TicketServiceTest`: Kiểm thử luồng tạo Ticket, chuyển trạng thái vòng đời, tính toán hạn SLA 24h/72h.
+- `FeedServiceTest`: Kiểm thử tạo bài viết, kiểm tra bộ lọc từ khóa cấm, tăng giảm lượt tương tác.
+- `AiRagServiceTest`: Kiểm thử tính điểm Cosine Similarity, kiểm thử điều kiện kích hoạt Fallback Ticket.
+
+### 3.2. Integration Testing (`@SpringBootTest`, `@AutoConfigureMockMvc`)
+- `AuthIntegrationTest`: Kiểm thử gọi API `/api/v1/auth/login` và `/api/v1/auth/register` với HTTP status và JSON response chuẩn `ApiResponse<T>`.
+- `TicketIntegrationTest`: Kiểm thử toàn bộ chu trình tạo ticket $\rightarrow$ gửi phản hồi $\rightarrow$ đóng ticket.
+- `DepartmentIsolationTest`: Kiểm thử bảo mật tầng dữ liệu (Data Isolation): Đảm bảo Cán bộ thuộc Khoa CNTT không thể truy cập API lấy dữ liệu của Phòng Đào tạo.
+
+### 3.3. Security & Access Control Testing
+- Kiểm thử các URL yêu cầu phân quyền (`/admin/**`, `/staff/**`, `@PreAuthorize`).
+- Đảm bảo người dùng chưa đăng nhập bị chuyển hướng về `/auth/login`.
+
+### 3.4. Tài Liệu Kịch Bản Kiểm Thử & Postman Collection
+- Xây dựng bộ kịch bản kiểm thử chi tiết (Test Cases Matrix) bao gồm Test Case ID, Mục tiêu, Dữ liệu đầu vào, Kết quả kỳ vọng và Kết quả thực tế.
+- Bộ sưu tập Postman Collection xuất file `.json` chứa đầy đủ các endpoint API kèm biến môi trường (`{{jwt_token}}`, `{{base_url}}`).
+
+---
+
+## 📦 4. SẢN PHẨM BÀN GIAO CỦA DEV B
+1. Toàn bộ file giao diện: `src/main/resources/templates/` (18 HTML templates + fragments).
+2. Toàn bộ mã nguồn kiểm thử: `src/test/java/com/school/counseling/` (Unit Test, Integration Test, Security Test).
+3. Đảm bảo chạy lệnh `mvn test` vượt qua 100% tất cả các test cases (`BUILD SUCCESS`).
