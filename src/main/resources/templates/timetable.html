@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}" th:with="headerStyle='background: rgba(0,0,0,0.85); position: absolute; top: 0; width: 100%; z-index: 1000;'">
+<head>
+    <title>Thời khóa biểu</title>
+    <th:block layout:fragment="head-css">
+        <style>
+            .page-header {
+                background-color: var(--crimson);
+                color: white;
+                padding: 8rem 5% 4rem;
+                text-align: center;
+            }
+
+            .page-header h1 {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+            }
+
+            .page-header p {
+                font-size: 1.2rem;
+                opacity: 0.9;
+            }
+
+            .timetable-container {
+                max-width: 1200px;
+                margin: -2rem auto 4rem;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                padding: 2rem;
+                position: relative;
+                z-index: 10;
+            }
+
+            .timetable-controls {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 2rem;
+                padding-bottom: 1rem;
+                border-bottom: 2px solid var(--bg-light);
+            }
+
+            .timetable-controls select, .timetable-controls button {
+                padding: 10px 15px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-family: var(--font-sans);
+                font-size: 1rem;
+            }
+
+            .timetable-controls button {
+                background-color: var(--bg-light);
+                cursor: pointer;
+                transition: background 0.3s;
+            }
+            
+            .timetable-controls button:hover {
+                background-color: #e0e0e0;
+            }
+
+            .timetable-controls .btn-current {
+                background-color: var(--crimson);
+                color: white;
+                border-color: var(--crimson);
+                font-weight: 600;
+            }
+
+            .timetable-controls .btn-current:hover {
+                background-color: var(--dark-crimson);
+            }
+
+            /* CSS Grid cho Thời khóa biểu */
+            .timetable-grid {
+                display: grid;
+                grid-template-columns: 80px repeat(7, 1fr);
+                gap: 10px;
+                background-color: #f9f9f9;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 15px;
+            }
+
+            .tt-header, .tt-time {
+                font-weight: 600;
+                color: var(--text-main);
+                text-align: center;
+                padding: 10px;
+                background: var(--bg-light);
+                border-radius: 4px;
+            }
+
+            .tt-header {
+                background: #e2e8f0;
+                color: #334155;
+                font-size: 0.95rem;
+            }
+
+            .tt-header span {
+                display: block;
+                font-size: 0.8rem;
+                font-weight: 400;
+                color: #64748b;
+            }
+
+            .tt-time {
+                font-size: 0.85rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-right: 2px solid #ddd;
+            }
+
+            .tt-cell {
+                background: white;
+                border: 1px dashed #ccc;
+                border-radius: 4px;
+                min-height: 80px;
+                padding: 8px;
+                transition: all 0.3s;
+            }
+
+            .tt-cell:hover {
+                background: #f1f5f9;
+            }
+
+            .tt-class {
+                background-color: #e0f2fe;
+                border-left: 4px solid #0284c7;
+                padding: 10px;
+                border-radius: 4px;
+                font-size: 0.85rem;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                cursor: pointer;
+                transition: transform 0.2s, box-shadow 0.2s;
+                height: 100%;
+            }
+
+            .tt-class:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+
+            .tt-class.practical {
+                background-color: #fef08a;
+                border-left-color: #ca8a04;
+            }
+
+            .tt-class strong {
+                display: block;
+                color: var(--text-main);
+                margin-bottom: 4px;
+                font-size: 0.9rem;
+            }
+
+            .tt-class span {
+                display: block;
+                color: #555;
+                margin-bottom: 2px;
+            }
+
+            .tt-class i {
+                margin-right: 4px;
+                color: var(--crimson);
+            }
+
+            @media (max-width: 992px) {
+                .timetable-grid {
+                    grid-template-columns: 60px repeat(7, 120px);
+                    overflow-x: auto;
+                }
+                .timetable-grid-wrapper {
+                    overflow-x: auto;
+                    padding-bottom: 10px;
+                }
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="page-header">
+            <h1>Thời khóa biểu</h1>
+            <p>Học kỳ 1 - Năm học 2026-2027</p>
+        </div>
+
+        <section class="timetable-container">
+            <div class="timetable-controls">
+                <div>
+                    <button><i class='bx bx-chevron-left'></i> Tuần trước</button>
+                    <button class="btn-current">Tuần hiện tại (14/09 - 20/09)</button>
+                    <button>Tuần sau <i class='bx bx-chevron-right'></i></button>
+                </div>
+                <div>
+                    <select>
+                        <option>Học kỳ 1 (2026-2027)</option>
+                        <option>Học kỳ 2 (2025-2026)</option>
+                        <option>Học kỳ 1 (2025-2026)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="timetable-grid-wrapper">
+                <div class="timetable-grid">
+                    <!-- Tiêu đề cột -->
+                    <div class="tt-header" style="background: transparent; border: none;">Giờ học</div>
+                    <div class="tt-header">Thứ 2 <span>14/09</span></div>
+                    <div class="tt-header">Thứ 3 <span>15/09</span></div>
+                    <div class="tt-header">Thứ 4 <span>16/09</span></div>
+                    <div class="tt-header">Thứ 5 <span>17/09</span></div>
+                    <div class="tt-header">Thứ 6 <span>18/09</span></div>
+                    <div class="tt-header">Thứ 7 <span>19/09</span></div>
+                    <div class="tt-header">Chủ nhật <span>20/09</span></div>
+
+                    <!-- Sáng (Tiết 1-3) -->
+                    <div class="tt-time">Sáng<br>(07:00 - 09:30)</div>
+                    <div class="tt-cell">
+                        <div class="tt-class">
+                            <strong>Lập trình Web</strong>
+                            <span><i class='bx bx-time'></i> 07:00 - 09:30</span>
+                            <span><i class='bx bx-map'></i> Phòng A1-203</span>
+                            <span><i class='bx bx-user'></i> Nguyễn Văn A</span>
+                        </div>
+                    </div>
+                    <div class="tt-cell"></div>
+                    <div class="tt-cell">
+                        <div class="tt-class practical">
+                            <strong>Thực hành CSDL</strong>
+                            <span><i class='bx bx-time'></i> 07:00 - 09:30</span>
+                            <span><i class='bx bx-map'></i> Phòng Máy A3</span>
+                            <span><i class='bx bx-user'></i> Trần Thị B</span>
+                        </div>
+                    </div>
+                    <div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div>
+
+                    <!-- Sáng (Tiết 4-6) -->
+                    <div class="tt-time">Sáng<br>(09:40 - 12:10)</div>
+                    <div class="tt-cell"></div>
+                    <div class="tt-cell">
+                        <div class="tt-class">
+                            <strong>Mạng máy tính</strong>
+                            <span><i class='bx bx-time'></i> 09:40 - 12:10</span>
+                            <span><i class='bx bx-map'></i> Phòng E-301</span>
+                            <span><i class='bx bx-user'></i> Lê Văn C</span>
+                        </div>
+                    </div>
+                    <div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div>
+
+                    <!-- Chiều (Tiết 7-9) -->
+                    <div class="tt-time">Chiều<br>(12:30 - 15:00)</div>
+                    <div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div>
+                    <div class="tt-cell">
+                        <div class="tt-class">
+                            <strong>Trí tuệ nhân tạo</strong>
+                            <span><i class='bx bx-time'></i> 12:30 - 15:00</span>
+                            <span><i class='bx bx-map'></i> Phòng A1-405</span>
+                            <span><i class='bx bx-user'></i> Phạm Thị D</span>
+                        </div>
+                    </div>
+                    <div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div>
+
+                    <!-- Chiều (Tiết 10-12) -->
+                    <div class="tt-time">Chiều<br>(15:10 - 17:40)</div>
+                    <div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div>
+                    <div class="tt-cell">
+                        <div class="tt-class practical">
+                            <strong>Thực hành Mạng</strong>
+                            <span><i class='bx bx-time'></i> 15:10 - 17:40</span>
+                            <span><i class='bx bx-map'></i> Phòng Máy A4</span>
+                            <span><i class='bx bx-user'></i> Lê Văn C</span>
+                        </div>
+                    </div>
+                    <div class="tt-cell"></div><div class="tt-cell"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
