@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <header class="header" th:fragment="header(headerStyle)" th:style="${headerStyle != null ? headerStyle : ''}">
+        <div class="logo">
+            <a th:href="@{/}"><img src="/images/logo.png" alt="HCMUTE Logo"></a>
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a th:href="@{/}">Trang chủ</a></li>
+                <li><a th:href="@{/admission}">Tuyển sinh</a></li>
+                <li><a th:href="@{/about}">Đào tạo & Giới thiệu</a></li>
+                <li><a th:href="@{/timetable}">Thời khóa biểu</a></li>
+                <li><a th:href="@{/explore}">Khám phá</a></li>
+                <li><a th:href="@{/login}" class="no-underline" style="color: #ffffff; border: 2px solid #ffffff; padding: 8px 20px; border-radius: 3px; font-weight: bold;">Đăng nhập</a></li>
+            </ul>
+        </nav>
+    </header>
+</body>
+</html>
