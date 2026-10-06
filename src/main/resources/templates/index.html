@@ -1,82 +1,79 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}" th:with="headerStyle='background: linear-gradient(rgba(0,0,0,0.7), transparent); position: absolute;'">
 <head>
-    <th:block th:replace="~{fragments/head :: publicHead('Trang chủ')}"></th:block>
+    <title>Trang chủ</title>
 </head>
 <body>
+    <div layout:fragment="content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <!-- Slider Images -->
+            <div class="hero-slide active" style="background-image: url('/images/hero1.jpg');"></div>
+            <div class="hero-slide" style="background-image: url('/images/hero2.jpg');"></div>
 
-    <!-- Header / Navbar Fragment -->
-    <header th:replace="~{fragments/navbar :: navbar('home')}"></header>
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <h2>Welcome to HCMUTE</h2>
+                <p>"Truth, Excellence, and Innovation"</p>
+                <a href="#" class="btn-primary">Khám phá chương trình</a>
+            </div>
+        </section>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <!-- Slider Images -->
-        <div class="hero-slide active" style="background-image: url('/images/hero1.jpg');"></div>
-        <div class="hero-slide" style="background-image: url('/images/hero2.jpg');"></div>
+        <!-- News & Events Section -->
+        <section class="news-section">
+            <h3 class="section-title">Tin tức mới nhất</h3>
+            <div class="news-grid">
+                <!-- News Item 1 -->
+                <a th:href="@{/news/1}" style="text-decoration: none; color: inherit; display: block;">
+                    <article class="news-card">
+                        <div class="news-image" style="background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
+                        <div class="news-content">
+                            <span class="news-date">September 26, 2026</span>
+                            <h4 class="news-title">Trung tâm nghiên cứu AI mới mở tại trường</h4>
+                            <p class="news-excerpt">Trường khánh thành cơ sở hiện đại dành riêng cho việc thúc đẩy nghiên cứu trí tuệ nhân tạo và học máy.</p>
+                        </div>
+                    </article>
+                </a>
 
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <h2>Welcome to HCMUTE</h2>
-            <p>"Truth, Excellence, and Innovation"</p>
-            <a href="#" class="btn-primary">Explore Programs</a>
-        </div>
-    </section>
+                <!-- News Item 2 -->
+                <a th:href="@{/news/2}" style="text-decoration: none; color: inherit; display: block;">
+                    <article class="news-card">
+                        <div class="news-image" style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
+                        <div class="news-content">
+                            <span class="news-date">September 20, 2026</span>
+                            <h4 class="news-title">Hội nghị Lãnh đạo Toàn cầu 2026</h4>
+                            <p class="news-excerpt">Tham gia hội nghị ba ngày quy tụ các nhà lãnh đạo, học giả và nhà đổi mới trên thế giới để thảo luận về các thách thức toàn cầu trong tương lai.</p>
+                        </div>
+                    </article>
+                </a>
 
-    <!-- News & Events Section -->
-    <section class="news-section">
-        <h3 class="section-title">Latest Updates</h3>
-        <div class="news-grid">
-            <!-- News Item 1 -->
-            <a th:href="@{/news/1}" style="text-decoration: none; color: inherit; display: block;">
-                <article class="news-card">
-                    <div class="news-image" style="background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
-                    <div class="news-content">
-                        <span class="news-date">September 26, 2026</span>
-                        <h4 class="news-title">New AI Research Center Opens on Campus</h4>
-                        <p class="news-excerpt">The university inaugurates a state-of-the-art facility dedicated to advancing artificial intelligence and machine learning research.</p>
-                    </div>
-                </article>
-            </a>
+                <!-- News Item 3 -->
+                <a th:href="@{/news/3}" style="text-decoration: none; color: inherit; display: block;">
+                    <article class="news-card">
+                        <div class="news-image" style="background-image: url('https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
+                        <div class="news-content">
+                            <span class="news-date">September 15, 2026</span>
+                            <h4 class="news-title">Lễ Khai giảng Học kỳ Mùa thu</h4>
+                            <p class="news-excerpt">Chào đón hàng ngàn sinh viên mới và cũ trở lại khuôn viên trường lịch sử để bắt đầu một năm học mới.</p>
+                        </div>
+                    </article>
+                </a>
+            </div>
+        </section>
+    </div>
 
-            <!-- News Item 2 -->
-            <a th:href="@{/news/2}" style="text-decoration: none; color: inherit; display: block;">
-                <article class="news-card">
-                    <div class="news-image" style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
-                    <div class="news-content">
-                        <span class="news-date">September 20, 2026</span>
-                        <h4 class="news-title">Global Leaders Summit 2026</h4>
-                        <p class="news-excerpt">Join us for a three-day summit bringing together world leaders, academics, and innovators to discuss future global challenges.</p>
-                    </div>
-                </article>
-            </a>
+    <!-- Script goes into body-js fragment -->
+    <th:block layout:fragment="body-js">
+        <script>
+            const slides = document.querySelectorAll('.hero-slide');
+            let currentSlide = 0;
 
-            <!-- News Item 3 -->
-            <a th:href="@{/news/3}" style="text-decoration: none; color: inherit; display: block;">
-                <article class="news-card">
-                    <div class="news-image" style="background-image: url('https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
-                    <div class="news-content">
-                        <span class="news-date">September 15, 2026</span>
-                        <h4 class="news-title">Fall Semester Commencement</h4>
-                        <p class="news-excerpt">Welcoming thousands of new and returning students to the historic campus for the beginning of a new academic year.</p>
-                    </div>
-                </article>
-            </a>
-        </div>
-    </section>
-
-    <!-- Footer & AI Widget Fragment -->
-    <th:block th:replace="~{fragments/footer :: footer}"></th:block>
-
-    <!-- Slider Script -->
-    <script>
-        const slides = document.querySelectorAll('.hero-slide');
-        let currentSlide = 0;
-
-        setInterval(() => {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
-        }, 4000); // Đổi ảnh mỗi 4 giây
-    </script>
+            setInterval(() => {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }, 4000); // Đổi ảnh mỗi 4 giây
+        </script>
+    </th:block>
 </body>
 </html>
