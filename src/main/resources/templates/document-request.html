@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}" th:with="headerStyle='background: rgba(0,0,0,0.85); position: absolute; top: 0; width: 100%; z-index: 1000;'">
+<head>
+    <title>Yêu cầu giấy tờ</title>
+    <th:block layout:fragment="head-css">
+        <style>
+            .page-header {
+                background-color: var(--crimson);
+                color: white;
+                padding: 8rem 5% 4rem;
+                text-align: center;
+            }
+
+            .page-header h1 {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+            }
+
+            .page-header p {
+                font-size: 1.2rem;
+                opacity: 0.9;
+            }
+
+            .docs-container {
+                max-width: 1200px;
+                margin: -2rem auto 4rem;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                padding: 2rem;
+                position: relative;
+                z-index: 10;
+                display: grid;
+                grid-template-columns: 2fr 1fr;
+                gap: 2rem;
+            }
+
+            @media (max-width: 992px) {
+                .docs-container {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .form-section {
+                padding: 1rem;
+            }
+
+            .form-section h3 {
+                color: var(--text-main);
+                font-size: 1.5rem;
+                margin-bottom: 1.5rem;
+                padding-bottom: 0.5rem;
+                border-bottom: 2px solid #eee;
+            }
+
+            .form-group {
+                margin-bottom: 1.5rem;
+            }
+
+            .form-group label {
+                display: block;
+                font-weight: 600;
+                color: #334155;
+                margin-bottom: 0.5rem;
+            }
+
+            .form-group input, 
+            .form-group select, 
+            .form-group textarea {
+                width: 100%;
+                padding: 0.8rem 1rem;
+                border: 1px solid #cbd5e1;
+                border-radius: 6px;
+                font-family: var(--font-sans);
+                font-size: 1rem;
+                transition: border-color 0.3s;
+            }
+
+            .form-group input:focus, 
+            .form-group select:focus, 
+            .form-group textarea:focus {
+                outline: none;
+                border-color: var(--crimson);
+            }
+
+            .form-row {
+                display: flex;
+                gap: 1.5rem;
+            }
+            .form-row .form-group {
+                flex: 1;
+            }
+
+            .btn-submit {
+                background-color: var(--crimson);
+                color: white;
+                border: none;
+                padding: 1rem 2rem;
+                font-size: 1.1rem;
+                font-weight: 600;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: background 0.3s;
+            }
+            .btn-submit:hover {
+                background-color: var(--dark-crimson);
+            }
+
+            .history-section {
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                padding: 1.5rem;
+            }
+
+            .history-section h3 {
+                color: var(--text-main);
+                font-size: 1.3rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .history-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .history-item {
+                background: white;
+                border: 1px solid #e2e8f0;
+                padding: 1rem;
+                border-radius: 6px;
+                margin-bottom: 1rem;
+            }
+
+            .history-title {
+                font-weight: 600;
+                color: #334155;
+                margin-bottom: 0.5rem;
+            }
+
+            .history-date {
+                font-size: 0.85rem;
+                color: #64748b;
+                margin-bottom: 0.5rem;
+            }
+
+            .status-badge {
+                display: inline-block;
+                padding: 4px 10px;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                font-weight: 600;
+            }
+
+            .status-pending {
+                background-color: #fef08a;
+                color: #854d0e;
+            }
+
+            .status-approved {
+                background-color: #dcfce7;
+                color: #166534;
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="page-header">
+            <h1>Yêu cầu cấp giấy tờ</h1>
+            <p>Dịch vụ hành chính một cửa dành cho sinh viên</p>
+        </div>
+
+        <section class="docs-container">
+            <!-- Form Yêu Cầu -->
+            <div class="form-section">
+                <h3><i class='bx bx-file'></i> Tạo yêu cầu mới</h3>
+                <form action="#" method="POST">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Loại giấy tờ cần cấp</label>
+                            <select name="docType" required>
+                                <option value="">-- Chọn loại giấy tờ --</option>
+                                <option value="bang_diem">Bảng điểm học tập (Có dấu mộc)</option>
+                                <option value="xac_nhan_sv">Giấy xác nhận sinh viên</option>
+                                <option value="vay_von">Giấy xác nhận vay vốn ngân hàng</option>
+                                <option value="tam_hoan">Giấy giới thiệu tạm hoãn nghĩa vụ quân sự</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Số lượng bản sao</label>
+                            <input type="number" name="quantity" min="1" max="10" value="1" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Mục đích sử dụng</label>
+                        <input type="text" name="purpose" placeholder="Ví dụ: Nộp hồ sơ xin việc, vay vốn ngân hàng chính sách..." required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hình thức nhận kết quả</label>
+                        <select name="receiveMethod">
+                            <option value="direct">Nhận trực tiếp tại Phòng Công tác Sinh viên (Phòng A1-203)</option>
+                            <option value="post">Gửi qua đường bưu điện (Có thu phí ship)</option>
+                            <option value="email">Nhận bản Scan qua Email cá nhân</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ghi chú bổ sung (Tùy chọn)</label>
+                        <textarea name="notes" rows="4" placeholder="Nhập bất kỳ yêu cầu cụ thể nào khác..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        <i class='bx bx-send'></i> Gửi Yêu Cầu
+                    </button>
+                </form>
+            </div>
+
+            <!-- Lịch sử Yêu Cầu -->
+            <div class="history-section">
+                <h3><i class='bx bx-history'></i> Lịch sử yêu cầu</h3>
+                <ul class="history-list">
+                    <li class="history-item">
+                        <div class="history-title">Giấy xác nhận sinh viên</div>
+                        <div class="history-date"><i class='bx bx-calendar'></i> 05/10/2026 - 10:30 AM</div>
+                        <div class="status-badge status-pending">Đang xử lý</div>
+                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 5px;">Hình thức: Nhận bản Scan</div>
+                    </li>
+                    <li class="history-item">
+                        <div class="history-title">Bảng điểm học tập</div>
+                        <div class="history-date"><i class='bx bx-calendar'></i> 12/08/2026 - 14:15 PM</div>
+                        <div class="status-badge status-approved">Đã hoàn thành</div>
+                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 5px;">Hình thức: Nhận trực tiếp</div>
+                    </li>
+                </ul>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
