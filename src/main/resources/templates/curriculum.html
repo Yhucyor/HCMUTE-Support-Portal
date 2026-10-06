@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}" th:with="headerStyle='background: rgba(0,0,0,0.85); position: absolute; top: 0; width: 100%; z-index: 1000;'">
+<head>
+    <title>Chương trình đào tạo</title>
+    <th:block layout:fragment="head-css">
+        <style>
+            .page-header {
+                background-color: var(--crimson);
+                color: white;
+                padding: 8rem 5% 4rem;
+                text-align: center;
+            }
+
+            .page-header h1 {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+            }
+
+            .page-header p {
+                font-size: 1.2rem;
+                opacity: 0.9;
+            }
+
+            .curriculum-container {
+                max-width: 1000px;
+                margin: -2rem auto 4rem;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                padding: 2rem 3rem;
+                position: relative;
+                z-index: 10;
+            }
+
+            .curriculum-info {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 2rem;
+                margin-bottom: 2rem;
+                padding-bottom: 1.5rem;
+                border-bottom: 1px solid #eee;
+            }
+
+            .info-group {
+                flex: 1;
+                min-width: 200px;
+            }
+
+            .info-group label {
+                display: block;
+                color: #64748b;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 0.3rem;
+            }
+
+            .info-group span {
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: var(--text-main);
+            }
+
+            .semester-block {
+                margin-bottom: 2.5rem;
+            }
+
+            .semester-header {
+                background: #f8fafc;
+                padding: 1rem 1.5rem;
+                border-left: 4px solid var(--crimson);
+                border-radius: 4px;
+                margin-bottom: 1rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .semester-header h3 {
+                margin: 0;
+                color: #334155;
+                font-size: 1.2rem;
+            }
+
+            .semester-header .credits-count {
+                background: var(--bg-light);
+                color: #475569;
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-weight: 600;
+                font-size: 0.9rem;
+            }
+
+            .course-list {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .course-list th, .course-list td {
+                padding: 1rem;
+                text-align: left;
+                border-bottom: 1px solid #f1f5f9;
+            }
+
+            .course-list th {
+                color: #64748b;
+                font-size: 0.9rem;
+                font-weight: 500;
+                text-transform: uppercase;
+            }
+
+            .course-list td.course-name {
+                font-weight: 500;
+                color: var(--text-main);
+            }
+
+            .course-list tr:hover td {
+                background-color: #f8fafc;
+            }
+
+            .status-badge {
+                display: inline-block;
+                padding: 4px 10px;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                font-weight: 600;
+            }
+
+            .status-done {
+                background-color: #dcfce7;
+                color: #166534;
+            }
+
+            .status-progress {
+                background-color: #e0f2fe;
+                color: #075985;
+            }
+
+            .status-pending {
+                background-color: #f1f5f9;
+                color: #64748b;
+            }
+
+            @media (max-width: 768px) {
+                .curriculum-container {
+                    padding: 1.5rem;
+                }
+                .course-list th:nth-child(3), 
+                .course-list td:nth-child(3) {
+                    display: none;
+                }
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="page-header">
+            <h1>Chương trình đào tạo</h1>
+            <p>Lộ trình học tập chuẩn mực</p>
+        </div>
+
+        <section class="curriculum-container">
+            <div class="curriculum-info">
+                <div class="info-group">
+                    <label>Ngành đào tạo</label>
+                    <span>Công nghệ thông tin</span>
+                </div>
+                <div class="info-group">
+                    <label>Chuyên ngành</label>
+                    <span>Công nghệ phần mềm</span>
+                </div>
+                <div class="info-group">
+                    <label>Khóa học</label>
+                    <span>2024 - 2028</span>
+                </div>
+                <div class="info-group">
+                    <label>Tổng tín chỉ</label>
+                    <span>135</span>
+                </div>
+            </div>
+
+            <!-- Học kỳ 1 -->
+            <div class="semester-block">
+                <div class="semester-header">
+                    <h3>Học kỳ 1</h3>
+                    <span class="credits-count">14 Tín chỉ</span>
+                </div>
+                <table class="course-list">
+                    <thead>
+                        <tr>
+                            <th width="15%">Mã MH</th>
+                            <th width="45%">Tên môn học</th>
+                            <th width="15%">Loại</th>
+                            <th width="10%">TC</th>
+                            <th width="15%">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>MA1101</td>
+                            <td class="course-name">Toán cao cấp A1</td>
+                            <td>Bắt buộc</td>
+                            <td>3</td>
+                            <td><span class="status-badge status-done">Đã học</span></td>
+                        </tr>
+                        <tr>
+                            <td>IT1234</td>
+                            <td class="course-name">Nhập môn lập trình</td>
+                            <td>Bắt buộc</td>
+                            <td>3</td>
+                            <td><span class="status-badge status-done">Đã học</span></td>
+                        </tr>
+                        <tr>
+                            <td>LL1001</td>
+                            <td class="course-name">Triết học Mác - Lênin</td>
+                            <td>Bắt buộc</td>
+                            <td>3</td>
+                            <td><span class="status-badge status-done">Đã học</span></td>
+                        </tr>
+                        <tr>
+                            <td>EN1001</td>
+                            <td class="course-name">Tiếng Anh 1</td>
+                            <td>Bắt buộc</td>
+                            <td>3</td>
+                            <td><span class="status-badge status-done">Đã học</span></td>
+                        </tr>
+                        <tr>
+                            <td>PE1001</td>
+                            <td class="course-name">Giáo dục thể chất 1</td>
+                            <td>Bắt buộc</td>
+                            <td>2</td>
+                            <td><span class="status-badge status-done">Đã học</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Học kỳ 2 -->
+            <div class="semester-block">
+                <div class="semester-header">
+                    <h3>Học kỳ 2</h3>
+                    <span class="credits-count">16 Tín chỉ</span>
+                </div>
+                <table class="course-list">
+                    <thead>
+                        <tr>
+                            <th width="15%">Mã MH</th>
+                            <th width="45%">Tên môn học</th>
+                            <th width="15%">Loại</th>
+                            <th width="10%">TC</th>
+                            <th width="15%">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>MA1102</td>
+                            <td class="course-name">Toán cao cấp A2</td>
+                            <td>Bắt buộc</td>
+                            <td>3</td>
+                            <td><span class="status-badge status-done">Đã học</span></td>
+                        </tr>
+                        <tr>
+                            <td>IT2010</td>
+                            <td class="course-name">Kỹ thuật lập trình</td>
+                            <td>Bắt buộc</td>
+                            <td>4</td>
+                            <td><span class="status-badge status-done">Đã học</span></td>
+                        </tr>
+                        <tr>
+                            <td>PH1101</td>
+                            <td class="course-name">Vật lý đại cương 1</td>
+                            <td>Bắt buộc</td>
+                            <td>3</td>
+                            <td><span class="status-badge status-progress">Đang học</span></td>
+                        </tr>
+                        <tr>
+                            <td>EN1002</td>
+                            <td class="course-name">Tiếng Anh 2</td>
+                            <td>Bắt buộc</td>
+                            <td>3</td>
+                            <td><span class="status-badge status-progress">Đang học</span></td>
+                        </tr>
+                        <tr>
+                            <td>LL1002</td>
+                            <td class="course-name">Kinh tế chính trị Mác - Lênin</td>
+                            <td>Bắt buộc</td>
+                            <td>3</td>
+                            <td><span class="status-badge status-progress">Đang học</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Học kỳ 3 -->
+            <div class="semester-block">
+                <div class="semester-header">
+                    <h3>Học kỳ 3</h3>
+                    <span class="credits-count">17 Tín chỉ</span>
+                </div>
+                <table class="course-list">
+                    <thead>
+                        <tr>
+                            <th width="15%">Mã MH</th>
+                            <th width="45%">Tên môn học</th>
+                            <th width="15%">Loại</th>
+                            <th width="10%">TC</th>
+                            <th width="15%">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>IT3010</td>
+                            <td class="course-name">Cấu trúc dữ liệu và giải thuật</td>
+                            <td>Bắt buộc</td>
+                            <td>4</td>
+                            <td><span class="status-badge status-pending">Chưa học</span></td>
+                        </tr>
+                        <tr>
+                            <td>IT5678</td>
+                            <td class="course-name">Cơ sở dữ liệu</td>
+                            <td>Bắt buộc</td>
+                            <td>4</td>
+                            <td><span class="status-badge status-pending">Chưa học</span></td>
+                        </tr>
+                        <tr>
+                            <td>IT2020</td>
+                            <td class="course-name">Kiến trúc máy tính</td>
+                            <td>Bắt buộc</td>
+                            <td>3</td>
+                            <td><span class="status-badge status-pending">Chưa học</span></td>
+                        </tr>
+                        <tr>
+                            <td>LL1003</td>
+                            <td class="course-name">Chủ nghĩa xã hội khoa học</td>
+                            <td>Bắt buộc</td>
+                            <td>2</td>
+                            <td><span class="status-badge status-pending">Chưa học</span></td>
+                        </tr>
+                        <tr>
+                            <td>IT9090</td>
+                            <td class="course-name">Kỹ năng mềm (Tự chọn)</td>
+                            <td>Tự chọn</td>
+                            <td>4</td>
+                            <td><span class="status-badge status-pending">Chưa học</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+    </div>
+</body>
+</html>
