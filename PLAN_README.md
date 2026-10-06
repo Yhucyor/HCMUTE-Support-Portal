@@ -7,32 +7,32 @@ Tài liệu này mô tả kế hoạch phát triển chi tiết cho dự án HCM
 Dự án áp dụng mô hình Git Flow cơ bản với 3 loại nhánh chính:
 
 1.  **`main`**: Nhánh Production. Code ở đây luôn phải ở trạng thái ổn định và sẵn sàng chạy (deploy). **KHÔNG** code trực tiếp trên nhánh này.
-2.  **`dev`**: Nhánh Development. Dùng để tích hợp các tính năng mới trước khi đưa lên `main`.
-3.  **`feature/<tên-tính-năng>`**: Nhánh tính năng. Được tạo ra từ nhánh `dev`. Sau khi hoàn thành, sẽ được merge ngược lại vào `dev`.
+2.  **`develop`**: Nhánh Development. Dùng để tích hợp các tính năng mới trước khi đưa lên `main`.
+3.  **`feature/<tên-tính-năng>`**: Nhánh tính năng. Được tạo ra từ nhánh `develop`. Sau khi hoàn thành, sẽ được merge ngược lại vào `develop`.
 
 ### Chu trình làm việc chuẩn cho mỗi tính năng:
 ```bash
-# 1. Đảm bảo đang ở nhánh dev và cập nhật mới nhất
-git checkout dev
-git pull origin dev
+# 1. Đảm bảo đang ở nhánh develop và cập nhật mới nhất
+git checkout develop
+git pull origin develop
 
-# 2. Tạo nhánh feature mới từ dev
+# 2. Tạo nhánh feature mới từ develop
 git checkout -b feature/tên-tính-năng
 
 # 3. Code, commit trên nhánh feature
 git add .
 git commit -m "feat: mô tả công việc vừa làm"
 
-# 4. Khi hoàn thành, merge vào dev
-git checkout dev
+# 4. Khi hoàn thành, merge vào develop
+git checkout develop
 git merge feature/tên-tính-năng
 git branch -d feature/tên-tính-năng # (Tùy chọn) Xóa nhánh feature sau khi merge xong
 
 # 5. Đẩy code lên server
-git push origin dev
+git push origin develop
 ```
 
-*Lưu ý: Sau khi hoàn thành trọn vẹn một **Giai đoạn (Phase)** trên nhánh `dev` và test kỹ lưỡng, mới tiến hành merge `dev` vào `main`.*
+*Lưu ý: Sau khi hoàn thành trọn vẹn một **Giai đoạn (Phase)** trên nhánh `develop` và test kỹ lưỡng, mới tiến hành merge `develop` vào `main`.*
 
 ---
 
@@ -48,8 +48,8 @@ git push origin dev
     *   Cập nhật các trang hiện tại (`index.html`, `login.html`, `dashboard.html`...) sử dụng layout mới.
     *   Tạo trang cài đặt (`settings.html`).
     *   Tạo trang lỗi (`error-404.html`, `error-500.html`).
-*   **Merge:** `feature/layout-standardization` ➔ `dev`
-*   **Release:** Merge `dev` ➔ `main` (Release v1.1)
+*   **Merge:** `feature/layout-standardization` ➔ `develop`
+*   **Release:** Merge `develop` ➔ `main` (Release v1.1)
 
 ### Giai đoạn 2: Phát triển Core Student Features (Học tập)
 **Mục tiêu:** Cung cấp các công cụ cốt lõi sinh viên cần xem hàng ngày.
@@ -59,8 +59,8 @@ git push origin dev
     *   Tạo `timetable.html`: Giao diện thời khóa biểu, lịch thi.
     *   Tạo `grades.html`: Giao diện bảng điểm, biểu đồ thống kê GPA tích lũy.
     *   Tạo `curriculum.html`: Chương trình đào tạo chuẩn của sinh viên.
-*   **Merge:** `feature/academic-pages` ➔ `dev`
-*   **Release:** Merge `dev` ➔ `main` (Release v1.2)
+*   **Merge:** `feature/academic-pages` ➔ `develop`
+*   **Release:** Merge `develop` ➔ `main` (Release v1.2)
 
 ### Giai đoạn 3: Phát triển nhóm Tài chính & Dịch vụ (Services)
 **Mục tiêu:** Hỗ trợ sinh viên thanh toán học phí và yêu cầu giấy tờ hành chính.
@@ -70,8 +70,8 @@ git push origin dev
     *   Tạo `tuition.html`: Giao diện theo dõi học phí, công nợ, lịch sử giao dịch.
     *   Tạo `document-request.html`: Form xin cấp giấy tờ (bảng điểm, giấy xác nhận sinh viên).
     *   Tạo `scholarships-dormitory.html`: Thông tin nội trú và học bổng.
-*   **Merge:** `feature/financial-services` ➔ `dev`
-*   **Release:** Merge `dev` ➔ `main` (Release v1.3)
+*   **Merge:** `feature/financial-services` ➔ `develop`
+*   **Release:** Merge `develop` ➔ `main` (Release v1.3)
 
 ### Giai đoạn 4: Hoàn thiện dữ liệu (Mock data) & Tương tác
 **Mục tiêu:** Làm sống động UI bằng dữ liệu từ Backend, xử lý các form submit.
@@ -81,8 +81,8 @@ git push origin dev
     *   Đổ dữ liệu từ Controller xuống các trang (Thymeleaf Model).
     *   Xử lý logic validation cho các form.
     *   Xử lý tương tác chuyển trang, thông báo toast (success/error).
-*   **Merge:** `feature/dynamic-data-binding` ➔ `dev`
-*   **Release:** Merge `dev` ➔ `main` (Release v2.0 - Hoàn thiện UI/UX)
+*   **Merge:** `feature/dynamic-data-binding` ➔ `develop`
+*   **Release:** Merge `develop` ➔ `main` (Release v2.0 - Hoàn thiện UI/UX)
 
 ---
 
@@ -93,9 +93,9 @@ Khởi tạo các nhánh cần thiết nếu repo của bạn chưa có:
 # Đảm bảo bạn đang ở nhánh main (hoặc master)
 git checkout main
 
-# Tạo nhánh dev từ main
-git checkout -b dev
-git push -u origin dev
+# Tạo nhánh develop từ main
+git checkout -b develop
+git push -u origin develop
 
 # Bắt đầu Giai đoạn 1
 git checkout -b feature/layout-standardization
