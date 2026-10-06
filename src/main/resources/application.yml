@@ -1,0 +1,111 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 60m
+      cookie:
+        name: JSESSIONID
+        http-only: true
+        same-site: lax
+        secure: false # Set true khi chạy HTTPS
+
+spring:
+  config:
+    # Tự động đọc file .env tại thư mục gốc project khi khởi động
+    import: optional:file:.env[.properties]
+  application:
+    name: qaute-portal
+
+  # Cấu hình Multipart Upload (Hỗ trợ file văn bản & Video tới 100MB)
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 105MB
+      file-size-threshold: 2MB
+
+  # Cấu hình Database (Hỗ trợ MySQL mặc định và profile SQL Server)
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/qaute_portal?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&characterEncoding=UTF-8}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:your_password}
+    driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
+    # ── HikariCP: Cấu hình Connection Pool tối ưu cho tải 1.000 users ──
+    hikari:
+      pool-name: QauteHikariPool
+      maximum-pool-size: 30          # Điểm tối ưu cho máy chủ 8 CPU cores
+      minimum-idle: 15               # Giữ sẵn 15 connections ấm
+      idle-timeout: 300000           # 5 phút: giải phóng connection nhàn rỗi về pool
+      max-lifetime: 1800000          # 30 phút: tái tạo connection
+      connection-timeout: 20000      # 20 giây: tối đa chờ connection
+      connection-test-query: SELECT 1
+
+  jpa:
+    # ── BẮT BUỘC: Tắt Open-In-View để giải phóng connection ngay sau @Transactional ──
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  # Cấu hình Thymeleaf
+  thymeleaf:
+    cache: false
+    mode: HTML
+    encoding: UTF-8
+
+  # Cấu hình Mail SMTP
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:your_email@gmail.com}
+    password: ${MAIL_PASSWORD:your_app_password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# Cấu hình Lưu Trữ & Thư Mục Upload Cục Bộ (Tương thích chuẩn Constant.DIR = C:\upload)
+app:
+  storage:
+    provider: local # 'local' hoặc 'cloudinary'
+    upload-dir: ${UPLOAD_DIR:C:/upload} # Thư mục lưu ảnh/file cục bộ trên máy
+    max-image-size-mb: 10
+    max-doc-size-mb: 100
+    max-video-size-mb: 100
+  cloudinary:
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:demo}
+    api-key: ${CLOUDINARY_API_KEY:123456}
+    api-secret: ${CLOUDINARY_API_SECRET:secret}
+  webhook:
+    nodejs-secret: ${NODEJS_WEBHOOK_SECRET:mySuperSecretWebhookKey2026}
+  gemini:
+    api-key: ${GEMINI_API_KEY:demo_key}
+    embedding-model: ${GEMINI_EMBEDDING_MODEL:gemini-embedding-001}
+    chat-model: ${GEMINI_CHAT_MODEL:gemini-2.5-flash}
+    secondary-chat-model: ${GEMINI_SECONDARY_CHAT_MODEL:gemini-2.5-flash}
+
+  # ─── Cloud Dify AI Engine (Ưu tiên số 1 - Demo) ──────────────────────────
+  dify:
+    enabled: ${DIFY_ENABLED:true}
+    base-url: ${DIFY_BASE_URL:https://api.dify.ai/v1}
+    api-key: ${DIFY_API_KEY:app-Ku5Tbg0u2r7AD6ev5P6sQmlk}
+    connect-timeout-ms: ${DIFY_CONNECT_TIMEOUT_MS:3000}
+    read-timeout-ms: ${DIFY_READ_TIMEOUT_MS:6000}
+
+  # ─── Python AI Engine (RAG Microservice) ────────────────────────────────────
+  python-ai:
+    enabled: ${PYTHON_AI_ENABLED:false}
+    base-url: ${PYTHON_AI_BASE_URL:http://127.0.0.1:8001}
+    connect-timeout-ms: ${PYTHON_AI_CONNECT_TIMEOUT_MS:3000}
+    read-timeout-ms: ${PYTHON_AI_READ_TIMEOUT_MS:20000}
+
+  # ─── AI Engine chung ─────────────────────────────────────────────────────────
+  ai:
+    default-engine: ${AI_DEFAULT_ENGINE:GEMINI}
+    similarity-threshold: ${AI_SIMILARITY_THRESHOLD:0.90}
