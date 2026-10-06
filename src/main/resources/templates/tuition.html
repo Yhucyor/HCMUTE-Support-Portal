@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}" th:with="headerStyle='background: rgba(0,0,0,0.85); position: absolute; top: 0; width: 100%; z-index: 1000;'">
+<head>
+    <title>Thanh toán học phí</title>
+    <th:block layout:fragment="head-css">
+        <style>
+            .page-header {
+                background-color: var(--crimson);
+                color: white;
+                padding: 8rem 5% 4rem;
+                text-align: center;
+            }
+
+            .page-header h1 {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+            }
+
+            .page-header p {
+                font-size: 1.2rem;
+                opacity: 0.9;
+            }
+
+            .tuition-container {
+                max-width: 1200px;
+                margin: -2rem auto 4rem;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                padding: 2rem;
+                position: relative;
+                z-index: 10;
+                display: grid;
+                grid-template-columns: 1fr 350px;
+                gap: 2rem;
+            }
+
+            @media (max-width: 992px) {
+                .tuition-container {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .tuition-details-wrapper {
+                background: white;
+                border: 1px solid #eee;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            .tuition-filter {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1.5rem;
+                background: #f9f9f9;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .tuition-filter select {
+                padding: 10px 15px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-family: var(--font-sans);
+                font-size: 1rem;
+                min-width: 200px;
+            }
+
+            .tuition-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .tuition-table th, .tuition-table td {
+                padding: 1rem 1.5rem;
+                text-align: left;
+                border-bottom: 1px solid #eee;
+            }
+
+            .tuition-table th {
+                background-color: #f1f5f9;
+                color: #334155;
+                font-weight: 600;
+                font-size: 0.95rem;
+            }
+
+            .tuition-table tbody tr:hover {
+                background-color: #f8fafc;
+            }
+
+            .amount-col {
+                text-align: right;
+                font-family: monospace;
+                font-size: 1.05rem;
+            }
+
+            .total-row {
+                background-color: #f8fafc;
+                font-weight: 700;
+                font-size: 1.1rem;
+            }
+            .total-row td {
+                color: var(--crimson);
+            }
+
+            .payment-panel {
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                padding: 1.5rem;
+            }
+
+            .payment-summary {
+                margin-bottom: 2rem;
+                padding-bottom: 1.5rem;
+                border-bottom: 1px dashed #cbd5e1;
+            }
+
+            .summary-title {
+                color: #64748b;
+                font-size: 0.9rem;
+                margin-bottom: 0.5rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .summary-amount {
+                font-size: 2.2rem;
+                font-weight: 700;
+                color: var(--crimson);
+                margin-bottom: 0.5rem;
+            }
+
+            .status-badge {
+                display: inline-block;
+                padding: 6px 12px;
+                border-radius: 4px;
+                font-size: 0.85rem;
+                font-weight: 600;
+            }
+
+            .status-unpaid {
+                background-color: #fee2e2;
+                color: #991b1b;
+            }
+
+            .status-paid {
+                background-color: #dcfce7;
+                color: #166534;
+            }
+
+            .payment-methods h4 {
+                color: #334155;
+                margin-bottom: 1rem;
+                font-size: 1.1rem;
+            }
+
+            .method-option {
+                display: flex;
+                align-items: center;
+                padding: 1rem;
+                border: 1px solid #cbd5e1;
+                border-radius: 6px;
+                margin-bottom: 1rem;
+                cursor: pointer;
+                transition: all 0.2s;
+                background: white;
+            }
+
+            .method-option:hover {
+                border-color: var(--crimson);
+                background-color: #fff1f2;
+            }
+
+            .method-option input[type="radio"] {
+                margin-right: 15px;
+                transform: scale(1.2);
+            }
+
+            .method-option img {
+                height: 30px;
+                margin-right: 15px;
+                object-fit: contain;
+            }
+
+            .btn-pay {
+                display: block;
+                width: 100%;
+                padding: 1rem;
+                background-color: var(--crimson);
+                color: white;
+                text-align: center;
+                border: none;
+                border-radius: 6px;
+                font-size: 1.1rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.3s;
+            }
+
+            .btn-pay:hover {
+                background-color: var(--dark-crimson);
+            }
+            
+            .btn-pay i {
+                margin-right: 8px;
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="page-header">
+            <h1>Học phí & Công nợ</h1>
+            <p>Kiểm tra và thanh toán học phí trực tuyến</p>
+        </div>
+
+        <section class="tuition-container">
+            <div class="tuition-content">
+                <div class="tuition-details-wrapper">
+                    <div class="tuition-filter">
+                        <h3 style="margin: 0; font-size: 1.3rem;">Chi tiết học phí</h3>
+                        <select>
+                            <option>Học kỳ 1 (2026-2027)</option>
+                            <option>Học kỳ 2 (2025-2026)</option>
+                            <option>Học kỳ 1 (2025-2026)</option>
+                        </select>
+                    </div>
+                    <table class="tuition-table">
+                        <thead>
+                            <tr>
+                                <th>Mã MH</th>
+                                <th>Tên môn học</th>
+                                <th>Số TC</th>
+                                <th class="amount-col">Đơn giá (VNĐ)</th>
+                                <th class="amount-col">Thành tiền (VNĐ)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>IT1234</td>
+                                <td>Lập trình Web</td>
+                                <td>3</td>
+                                <td class="amount-col">790,000</td>
+                                <td class="amount-col">2,370,000</td>
+                            </tr>
+                            <tr>
+                                <td>IT5678</td>
+                                <td>Cơ sở dữ liệu</td>
+                                <td>4</td>
+                                <td class="amount-col">790,000</td>
+                                <td class="amount-col">3,160,000</td>
+                            </tr>
+                            <tr>
+                                <td>EN1002</td>
+                                <td>Tiếng Anh 2</td>
+                                <td>3</td>
+                                <td class="amount-col">790,000</td>
+                                <td class="amount-col">2,370,000</td>
+                            </tr>
+                            <tr>
+                                <td>MA1101</td>
+                                <td>Giải tích 1</td>
+                                <td>3</td>
+                                <td class="amount-col">790,000</td>
+                                <td class="amount-col">2,370,000</td>
+                            </tr>
+                            <tr>
+                                <td>IT2010</td>
+                                <td>Cấu trúc dữ liệu và giải thuật</td>
+                                <td>4</td>
+                                <td class="amount-col">790,000</td>
+                                <td class="amount-col">3,160,000</td>
+                            </tr>
+                            <!-- Phụ phí -->
+                            <tr>
+                                <td colspan="4" style="text-align: right; color: #64748b;">Phí bảo hiểm y tế HSSV:</td>
+                                <td class="amount-col">850,500</td>
+                            </tr>
+                            <tr class="total-row">
+                                <td colspan="4" style="text-align: right;">Tổng cộng:</td>
+                                <td class="amount-col">14,280,500</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <aside class="tuition-sidebar">
+                <div class="payment-panel">
+                    <div class="payment-summary">
+                        <div class="summary-title">Tổng nợ hiện tại</div>
+                        <div class="summary-amount">14,280,500<span style="font-size: 1.2rem; color: #64748b;"> VNĐ</span></div>
+                        <div class="status-badge status-unpaid">
+                            <i class='bx bx-error-circle'></i> Chưa thanh toán
+                        </div>
+                    </div>
+
+                    <div class="payment-methods">
+                        <h4>Phương thức thanh toán</h4>
+                        
+                        <label class="method-option">
+                            <input type="radio" name="paymentMethod" value="vnpay" checked>
+                            <img src="https://vnpay.vn/s1/VNPAY-QR.png" alt="VNPAY">
+                            <span>Thanh toán qua VNPAY-QR</span>
+                        </label>
+
+                        <label class="method-option">
+                            <input type="radio" name="paymentMethod" value="momo">
+                            <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" alt="MoMo">
+                            <span>Ví điện tử MoMo</span>
+                        </label>
+
+                        <label class="method-option">
+                            <input type="radio" name="paymentMethod" value="bank">
+                            <i class='bx bxs-bank' style="font-size: 1.8rem; color: #334155; margin-right: 15px;"></i>
+                            <span>Thẻ ATM / Internet Banking</span>
+                        </label>
+                        
+                        <button class="btn-pay"><i class='bx bx-credit-card-front'></i> TIẾN HÀNH THANH TOÁN</button>
+                    </div>
+                </div>
+            </aside>
+        </section>
+    </div>
+</body>
+</html>
