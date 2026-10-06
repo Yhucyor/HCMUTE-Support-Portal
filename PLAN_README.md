@@ -21,7 +21,7 @@ git checkout -b feature/tên-tính-năng
 
 # 3. Code, commit trên nhánh feature
 git add .
-git commit -m "feat: mô tả công việc vừa làm"
+git commit -m "feat(ui): mô tả công việc vừa làm (ví dụ: add timetable page)"
 
 # 4. Khi hoàn thành, merge vào develop
 git checkout develop
