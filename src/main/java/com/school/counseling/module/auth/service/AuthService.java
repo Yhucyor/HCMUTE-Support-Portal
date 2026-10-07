@@ -36,6 +36,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
     private final OtpService otpService;
+    private final com.school.counseling.module.notification.service.EmailAsyncService emailAsyncService;
 
     @Transactional
     public UserProfileDto register(RegisterRequest request) {
@@ -113,6 +114,7 @@ public class AuthService {
 
         String otp = otpService.generateOtp(user.getEmail(), "PASSWORD_RESET");
         log.info("Password reset OTP generated for {}: {}", email, otp);
+        emailAsyncService.sendOtpEmail(user.getEmail(), user.getFullName(), otp, "đặt lại mật khẩu tài khoản");
     }
 
     @Transactional
