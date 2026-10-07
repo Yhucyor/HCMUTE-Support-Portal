@@ -17,8 +17,8 @@ services:
     volumes:
       # Lưu trữ data xuống ổ cứng thật để không bị mất dữ liệu khi xóa container
       - qaute_db_data:/var/lib/mysql
-      # Chạy script khởi tạo data nếu có
-      # - ./docs/database/srs_schema.sql:/docker-entrypoint-initdb.d/srs_schema.sql
+      # Tự động nạp toàn bộ 17 bảng và dữ liệu ban đầu khi tạo container lần đầu
+      - ./docs/database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
     networks:
       - qaute_network
 

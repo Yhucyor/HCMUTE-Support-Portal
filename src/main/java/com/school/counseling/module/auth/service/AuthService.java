@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -71,12 +73,18 @@ public class AuthService {
                 .phone(request.getPhone())
                 .role(defaultRole)
                 .department(department)
-                .status(UserStatus.ACTIVE)
+                .status(UserStatus.PENDING_ACTIVATION)
                 .avatarUrl("https://ui-avatars.com/api/?name=" + request.getFullName().replace(" ", "+") + "&background=0D8ABC&color=fff")
                 .build();
 
         User savedUser = userRepository.save(user);
-        log.info("Registered new user: username={}, role={}", savedUser.getUsername(), defaultRole.getName());
+        log.info("Registered new user pending activation: username={}, role={}", savedUser.getUsername(), defaultRole.getName());
+
+        // Sinh mã OTP kích hoạt tài khoản 6 chữ số và gửi qua Email bất đồng bộ
+        String otp = otpService.generateOtp(savedUser.getEmail(), "ACCOUNT_ACTIVATION");
+        log.info("Activation OTP generated for {}: {}", savedUser.getEmail(), otp);
+        emailAsyncService.sendOtpEmail(savedUser.getEmail(), savedUser.getFullName(), otp, "kích hoạt tài khoản sinh viên");
+
         return UserProfileDto.fromEntity(savedUser);
     }
 
@@ -104,7 +112,45 @@ public class AuthService {
                     .build();
         } catch (BadCredentialsException ex) {
             throw new AppException("Tên đăng nhập hoặc mật khẩu không chính xác");
+        } catch (DisabledException ex) {
+            throw new AppException("Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email và nhập mã OTP để kích hoạt tài khoản.");
+        } catch (LockedException ex) {
+            throw new AppException("Tài khoản đã bị tạm khóa do vi phạm quy định.");
         }
+    }
+
+    @Transactional
+    public void activateAccount(String email, String otpCode) {
+        boolean valid = otpService.verifyOtp(email, otpCode, "ACCOUNT_ACTIVATION");
+        if (!valid) {
+            throw new AppException("Mã OTP kích hoạt không chính xác hoặc đã hết hạn");
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException("Không tìm thấy thông tin tài khoản"));
+
+        if (user.getStatus() == UserStatus.ACTIVE) {
+            log.info("Tài khoản {} đã được kích hoạt trước đó", user.getUsername());
+            return;
+        }
+
+        user.setStatus(UserStatus.ACTIVE);
+        userRepository.save(user);
+        log.info("Account successfully activated for user: {}", user.getUsername());
+    }
+
+    @Transactional
+    public void resendActivationOtp(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException("Email chưa được đăng ký trong hệ thống"));
+
+        if (user.getStatus() == UserStatus.ACTIVE) {
+            throw new AppException("Tài khoản này đã được kích hoạt trước đó. Vui lòng đăng nhập.");
+        }
+
+        String otp = otpService.generateOtp(user.getEmail(), "ACCOUNT_ACTIVATION");
+        log.info("Resent activation OTP for {}: {}", email, otp);
+        emailAsyncService.sendOtpEmail(user.getEmail(), user.getFullName(), otp, "kích hoạt tài khoản sinh viên");
     }
 
     @Transactional
