@@ -63,8 +63,11 @@ public class AuthWebController {
 
         try {
             authService.register(request);
-            redirectAttributes.addFlashAttribute("successMessage", "Đăng ký tài khoản thành công! Vui lòng đăng nhập để tiếp tục.");
-            return "redirect:/auth/login";
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Đăng ký thành công! Mã OTP xác thực 6 chữ số đã được gửi tới email " + request.getEmail().trim()
+                            + ". Vui lòng nhập mã để kích hoạt tài khoản.");
+            return "redirect:/auth/activate?email="
+                    + java.net.URLEncoder.encode(request.getEmail().trim(), java.nio.charset.StandardCharsets.UTF_8);
         } catch (AppException ex) {
             model.addAttribute("errorMessage", ex.getMessage());
             model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
@@ -74,6 +77,69 @@ public class AuthWebController {
             model.addAttribute("errorMessage", "Đã có lỗi xảy ra trong quá trình đăng ký: " + ex.getMessage());
             model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
             return "register";
+        }
+    }
+
+    @GetMapping("/activate")
+    public String activatePage(@RequestParam(value = "email", required = false) String email, Model model) {
+        if (SecurityUtils.isAuthenticated()) {
+            return "redirect:/home";
+        }
+        model.addAttribute("email", email);
+        return "activate";
+    }
+
+    @PostMapping("/activate")
+    public String handleActivate(@RequestParam("email") String email,
+                                 @RequestParam("otpCode") String otpCode,
+                                 RedirectAttributes redirectAttributes,
+                                 Model model) {
+        if (email == null || email.isBlank() || otpCode == null || otpCode.isBlank()) {
+            model.addAttribute("errorMessage", "Vui lòng nhập đầy đủ Email và Mã OTP 6 chữ số.");
+            model.addAttribute("email", email);
+            return "activate";
+        }
+
+        try {
+            authService.activateAccount(email.trim(), otpCode.trim());
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Kích hoạt tài khoản thành công! Bạn có thể đăng nhập ngay bây giờ.");
+            return "redirect:/auth/login";
+        } catch (AppException ex) {
+            model.addAttribute("errorMessage", ex.getMessage());
+            model.addAttribute("email", email.trim());
+            return "activate";
+        } catch (Exception ex) {
+            log.error("Activation failed", ex);
+            model.addAttribute("errorMessage", "Không thể kích hoạt tài khoản. Vui lòng thử lại!");
+            model.addAttribute("email", email.trim());
+            return "activate";
+        }
+    }
+
+    @PostMapping("/resend-activation-otp")
+    public String handleResendActivationOtp(@RequestParam("email") String email,
+                                            RedirectAttributes redirectAttributes) {
+        if (email == null || email.isBlank()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Vui lòng cung cấp địa chỉ email hợp lệ");
+            return "redirect:/auth/activate";
+        }
+
+        try {
+            authService.resendActivationOtp(email.trim());
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Mã OTP kích hoạt mới đã được gửi đến email " + email.trim() + ". Vui lòng kiểm tra hộp thư!");
+            return "redirect:/auth/activate?email="
+                    + java.net.URLEncoder.encode(email.trim(), java.nio.charset.StandardCharsets.UTF_8);
+        } catch (AppException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:/auth/activate?email="
+                    + java.net.URLEncoder.encode(email.trim(), java.nio.charset.StandardCharsets.UTF_8);
+        } catch (Exception ex) {
+            log.error("Resend activation OTP failed", ex);
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể gửi lại mã OTP. Vui lòng thử lại sau!");
+            return "redirect:/auth/activate?email="
+                    + java.net.URLEncoder.encode(email.trim(), java.nio.charset.StandardCharsets.UTF_8);
         }
     }
 
