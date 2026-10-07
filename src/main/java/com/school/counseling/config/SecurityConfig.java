@@ -18,71 +18,81 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
-@RequiredArgsConstructor
+@EnableWebSecurity // bật hệ thống bảo vệ web
+@EnableMethodSecurity(prePostEnabled = true) // cho phpes bảo mật sâu đến từng hàm ở controller các nhãn
+@RequiredArgsConstructor // auto tạo constructor đẻ DI vào các biến final vào class
 public class SecurityConfig {
 
-    private final UserDetailsServiceImpl userDetailsService;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    // các thanh phan đc tiem
+    private final UserDetailsServiceImpl userDetailsService;// tim kiem thong tin tk trong csdl
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;// bo loc kt token jwt
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        return new BCryptPasswordEncoder(); // thuant toan băm 1 chieu = chuoi ngẫu nhiên
+    } // trộm đc db nhg ko thể dịch ngược
 
     @Bean
+    // xác thực tk
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(); // DaoAuthen... trọng tài xác thực tk
+                                                                                  // khibaamws lgoin
+        authProvider.setUserDetailsService(userDetailsService);// tim thong tin tk
+        authProvider.setPasswordEncoder(passwordEncoder());// xac thuc mk đưa giải mã bcrupt vào
         return authProvider;
     }
 
     @Bean
+    // AuthenticationManager tổng quản lý điều phối quá trình đăngn nhập
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
     @Bean
+    // bộ lọc chính bảo vê ngóc ngách hệ thôgns
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/api/**", "/ws/**")
-            )
-            .authorizeHttpRequests(auth -> auth
-                // Static resources
-                .requestMatchers(
-                    "/", "/home", "/about", "/explore", "/admission", "/research",
-                    "/auth/**", "/api/v1/auth/**",
-                    "/css/**", "/js/**", "/images/**", "/uploads/**", "/webjars/**", "/favicon.ico"
-                ).permitAll()
-                // Admin & Staff boundaries
-                .requestMatchers("/admin/**", "/api/v1/admin/**").hasRole("ADMIN")
-                .requestMatchers("/staff/**", "/api/v1/staff/**").hasAnyRole("STAFF", "ADMIN")
-                // All other requests require authentication
-                .anyRequest().authenticated()
-            )
-            .formLogin(form -> form
-                .loginPage("/auth/login")
-                .loginProcessingUrl("/auth/login")
-                .defaultSuccessUrl("/home", false)
-                .failureUrl("/auth/login?error=true")
-                .usernameParameter("username")
-                .passwordParameter("password")
-                .permitAll()
-            )
-            .logout(logout -> logout
-                .logoutUrl("/auth/logout")
-                .logoutSuccessUrl("/auth/login?logout=true")
-                .deleteCookies("JSESSIONID")
-                .invalidateHttpSession(true)
-                .clearAuthentication(true)
-                .permitAll()
-            )
-            .authenticationProvider(authenticationProvider())
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/api/**", "/ws/**"))
+                // cho phép mọi người truy cập
+                .authorizeHttpRequests(auth -> auth
+                        // Static resources
+                        .requestMatchers(
+                                "/", "/home", "/about", "/explore", "/admission", "/research",
+                                "/auth/**", "/api/v1/auth/**",
+                                "/css/**", "/js/**", "/images/**", "/uploads/**", "/webjars/**", "/favicon.ico")
+                        .permitAll()
+
+                        // Admin & Staff boundaries
+                        .requestMatchers("/admin/**", "/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/staff/**", "/api/v1/staff/**").hasAnyRole("STAFF", "ADMIN")
+                        // All other requests require authentication
+                        .anyRequest().authenticated())
+                .formLogin(form -> form
+                        .loginPage("/auth/login")
+                        .loginProcessingUrl("/auth/login")
+                        .defaultSuccessUrl("/home", false)
+                        .failureUrl("/auth/login?error=true")
+                        .usernameParameter("username")
+                        .passwordParameter("password")
+                        .permitAll())
+                .logout(logout -> logout
+                        .logoutUrl("/auth/logout")
+                        .logoutSuccessUrl("/auth/login?logout=true")
+                        .deleteCookies("JSESSIONID")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .permitAll())
+                .exceptionHandling(ex -> ex
+                        .accessDeniedPage("/error"))
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 }
+
+// CSRF croos site request forgery : kẻ xấu lừa trình duyệt gửi yêu cầu trộm khi
+// b đang log in
+// link /api hay websocket /ws thì bỏ qua csrf vì api dùng token jwwt ko dùng
+// session côkie

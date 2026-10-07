@@ -1,15 +1,93 @@
 package com.school.counseling.module.auth.service;
 
 import com.school.counseling.module.auth.dto.UserPrincipal;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+import java.util.Set;
+
+/**
+ * Custom Security Bean hỗ trợ SpEL Expression phân quyền theo Khoa/Phòng & chống IDOR.
+ * Sử dụng:
+ *   - @PreAuthorize("@deptSecurity.canAccessDepartment(#deptId)")
+ */
+@Slf4j
 @Component("deptSecurity")
+@RequiredArgsConstructor
 public class DepartmentAccessEvaluator {
 
+    private static final Set<String> PRIVILEGED_ROLES = Set.of(
+            "ROLE_ADMIN",
+            "ROLE_SUPER_ADMIN",
+            "ROLE_SUPERADMIN"
+    );
+
     /**
-     * Checks if the authenticated user has access to a specific department.
-     * Admins have universal access; Staff only access their own department.
+     * Lấy Principal của người dùng hiện tại từ Security Context
+     */
+    public UserPrincipal getCurrentPrincipal() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof UserPrincipal principal) {
+            return principal;
+        }
+        return null;
+    }
+
+    /**
+     * Kiểm tra người dùng có quyền Quản trị cấp cao (Admin / SuperAdmin) không
+     */
+    public boolean isPrivilegedUser(UserPrincipal user) {
+        if (user == null) {
+            return false;
+        }
+
+        if (user.getRole() != null && PRIVILEGED_ROLES.contains(user.getRole().toUpperCase())) {
+            return true;
+        }
+
+        if (user.getAuthorities() != null) {
+            return user.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .filter(Objects::nonNull)
+                    .map(String::toUpperCase)
+                    .anyMatch(PRIVILEGED_ROLES::contains);
+        }
+
+        return false;
+    }
+
+    /**
+     * Kiểm tra Cán bộ có thuộc Khoa/Phòng được yêu cầu không (Admin luôn được phép)
+     */
+    public boolean canAccessDepartment(Long departmentId) {
+        if (departmentId == null) {
+            log.warn("[Security] canAccessDepartment bị từ chối: departmentId là null");
+            return false;
+        }
+
+        UserPrincipal user = getCurrentPrincipal();
+        if (user == null) {
+            return false;
+        }
+
+        if (isPrivilegedUser(user)) {
+            return true;
+        }
+
+        if ("ROLE_STAFF".equalsIgnoreCase(user.getRole())) {
+            return Objects.equals(user.getDepartmentId(), departmentId);
+        }
+
+        return false;
+    }
+
+    /**
+     * Backward compatibility method
      */
     public boolean hasAccess(Authentication authentication, Long departmentId) {
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -21,12 +99,10 @@ public class DepartmentAccessEvaluator {
             return false;
         }
 
-        // ROLE_ADMIN has access to all departments
-        if (userPrincipal.getRole() != null && userPrincipal.getRole().equals("ROLE_ADMIN")) {
+        if (isPrivilegedUser(userPrincipal)) {
             return true;
         }
 
-        // Staff can only access their assigned department
         return userPrincipal.getDepartmentId() != null && userPrincipal.getDepartmentId().equals(departmentId);
     }
 }
