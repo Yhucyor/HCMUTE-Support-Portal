@@ -1,5 +1,7 @@
 import logging
 import ollama
+import google.generativeai as genai
+import os
 import time # Thêm thư viện time để đo thời gian thực thi va theo dõi hiệu suất
 from llm.prompt import build_prompt
 from core.settings_loader import load_settings
@@ -8,9 +10,13 @@ settings = load_settings()
 logger = logging.getLogger("llm")
 
 LLM_CONFIG = settings["llm"]
-MODEL_PROVIDER = LLM_CONFIG.get("provider", "openai")
-MODEL_NAME = LLM_CONFIG.get("model_name", "gpt-3.5-turbo")
+MODEL_PROVIDER = LLM_CONFIG.get("provider", "gemini")
+MODEL_NAME = LLM_CONFIG.get("model_name", "gemini-1.5-flash")
 MODEL_BASE_URL = LLM_CONFIG.get("base_url", "http://localhost:11434")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 MODEL_TEMPERATURE = LLM_CONFIG.get("temperature", 0.2)
 MODEL_MAX_TOKENS = LLM_CONFIG.get("max_tokens", 1024)
 MODEL_TIMEOUT = LLM_CONFIG.get("timeout", 60)
@@ -44,6 +50,19 @@ def generate_answer(context: str, question: str) -> str:
                 }
             )
             answer = response['message']['content'].strip() # ollama co message chua content con openai co text
+        elif MODEL_PROVIDER == "gemini":
+            if not GEMINI_API_KEY:
+                return "Lỗi: Chưa cấu hình GEMINI_API_KEY trong file .env"
+            
+            model = genai.GenerativeModel(MODEL_NAME)
+            response = model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=MODEL_TEMPERATURE,
+                    max_output_tokens=MODEL_MAX_TOKENS,
+                )
+            )
+            answer = response.text.strip()
         else:
             logger.error(f"Unsupported model provider: {MODEL_PROVIDER}")
             return "Nhà cung cấp mô hình không được hỗ trợ."

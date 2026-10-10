@@ -396,7 +396,7 @@
             typeWriter();
         }
 
-        function handleSend() {
+        async function handleSend() {
             const text = input.value.trim();
             if(!text) return;
             
@@ -408,11 +408,32 @@
             indicatorRow.style.display = 'flex';
             scrollToBottom();
             
-            // 3. Mock AI processing delay
-            setTimeout(() => {
+            // 3. Call actual backend API
+            try {
+                const response = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: text,
+                        session_id: 'session_' + Date.now()
+                    })
+                });
+                
                 indicatorRow.style.display = 'none';
-                appendAIMessage("Cảm ơn câu hỏi của bạn. Hệ thống AI đang được nâng cấp để trả lời các câu hỏi thực tế. Tạm thời đây là bản demo tính năng gõ chữ (typing effect). Bạn có cần hỗ trợ gì thêm không?");
-            }, 1200);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    appendAIMessage(data.answer);
+                } else {
+                    appendAIMessage("Xin lỗi, hệ thống AI đang gặp sự cố. Vui lòng thử lại sau.");
+                }
+            } catch (error) {
+                indicatorRow.style.display = 'none';
+                appendAIMessage("Lỗi kết nối tới máy chủ. Vui lòng kiểm tra lại mạng.");
+                console.error('Chat error:', error);
+            }
         }
 
         sendBtn.addEventListener('click', handleSend);

@@ -24,9 +24,8 @@ embedding:
 # Cau hinh vector database luu tru chunk + embedding
 vector_database:
   type: qdrant
-  host: localhost
-  port: 6333
-  url: http://localhost:6333   # optional, ưu tiên url nếu có
+  path: qdrant_storage        # Chạy Local (Không cần Docker)
+  # url: http://localhost:6333  # Đã tắt Docker
   api_key: null               # nếu dùng Qdrant Cloud
   collection_name: hcmute_chatbot_collection
   distance: cosine            # cosine | dot | euclid
@@ -35,8 +34,8 @@ vector_database:
 
 # Cau hinh model LLM
 llm:
-  provider: ollama
-  model_name: qwen2.5:3b
+  provider: gemini
+  model_name: gemini-flash-latest
   base_url: http://localhost:11434
   temperature: 0.2
   max_tokens: 1024              # Giảm từ 1024 → 512 để nhanh hơn

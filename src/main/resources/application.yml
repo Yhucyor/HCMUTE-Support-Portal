@@ -28,7 +28,7 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/qaute_portal?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&characterEncoding=UTF-8}
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:your_password}
+    password: ${DB_PASSWORD:123456}
     driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
     # ── HikariCP: Cấu hình Connection Pool tối ưu cho tải 1.000 users ──
     hikari:

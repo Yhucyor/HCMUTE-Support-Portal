@@ -30,6 +30,9 @@ def get_qdrant_client() -> QdrantClient: # them -> QdrantClient de tra ve
                 api_key=QDRANT_CONFIG.get("api_key"),
                 timeout=TIMEOUT
             )
+        elif QDRANT_CONFIG.get("path"):
+            logger.info(f"Connect via Local Database (No Docker): {QDRANT_CONFIG.get('path')}")
+            _client = QdrantClient(path=QDRANT_CONFIG.get("path"))
         else:
             logger.info(f"Connect via: {QDRANT_CONFIG.get('host')}: {QDRANT_CONFIG.get('port')}")
             

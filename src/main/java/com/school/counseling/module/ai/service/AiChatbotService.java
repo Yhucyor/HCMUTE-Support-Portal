@@ -13,7 +13,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class AiChatbotService {
 
-    @Value("${ai.chatbot.url:http://localhost:8000/chat}")
+    @Value("${ai.chatbot.url:http://localhost:8000/api/chat}")
     private String chatbotApiUrl;
 
     private final RestTemplate restTemplate;
@@ -31,10 +31,9 @@ public class AiChatbotService {
 
         try {
             ResponseEntity<AiChatResponse> responseEntity = restTemplate.postForEntity(
-                    chatbotApiUrl, 
-                    requestEntity, 
-                    AiChatResponse.class
-            );
+                    chatbotApiUrl,
+                    requestEntity,
+                    AiChatResponse.class);
             return responseEntity.getBody();
         } catch (Exception e) {
             e.printStackTrace();

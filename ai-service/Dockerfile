@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir --user -r requirements.txt
+RUN pip install --default-timeout=1000 --no-cache-dir --user -r requirements.txt
 
 # Final stage
 FROM python:3.12-slim

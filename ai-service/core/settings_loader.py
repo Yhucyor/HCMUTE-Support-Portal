@@ -1,10 +1,13 @@
 import os
 import yaml
 from pathlib import Path
+from dotenv import load_dotenv
 
 def load_settings():
     """Load settings from YAML and override with environment variables"""
-    with open("config/settings.yaml") as file:
+    load_dotenv()
+    
+    with open("config/settings.yaml", encoding="utf-8") as file:
         settings = yaml.safe_load(file)
     
     # Override với environment variables
