@@ -34,8 +34,8 @@ vector_database:
 
 # Cau hinh model LLM
 llm:
-  provider: gemini
-  model_name: gemini-flash-latest
+  provider: ollama
+  model_name: llama3.2
   base_url: http://localhost:11434
   temperature: 0.2
   max_tokens: 1024              # Giảm từ 1024 → 512 để nhanh hơn
