@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCMUTE Support Portal | Xác thực OTP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .login-body {
+            background-color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .login-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+        .login-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        .icon-wrapper {
+            width: 64px;
+            height: 64px;
+            background: #fff1f2;
+            color: var(--crimson);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin: 0 auto 1.5rem;
+        }
+        .login-title {
+            font-size: 1.5rem;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        .login-subtitle {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+        .login-subtitle strong {
+            color: #334155;
+        }
+
+        .otp-inputs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        .otp-inputs input {
+            width: 45px;
+            height: 55px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            transition: all 0.2s ease;
+        }
+        .otp-inputs input:focus {
+            outline: none;
+            border-color: var(--crimson);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(220, 20, 60, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .alert-box {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-align: left;
+        }
+        .alert-error {
+            background-color: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+        .alert-success {
+            background-color: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 0.9rem;
+            background: var(--crimson);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 1rem;
+        }
+        .btn-primary:hover {
+            background: var(--dark-crimson);
+            transform: translateY(-1px);
+        }
+
+        .resend-container {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        .resend-form {
+            display: inline;
+        }
+        .btn-resend {
+            background: none;
+            border: none;
+            color: var(--crimson);
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0;
+            font-size: 0.9rem;
+        }
+        .btn-resend:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="login-body">
+
+    <header class="header login-header" style="background: var(--crimson); padding: 1rem 5%;">
+        <div class="logo">
+            <a th:href="@{/}" style="color: white; text-decoration: none; font-size: 1.2rem;">
+                <i class="fa-solid fa-graduation-cap"></i> <strong>HCMUTE Portal</strong>
+            </a>
+        </div>
+        <nav>
+            <ul class="nav-links" style="list-style: none;">
+                <li><a th:href="@{/auth/login}" style="color: white; text-decoration: none;">← Quay lại Đăng nhập</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="icon-wrapper">
+                <i class="fa-solid fa-envelope-open-text"></i>
+            </div>
+            <h2 class="login-title">Xác thực tài khoản</h2>
+            <p class="login-subtitle">
+                Vui lòng nhập mã OTP 6 chữ số vừa được gửi tới email<br>
+                <strong th:text="${email}">student@hcmute.edu.vn</strong>
+            </p>
+            
+            <div th:if="${errorMessage}" class="alert-box alert-error">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
+            <div th:if="${successMessage}" class="alert-box alert-success">
+                <i class="fa-solid fa-circle-check"></i>
+                <span th:text="${successMessage}"></span>
+            </div>
+
+            <form th:action="@{/auth/activate}" method="post" id="otpForm">
+                <input type="hidden" name="email" th:value="${email}">
+                <input type="hidden" name="otpCode" id="hiddenOtp">
+                
+                <div class="otp-inputs" id="otpContainer">
+                    <input type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" required autofocus>
+                    <input type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    <input type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    <input type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    <input type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    <input type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                </div>
+                
+                <button type="submit" class="btn-primary">
+                    Kích hoạt tài khoản <i class="fa-solid fa-arrow-right ms-2"></i>
+                </button>
+            </form>
+            
+            <div class="resend-container">
+                Chưa nhận được mã? 
+                <form th:action="@{/auth/resend-activation-otp}" method="post" class="resend-form">
+                    <input type="hidden" name="email" th:value="${email}">
+                    <button type="submit" class="btn-resend">Gửi lại mã</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('#otpContainer input');
+            const hiddenOtp = document.getElementById('hiddenOtp');
+            const form = document.getElementById('otpForm');
+
+            // Auto focus and move to next/prev input
+            inputs.forEach((input, index) => {
+                input.addEventListener('input', function(e) {
+                    this.value = this.value.replace(/[^0-9]/g, ''); // Only numbers
+                    
+                    if (this.value && index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    }
+                    
+                    updateHiddenInput();
+                });
+
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && !this.value && index > 0) {
+                        inputs[index - 1].focus();
+                    }
+                });
+
+                // Paste full 6 digits
+                input.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+                    
+                    for (let i = 0; i < pastedData.length; i++) {
+                        if (inputs[i]) {
+                            inputs[i].value = pastedData[i];
+                            if (i < inputs.length - 1) inputs[i + 1].focus();
+                        }
+                    }
+                    updateHiddenInput();
+                });
+            });
+
+            function updateHiddenInput() {
+                let otp = '';
+                inputs.forEach(input => otp += input.value);
+                hiddenOtp.value = otp;
+            }
+
+            form.addEventListener('submit', function(e) {
+                updateHiddenInput();
+                if (hiddenOtp.value.length !== 6) {
+                    e.preventDefault();
+                    alert('Vui lòng nhập đầy đủ 6 số OTP');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
