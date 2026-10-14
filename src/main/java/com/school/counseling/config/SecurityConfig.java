@@ -60,6 +60,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/", "/home", "/about", "/explore", "/admission", "/research",
                                 "/ai-chat", "/api/ai/**",
+                                "/academic/**", "/api/academic/**",
                                 "/auth/**", "/api/v1/auth/**",
                                 "/css/**", "/js/**", "/images/**", "/uploads/**", "/webjars/**", "/favicon.ico")
                         .permitAll()

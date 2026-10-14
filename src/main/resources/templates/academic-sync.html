@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCMUTE Portal | Đồng bộ Học vụ Cổng trường</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            padding: 0;
+            color: #1e293b;
+        }
+
+        .sync-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .sync-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sync-header h1 {
+            font-size: 1.85rem;
+            color: #0f172a;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .sync-header p {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        /* Card Form */
+        .card-box {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            padding: 24px 30px;
+            margin-bottom: 30px;
+        }
+
+        .sync-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 16px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .form-control {
+            padding: 11px 14px;
+            border-radius: 10px;
+            border: 1.5px solid #cbd5e1;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s;
+            background: #f8fafc;
+        }
+
+        .form-control:focus {
+            border-color: #2563eb;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .btn-sync {
+            padding: 12px 24px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            transition: all 0.2s;
+            height: 44px;
+        }
+
+        .btn-sync:hover {
+            background: #1e40af;
+            transform: translateY(-1px);
+        }
+
+        .btn-sync:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Result stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-item {
+            background: #ffffff;
+            padding: 18px 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        .stat-icon.grades { background: #dbeafe; color: #1d4ed8; }
+        .stat-icon.schedule { background: #dcfce7; color: #15803d; }
+        .stat-icon.curriculum { background: #fef3c7; color: #b45309; }
+
+        .stat-text h4 { margin: 0; font-size: 1.3rem; color: #0f172a; }
+        .stat-text p { margin: 2px 0 0; font-size: 0.82rem; color: #64748b; }
+
+        /* Tabs */
+        .tabs-header {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 10px 18px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            color: #64748b;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+            bottom: -2px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Data Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .data-table th {
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 14px;
+            border-bottom: 1px solid #cbd5e1;
+        }
+
+        .data-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #334155;
+        }
+
+        .data-table tr:hover { background: #f8fafc; }
+
+        .grade-badge {
+            display: inline-block;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+        .grade-badge.a { background: #dcfce7; color: #166534; }
+        .grade-badge.b { background: #dbeafe; color: #1e40af; }
+        .grade-badge.c { background: #fef3c7; color: #92400e; }
+        .grade-badge.f { background: #fee2e2; color: #991b1b; }
+
+        .nav-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+        .nav-back:hover { color: #2563eb; }
+    </style>
+</head>
+<body>
+
+    <div class="sync-container">
+        <a href="/dashboard" class="nav-back"><i class='bx bx-left-arrow-alt'></i> Quay lại Tổng quan</a>
+
+        <div class="sync-header">
+            <h1><i class='bx bxs-school' style="color: #2563eb;"></i> Đồng bộ Học vụ Cổng trường HCMUTE</h1>
+            <p>Nhập thông tin tài khoản sinh viên cổng <a href="https://online.hcmute.edu.vn" target="_blank" style="color:#2563eb; font-weight:600;">online.hcmute.edu.vn</a> để tự động cào Bảng điểm, Thời khóa biểu và CTĐT</p>
+        </div>
+
+        <!-- FORM CRAWLER -->
+        <div class="card-box">
+            <form id="sync-form">
+                <div class="sync-form-grid">
+                    <div class="form-group">
+                        <label for="studentId"><i class='bx bx-id-card'></i> Mã số sinh viên (MSSV):</label>
+                        <input type="text" id="studentId" class="form-control" placeholder="Ví dụ: 21110123" required value="21110123">
+                    </div>
+                    <div class="form-group">
+                        <label for="password"><i class='bx bx-lock-alt'></i> Mật khẩu cổng đào tạo:</label>
+                        <input type="password" id="password" class="form-control" placeholder="Mật khẩu online.hcmute.edu.vn" required value="Password123@">
+                    </div>
+                    <div>
+                        <button type="submit" id="btn-submit" class="btn-sync">
+                            <i class='bx bx-sync'></i> <span>Đồng bộ ngay</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <div id="status-msg" style="margin-top: 14px; font-size: 0.88rem; display: none;"></div>
+        </div>
+
+        <!-- STATS CARDS (Show after sync) -->
+        <div id="results-section" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-icon grades"><i class='bx bx-certification'></i></div>
+                    <div class="stat-text">
+                        <h4 id="stat-grades">0</h4>
+                        <p>Môn học có điểm</p>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon schedule"><i class='bx bx-calendar-event'></i></div>
+                    <div class="stat-text">
+                        <h4 id="stat-schedules">0</h4>
+                        <p>Lớp học trong TKB</p>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon curriculum"><i class='bx bx-book-bookmark'></i></div>
+                    <div class="stat-text">
+                        <h4 id="stat-curriculum">0</h4>
+                        <p>Môn trong CTĐT</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABS DETAILS -->
+            <div class="card-box" style="padding: 16px 24px;">
+                <div class="tabs-header">
+                    <button class="tab-btn active" onclick="switchTab('grades')"><i class='bx bx-list-check'></i> Bảng Điểm Chi Tiết</button>
+                    <button class="tab-btn" onclick="switchTab('schedule')"><i class='bx bx-calendar'></i> Thời Khóa Biểu</button>
+                    <button class="tab-btn" onclick="switchTab('curriculum')"><i class='bx bx-book-open'></i> Chương Trình Đào Tạo</button>
+                </div>
+
+                <!-- TAB 1: GRADES -->
+                <div id="tab-grades" class="tab-content active">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Mã môn</th>
+                                <th>Tên môn học</th>
+                                <th style="text-align:center;">Số TC</th>
+                                <th style="text-align:center;">Điểm QT</th>
+                                <th style="text-align:center;">Điểm Thi</th>
+                                <th style="text-align:center;">Tổng kết</th>
+                                <th style="text-align:center;">Điểm chữ</th>
+                                <th>Học kỳ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grades-body"></tbody>
+                    </table>
+                </div>
+
+                <!-- TAB 2: SCHEDULE -->
+                <div id="tab-schedule" class="tab-content">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Thứ</th>
+                                <th>Tiết học</th>
+                                <th>Mã môn</th>
+                                <th>Tên môn học</th>
+                                <th>Phòng học</th>
+                                <th>Giảng viên phụ trách</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedule-body"></tbody>
+                    </table>
+                </div>
+
+                <!-- TAB 3: CURRICULUM -->
+                <div id="tab-curriculum" class="tab-content">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Học kỳ gợi ý</th>
+                                <th>Mã môn</th>
+                                <th>Tên môn học</th>
+                                <th style="text-align:center;">Số TC</th>
+                                <th style="text-align:center;">Trạng thái hoàn thành</th>
+                            </tr>
+                        </thead>
+                        <tbody id="curriculum-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('sync-form');
+        const btnSubmit = document.getElementById('btn-submit');
+        const statusMsg = document.getElementById('status-msg');
+        const resultsSection = document.getElementById('results-section');
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const studentId = document.getElementById('studentId').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Đang cào dữ liệu...`;
+            statusMsg.style.display = 'block';
+            statusMsg.innerHTML = `<span style="color: #2563eb;"><i class='bx bx-loader bx-spin'></i> Đang kết nối tới cổng HCMUTE Online, vui lòng đợi trong giây lát...</span>`;
+
+            try {
+                const response = await fetch('/api/academic/sync', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ studentId, password })
+                });
+
+                const data = await response.json();
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = `<i class='bx bx-sync'></i> <span>Đồng bộ ngay</span>`;
+
+                if (response.ok && data.success) {
+                    const modeText = data.syncMode === 'LIVE_PORTAL' ? 'Trực tiếp từ Cổng trường' : 'Bộ mô phỏng dữ liệu chuẩn HCMUTE';
+                    statusMsg.innerHTML = `<span style="color: #166534; font-weight:600;"><i class='bx bx-check-circle'></i> ${data.message} (${modeText})</span>`;
+                    
+                    document.getElementById('stat-grades').innerText = data.gradesCount;
+                    document.getElementById('stat-schedules').innerText = data.schedulesCount;
+                    document.getElementById('stat-curriculum').innerText = data.curriculumsCount;
+                    resultsSection.style.display = 'block';
+
+                    // Load detailed tables
+                    loadDetails(studentId);
+                } else {
+                    statusMsg.innerHTML = `<span style="color: #b91c1c;"><i class='bx bx-error-circle'></i> Lỗi: ${data.message || 'Không thể đồng bộ.'}</span>`;
+                }
+            } catch (err) {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = `<i class='bx bx-sync'></i> <span>Đồng bộ ngay</span>`;
+                statusMsg.innerHTML = `<span style="color: #b91c1c;"><i class='bx bx-error-circle'></i> Lỗi kết nối đến máy chủ API.</span>`;
+            }
+        });
+
+        async function loadDetails(studentId) {
+            // Load grades
+            const gRes = await fetch(`/api/academic/grades?studentId=${studentId}`);
+            const grades = await gRes.json();
+            const gBody = document.getElementById('grades-body');
+            gBody.innerHTML = grades.map(g => {
+                let badgeClass = 'a';
+                if(g.gradeLetter && g.gradeLetter.startsWith('B')) badgeClass = 'b';
+                else if(g.gradeLetter && g.gradeLetter.startsWith('C')) badgeClass = 'c';
+                else if(g.gradeLetter && (g.gradeLetter.startsWith('D') || g.gradeLetter.startsWith('F'))) badgeClass = 'f';
+
+                return `<tr>
+                    <td><code>${g.courseCode}</code></td>
+                    <td style="font-weight:500;">${g.courseName}</td>
+                    <td style="text-align:center;">${g.credits}</td>
+                    <td style="text-align:center;">${g.midtermScore !== null ? g.midtermScore : '-'}</td>
+                    <td style="text-align:center;">${g.finalScore !== null ? g.finalScore : '-'}</td>
+                    <td style="text-align:center; font-weight:700; color:#2563eb;">${g.totalScore !== null ? g.totalScore : '-'}</td>
+                    <td style="text-align:center;"><span class="grade-badge ${badgeClass}">${g.gradeLetter || '-'}</span></td>
+                    <td>${g.semester}</td>
+                </tr>`;
+            }).join('');
+
+            // Load schedules
+            const sRes = await fetch(`/api/academic/schedules?studentId=${studentId}`);
+            const schedules = await sRes.json();
+            const sBody = document.getElementById('schedule-body');
+            sBody.innerHTML = schedules.map(s => `<tr>
+                <td style="font-weight:700; color:#2563eb;">${s.dayOfWeek}</td>
+                <td><span style="background:#f1f5f9; padding:2px 8px; border-radius:6px; font-weight:500;">${s.shift}</span></td>
+                <td><code>${s.courseCode}</code></td>
+                <td style="font-weight:500;">${s.courseName}</td>
+                <td><strong style="color:#0f172a;"><i class='bx bx-map-pin'></i> ${s.room}</strong></td>
+                <td>${s.lecturer}</td>
+            </tr>`).join('');
+
+            // Load curriculum
+            const cRes = await fetch(`/api/academic/curriculum?studentId=${studentId}`);
+            const curriculums = await cRes.json();
+            const cBody = document.getElementById('curriculum-body');
+            cBody.innerHTML = curriculums.map(c => `<tr>
+                <td style="font-weight:600; text-align:center;">Học kỳ ${c.semesterRecommended}</td>
+                <td><code>${c.courseCode}</code></td>
+                <td style="font-weight:500;">${c.courseName}</td>
+                <td style="text-align:center;">${c.credits}</td>
+                <td style="text-align:center;">
+                    ${c.isCompleted 
+                        ? `<span style="color:#166534; background:#dcfce7; padding:3px 10px; border-radius:20px; font-size:0.8rem; font-weight:600;"><i class='bx bx-check'></i> Đã hoàn thành</span>`
+                        : `<span style="color:#475569; background:#f1f5f9; padding:3px 10px; border-radius:20px; font-size:0.8rem; font-weight:500;">Chưa tích lũy</span>`
+                    }
+                </td>
+            </tr>`).join('');
+        }
+    </script>
+</body>
+</html>
