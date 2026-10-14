@@ -231,3 +231,39 @@ sequenceDiagram
   2. Mọi truy vấn đọc/ghi danh sách Ticket, phản hồi, phê duyệt bài viết đều tự động bọc điều kiện lọc:
      $$\text{WHERE } \text{department\_id} = \text{currentUser.getDepartmentId()}$$
   3. Nếu một Cán bộ Khoa CNTT (`dept_id = 4`) cố tình gửi request hoặc gõ URL `/staff/tickets/detail/10` (thuộc Phòng Tuyển sinh `dept_id = 2`), tầng Business Service lập tức ném ra ngoại lệ `AccessDeniedBusinessException` và trả về mã lỗi `HTTP 403 Forbidden`.
+
+---
+
+## 5. Yêu Cầu Phi Chức Năng (Non-Functional Requirements - NFR) & Khả Năng Chịu Tải
+
+### 5.1. Hiệu Năng & Độ Trễ Cam Kết (Performance & Latency SLAs)
+* **NFR-PERF-01 (Độ trễ API thường):** Toàn bộ các yêu cầu tra cứu danh sách Ticket, Bảng tin, xem chi tiết bài viết phải phản hồi với thời gian $p95 < 200\text{ms}$ ở điều kiện tải thông thường.
+* **NFR-PERF-02 (Độ trễ AI & Phễu Tra cứu Tri thức):**
+  * Tra cứu thông tin tĩnh & Regex (Cấp 0): $\le 10\text{ms}$.
+  * Tra cứu qua Local Cache Caffeine (Cấp 1): $\le 5\text{ms}$.
+  * Tra cứu Smart FAQ tương đồng cao (Cấp 2): $\le 50\text{ms}$.
+  * Tổng hợp câu trả lời qua AI RAG Tầng 1 & Gemini Flash (Cấp 3): $p95 \le 1.5\text{s}$ (nhờ context tinh gọn $< 300$ từ thay vì nhồi nhét tài liệu lớn).
+* **NFR-PERF-03 (Tỷ lệ Ngắt Tải Sớm - Short-circuiting Ratio):** Hệ thống phải đảm bảo cản được $\ge 70\%$ tổng số lượt hỏi đáp của sinh viên ngay tại các tầng nội bộ (Cấp 0, 1, 2) mà không cần tiêu tốn lượt gọi API sang Gemini.
+
+### 5.2. Khả Năng Mở Rộng & Chịu Tải Cao (Scalability & Throughput)
+* **NFR-SCAL-01 (Tải Người dùng Đồng thời):** Hệ thống có khả năng phục vụ tối thiểu **1.000 sinh viên hoạt động đồng thời** (Concurrent Users) trên tài nguyên máy chủ chuẩn mà không xảy ra hiện tượng treo tiến trình (Deadlock) hoặc sập Tomcat.
+* **NFR-SCAL-02 (In-Memory Vector Search Throughput):** Toàn bộ vector 768 chiều của kho tài liệu Tầng 1 và FAQ Tầng 2 được lưu trữ trên RAM (`ConcurrentHashMap`). Thời gian quét tính Cosine Similarity toàn bộ kho $\le 2\text{ms}$ trên CPU, không tạo áp lực I/O khóa bảng xuống MySQL.
+* **NFR-SCAL-03 (Bất đồng bộ hóa Tác vụ Nặng):** Quá trình Admin tải lên tệp PDF quy chế (10 - 50 trang) và tính toán vector embedding bắt buộc phải thực thi ngầm (`@Async`), không được chặn (blocking) luồng HTTP chính của người dùng.
+
+### 5.3. An Toàn Dịch Vụ & Bảo Vệ Hạn Mức (Rate Limiting & Quota Defense)
+* **NFR-SEC-01 (Rate Limit Sinh viên):** Giới hạn tối đa **5 câu hỏi / phút** cho mỗi IP hoặc tài khoản sinh viên nhằm chống tấn công từ chối dịch vụ (DoS) và cạn kiệt Quota API.
+* **NFR-SEC-02 (Tuân thủ Ngưỡng API Free):** Lưu lượng gọi thực tế từ Backend sang Google Gemini API luôn được giữ dưới trần an toàn **15 RPM (Requests Per Minute)** và giới hạn TPM (Tokens Per Minute).
+
+### 5.4. Độ Sẵn Sàng & Phục Hồi Mềm (Resilience & Circuit Breaker)
+* **NFR-RES-01 (Graceful Degradation):** Khi dịch vụ Google Gemini gặp sự cố gián đoạn (Downtime) hoặc đứt cáp quốc tế, hệ thống không được trả về mã lỗi `HTTP 500 Internal Server Error`.
+* **NFR-RES-02 (Fallback Response):** Tự động chuyển đổi sang chế độ phản hồi dự phòng: Trả về trực tiếp trích đoạn văn bản quy chế tìm được từ Tầng 1 và hiển thị lời nhắc: *"Hệ thống AI đang bảo trì kết nối, dưới đây là thông tin trích xuất từ Quy chế học vụ 2026. Bạn cũng có thể bấm [Tạo Ticket] để Cán bộ Phòng Đào tạo giải đáp."*
+
+### 5.5. Ma Trận Tiêu Chuẩn Kiểm Thử Chịu Tải (Load Testing Acceptance Matrix)
+Hệ thống sử dụng **k6 (Grafana Labs)** làm công cụ đo kiểm chịu tải chuẩn hóa:
+
+| Mã Kịch bản | Loại Kiểm thử | Thông số Tải (VUs) | Thời gian chạy | Tiêu chuẩn Chấp thuận (Acceptance Threshold) |
+|---|---|:---:|:---:|---|
+| **TEST-LOAD-01** | Baseline Test | 50 - 100 VUs | 5 phút | 100% Pass HTTP 200, Latency $p95 < 200\text{ms}$ (API), $< 1.5\text{s}$ (RAG) |
+| **TEST-LOAD-02** | Spike Test | 10 $\rightarrow$ 500 VUs | 10s Ramp-up | Server không sập, Cache/FAQ cản $\ge 70\%$ tải, trả HTTP 429 đúng quy chuẩn |
+| **TEST-LOAD-03** | Stress / Breakpoint | $100 \rightarrow 1.500\text{ VUs}$ | Tăng bậc thang | Xác định điểm cực hạn (Error rate $> 5\%$ hoặc CPU $100\%$) |
+| **TEST-LOAD-04** | Soak / Endurance | 100 VUs | 2 giờ | Không rò rỉ bộ nhớ (Memory Leak), Heap Memory JVM dạng răng cưa ổn định |

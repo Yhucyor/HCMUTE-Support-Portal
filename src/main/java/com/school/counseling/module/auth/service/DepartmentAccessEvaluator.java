@@ -105,4 +105,46 @@ public class DepartmentAccessEvaluator {
 
         return userPrincipal.getDepartmentId() != null && userPrincipal.getDepartmentId().equals(departmentId);
     }
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.school.counseling.module.ticket.repository.TicketRepository ticketRepository;
+
+    /**
+     * Thẩm định quyền truy cập Ticket chống IDOR
+     */
+    public boolean canAccessTicket(Long ticketId) {
+        if (ticketId == null) {
+            log.warn("[Security] canAccessTicket bị từ chối: ticketId là null");
+            return false;
+        }
+
+        UserPrincipal user = getCurrentPrincipal();
+        if (user == null) {
+            return false;
+        }
+
+        if (isPrivilegedUser(user)) {
+            return true;
+        }
+
+        if (ticketRepository == null) {
+            return false;
+        }
+
+        var authInfoOpt = ticketRepository.findAccessAuthInfoById(ticketId);
+        if (authInfoOpt.isEmpty()) {
+            return false;
+        }
+
+        var authInfo = authInfoOpt.get();
+        if (authInfo.getCreatorId() != null && Objects.equals(authInfo.getCreatorId(), user.getId())) {
+            return true;
+        }
+
+        if ("ROLE_STAFF".equalsIgnoreCase(user.getRole())) {
+            return authInfo.getDepartmentId() != null
+                    && Objects.equals(authInfo.getDepartmentId(), user.getDepartmentId());
+        }
+
+        return false;
+    }
 }
