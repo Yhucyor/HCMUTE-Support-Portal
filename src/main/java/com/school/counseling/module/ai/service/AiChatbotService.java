@@ -23,10 +23,14 @@ public class AiChatbotService {
     }
 
     public AiChatResponse getChatResponse(String query, String sessionId) {
+        return getChatResponse(query, sessionId, "ollama");
+    }
+
+    public AiChatResponse getChatResponse(String query, String sessionId, String provider) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        AiChatRequest requestPayload = new AiChatRequest(query, sessionId);
+        AiChatRequest requestPayload = new AiChatRequest(query, sessionId, provider);
         HttpEntity<AiChatRequest> requestEntity = new HttpEntity<>(requestPayload, headers);
 
         try {
@@ -40,6 +44,7 @@ public class AiChatbotService {
             AiChatResponse errorResponse = new AiChatResponse();
             errorResponse.setAnswer("Xin lỗi, hệ thống AI hiện không thể phản hồi. Vui lòng thử lại sau.");
             errorResponse.setSession_id(sessionId);
+            errorResponse.setProvider(provider);
             return errorResponse;
         }
     }

@@ -22,7 +22,10 @@ public class AiChatbotController {
             return ResponseEntity.badRequest().build();
         }
         
-        AiChatResponse response = aiChatbotService.getChatResponse(request.getQuery(), request.getSession_id());
+        AiChatResponse response = aiChatbotService.getChatResponse(
+                request.getQuery(),
+                request.getSession_id(),
+                request.getProvider());
         return ResponseEntity.ok(response);
     }
 }

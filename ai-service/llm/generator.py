@@ -21,7 +21,7 @@ MODEL_TEMPERATURE = LLM_CONFIG.get("temperature", 0.2)
 MODEL_MAX_TOKENS = LLM_CONFIG.get("max_tokens", 1024)
 MODEL_TIMEOUT = LLM_CONFIG.get("timeout", 60)
 
-def generate_answer(context: str, question: str) -> str:
+def generate_answer(context: str, question: str, provider: str = None) -> str:
     if not context or not context.strip(): # Kiểm tra context rỗng
         logger.warning("Received empty context for answer generation.")
         return "Dữ liệu ngữ cảnh không được để trống."
@@ -30,17 +30,20 @@ def generate_answer(context: str, question: str) -> str:
         logger.warning("Received empty question for answer generation.")
         return "Câu hỏi không được để trống."
     
+    selected_provider = (provider or MODEL_PROVIDER or "ollama").lower()
+    selected_model = "gemini-2.5-flash" if selected_provider == "gemini" else (MODEL_NAME if selected_provider == "ollama" else MODEL_NAME)
+
     prompt = build_prompt(context, question) # Tạo prompt từ context và question
     start = time.time() # Bắt đầu đo thời gian
     
-    logger.info(f"Generating answer using model: {MODEL_NAME}")
+    logger.info(f"Generating answer using provider: {selected_provider}, model: {selected_model}")
     
     try:
-        if MODEL_PROVIDER == "ollama":
+        if selected_provider == "ollama":
             # Configure ollama client với base_url và timeout
             client = ollama.Client(host=MODEL_BASE_URL, timeout=MODEL_TIMEOUT)
             response = client.chat(
-                model=MODEL_NAME,
+                model=selected_model,
                 messages=[
                     {"role": "system", "content": prompt},
                 ],
@@ -50,11 +53,13 @@ def generate_answer(context: str, question: str) -> str:
                 }
             )
             answer = response['message']['content'].strip() # ollama co message chua content con openai co text
-        elif MODEL_PROVIDER == "gemini":
-            if not GEMINI_API_KEY:
+        elif selected_provider == "gemini":
+            api_key = os.getenv("GEMINI_API_KEY", GEMINI_API_KEY)
+            if not api_key:
                 return "Lỗi: Chưa cấu hình GEMINI_API_KEY trong file .env"
             
-            model = genai.GenerativeModel(MODEL_NAME)
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel(selected_model)
             response = model.generate_content(
                 prompt,
                 generation_config=genai.types.GenerationConfig(
@@ -64,7 +69,7 @@ def generate_answer(context: str, question: str) -> str:
             )
             answer = response.text.strip()
         else:
-            logger.error(f"Unsupported model provider: {MODEL_PROVIDER}")
+            logger.error(f"Unsupported model provider: {selected_provider}")
             return "Nhà cung cấp mô hình không được hỗ trợ."
         
         logger.info("Answer generation completed successfully.")

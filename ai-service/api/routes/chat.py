@@ -49,12 +49,14 @@ class ChatRequest(BaseModel):
     """Chat request model"""
     query: str = Field(..., min_length=1, max_length=MAX_QUERY_LENGTH, description="User's question")
     session_id: Optional[str] = Field(None, description="Session ID for conversation tracking")
+    provider: Optional[str] = Field("ollama", description="LLM provider: 'ollama' or 'gemini'")
 
 class ChatResponse(BaseModel):
     """Chat response model"""
     answer: str = Field(..., description="Bot's answer")
     sources: list = Field(default_factory=list, description="Source documents")
     session_id: str = Field(..., description="Session ID")
+    provider: Optional[str] = Field("ollama", description="LLM provider used")
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -74,8 +76,9 @@ async def chat_endpoint(request: ChatRequest, req: Request):
         raise HTTPException(status_code=400, detail="Vui lòng nhập câu hỏi.")
     
     session_id = request.session_id or str(uuid.uuid4())
+    provider = (request.provider or "ollama").lower()
     
-    logger.info(f"Session {session_id}: Received question: {question}")
+    logger.info(f"Session {session_id}: Received question: {question} (Provider: {provider})")
     
     try:
         # Get BM25 and Reranker from startup
@@ -98,7 +101,8 @@ async def chat_endpoint(request: ChatRequest, req: Request):
             return ChatResponse(
                 answer="Tôi không tìm thấy thông tin phù hợp trong dữ liệu hiện có.",
                 sources=[],
-                session_id=session_id
+                session_id=session_id,
+                provider=provider
             )
         
         logger.info(f"Session {session_id}: Retrieved {len(documents)} documents from hybrid search")
@@ -119,8 +123,8 @@ async def chat_endpoint(request: ChatRequest, req: Request):
         )
         logger.info(f"Session {session_id}: Retrieved {len(documents)} documents")
         
-        answer = generate_answer(context, question)
-        logger.info(f"Session {session_id}: Generated answer successfully")
+        answer = generate_answer(context, question, provider=provider)
+        logger.info(f"Session {session_id}: Generated answer successfully via {provider}")
         
         sources = [
             {
@@ -142,7 +146,8 @@ async def chat_endpoint(request: ChatRequest, req: Request):
         return ChatResponse(
             answer=answer,
             sources=sources,
-            session_id=session_id
+            session_id=session_id,
+            provider=provider
         )
     
     except Exception as e:

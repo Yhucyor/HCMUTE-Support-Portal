@@ -6,6 +6,7 @@ public class AiChatResponse {
     private String answer;
     private List<Object> sources;
     private String session_id;
+    private String provider;
 
     public AiChatResponse() {}
 
@@ -31,5 +32,13 @@ public class AiChatResponse {
 
     public void setSession_id(String session_id) {
         this.session_id = session_id;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
     }
 }
