@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+// one time password dùng 1 lần 
 @Entity
 @Table(name = "otp_tokens")
 @Getter
@@ -26,7 +27,7 @@ public class OtpToken {
     private String otpCode;
 
     @Column(name = "purpose", nullable = false, length = 50)
-    private String purpose; // REGISTRATION, PASSWORD_RESET
+    private String purpose; // REGISTRATION, PASSWORD_RESET để đky or lấy lại mk 
 
     @Column(name = "expired_at", nullable = false)
     private LocalDateTime expiredAt;
