@@ -41,4 +41,9 @@ public class HomeController {
         model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
         return "explore";
     }
+
+    @GetMapping("/ai-chat")
+    public String aiChat(Model model) {
+        return "ai-chat";
+    }
 }

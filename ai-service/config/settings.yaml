@@ -1,0 +1,55 @@
+# Cau hinh application
+app:
+  name: HCMUTE-chatbot-app
+  version: 1.0.0-beta
+  env: production
+
+# Cau hinh duong dan data
+data:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  schema_dir: data/schemas
+
+# Cau hinh chunk khi dung hybrid hoac chunking thong thuong
+chunking:
+  chunk_size: 512
+  chunk_overlap: 50
+
+# Cau hinh embedding
+embedding:
+  model: intfloat/multilingual-e5-small
+  batch_size: 64
+  device: cpu
+
+# Cau hinh vector database luu tru chunk + embedding
+vector_database:
+  type: qdrant
+  path: qdrant_storage        # Chạy Local (Không cần Docker)
+  # url: http://localhost:6333  # Đã tắt Docker
+  api_key: null               # nếu dùng Qdrant Cloud
+  collection_name: hcmute_chatbot_collection
+  distance: cosine            # cosine | dot | euclid
+  vector_size: 384
+  timeout: 30                 # connection timeout in seconds
+
+# Cau hinh model LLM
+llm:
+  provider: ollama
+  model_name: llama3.2
+  base_url: http://localhost:11434
+  temperature: 0.2
+  max_tokens: 1024              # Giảm từ 1024 → 512 để nhanh hơn
+  timeout: 60                  # request timeout in seconds
+
+# Cau hinh RAG
+retrieval:
+  top_k: 10 # so luong chunk lay ve de dung lam context cho LLM
+  score_threshold: 0.0 # sau khi tinh cosine similarity thi chi lay nhung chunk co diem so tren nguong nay
+  dense_weight: 0.6 # trong hybrid retriever, trong so cua dense retriever
+  bm25_weight: 0.4 # trong hybrid retriever, trong so cua bm25 retriever
+
+# Cau hinh reranking
+reranking:
+  model: cross-encoder/ms-marco-MiniLM-L-6-v2  # CrossEncoder model for reranking
+  device: cpu  # cpu or cuda
+  top_k: 5  # Final number of documents after reranking

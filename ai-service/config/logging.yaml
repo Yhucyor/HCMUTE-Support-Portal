@@ -1,0 +1,69 @@
+version: 1
+
+# Cau hinh format hien thi cua log. Vi du: [2026-01-15 09:32:10] INFO - ingestion - Loaded 152 records
+formatters:
+  simple:
+    format: '[%(asctime)s] %(levelname)s - %(name)s - %(message)s'
+    # trong do: asctime la thoi gian, levelname la muc do log (INFO, INFO, ERROR), name la ten cua logger, message la noi dung log
+    datefmt: '%Y-%m-%d %H:%M:%S'
+
+# Cau hinh consle
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: simple
+    stream: ext://sys.stdout
+
+  file:
+    class: logging.FileHandler
+    level: INFO
+    formatter: simple
+    filename: logs/application.log
+
+# Cau hinh logger cho tung module
+loggers:
+  ingestion:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+
+  embedding:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+
+  scoring:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+
+  vector_database:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+
+  llm:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+
+  retrieval:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+  
+  reranking:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+
+  chat:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+
+# Cau hinh logger mac dinh
+root:
+  level: INFO
+  handlers: [console, file]

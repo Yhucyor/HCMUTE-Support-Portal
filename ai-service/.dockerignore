@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environments
+env/
+.venv/
+venv/
+
+# Data
+data/raw/
+data/processed/
+qdrant_storage/
+
+# Logs
+*.log
+logs/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Tests
+tests/
+.pytest_cache/
+
+# Environment
+.env
+.env.local

@@ -59,6 +59,7 @@ public class SecurityConfig {
                         // Static resources
                         .requestMatchers(
                                 "/", "/home", "/about", "/explore", "/admission", "/research",
+                                "/ai-chat", "/api/ai/**",
                                 "/auth/**", "/api/v1/auth/**",
                                 "/css/**", "/js/**", "/images/**", "/uploads/**", "/webjars/**", "/favicon.ico")
                         .permitAll()
