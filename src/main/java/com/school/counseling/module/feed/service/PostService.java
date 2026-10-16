@@ -305,6 +305,14 @@ public class PostService {
     }
 
     /**
+     * Thêm bình luận cấp 1 vào bài viết
+     */
+    @Transactional
+    public Comment addComment(Long postId, String content, User author) {
+        return addComment(postId, content, null, author);
+    }
+
+    /**
      * Thêm bình luận vào bài viết (Hỗ trợ trả lời lồng nhau - Nested Reply & kiểm tra từ cấm)
      */
     @Transactional
