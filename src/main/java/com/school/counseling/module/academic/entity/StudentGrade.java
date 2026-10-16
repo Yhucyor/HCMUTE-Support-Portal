@@ -14,13 +14,13 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "academic_student_grades")
 public class StudentGrade extends BaseEntity {
 
-    @Column(name = "student_id", nullable = false, length = 20)
+    @Column(name = "student_id", nullable = false, length = 50)
     private String studentId;
 
-    @Column(name = "course_code", nullable = false, length = 30)
+    @Column(name = "course_code", nullable = false, length = 50)
     private String courseCode;
 
-    @Column(name = "course_name", nullable = false, length = 150)
+    @Column(name = "course_name", nullable = false, length = 255)
     private String courseName;
 
     @Column(name = "credits")
@@ -35,10 +35,10 @@ public class StudentGrade extends BaseEntity {
     @Column(name = "total_score")
     private Double totalScore;
 
-    @Column(name = "grade_letter", length = 5)
+    @Column(name = "grade_letter", length = 10)
     private String gradeLetter;
 
-    @Column(name = "semester", length = 30)
+    @Column(name = "semester", length = 100)
     private String semester;
 
     @Column(name = "is_passed")

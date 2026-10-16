@@ -14,13 +14,13 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "academic_curriculum_subjects")
 public class CurriculumSubject extends BaseEntity {
 
-    @Column(name = "student_id", nullable = false, length = 20)
+    @Column(name = "student_id", nullable = false, length = 50)
     private String studentId;
 
-    @Column(name = "course_code", nullable = false, length = 30)
+    @Column(name = "course_code", nullable = false, length = 50)
     private String courseCode;
 
-    @Column(name = "course_name", nullable = false, length = 150)
+    @Column(name = "course_name", nullable = false, length = 255)
     private String courseName;
 
     @Column(name = "credits")
