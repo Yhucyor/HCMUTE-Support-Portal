@@ -1,5 +1,7 @@
 package com.school.counseling.module.academic.controller;
 
+import com.school.counseling.common.util.SecurityUtils;
+import com.school.counseling.module.academic.dto.AcademicSummaryResponse;
 import com.school.counseling.module.academic.dto.HcmuteSyncRequest;
 import com.school.counseling.module.academic.dto.HcmuteSyncResponse;
 import com.school.counseling.module.academic.entity.CourseSchedule;
@@ -35,23 +37,45 @@ public class AcademicSyncApiController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/summary")
+    public ResponseEntity<AcademicSummaryResponse> getAcademicSummary(
+            @RequestParam(required = false) String studentId) {
+        String resolvedId = resolveStudentId(studentId);
+        return ResponseEntity.ok(crawlerService.getAcademicSummary(resolvedId));
+    }
+
     @GetMapping("/grades")
-    public ResponseEntity<List<StudentGrade>> getGrades(@RequestParam String studentId) {
-        return ResponseEntity.ok(gradeRepository.findByStudentIdOrderBySemesterDesc(studentId));
+    public ResponseEntity<List<StudentGrade>> getGrades(
+            @RequestParam(required = false) String studentId) {
+        String resolvedId = resolveStudentId(studentId);
+        return ResponseEntity.ok(gradeRepository.findByStudentIdOrderBySemesterDesc(resolvedId));
     }
 
     @GetMapping("/schedules")
-    public ResponseEntity<List<CourseSchedule>> getSchedules(@RequestParam String studentId) {
-        return ResponseEntity.ok(scheduleRepository.findByStudentIdOrderByDayOfWeekAsc(studentId));
+    public ResponseEntity<List<CourseSchedule>> getSchedules(
+            @RequestParam(required = false) String studentId) {
+        String resolvedId = resolveStudentId(studentId);
+        return ResponseEntity.ok(scheduleRepository.findByStudentIdOrderByDayOfWeekAsc(resolvedId));
     }
 
     @GetMapping("/curriculum")
-    public ResponseEntity<List<CurriculumSubject>> getCurriculum(@RequestParam String studentId) {
-        return ResponseEntity.ok(curriculumRepository.findByStudentIdOrderBySemesterRecommendedAsc(studentId));
+    public ResponseEntity<List<CurriculumSubject>> getCurriculum(
+            @RequestParam(required = false) String studentId) {
+        String resolvedId = resolveStudentId(studentId);
+        return ResponseEntity.ok(curriculumRepository.findByStudentIdOrderBySemesterRecommendedAsc(resolvedId));
     }
 
     @GetMapping("/history")
-    public ResponseEntity<List<SyncHistory>> getHistory(@RequestParam String studentId) {
-        return ResponseEntity.ok(syncHistoryRepository.findByStudentIdOrderBySyncedAtDesc(studentId));
+    public ResponseEntity<List<SyncHistory>> getHistory(
+            @RequestParam(required = false) String studentId) {
+        String resolvedId = resolveStudentId(studentId);
+        return ResponseEntity.ok(syncHistoryRepository.findByStudentIdOrderBySyncedAtDesc(resolvedId));
+    }
+
+    private String resolveStudentId(String studentId) {
+        if (studentId != null && !studentId.isBlank()) {
+            return studentId.trim();
+        }
+        return SecurityUtils.getCurrentUsername().orElse("21110001");
     }
 }
