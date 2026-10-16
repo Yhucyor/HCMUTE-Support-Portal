@@ -450,6 +450,14 @@ public class PostService {
     }
 
     /**
+     * Lấy danh sách thông báo chính thức đã phê duyệt (phân trang cơ bản)
+     */
+    @Transactional(readOnly = true)
+    public Page<PostResponseDto> getApprovedOfficialPosts(Pageable pageable) {
+        return getApprovedOfficialPosts(null, null, pageable);
+    }
+
+    /**
      * Lấy danh sách thông báo chính thức đã phê duyệt (hỗ trợ lọc theo Khoa/Phòng và tìm kiếm)
      */
     @Transactional(readOnly = true)
