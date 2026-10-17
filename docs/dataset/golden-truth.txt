@@ -1,0 +1,712 @@
+# CƠ SỞ DỮ LIỆU CHUẨN: TRƯỜNG ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT THÀNH PHỐ HỒ CHÍ MINH (HCM-UTE)
+*(Dữ liệu nguồn chính thống từ Báo cáo thường niên 2026, Sổ tay Sinh viên 2025 và các văn bản điều hành phục vụ huấn luyện AI RAG)*
+
+---
+
+## 1. THÔNG TIN ĐỊNH DANH VÀ LỊCH SỬ PHÁT TRIỂN (METADATA & HISTORY)
+
+* **Tên chính thức hiện nay:** Trường Đại học Công nghệ Kỹ thuật Thành phố Hồ Chí Minh
+* **Tên cũ:** Trường Đại học Sư phạm Kỹ thuật Thành phố Hồ Chí Minh (sử dụng từ ngày 28/01/1984 đến ngày 25/12/2025)
+* **Căn cứ pháp lý đổi tên:** Quyết định số 2809/QĐ-TTg ngày 26/12/2025 của Thủ tướng Chính phủ về việc đổi tên Trường Đại học Sư phạm Kỹ thuật Thành phố Hồ Chí Minh thành Trường Đại học Công nghệ Kỹ thuật Thành phố Hồ Chí Minh.
+* **Tên tiếng Anh:** Ho Chi Minh City University of Technology and Engineering
+* **Tên viết tắt giao dịch:** HCM-UTE / HCMUTE
+* **Mã trường tuyển sinh:** **SPK** (áp dụng khi đăng ký xét tuyển trên hệ thống tuyển sinh của Bộ Giáo dục và Đào tạo)
+* **Cơ quan chủ quản:** Bộ Giáo dục và Đào tạo Việt Nam
+* **Loại hình cơ sở giáo dục:** Đại học công lập, tự chủ tài chính
+* **Năm thành lập:** 1962 (tiền thân là Ban Cao đẳng Sư phạm Kỹ thuật Trung tâm Quốc gia Kỹ thuật Phú Thọ theo Nghị định số 1082-GD ngày 05/10/1962).
+
+### Các mốc lịch sử quan trọng trong quá trình hình thành và phát triển:
+1. **05/10/1962:** Thành lập Ban Cao đẳng Sư phạm Kỹ thuật trực thuộc Nha Kỹ thuật - Học vụ, Bộ Quốc gia Giáo dục. Ban đầu đào tạo 4 ngành: Khoa học ứng dụng; Chuyên nghiệp (Ô tô, Điện, Chế tạo máy, Đúc, Kỹ nghệ gỗ, Gốm, Sơn mài); Kỹ nghệ họa; Thương mại, Tiểu công nghệ và Kinh tế gia đình. Niên khóa đầu tiên là 1962-1963.
+2. **11/01/1974:** Chuyển về trực thuộc Trường Đại học Giáo dục (ngành Giáo dục chuyên nghiệp) thuộc Viện Đại học Bách khoa Thủ Đức theo Sắc lệnh số 010-SL/VHGDTN.
+3. **27/10/1976:** Đổi tên thành Trường Đại học Sư phạm Kỹ thuật theo Quyết định số 426-TTg của Thủ tướng Chính phủ.
+4. **28/01/1984:** Hợp nhất với Trường Trung học Công nghiệp Thủ Đức và chính thức mang tên **Trường Đại học Sư phạm Kỹ thuật Thành phố Hồ Chí Minh** theo Quyết định số 72/QĐ của Bộ trưởng Bộ Đại học và Trung học chuyên nghiệp.
+5. **12/06/1991:** Sáp nhập thêm Trường Sư phạm Kỹ thuật Cơ giới hóa Nông nghiệp (Trường Sư phạm Kỹ thuật 5) theo Quyết định số 186-HĐBT của Hội đồng Bộ trưởng.
+6. **27/01/1995:** Trở thành trường đại học thành viên thuộc Đại học Quốc gia Thành phố Hồ Chí Minh theo Nghị định số 16/CP của Chính phủ.
+7. **10/10/2000:** Tách khỏi Đại học Quốc gia Thành phố Hồ Chí Minh để trực thuộc Bộ Giáo dục và Đào tạo theo Quyết định số 118/2000/QĐ-TTg của Thủ tướng Chính phủ và giữ tên gọi này đến ngày 25/12/2025.
+8. **12/06/2025:** Thành lập Phân hiệu của Trường tại tỉnh Bình Phước theo Quyết định số 1576/QĐ-BGDĐT của Bộ Giáo dục và Đào tạo.
+9. **26/12/2025:** Chính thức đổi tên thành **Trường Đại học Công nghệ Kỹ thuật Thành phố Hồ Chí Minh** theo Quyết định số 2809/QĐ-TTg của Thủ tướng Chính phủ.
+
+---
+
+## 2. TRIẾT LÝ GIÁO DỤC, SỨ MẠNG, TẦM NHÌN VÀ VĂN HÓA CHẤT LƯỢNG
+
+* **Triết lý giáo dục:** **"Nhân bản – Sáng tạo – Hội nhập"**
+* **Tầm nhìn:** Trường Đại học Công nghệ Kỹ thuật TP. Hồ Chí Minh là trường đại học xuất sắc đa ngành, đa lĩnh vực, đổi mới sáng tạo, hội nhập quốc tế và phát triển bền vững.
+* **Sứ mạng:**
+  1. Cung cấp nguồn nhân lực chất lượng cao cho thị trường lao động trong nước và quốc tế.
+  2. Đóng góp tri thức hữu ích cho nhân loại bằng các kết quả nghiên cứu khoa học nhằm phục vụ cho sự phát triển bền vững của đất nước.
+  3. Phục vụ tích cực và có trách nhiệm vào sự phát triển của cộng đồng.
+* **Hệ giá trị cốt lõi:**
+  - Gìn giữ và phát huy các giá trị truyền thống nhân văn của dân tộc Việt Nam.
+  - Nâng đỡ tài năng và tính sáng tạo, chú trọng đào tạo kỹ năng và giáo dục đạo đức nghề nghiệp.
+  - Tôn trọng lợi ích của người học và của cộng đồng, tích cực xây dựng xã hội học tập.
+  - Đề cao chất lượng, hiệu quả và sự đổi mới trong mọi hoạt động.
+  - Hội nhập, hợp tác và chia sẻ.
+* **Văn hóa chất lượng:** Không ngừng nâng cao chất lượng dạy, học, nghiên cứu khoa học nhằm mang đến cho người học những điều kiện tốt nhất để phát triển toàn diện các năng lực đáp ứng nhu cầu phát triển và hội nhập quốc tế.
+* **Kiểm định chất lượng giáo dục:**
+  - Đạt 100% các tiêu chí Chuẩn cơ sở giáo dục đại học theo Thông tư số 01/2024/TT-BGDĐT của Bộ GD&ĐT.
+  - Đạt kiểm định chất lượng cấp cơ sở giáo dục và cấp chương trình đào tạo theo chuẩn quốc tế **AUN-QA** (Mạng lưới các trường đại học Đông Nam Á) và **HCÉRES** (Hội đồng cấp cao về đánh giá nghiên cứu và giáo dục đại học Pháp).
+  - Tỷ lệ giảng viên đạt trình độ Tiến sĩ: **45,58%** (vượt chuẩn quốc gia 40%).
+  - Tỷ lệ sinh viên tốt nghiệp có việc làm phù hợp trong vòng 12 tháng: **98,6%**.
+
+---
+
+## 3. THÔNG TIN LIÊN HỆ, CÁC CƠ SỞ VÀ HẠ TẦNG KỸ THUẬT
+
+### 3.1. Địa chỉ các trụ sở và phân hiệu
+
+| Đơn vị | Địa chỉ cụ thể | Quy mô diện tích đất | Diện tích sàn xây dựng |
+| :--- | :--- | :--- | :--- |
+| **Cơ sở chính (Trụ sở 1)** | Số 01 Võ Văn Ngân, Phường Linh Chiểu, TP. Thủ Đức, TP. Hồ Chí Minh | 174.247,00 m² | 135.308,00 m² |
+| **Cơ sở 2** | Số 484 Lê Văn Việt, Phường Tăng Nhơn Phú A, TP. Thủ Đức, TP. Hồ Chí Minh | 44.408,00 m² | 27.428,00 m² |
+| **Phân hiệu Bình Phước** | Số 899 Quốc lộ 14, Phường Bình Phước, Tỉnh Đồng Nai / Tỉnh Bình Phước | 89.839,10 m² | 21.378,87 m² |
+| **Tổng cộng toàn trường** | **3 cơ sở đào tạo** | **308.494,10 m²** | **184.114,87 m²** |
+
+### 3.2. Hạ tầng cơ sở vật chất và phục vụ đời sống học tập
+* **Công trình học tập & nghiên cứu:** Toàn trường có gần 100 công trình lớn nhỏ gồm:
+  - 02 Hội trường lớn phục vụ sự kiện và hội nghị.
+  - 223 phòng học lý thuyết được trang bị máy chiếu, điều hòa, hệ thống âm thanh giảng dạy hiện đại.
+  - 213 phòng thí nghiệm, xưởng thực hành công nghệ cao, xưởng thực tập và trung tâm nghiên cứu chuyên sâu (phòng thí nghiệm Tự hành, phòng Robot, CAD/CAM/CNC, thủy lực khí nén 4.0, IoT, năng lượng mới).
+  - 07 khu tự học hiện đại dành riêng cho sinh viên.
+  - 09 sân thể thao và nhà tập đa năng.
+* **Hệ thống Ký túc xá:** Có 03 khu ký túc xá với tổng cộng **480 phòng**, giải quyết nhu cầu lưu trú văn minh, an toàn cho gần **3.500 sinh viên**.
+* **Thư viện và Học liệu số:** Có 03 thư viện và trung tâm học liệu hiện đại; tốc độ Internet đạt 157,8 Mbps/1.000 người học; 100% tài liệu học tập, giáo trình được số hóa và liên kết với các nguồn cơ sở dữ liệu học thuật quốc tế.
+* **Kênh liên hệ chính thức:**
+  - Điện thoại văn phòng: (+84 – 028) 3896 8641; (+84 – 028) 3896 1333; (+84 – 028) 3722 1223
+  - Hotline tuyển sinh: (+84 – 028) 3722 5724
+  - Website trường: https://hcmute.edu.vn
+  - Cổng thông tin đào tạo sinh viên trực tuyến: https://online.hcmute.edu.vn
+  - Cổng thông tin tuyển sinh: https://tuyensinh.hcmute.edu.vn
+  - Email hành chính: hcth@hcmute.edu.vn | Email tuyển sinh: tuyensinh@hcmute.edu.vn
+
+---
+
+## 4. CƠ CẤU TỔ CHỨC VÀ ĐỘI NGŨ LÃNH ĐẠO ĐƯƠNG NHIỆM
+
+### 4.1. Ban Giám hiệu đương nhiệm
+* **Hiệu trưởng:** PGS. TS. **Lê Hiếu Giang** (được Bộ GD&ĐT bổ nhiệm theo Quyết định số 1468/QĐ-BGDĐT ngày 02/06/2026, thời hạn 5 năm; Email: gianglh@hcmute.edu.vn).
+* **Phó Hiệu trưởng:**
+  - TS. **Trương Thị Hiền** (bổ nhiệm theo Quyết định số 1479/QĐ-BGDĐT ngày 02/06/2026).
+  - TS. **Quách Thanh Hải** (thực hiện chức trách, thẩm quyền theo Nghị quyết số 14/NQ-HĐT của Hội đồng trường).
+  - PGS. TS. **Châu Đình Thành** (thực hiện chức trách, thẩm quyền theo Nghị quyết số 15/NQ-HĐT của Hội đồng trường).
+
+### 4.2. Các Khoa và Viện đào tạo chuyên môn trọng điểm
+1. **Khoa Cơ khí Chế tạo máy (FME):** Đào tạo Công nghệ Chế tạo máy, Công nghệ Kỹ thuật Cơ khí, Robot và Trí tuệ nhân tạo (AI), Kỹ thuật Công nghiệp, Kỹ nghệ Gỗ và Nội thất.
+2. **Khoa Cơ khí Động lực (FAE):** Đào tạo Công nghệ Kỹ thuật Ô tô, Công nghệ Kỹ thuật Nhiệt (Nhiệt - Điện lạnh), Năng lượng tái tạo, Kỹ thuật Hàng không.
+3. **Khoa Điện - Điện tử (FEE):** Đào tạo Kỹ thuật Điện, Kỹ thuật Điện tử - Viễn thông, Kỹ thuật Điều khiển và Tự động hóa, Kỹ thuật Y sinh, Hệ thống nhúng và IoT.
+4. **Khoa Công nghệ Thông tin (FIT):** Đào tạo Công nghệ Thông tin, Khoa học Máy tính, Kỹ thuật Phần mềm, An toàn Thông tin, Kỹ thuật Dữ liệu, Trí tuệ Nhân tạo.
+5. **Khoa Xây dựng (FCE):** Đào tạo Kỹ thuật Xây dựng, Kỹ thuật Công trình Giao thông, Quản lý Xây dựng, Hệ thống Kỹ thuật Công trình.
+6. **Khoa Công nghệ Hóa học và Thực phẩm (FCFT):** Đào tạo Công nghệ Kỹ thuật Hóa học, Công nghệ Thực phẩm, Công nghệ Môi trường.
+7. **Khoa Kinh tế (FE):** Đào tạo Quản trị Kinh doanh, Kế toán, Thương mại Điện tử, Logistics và Quản lý Chuỗi cung ứng, Tài chính - Ngân hàng, Quản lý Công nghiệp.
+8. **Khoa Ngoại ngữ (FFL):** Đào tạo Ngôn ngữ Anh, Sư phạm Tiếng Anh.
+9. **Khoa Thời trang và Du lịch (FFT):** Đào tạo Công nghệ May, Thiết kế Thời trang, Quản trị Nhà hàng và Dịch vụ Ăn uống.
+10. **Khoa Khoa học Ứng dụng (FAS):** Đào tạo Thiết kế Đồ họa, Kiến trúc, Kiến trúc Nội thất.
+11. **Khoa In và Truyền thông:** Đào tạo Kỹ thuật In, Truyền thông và Thiết kế Đa phương tiện.
+12. **Khoa Chính trị và Luật:** Đào tạo ngành Luật, Luật Kinh tế, phụ trách giảng dạy khối kiến thức Lý luận Chính trị.
+13. **Khoa Đào tạo Tiên tiến (Faculty of Advanced Education):** Đào tạo các chương trình tiên tiến, giảng dạy song ngữ và tiếng Anh (như Công nghệ Kỹ thuật Cơ khí và Tự động hóa - 158 tín chỉ).
+14. **Viện Sư phạm Kỹ thuật (ITE):** Chuyên trách đào tạo khối ngành Sư phạm Kỹ thuật, nghiên cứu khoa học giáo dục nghề nghiệp và bồi dưỡng cấp chứng chỉ Nghiệp vụ Sư phạm cho giảng viên/giáo viên các cấp.
+15. **Viện Đào tạo Quốc tế (OIE):** Quản lý và vận hành các chương trình liên kết đào tạo đại học và sau đại học với các đối tác đại học quốc tế.
+16. **Trung tâm Giáo dục Quốc phòng và An ninh (GDQP&AN):** Tổ chức đào tạo và đánh giá học phần GDQP&AN cho sinh viên.
+
+### 4.3. Đội ngũ Cán bộ - Giảng viên Khoa Công nghệ Thông tin (FIT)
+
+#### 4.3.1. Bộ môn Công nghệ Phần mềm (Software Engineering)
+
+| STT | Họ và tên | Chức danh / Học vị (CĐKH) | Chức vụ | Email liên hệ |
+| :---: | :--- | :--- | :--- | :--- |
+| 1 | **Huỳnh Xuân Phụng** | GV, TS (Giảng viên, Tiến sĩ) | Trưởng bộ môn | `phunghx@hcmute.edu.vn` |
+| 2 | **Trương Thị Ngọc Phượng** | GV, ThS (Giảng viên, Thạc sĩ) | Phó bộ môn | `phuongttn@hcmute.edu.vn` |
+| 3 | **Nguyễn Minh Đạo** | GVC, ThS (Giảng viên chính, Thạc sĩ) | Giảng viên chính | `daonm@hcmute.edu.vn` |
+| 4 | **Mai Tuấn Khôi** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `khoimt@hcmute.edu.vn` |
+| 5 | **Nguyễn Hoài Lê** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `lenh@hcmute.edu.vn` |
+| 6 | **Phùng Quang Ngọc** | GV, TS (Giảng viên, Tiến sĩ) | Giảng viên | `ngocpq@hcmute.edu.vn` |
+| 7 | **Lê Văn Vinh** | GVC, TS (Giảng viên chính, Tiến sĩ) | **Trưởng khoa** | `vinhlv@hcmute.edu.vn` |
+| 8 | **Nguyễn Trần Thi Văn** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `nttvan@hcmute.edu.vn` |
+| 9 | **Nguyễn Thủy An** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `thuyan@hcmute.edu.vn` |
+| 10 | **Mai Anh Thơ** | GVC, TS (Giảng viên chính, Tiến sĩ) | Giảng viên chính | `thoma@hcmute.edu.vn` |
+| 11 | **Nguyễn Hữu Trung** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `trungnh@hcmute.edu.vn` |
+| 12 | **Vũ Đình Bảo** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `baovd@hcmute.edu.vn` |
+| 13 | **Hoàng Thái Xuân Khoa** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `khoahtx@hcmute.edu.vn` |
+| 14 | **Võ Quang Phúc** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `phucvq@hcmute.edu.vn` |
+| 15 | **Huỳnh Thị Tố Trinh** | Trợ giảng | Trợ giảng | `trinhhtt@hcmute.edu.vn` |
+
+#### 4.3.2. Bộ môn Hệ thống Thông tin (Information Systems)
+
+| STT | Họ và tên | Chức danh / Học vị (CĐKH) | Chức vụ | Email liên hệ |
+| :---: | :--- | :--- | :--- | :--- |
+| 1 | **Nguyễn Thanh Tuấn** | GVC, TS (Giảng viên chính, Tiến sĩ) | Trưởng bộ môn | `tuannt@hcmute.edu.vn` |
+| 2 | **Lê Thị Minh Châu** | GV, ThS (Giảng viên, Thạc sĩ) | Phó bộ môn | `chaultm@hcmute.edu.vn` |
+| 3 | **Nguyễn Thành Sơn** | GV Cao cấp, TS (Giảng viên cao cấp, Tiến sĩ) | Giảng viên cao cấp | `sonnt@hcmute.edu.vn` |
+| 4 | **Trần Quang Khải** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `khaitq@hcmute.edu.vn` |
+| 5 | **Phan Thị Thể** | GV, TS (Giảng viên, Tiến sĩ) | Giảng viên | `thept@hcmute.edu.vn` |
+| 6 | **Đoàn Minh Trí** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `doanminhtri@hcmute.edu.vn` |
+| 7 | **Trần Trọng Bình** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `binhtt@hcmute.edu.vn` |
+| 8 | **Trương Mỹ Dung** | GV, PGS. TS (Giảng viên, Phó Giáo sư, Tiến sĩ) | Giảng viên | `dungtm.ht@hcmute.edu.vn` |
+
+#### 4.3.3. Bộ môn Mạng và An ninh mạng (Network and Cyber Security)
+
+| STT | Họ và tên | Chức danh / Học vị (CĐKH) | Chức vụ | Email liên hệ |
+| :---: | :--- | :--- | :--- | :--- |
+| 1 | **Nguyễn Thị Thanh Vân** | GVC, ThS (Giảng viên chính, Thạc sĩ) | Trưởng bộ môn | `vanntth@hcmute.edu.vn` |
+| 2 | **Đinh Công Đoan** | GV, ThS (Giảng viên, Thạc sĩ) | Phó bộ môn | `doandc@hcmute.edu.vn` |
+| 3 | **Lê Vĩnh Thịnh** | GV, TS (Giảng viên, Tiến sĩ) | **Phó trưởng khoa** | `thinhlv@hcmute.edu.vn` |
+| 4 | **Huỳnh Nguyên Chính** | GVC, TS (Giảng viên chính, Tiến sĩ) | Giảng viên chính | `chinhhn@hcmute.edu.vn` |
+| 5 | **Nguyễn Đăng Quang** | GVC, ThS (Giảng viên chính, Thạc sĩ) | Giảng viên chính | `quangnd@hcmute.edu.vn` |
+| 6 | **Từ Tuyết Hồng** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `hongtt@hcmute.edu.vn` |
+| 7 | **Trần Anh Tuấn** | GV, TS (Giảng viên, Tiến sĩ) | Giảng viên | `tuanta@hcmute.edu.vn` |
+| 8 | **Võ Lê Phúc Hậu** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `hauvlp@hcmute.edu.vn` |
+| 9 | **Đỗ Minh Hậu** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `dominhhau@hcmute.edu.vn` |
+
+#### 4.3.4. Bộ môn Trí tuệ Nhân tạo (Artificial Intelligence)
+
+| STT | Họ và tên | Chức danh / Học vị (CĐKH) | Chức vụ | Email liên hệ |
+| :---: | :--- | :--- | :--- | :--- |
+| 1 | **Phan Thị Huyền Trang** | GV, TS (Giảng viên, Tiến sĩ) | Trưởng bộ môn | `trangpth@hcmute.edu.vn` |
+| 2 | **Quách Đình Hoàng** | GV, ThS (Giảng viên, Thạc sĩ) | Phó bộ môn | `hoangqd@hcmute.edu.vn` |
+| 3 | **Trần Công Tú** | GVC, ThS (Giảng viên chính, Thạc sĩ) | Giảng viên chính | `tutc@hcmute.edu.vn` |
+| 4 | **Hoàng Văn Dũng** | GV Cao cấp, PGS.TS (Giảng viên cao cấp, Phó Giáo sư, Tiến sĩ) | **Phó trưởng khoa** | `dunghv@hcmute.edu.vn` |
+| 5 | **Nguyễn Quang Ngọc** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `ngocnq@hcmute.edu.vn` |
+| 6 | **Trần Tiến Đức** | GVC, ThS (Giảng viên chính, Thạc sĩ) | Giảng viên chính | `ductt@hcmute.edu.vn` |
+| 7 | **Lê Minh Tân** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `tanlm@hcmute.edu.vn` |
+| 8 | **Bùi Mạnh Quân** | GV, TS (Giảng viên, Tiến sĩ) | Giảng viên | `quanbm@hcmute.edu.vn` |
+| 9 | **Phù Khắc Anh** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `anhpk@hcmute.edu.vn` |
+| 10 | **Võ Long Tuấn** | GV, ThS (Giảng viên, Thạc sĩ) | Giảng viên | `tuanvl@hcmute.edu.vn` |
+
+---
+
+## 5. HỆ THỐNG CÁC BẬC ĐÀO TẠO VÀ CHƯƠNG TRÌNH ĐÀO TẠO
+
+### 5.1. Bậc Đại học chính quy
+Nhà trường tổ chức đào tạo linh hoạt theo hệ thống tín chỉ với các mô hình:
+* **Chương trình Chuẩn (Đại trà):** Giảng dạy bằng tiếng Việt theo khung chuẩn quốc gia và quốc tế.
+* **Chương trình Chất lượng cao tiếng Việt:** Giảng dạy theo chuẩn nâng cao, quy mô lớp học nhỏ, tăng cường trải nghiệm thực hành xưởng và doanh nghiệp.
+* **Chương trình Chất lượng cao tiếng Anh:** Toàn bộ giáo trình, tài liệu và giảng dạy chuyên ngành sử dụng 100% bằng tiếng Anh.
+* **Chương trình Đào tạo Tiên tiến (Faculty of Advanced Education):** Điển hình như ngành Công nghệ Kỹ thuật Cơ khí và Tự động hóa (Mechanical and Automation Engineering Technology), thời gian đào tạo 4 năm cấp bằng Kỹ sư, tổng khối lượng 158 tín chỉ (Đại cương: 49 TC, Ngoại ngữ: 8 TC, Chuyên nghiệp: 101 TC), thiết kế chuẩn đầu ra ELO1–ELO9 theo chuẩn AUN-QA.
+* **Chương trình Liên kết Quốc tế (nhượng quyền hoặc công nhận tín chỉ):**
+  - **Đại học Sunderland (Vương quốc Anh):** Đào tạo ngành Quản trị Kinh doanh, Kỹ thuật Điện - Điện tử (lộ trình 3+1 hoặc 4+0, bằng do Sunderland cấp).
+  - **Đại học Northampton (Vương quốc Anh):** Ngành Logistics và Tài chính thương mại quốc tế (lộ trình 3+1 hoặc 4+0).
+  - **Đại học Tongmyong (Hàn Quốc):** Ngành CNKT Cơ điện tử, CNKT Cơ khí, Công nghệ Thông tin (lộ trình 2+2).
+  - **Đại học Kettering (Hoa Kỳ):** Ngành Quản trị Kinh doanh, Kỹ thuật Điện - Điện tử, Kỹ thuật Cơ khí, Kỹ thuật Máy tính, Kỹ thuật Chế tạo máy và Công nghiệp (lộ trình 2+2).
+
+### 5.2. Bậc Sau đại học (Thạc sĩ & Tiến sĩ)
+* **Đào tạo Thạc sĩ:** Các ngành Kỹ thuật Cơ khí, Cơ khí Động lực, Kỹ thuật Điện, Kỹ thuật Điều khiển & Tự động hóa, Kỹ thuật Điện tử, Công nghệ Thông tin, Kỹ thuật Xây dựng, Công nghệ Hóa học, Công nghệ Thực phẩm, Quản lý Kinh tế, Giáo dục học...
+  - Tuyển sinh 2 đợt hằng năm (Đợt 1 vào tháng 4-5, Đợt 2 vào tháng 8-9).
+  - Hình thức xét tuyển hoặc thi tuyển kết hợp xét hồ sơ năng lực; yêu cầu chuẩn đầu vào ngoại ngữ bậc 3/6 (B1) và chuẩn đầu ra ngoại ngữ bậc 4/6 (B2).
+  - Lộ trình: Hoàn thành các học phần -> Đăng ký và giao đề tài -> Báo cáo chuyên đề 1, chuyên đề 2 -> Bảo vệ luận văn/đề án thạc sĩ -> Xét công nhận tốt nghiệp.
+* **Đào tạo Tiến sĩ:** Tuyển sinh và đào tạo các chuyên ngành kỹ thuật mũi nhọn; thời gian đào tạo 3 năm (với người có bằng Thạc sĩ) hoặc 4 năm (với người có bằng Đại học loại giỏi trở lên).
+
+### 5.3. Bậc Đại học hình thức Vừa làm vừa học (VLVH) và Liên thông
+* Tuyển sinh liên tục trong năm dành cho đối tượng đã tốt nghiệp Trung cấp, Cao đẳng (liên thông lên Đại học) hoặc người đã có 1 bằng Đại học muốn học văn bằng 2.
+* Các ngành tuyển sinh tiêu biểu: Công nghệ Thông tin, Công nghệ Kỹ thuật Ô tô, CNKT Điện - Điện tử, CNKT Cơ khí, Quản lý Công nghiệp, Quản trị Kinh doanh, Ngôn ngữ Anh...
+* Thời gian học linh hoạt vào buổi tối các ngày trong tuần hoặc ngày Thứ bảy, Chủ nhật.
+* Văn bằng tốt nghiệp được cấp theo quy định hiện hành của Bộ GD&ĐT.
+
+### 5.4. Đào tạo Thường xuyên theo phương thức Từ xa (E-Learning)
+* Đào tạo 100% trực tuyến linh hoạt với hệ thống học liệu số hóa chất lượng cao, người học có thể học mọi lúc mọi nơi.
+* Áp dụng chính sách xét công nhận và chuyển đổi tín chỉ cho người học đã có văn bằng tốt nghiệp trước đó (Trung cấp, Cao đẳng, Đại học khác).
+* Các ngành đào tạo trực tuyến: Công nghệ Thông tin, Kỹ thuật Ô tô, Kỹ thuật Điện, Quản trị Kinh doanh, Quản lý Công nghiệp, Ngôn ngữ Anh.
+
+### 5.5. Đào tạo Bồi dưỡng Nghiệp vụ Sư phạm (Viện Sư phạm Kỹ thuật)
+* Chiêu sinh thường xuyên các khóa bồi dưỡng Nghiệp vụ Sư phạm:
+  1. Nghiệp vụ sư phạm dành cho giáo viên dạy trình độ trung cấp, cao đẳng nghề.
+  2. Nghiệp vụ sư phạm dành cho giáo viên dạy trình độ sơ cấp nghề.
+  3. Nghiệp vụ sư phạm dành cho giảng viên các cơ sở giáo dục đại học, cao đẳng.
+* Học viên hoàn thành khóa học được cấp chứng chỉ theo quy chuẩn của Bộ GD&ĐT và Bộ Lao động - Thương binh và Xã hội.
+
+---
+
+## 6. QUY CHẾ ĐÀO TẠO, TÍN CHỈ VÀ HỌC VỤ ĐẠI HỌC CHÍNH QUY (CHI TIẾT TỪ SỔ TAY SINH VIÊN)
+*(Căn cứ Quyết định số 3116/QĐ-ĐHSPKT và các văn bản điều chỉnh của Trường)*
+
+### 6.1. Quy định về Khối lượng học tập và Đăng ký môn học
+* **Đăng ký môn học mỗi học kỳ chính:**
+  - Khối lượng học tập tối thiểu: **Không ít hơn 10 tín chỉ** trong mỗi học kỳ chính.
+  - Khối lượng học tập tối đa: **Không vượt quá 28 tín chỉ** trong mỗi học kỳ chính.
+  - Số tín chỉ tối thiểu để được xét cấp Học bổng khuyến khích học tập (KKHT): **Tối thiểu 15 tín chỉ** (không bao gồm GDTC, GDQP-AN).
+  - Không quy định khối lượng tối thiểu đối với học kỳ phụ (học kỳ hè), học kỳ thực tập tốt nghiệp, học kỳ cuối khóa hoặc sinh viên học vượt tiến độ; không quy định tối thiểu/tối đa đối với sinh viên ở các học kỳ kéo dài.
+* **Thời gian đăng ký và điều chỉnh học phần:**
+  - Thời gian đăng ký học phần chính thức: **1 tuần**.
+  - Thời gian điều chỉnh đăng ký học phần: **1 tuần** tiếp theo.
+  - Rút bớt học phần: Sinh viên được rút bớt qua mạng trong thời gian điều chỉnh. Sau thời gian này, được phép rút bớt trong vòng 1 tuần tiếp theo (theo thông báo) và xử lý học phí theo quy định.
+
+### 6.2. Phân loại trình độ sinh viên theo số tín chỉ tích lũy
+Xếp hạng năm đào tạo được xác định căn cứ vào tổng số tín chỉ tích lũy (không phụ thuộc vào số năm nhập học):
+* **Năm thứ nhất:** Tích lũy dưới 36 tín chỉ (< 36 TC).
+* **Năm thứ hai:** Tích lũy từ 36 đến 71 tín chỉ (36 – 71 TC).
+* **Năm thứ ba:** Tích lũy từ 72 đến 107 tín chỉ (72 – 107 TC).
+* **Năm thứ tư:** Tích lũy từ 108 đến 149 tín chỉ (108 – 149 TC).
+* **Năm thứ năm (nếu có):** Tích lũy trên 149 tín chỉ (> 149 TC).
+
+### 6.3. Đánh giá học phần, Thang điểm và Cách tính GPA
+* **Đánh giá học phần:** Gồm tối thiểu 2 điểm thành phần:
+  - *Điểm quá trình:* Được tổng hợp từ tối thiểu 3 cột điểm đánh giá trong suốt quá trình học (chuyên cần, bài tập, kiểm tra, thảo luận, thực hành). Giảng viên công bố điểm quá trình trước khi thi kết thúc; điểm quá trình không bảo lưu và không phúc khảo. Sinh viên vắng mặt kiểm tra quá trình không phép nhận điểm 0.
+  - *Điểm thi kết thúc học phần:* Thi viết, trắc nghiệm, vấn đáp, bảo vệ tiểu luận/đồ án.
+* **Thang điểm đánh giá và quy đổi:**
+  - Đánh giá theo thang điểm 10 làm tròn đến 1 chữ số thập phân.
+  - Quy đổi sang thang điểm chữ và thang điểm 4:
+    + Loại A+ / A: Từ 8,5 đến 10,0 điểm -> Quy đổi **4,0**
+    + Loại B+: Từ 8,0 đến 8,4 điểm -> Quy đổi **3,5**
+    + Loại B: Từ 7,0 đến 7,9 điểm -> Quy đổi **3,0**
+    + Loại C+: Từ 6,5 đến 6,9 điểm -> Quy đổi **2,5**
+    + Loại C: Từ 5,5 đến 6,4 điểm -> Quy đổi **2,0**
+    + Loại D+: Từ 5,0 đến 5,4 điểm -> Quy đổi **1,5**
+    + Loại D: Từ 4,0 đến 4,9 điểm -> Quy đổi **1,0**
+    + Loại F: Dưới 4,0 điểm -> Quy đổi **0,0** (Học phần không đạt, phải học lại).
+* **Xếp loại học lực (theo ĐTBHK, ĐTBNH hoặc ĐTBTL):**
+  - Từ 3,60 đến 4,00: **Xuất sắc**
+  - Từ 3,20 đến cận 3,60: **Giỏi**
+  - Từ 2,50 đến cận 3,20: **Khá**
+  - Từ 2,00 đến cận 2,50: **Trung bình**
+  - Từ 1,00 đến cận 2,00: **Yếu**
+  - Dưới 1,00: **Kém**
+
+### 6.4. Xử lý kết quả học tập: Cảnh báo học tập, Thử thách và Buộc thôi học
+* **Cảnh báo học tập:** Cuối mỗi học kỳ chính, sinh viên bị cảnh báo học tập khi:
+  - Điểm trung bình học kỳ (ĐTBHK) đạt **dưới 0,8** đối với học kỳ đầu tiên của khóa học;
+  - ĐTBHK đạt **dưới 1,0** đối với các học kỳ tiếp theo.
+* **Thử thách học tập:** Sinh viên bị thử thách học tập khi thuộc một trong hai điều kiện:
+  1. Tổng số tín chỉ không đạt trong học kỳ vượt quá 50% số tín chỉ đã đăng ký, hoặc tổng số tín chỉ nợ đọng từ đầu khóa học vượt quá 24 tín chỉ;
+  2. Điểm trung bình tích lũy (ĐTBTL) dưới 1,2 (sinh viên năm 1); dưới 1,4 (sinh viên năm 2); dưới 1,6 (sinh viên năm 3); dưới 1,8 (sinh viên các năm tiếp theo).
+* **Các trường hợp bị Buộc thôi học:**
+  1. **Có 3 lần cảnh báo học tập liên tiếp.**
+  2. Thời gian học tập vượt quá thời gian tối đa theo quy định của khóa học.
+  3. Thi hộ hoặc nhờ người khác thi hộ lần thứ hai (lần thứ nhất bị đình chỉ học tập 1 năm).
+  4. Sử dụng hồ sơ, văn bằng, chứng chỉ giả mạo.
+  5. Không đăng ký học phần trong 2 học kỳ liên tiếp mà không có lý do chính đáng được phép.
+
+### 6.5. Quy định giải quyết Điểm I (Hoãn thi vì lý do chính đáng)
+* Sinh viên gặp lý do bất khả kháng (tai nạn cấp cứu, ốm đau nằm viện nội trú có xác nhận y tế, tang gia trực hệ) tại thời điểm thi kết thúc học phần phải nộp đơn xin cấp **Điểm I** trên hệ thống `online.hcmute.edu.vn` (Mục "Chức năng trực tuyến -> Đăng ký các mẫu đơn") kèm bệnh án/minh chứng hợp lệ.
+* Điểm I phải được giải quyết xóa điểm trong học kỳ tiếp theo. Nếu quá thời hạn mà sinh viên không hoàn thành kỳ thi bổ sung, điểm I sẽ tự động chuyển thành điểm F (0 điểm).
+
+### 6.6. Học cùng lúc hai chương trình (Song bằng)
+* **Thời điểm đăng ký:** Sớm nhất khi sinh viên đã hoàn thành và được xếp trình độ năm thứ hai của chương trình thứ nhất.
+* **Điều kiện đăng ký:** Phải thỏa mãn 1 trong 2 điều kiện:
+  1. Học lực tính theo ĐTBTL xếp loại **Khá trở lên** và đáp ứng ngưỡng bảo đảm chất lượng của chương trình thứ hai trong năm tuyển sinh; HOẶC
+  2. Học lực tính theo ĐTBTL xếp loại **Trung bình** và đáp ứng điều kiện trúng tuyển của chương trình thứ hai trong năm tuyển sinh.
+* **Điều kiện duy trì:** Trong quá trình học cùng lúc hai chương trình, nếu ĐTBTL của chương trình thứ nhất đạt dưới điểm trung bình hoặc bị cảnh báo học tập thì sinh viên **phải dừng học chương trình thứ hai** ở học kỳ tiếp theo.
+* Sinh viên chỉ được xét tốt nghiệp chương trình thứ hai khi đã tốt nghiệp hoặc đủ điều kiện tốt nghiệp chương trình thứ nhất.
+
+---
+
+## 7. QUY ĐỊNH BẮT BUỘC VỀ HOẠT ĐỘNG CÔNG TÁC XÃ HỘI (CTXH)
+*(Trích Quyết định số 224/QĐ-ĐHSPKT-CTHSSV của Nhà trường)*
+
+* **Khái niệm và đơn vị tính:**
+  - Hoạt động Công tác xã hội (CTXH) là các hoạt động sinh viên tham gia tình nguyện, công ích, bảo vệ môi trường, giúp đỡ cộng đồng và phục vụ xã hội.
+  - Thước đo: **10 Điểm CTXH = 01 Ngày CTXH**.
+* **Điều kiện bắt buộc khi xét tốt nghiệp:**
+  - **Sinh viên bắt buộc phải tích lũy tối thiểu 04 Ngày CTXH (tương đương 40 Điểm CTXH)** trong toàn khóa học mới đủ điều kiện được xét công nhận tốt nghiệp!
+  - Nhà trường khuyến cáo sinh viên nên chủ động tích lũy qua từng năm học, không để dồn vào năm cuối.
+* **Các hoạt động được tính Điểm/Ngày CTXH:**
+  - *Chiến dịch Mùa hè xanh:* Tham gia suốt chiến dịch 1 tháng tại các tỉnh, TP.HCM hoặc tại trường được cộng **20 – 40 điểm CTXH (tương đương 2 – 4 Ngày CTXH)**.
+  - *Hiến máu tình nguyện:* Trực tiếp tham gia hiến máu tình nguyện mỗi lần được cộng **5 điểm CTXH (tương đương 0,5 Ngày CTXH)**; tham gia tổ chức hiến máu được cộng 5 – 10 điểm CTXH.
+  - *Chiến dịch Tiếp sức mùa thi:* Tham gia trọn vẹn cấp Thành được cộng 20 – 40 điểm (2 – 4 ngày); cấp Trường được 20 – 30 điểm (2 – 3 ngày).
+  - *Chiến dịch Xuân tình nguyện, Đêm hội trăng rằm:* Tham gia suốt chương trình (4 ngày) được cộng 10 – 20 điểm (1 – 2 ngày CTXH).
+  - *Hoạt động công ích tại Trường:* Tham gia Ngày Chủ nhật xanh, lao động dọn vệ sinh sắp xếp xưởng, phòng thí nghiệm, thư viện (1 buổi: 5 điểm = 0,5 ngày; 1 ngày: 5 – 10 điểm = 0,5 – 1 ngày CTXH).
+  - *Hoạt động cộng đồng địa phương:* Dạy học, phổ cập tin học cho trẻ em nghèo, chăm sóc người già neo đơn, phân luồng giao thông... (5 – 30 điểm tùy quy mô).
+* **Theo dõi và khiếu nại:** Điểm CTXH được các đơn vị tổ chức điểm danh và cập nhật trên trang `online.hcmute.edu.vn`. Sinh viên có quyền theo dõi và phản hồi khiếu nại nếu điểm số cập nhật chưa chính xác.
+
+---
+
+## 8. QUY ĐỊNH NGOẠI NGỮ, CHUYỂN ĐIỂM VÀ MIỄN NGOẠI NGỮ ĐẦU RA
+
+### 8.1. Các chứng chỉ ngoại ngữ được công nhận
+Nhà trường áp dụng khung chứng chỉ tương đương chuẩn quốc tế và Khung năng lực ngoại ngữ 6 bậc dùng cho Việt Nam:
+1. **Tiếng Anh:**
+   - **TOEIC:** TOEIC 2 kỹ năng (Nghe, Đọc) hoặc 4 kỹ năng do IIG cấp.
+   - **IELTS Academic:** Do British Council hoặc IDP cấp (ghi rõ Test Report Form Number).
+   - **TOEFL iBT:** Do ETS cấp (Lưu ý: **Không chấp nhận TOEFL iBT Home Edition**).
+   - **TOEFL ITP:** Do ETS cấp.
+   - **Cambridge English:** B1 Preliminary (PET), B2 First (FCE), C1 Advanced (CAE), Cambridge Linguaskill.
+   - **Aptis ESOL:** Do Hội đồng Anh (British Council) cấp.
+   - **VSTEP:** Khung năng lực ngoại ngữ 6 bậc dùng cho Việt Nam.
+   - **PEIC (Pearson English International Certificate):** Do Pearson cấp.
+2. **Ngoại ngữ khác:** Tiếng Nhật (JLPT N4 trở lên, NATTEST, JLAN J4); Tiếng Hàn (TOPIK II); Tiếng Trung (HSK); Tiếng Pháp (DELF B1 trở lên); Tiếng Đức (TestDaF).
+
+### 8.2. Giới hạn sử dụng và lưu ý đặc biệt cho từng loại chứng chỉ
+* **Chứng chỉ Aptis ESOL và VSTEP:** Chỉ được áp dụng để **miễn học phần Kỹ năng giao tiếp tiếng Anh 1 và Kỹ năng giao tiếp tiếng Anh 2**; **tuyệt đối không áp dụng để chuyển điểm** các học phần Anh văn (AV1, AV2, AV3, AV4) trong chương trình đào tạo.
+* **Chứng chỉ Cambridge B1 Preliminary (PET):** Chỉ được dùng để xét **đạt chuẩn ngoại ngữ đầu ra** tốt nghiệp; **không áp dụng để chuyển đổi điểm** các học phần Anh văn chính khóa.
+* **Chứng chỉ Cambridge Linguaskill, IELTS, TOEIC:** Được sử dụng cả trong việc xét miễn chuẩn ngoại ngữ đầu ra và chuyển đổi điểm các học phần Anh văn tương ứng.
+
+### 8.3. Chuẩn đầu ra Ngoại ngữ khi tốt nghiệp
+* **Sinh viên không chuyên ngữ:** Đạt tối thiểu **500 điểm TOEIC (2 kỹ năng)** hoặc chứng chỉ quốc tế tương đương; hoặc Tiếng Nhật (JLPT N4, JLAN J4...); hoặc các ngoại ngữ khác tương đương.
+* **Sinh viên chuyên ngữ (Sư phạm Tiếng Anh, Ngôn ngữ Anh):** Bắt buộc phải đạt **chuẩn C1** theo khung năng lực ngoại ngữ quốc tế.
+
+### 8.4. Thủ tục nộp đơn chuyển điểm và xử lý nghiêm gian lận chứng chỉ
+* **Thời gian nộp đơn trực tuyến:** Mỗi học kỳ có 2 đợt tiếp nhận (HK1: Đợt 1 vào tháng 7; Đợt 2 vào tháng 10).
+* **Địa chỉ thực hiện:** Truy cập `https://online.hcmute.edu.vn` -> Chọn "CHỨC NĂNG TRỰC TUYẾN" -> Chọn "Đăng ký các mẫu đơn".
+  - Miễn đầu ra: Chọn loại đơn "Miễn thi ngoại ngữ".
+  - Chuyển điểm môn học: Chọn loại đơn "Chuyển điểm ngoại ngữ".
+* **Mã các học phần Anh văn tương ứng:**
+  - *Hệ Đại trà, CLC tiếng Việt:* Anh văn 1 (`ENGL130137` / `EHQT130137`), Anh văn 2 (`ENGL230237` / `EHQT130237`), Anh văn 3 (`ENGL330337` / `EHQT230337`), Anh văn 4 (`ENGL430437` / `EHQT230437`).
+  - *Hệ CLC tiếng Anh (CLA), FIE:* Anh văn 1 (`EHQT130137E` / `ACEN340535E`), Anh văn 2 (`EHQT230237E` / `ACEN340635E`), Anh văn 3 (`EHQT230337E` / `ACEN440735E`), Anh văn 4 (`EHQT230437E` / `ACEN440835E`).
+* **Lưu ý quan trọng:** Sinh viên nộp đơn chuyển điểm học phần nào thì **không đăng ký** học phần đó trong kỳ; nếu đã đăng ký thì Trường không giải quyết chuyển điểm.
+* **Kỷ luật gian lận chứng chỉ:** Sinh viên có hành vi nộp chứng chỉ ngoại ngữ giả mạo sẽ bị **kỷ luật BUỘC THÔI HỌC** theo quy định tại Khoản 3 Điều 22 Quy chế đào tạo (Quyết định số 3116/QĐ-ĐHSPKT).
+
+---
+
+## 9. CHÍNH SÁCH HỌC BỔNG TOÀN DIỆN VÀ AN SINH XÃ HỘI
+*(Trích Quyết định số 409/QĐ-ĐHSPKT và Quyết định số 1248/QĐ-ĐHCNKT của Trường)*
+
+### 9.1. Quỹ hỗ trợ người học
+Nhà trường chủ động trích lập tối thiểu **8% tổng thu học phí** (tương đương khoảng **91 tỷ đồng/năm**) hình thành Quỹ hỗ trợ người học độc lập để cấp học bổng và trợ cấp khó khăn cho sinh viên.
+
+### 9.2. Học bổng Khuyến khích học tập (KKHT)
+* **Đối tượng:** Sinh viên hệ chính quy đang trong thời gian đào tạo chuẩn của khóa học.
+* **Tiêu chí xét cấp:**
+  - Có số tín chỉ đăng ký học và thi trong học kỳ từ **15 tín chỉ trở lên** (không tính GDTC, GDQP-AN).
+  - Điểm trung bình học kỳ (ĐTBHK) đạt từ loại Khá trở lên (thang điểm 4 đạt từ 2,5 trở lên).
+  - Điểm rèn luyện học kỳ đạt từ loại Khá trở lên (từ 65 điểm trở lên).
+  - Không có học phần nào bị điểm F và không bị kỷ luật từ mức khiển trách trở lên trong học kỳ xét học bổng.
+* **Các mức học bổng KKHT:**
+  - *Mức Xuất sắc:* ĐTBHK từ 3,60 trở lên và ĐRL từ 90 điểm trở lên. Mức học bổng bằng hoặc cao hơn 120% mức học phí của học kỳ.
+  - *Mức Giỏi:* ĐTBHK từ 3,20 đến cận 3,60 và ĐRL từ 80 điểm trở lên. Mức học bổng bằng hoặc cao hơn 105% mức học phí.
+  - *Mức Khá:* ĐTBHK từ 2,50 đến cận 3,20 và ĐRL từ 65 điểm trở lên. Mức học bổng bằng 100% mức học phí.
+
+### 9.3. Các gói Học bổng tuyển sinh dành cho Tân sinh viên
+1. **Học bổng khuyến tài:**
+   - Cấp cho sinh viên trúng tuyển nhập học có thành tích là **Thủ khoa Ngành đào tạo** (mỗi ngành xét cấp 1 sinh viên).
+   - Điều kiện: Tổng điểm thi tốt nghiệp THPT 3 môn tổ hợp xét tuyển (không nhân hệ số, không cộng điểm ưu tiên) đạt từ **26 điểm trở lên**.
+   - Giá trị học bổng: **Tổng điểm thi THPT x 1.000.000 VNĐ** (ví dụ đạt 28 điểm nhận 28 triệu đồng).
+   - Phương thức cấp: Chuyển khoản trong 04 đợt vào 04 học kỳ đầu tiên của khóa học.
+2. **Học bổng nữ sinh viên kỹ thuật:**
+   - Cấp cho sinh viên nữ trúng tuyển nhập học vào **06 ngành kỹ thuật** có tỉ lệ sinh viên nữ đang học thấp nhất (dưới 3% tổng số sinh viên ngành trong 3 năm gần nhất).
+   - Giá trị: Tương đương **50% học phí của học kỳ đầu tiên**.
+   - Điều kiện duy trì từ học kỳ 2: ĐTBHK liền trước đạt từ **8,0/10** (hoặc Giỏi) và ĐRL đạt từ **80 điểm trở lên**.
+3. **Học bổng truyền thống HCMUTE:**
+   - Cấp cho tân sinh viên có anh/chị/em ruột đang học hoặc đã tốt nghiệp đại học chính quy tại Trường.
+   - Giá trị: **20% học phí của học kỳ đầu tiên**.
+   - Điều kiện duy trì từ học kỳ 2: Đăng ký >= 15 tín chỉ, ĐTB chung học kỳ đạt từ **6,5 trở lên** (thang 10), ĐRL đạt từ **65 điểm trở lên**.
+
+### 9.4. Các chương trình Học bổng khác
+* **Học bổng Sinh viên tài năng HCMUTE:** Cấp cho sinh viên năm 2 đến năm 4 có thành tích xuất sắc nhất mỗi Khoa (mỗi Khoa/Viện chọn duy nhất 01 hồ sơ tiêu biểu nhất: ĐTBNH >= 8,0; ĐRL >= 90; tích lũy đủ số tín chỉ; không bị kỷ luật; điểm CTXH >= 20; có công trình NCKH hoặc sáng tạo).
+* **Học bổng nâng cao trình độ ngoại ngữ:** Cấp 1 lần duy nhất trong toàn khóa học trị giá **2.500.000 VNĐ/SV** cho sinh viên đạt chứng chỉ quốc tế trong thời gian học (IELTS >= 6.5 đối với không chuyên ngữ; IELTS >= 7.5 đối với chuyên ngữ Sư phạm Tiếng Anh, Ngôn ngữ Anh).
+* **Chính sách hỗ trợ sinh viên trao đổi học tập quốc tế:** Tài trợ chi phí cho sinh viên tham gia các chương trình trao đổi sinh viên, thực tập ngắn hạn tại các trường đại học quốc tế đối tác.
+* **Chính sách trợ cấp khó khăn (định kỳ và đột xuất):** Hỗ trợ tài chính kịp thời cho sinh viên có hoàn cảnh đặc biệt khó khăn, mồ côi cha mẹ hoặc gia đình bị biến cố thiên tai đột xuất.
+
+### 9.5. Chính sách Miễn, Giảm học phí và Trợ cấp Xã hội theo quy định Nhà nước
+* **Miễn 100% học phí:** Người có công với cách mạng và thân nhân; sinh viên khuyết tật nặng; sinh viên mồ côi cả cha lẫn mẹ không nơi nương tựa; sinh viên dân tộc thiểu số rất ít người vùng khó khăn; sinh viên hệ Sư phạm (theo Nghị định số 116/2020/NĐ-CP được hỗ trợ 100% học phí + 3,63 triệu đồng/tháng sinh hoạt phí).
+* **Giảm 70% học phí:** Sinh viên là người dân tộc thiểu số ở vùng có điều kiện kinh tế - xã hội đặc biệt khó khăn; sinh viên học các chuyên ngành nghệ thuật truyền thống đặc thù.
+* **Giảm 50% học phí:** Sinh viên là con của cán bộ, công chức, viên chức, công nhân mà cha hoặc mẹ bị tai nạn lao động hoặc mắc bệnh nghề nghiệp được hưởng trợ cấp thường xuyên.
+* **Hỗ trợ chi phí học tập cho sinh viên DTTS hộ nghèo/cận nghèo (Quyết định số 66/2013/QĐ-TTg):** Hỗ trợ mức 60% mức lương cơ sở/tháng (cấp 10 tháng/năm học).
+
+---
+
+## 10. CHÍNH SÁCH TÍN DỤNG SINH VIÊN (VAY VỐN ĐÀO TẠO)
+
+### 10.1. Tín dụng sinh viên thông thường (Ngân hàng Chính sách xã hội)
+* Căn cứ Quyết định số 157/2007/QĐ-TTg và Quyết định số 05/2022/QĐ-TTg của Thủ tướng Chính phủ:
+  - Đối tượng: Sinh viên mồ côi, sinh viên thuộc hộ nghèo, hộ cận nghèo, hộ có mức sống trung bình hoặc gia đình gặp khó khăn tài chính đột xuất.
+  - Mức vay tối đa: **4.000.000 VNĐ/tháng** (tương đương 40.000.000 VNĐ/năm học/sinh viên).
+  - Thủ tục: Sinh viên in giấy xác nhận vay vốn trên cổng `online.hcmute.edu.vn`, lấy dấu xác nhận của Phòng Tuyển sinh và Công tác sinh viên nộp về Ngân hàng CSXH tại địa phương nơi cư trú.
+
+### 10.2. Chính sách tín dụng đặc thù đối với sinh viên ngành STEM (Quyết định số 29/2025/QĐ-TTg)
+* Ngày 28/8/2025, Thủ tướng Chính phủ ban hành Quyết định số 29/2025/QĐ-TTg về chính sách tín dụng đột phá cho học sinh, sinh viên, học viên cao học, nghiên cứu sinh học khối ngành Khoa học, Công nghệ, Kỹ thuật và Toán (STEM):
+* **Đối tượng thụ hưởng tại Trường:** Sinh viên hệ chính quy công dân Việt Nam đang học các ngành đào tạo khối STEM của Trường đáp ứng tiêu chuẩn học lực:
+  - *Sinh viên năm thứ nhất:* Có đồng thời cả 3 năm THPT xếp loại học lực từ Khá trở lên; HOẶC điểm trung bình môn năm lớp 12 các môn Toán, Vật lý, Hóa học, Sinh học đạt từ **8,0 điểm trở lên**.
+  - *Sinh viên từ năm thứ hai trở đi:* Có điểm trung bình học tập năm học liền trước đạt **loại Giỏi trở lên**.
+* **Mức vốn vay ưu đãi vượt trội:**
+  - Vay **100% toàn bộ tiền học phí thực tế** phải đóng của sinh viên theo xác nhận của Trường;
+  - Vay bổ sung tiền sinh hoạt phí và chi phí học tập khác tối đa lên đến **5.000.000 VNĐ/tháng** (60 triệu đồng/năm).
+* **Lãi suất vay ưu đãi:** Cực kỳ ưu đãi, chỉ **4,8%/năm** (lãi suất nợ quá hạn bằng 130% lãi suất vay).
+
+---
+
+## 11. ĐẠO ĐỨC NGHIÊN CỨU KHOA HỌC VÀ QUY ĐỊNH CHỐNG ĐẠO VĂN
+*(Trích Quyết định số 1047/QĐ-ĐHSPKT của Nhà trường)*
+
+### 11.1. Nguyên tắc trích dẫn học thuật
+* Bắt buộc áp dụng chuẩn trích dẫn quốc tế **APA** hoặc **IEEE** cho tất cả các sản phẩm học thuật (khóa luận tốt nghiệp, đồ án môn học, đề tài NCKH, luận văn thạc sĩ, luận án tiến sĩ).
+
+### 11.2. Mức độ phần trăm (%) trùng lặp cho phép khi kiểm tra qua phần mềm chống đạo văn (Turnitin / DoIT)
+
+| Loại hình sản phẩm học thuật | Tỷ lệ (%) trùng lặp tối đa toàn bài | Tỷ lệ (%) trùng lặp tối đa từ 01 nguồn tham khảo (có trích dẫn) |
+| :--- | :--- | :--- |
+| **Khóa luận / Đồ án tốt nghiệp đại học** | **Không quá 40%** | **Không quá 10%** |
+| **Báo cáo đề tài NCKH sinh viên** | **Không quá 40%** | **Không quá 10%** |
+| **Luận văn Thạc sĩ** | **Không quá 30%** | **Không quá 10%** |
+| **Báo cáo đề tài NCKH cấp Trường** | **Không quá 30%** | **Không quá 10%** |
+| **Luận án Tiến sĩ** | **Không quá 25%** | **Không quá 10%** |
+| **Bài báo Tạp chí KHGDKT** | **Không quá 25%** | **Không quá 10%** |
+| **Bài báo Hội thảo khoa học cấp Trường** | **Không quá 35%** | **Không quá 10%** |
+
+*Các nội dung được loại trừ khi quét trùng lặp:* Danh mục tài liệu tham khảo và các đoạn trùng lặp dưới 50 từ.
+
+### 11.3. Khung xử lý hành vi đạo văn
+* **Phát hiện trước khi bảo vệ/nghiệm thu:** Người học được yêu cầu chỉnh sửa lại 1 lần. Nếu lần 2 vẫn vi phạm, người học bị hủy quyền bảo vệ/nghiệm thu trong đợt đó, phải đăng ký học lại học phần và nhận đề tài mới để viết lại từ đầu. Giảng viên hướng dẫn cũng bị xem xét trách nhiệm liên đới.
+* **Phát hiện sau khi đã bảo vệ/cấp bằng:** Tác giả phải liên hệ gỡ bỏ công trình khỏi mọi phương tiện công bố, bồi thường thiệt hại (nếu có); đồng thời Trường sẽ xem xét **thu hồi học vị, bằng tốt nghiệp** và thu hồi toàn bộ kinh phí khen thưởng/tài trợ.
+
+---
+
+## 12. QUY TẮC VĂN HÓA ỨNG XỬ VÀ QUY CHUẨN EMAIL CHUYÊN NGHIỆP CHO SINH VIÊN
+
+### 12.1. Quy tắc văn hóa ứng xử
+* Giữ thái độ tôn sư trọng đạo, lễ phép với thầy cô giáo, viên chức, nhân viên bảo vệ, lao công trong trường.
+* Giữ gìn vệ sinh chung, không hút thuốc lá trong giảng đường và khuôn viên trường, có ý thức bảo vệ tài sản công, thực hành tiết kiệm điện, nước.
+* Trang phục lịch sự, chỉnh tề, đeo thẻ sinh viên khi đến trường học tập, giao dịch hành chính hoặc vào thư viện, phòng thực hành.
+* Văn hóa mạng xã hội: Sử dụng mạng xã hội văn minh, không đăng tải thông tin sai lệch, xuyên tạc, kích động gây tổn hại đến an ninh trật tự hoặc uy tín hình ảnh của Nhà trường và cộng đồng.
+
+### 12.2. Chuẩn mực gửi Email chuyên nghiệp
+* Sinh viên bắt buộc sử dụng hộp thư điện tử chính thức do Trường cấp (định dạng: `[MSSV]@student.hcmute.edu.vn`) khi liên hệ với giảng viên, khoa và các phòng ban chức năng.
+* Cấu trúc tiêu chuẩn của một email học vụ:
+  - *Tiêu đề (Subject):* Rõ ràng, đầy đủ cú pháp: `[Mã SV] - [Họ tên] - [Nội dung yêu cầu]` (Ví dụ: `22110001 - Nguyễn Văn A - Đơn xin điều chỉnh điểm học phần`).
+  - *Lời chào mở đầu:* Trang trọng (Ví dụ: `Kính gửi: Thầy/Cô [Họ tên], Giảng viên phụ trách môn học...`).
+  - *Nội dung:* Ngắn gọn, súc tích, trình bày rõ bối cảnh, lý do và nội dung cụ thể cần giải quyết; đính kèm file minh chứng rõ nét nếu có.
+  - *Lời kết và chữ ký:* Cảm ơn chân thành, lời chúc sức khỏe và chữ ký định danh (gồm Họ tên, MSSV, Lớp sinh hoạt, Ngành/Khoa, Số điện thoại liên hệ).
+
+---
+
+## 13. KHUNG KỶ LUẬT VÀ XỬ LÝ VI PHẠM ĐỐI VỚI SINH VIÊN
+
+* **Khiển trách:** Áp dụng đối với sinh viên vi phạm nội quy, quy chế lần đầu nhưng ở mức độ nhẹ.
+* **Cảnh cáo:** Áp dụng đối với sinh viên đã bị khiển trách mà tái phạm; hoặc vi phạm thi hộ lần đầu ở mức độ bài kiểm tra; hoặc bị kỷ luật rèn luyện loại Kém. Sinh viên bị cảnh cáo sẽ bị hạ 1 bậc xếp hạng tốt nghiệp khi ra trường (nếu đạt loại Xuất sắc/Giỏi).
+* **Đình chỉ học tập có thời hạn (1 năm học):**
+  - Sinh viên vi phạm thi hộ hoặc nhờ người khác thi hộ lần thứ nhất trong kỳ thi kết thúc học phần.
+  - Sinh viên tham gia đánh nhau gây thương tích, vi phạm trật tự công cộng nghiêm trọng.
+* **Buộc thôi học (Đuổi học):**
+  - Bị cảnh báo học tập 3 lần liên tiếp.
+  - Vi phạm thi hộ hoặc nhờ người khác thi hộ lần thứ hai.
+  - Sử dụng văn bằng, chứng chỉ ngoại ngữ/tin học hoặc hồ sơ giả mạo.
+  - Buôn bán, vận chuyển, tàng trữ hoặc sử dụng trái phép chất ma túy.
+  - Hoạt động mại dâm hoặc chứa chấp mại dâm.
+  - Không đăng ký học phần 2 học kỳ liên tiếp.
+
+---
+
+## 14. DANH BẠ HƯỚNG DẪN LIÊN HỆ CÁC PHÒNG BAN, KHOA VÀ VIỆN
+
+| Tên Đơn vị / Phòng ban | Địa điểm làm việc | Điện thoại liên hệ | Email / Website | Chức năng giải quyết chính cho Sinh viên |
+| :--- | :--- | :--- | :--- | :--- |
+| **Phòng Đào tạo (AAO)** | Phòng A1.201, A1.202 (tầng 2) & A1.401 (tầng 4), Tòa nhà Trung tâm A1 | 028.3896.1333; 028.3722.1223 (ext. 8120) | `pdt@hcmute.edu.vn`<br>https://aao.hcmute.edu.vn | Đăng ký môn học, thời khóa biểu, lịch thi, nhập điểm I, chuyển điểm ngoại ngữ, bảng điểm, xét cảnh báo học vụ, cấp bằng tốt nghiệp. |
+| **Phòng Tuyển sinh và Công tác SV (SAO)** | Phòng A1.203, A1.204 (tầng 2, Tòa A1) & Phòng A212 (Khu A) | 028.3722.2764; 028.3722.1223 (ext. 8170) | `p.cthssv@hcmute.edu.vn`<br>https://sao.hcmute.edu.vn | Làm thẻ SV, hậu kiểm hồ sơ, giấy xác nhận sinh viên, xác nhận vay vốn ngân hàng, xét học bổng, miễn giảm học phí, điểm rèn luyện, CTXH, khen thưởng kỷ luật. |
+| **Phòng Kế hoạch Tài chính (FPO)** | Phòng A1.102 (tầng 1); A1.701, A1.702 (tầng 7, Tòa A1) | 028.3896.2166; 028.3722.1223 (ext. 8130) | `phong.khtc@hcmute.edu.vn`<br>https://fpo.hcmute.edu.vn | Thu học phí, xuất hóa đơn điện tử, chi trả tiền học bổng, trợ cấp xã hội, khen thưởng, xác nhận công nợ học phí phục vụ tốt nghiệp. |
+| **Phòng Tổ chức Hành chính (HRMO)** | Phòng A1.101 (tầng 1, Tòa A1) | 028.3896.8641; 028.3722.5142 (ext. 8100) | `ptchc@hcmute.edu.vn`<br>https://hrmo.hcmute.edu.vn | Hướng dẫn gặp Ban Giám hiệu, thủ tục công văn, văn thư, tiếp nhận đơn thư kiến nghị, mượn hội trường lớn. |
+| **Ban An ninh Trật tự - Đội Bảo vệ** | Phòng A3.001 (tầng hầm Tòa nhà Trung tâm A1) | Hotline: 0584.357.065 (T. Thành); 0905.476.174 (T. Khải) | `bantt@hcmute.edu.vn` | Bảo đảm an ninh trật tự, kiểm soát tài sản, giải quyết mất mát đồ đạc, phòng cháy chữa cháy, an toàn giao thông nội khu. |
+| **Phòng Quản trị Cơ sở vật chất (FMO)** | Phòng A1.706, A1.707 (tầng 7, Tòa A1) | 028.3722.3502 (ext. 8200) | `p.qtcsvc@hcmute.edu.vn`<br>https://fmo.hcmute.edu.vn | Sửa chữa điện nước, bàn ghế, cho mượn phòng học sinh hoạt ngoại khóa, quản lý bãi giữ xe, căng tin, vệ sinh môi trường. |
+| **Phòng Thiết bị - Vật tư (EMO)** | Phòng A1.703, A1.704A (tầng 7, Tòa A1) | 028.3722.1713 (ext. 8144) | `ptbvt@hcmute.edu.vn`<br>https://emo.hcmute.edu.vn | Cung cấp vật tư thực hành xưởng/thí nghiệm, máy chiếu, âm thanh, điều hòa phòng học, quản lý hệ thống máy lọc nước uống. |
+| **Phòng Khảo thí & ĐBCL (QA)** | Tòa nhà Trung tâm A1 | 028.3722.1223 (ext. 8160) | `ktdbcl@hcmute.edu.vn` | Thanh tra khảo thí, chấm phúc khảo bài thi, ngân hàng đề thi, công tác bảo đảm chất lượng và kiểm định giáo dục. |
+| **Phòng Quan hệ Doanh nghiệp** | Tòa nhà Trung tâm A1 | 028.3722.1223 | `qhdn@hcmute.edu.vn` | Giới thiệu việc làm, nơi thực tập doanh nghiệp, ngày hội tuyển dụng, học bổng doanh nghiệp tài trợ. |
+| **Phòng Quan hệ Quốc tế** | Tòa nhà Trung tâm A1 | 028.3722.1223 | `iro@hcmute.edu.vn` | Hướng dẫn thủ tục cho lưu học sinh quốc tế, visa, học bổng trao đổi sinh viên quốc tế. |
+| **Thư viện Trường** | Tòa nhà Thư viện (khu trung tâm) | 028.3722.1223 (ext. 8180) | `lib@hcmute.edu.vn` | Mượn trả giáo trình, sách tài liệu tham khảo, phòng tự học, máy tính tra cứu học liệu số, xác nhận nợ sách tốt nghiệp. |
+| **Ban Quản lý Ký túc xá** | Ký túc xá Cơ sở 1 và Cơ sở 2 | 028.3896.0963 | `ktx@hcmute.edu.vn` | Đăng ký ở nội trú KTX, tạm trú tạm vắng, trật tự vệ sinh khu nội trú. |
+| **Trạm Y tế Trường** | Khuôn viên trường | 028.3722.1223 | `yte@hcmute.edu.vn` | Sơ cấp cứu ban đầu, cấp phát thuốc thông thường, làm thủ tục bảo hiểm y tế và bảo hiểm tai nạn. |
+| **Đoàn Thanh niên - Hội Sinh viên** | Văn phòng Đoàn - Hội trường | 028.3722.1223 | `doanhoi@hcmute.edu.vn` | Các phong trào thanh niên, Mùa hè xanh, Tiếp sức mùa thi, Xuân tình nguyện, cấp xác nhận điểm rèn luyện và CTXH. |
+| **Tổ Tư vấn Tâm lý Sinh viên** | Phòng Tuyển sinh & CTSV | Hotline hỗ trợ tư vấn sinh viên | `tuvan@hcmute.edu.vn` | Tư vấn, hỗ trợ sức khỏe tinh thần, giải tỏa áp lực học tập, stress, lo âu, định hướng phương pháp học tập. |
+
+---
+
+## 15. BỘ CÂU HỎI VÀ ĐÁP ÁN TOÀN DIỆN CHO HỆ THỐNG RAG (QA DATASET)
+
+### Nhóm 1: Định danh, Đổi tên trường và Lịch sử
+
+#### Q: Trường Đại học Công nghệ Kỹ thuật Thành phố Hồ Chí Minh có tên cũ là gì và được đổi tên khi nào?
+**A:** Tên cũ của trường là **Trường Đại học Sư phạm Kỹ thuật Thành phố Hồ Chí Minh** (viết tắt là HCMUTE hoặc ĐHSPKT). Trường chính thức được đổi tên thành **Trường Đại học Công nghệ Kỹ thuật Thành phố Hồ Chí Minh** (HCM-UTE) theo **Quyết định số 2809/QĐ-TTg ngày 26/12/2025 của Thủ tướng Chính phủ**.
+
+#### Q: Tên viết tắt và mã trường tuyển sinh của Trường Đại học Công nghệ Kỹ thuật TP.HCM là gì?
+**A:** Tên viết tắt giao dịch là **HCM-UTE** (hoặc **HCMUTE**). Mã trường tuyển sinh chính thức trên hệ thống tuyển sinh toàn quốc của Bộ Giáo dục và Đào tạo là **SPK**.
+
+#### Q: Tên tiếng Anh chính thức của trường hiện nay là gì?
+**A:** Tên tiếng Anh chính thức là **Ho Chi Minh City University of Technology and Engineering**.
+
+#### Q: Tiền thân của trường được thành lập vào năm nào?
+**A:** Tiền thân của trường là **Ban Cao đẳng Sư phạm Kỹ thuật**, được thành lập ngày **05/10/1962** tại Sài Gòn.
+
+#### Q: Cơ quan chủ quản và triết lý giáo dục của trường là gì?
+**A:** Cơ quan chủ quản là **Bộ Giáo dục và Đào tạo**. Triết lý giáo dục nhất quán của Nhà trường là: **"Nhân bản – Sáng tạo – Hội nhập"**.
+
+---
+
+### Nhóm 2: Cơ sở, Trụ sở và Cơ sở vật chất
+
+#### Q: Trường có bao nhiêu cơ sở và địa chỉ cụ thể ở đâu?
+**A:** Trường hiện có **03 cơ sở đào tạo**:
+1. **Cơ sở chính (Trụ sở 1):** Số 01 Võ Văn Ngân, Phường Linh Chiểu, TP. Thủ Đức, TP. Hồ Chí Minh (Diện tích đất: 174.247 m²).
+2. **Cơ sở 2:** Số 484 Lê Văn Việt, Phường Tăng Nhơn Phú A, TP. Thủ Đức, TP. Hồ Chí Minh (Diện tích đất: 44.408 m²).
+3. **Phân hiệu Bình Phước:** Số 899 Quốc lộ 14, Phường Bình Phước, Tỉnh Đồng Nai / Bình Phước (Diện tích đất: 89.839,1 m², thành lập theo Quyết định số 1576/QĐ-BGDĐT ngày 12/06/2025).
+
+#### Q: Ký túc xá của trường đáp ứng được bao nhiêu chỗ ở cho sinh viên?
+**A:** Hệ thống ký túc xá gồm **03 khu với 480 phòng**, giải quyết nhu cầu lưu trú văn minh cho gần **3.500 sinh viên**.
+
+---
+
+### Nhóm 3: Ban Giám hiệu đương nhiệm
+
+#### Q: Hiệu trưởng và các Phó Hiệu trưởng hiện nay của trường là ai?
+**A:** 
+- **Hiệu trưởng:** PGS. TS. **Lê Hiếu Giang** (bổ nhiệm theo Quyết định số 1468/QĐ-BGDĐT ngày 02/06/2026 của Bộ GD&ĐT).
+- **Các Phó Hiệu trưởng:** TS. **Trương Thị Hiền** (QĐ số 1479/QĐ-BGDĐT), TS. **Quách Thanh Hải** (NQ số 14/NQ-HĐT) và PGS. TS. **Châu Đình Thành** (NQ số 15/NQ-HĐT).
+
+---
+
+### Nhóm 4: Quy chế Tín chỉ, Đăng ký môn học và Điểm số
+
+#### Q: Số tín chỉ tối thiểu và tối đa sinh viên được phép đăng ký trong một học kỳ chính là bao nhiêu?
+**A:** 
+- Khối lượng tối thiểu: **Không ít hơn 10 tín chỉ**.
+- Khối lượng tối đa: **Không vượt quá 28 tín chỉ**.
+- Để đủ điều kiện xét học bổng khuyến khích học tập (KKHT): Phải đăng ký **tối thiểu 15 tín chỉ** (không tính GDTC, GDQP-AN).
+
+#### Q: Cách phân loại năm đào tạo của sinh viên theo tín chỉ tích lũy như thế nào?
+**A:** Phân loại theo số tín chỉ tích lũy:
+- Sinh viên năm 1: Dưới 36 tín chỉ.
+- Sinh viên năm 2: Từ 36 đến 71 tín chỉ.
+- Sinh viên năm 3: Từ 72 đến 107 tín chỉ.
+- Sinh viên năm 4: Từ 108 đến 149 tín chỉ.
+- Sinh viên năm 5: Trên 149 tín chỉ.
+
+#### Q: Khi nào sinh viên bị cảnh báo học tập hoặc thử thách học tập?
+**A:** 
+- **Cảnh báo học tập:** Cuối học kỳ chính nếu ĐTBHK < 0,8 (đối với học kỳ đầu tiên của khóa học) hoặc ĐTBHK < 1,0 (đối với các học kỳ tiếp theo).
+- **Thử thách học tập:** Khi số tín chỉ rớt trong kỳ > 50% số tín chỉ đăng ký, hoặc tổng số tín chỉ nợ đọng > 24 tín chỉ; hoặc ĐTBTL < 1,2 (năm 1), < 1,4 (năm 2), < 1,6 (năm 3), < 1,8 (năm sau).
+
+#### Q: Những trường hợp nào sinh viên bị buộc thôi học?
+**A:** Sinh viên bị buộc thôi học nếu:
+1. Có 3 lần cảnh báo học tập liên tiếp.
+2. Vượt quá thời gian đào tạo tối đa của chương trình.
+3. Nhờ người thi hộ hoặc đi thi hộ lần thứ hai (lần đầu bị đình chỉ 1 năm).
+4. Sử dụng văn bằng, chứng chỉ hoặc hồ sơ giả mạo.
+5. Không đăng ký môn học trong 2 học kỳ liên tiếp mà không xin phép.
+
+#### Q: Điểm I là gì và thủ tục xin nhận điểm I như thế nào?
+**A:** Điểm I là điểm hoãn thi khi học phần chưa thể đánh giá cuối kỳ do lý do bất khả kháng (ốm đau cấp cứu, tai nạn nằm viện nội trú có xác nhận y tế, việc tang quyến đột xuất). Sinh viên làm đơn trực tuyến trên hệ thống `online.hcmute.edu.vn` và đính kèm hồ sơ minh chứng y tế hợp lệ. Điểm I phải được thi bù để xóa điểm trong học kỳ tiếp theo, nếu không sẽ chuyển thành điểm F.
+
+#### Q: Sinh viên muốn học cùng lúc hai chương trình (song bằng) cần điều kiện gì?
+**A:** Sinh viên được đăng ký học chương trình thứ hai sớm nhất từ năm thứ hai nếu thỏa mãn 1 trong 2 điều kiện:
+1. ĐTBTL xếp loại Khá trở lên và đạt ngưỡng bảo đảm chất lượng của chương trình thứ hai; HOẶC
+2. ĐTBTL xếp loại Trung bình và đạt điểm chuẩn trúng tuyển của chương trình thứ hai trong năm tuyển sinh.
+Nếu ĐTBTL chương trình thứ nhất bị tụt xuống dưới mức trung bình hoặc bị cảnh báo học tập thì phải dừng học chương trình thứ hai.
+
+---
+
+### Nhóm 5: Hoạt động Công tác xã hội (CTXH) bắt buộc
+
+#### Q: Sinh viên cần bao nhiêu ngày Công tác xã hội (CTXH) để đủ điều kiện xét tốt nghiệp?
+**A:** Sinh viên hệ chính quy **bắt buộc phải tích lũy tối thiểu 04 Ngày CTXH (tương đương 40 Điểm CTXH)** trong toàn bộ khóa học mới đủ điều kiện được xét công nhận tốt nghiệp (Quy đổi: 10 Điểm CTXH = 01 Ngày CTXH).
+
+#### Q: Tham gia chiến dịch Mùa hè xanh và Hiến máu tình nguyện được quy đổi bao nhiêu điểm CTXH?
+**A:** 
+- Tham gia trọn vẹn Chiến dịch Mùa hè xanh (1 tháng): Được cộng từ **20 đến 40 điểm CTXH (quy đổi tương đương 2 đến 4 Ngày CTXH)**.
+- Trực tiếp hiến máu tình nguyện: Mỗi lần hiến máu được cộng **5 điểm CTXH (tương đương 0,5 Ngày CTXH)**.
+
+---
+
+### Nhóm 6: Chuẩn đầu ra Ngoại ngữ & Miễn chuyển điểm
+
+#### Q: Chuẩn đầu ra ngoại ngữ khi tốt nghiệp đối với sinh viên không chuyên ngữ là gì?
+**A:** Đạt tối thiểu **500 điểm TOEIC (2 kỹ năng)** hoặc các chứng chỉ quốc tế tương đương (IELTS, TOEFL iBT, Cambridge Linguaskill), hoặc chứng chỉ tiếng Nhật (JLPT N4, JLAN J4 trở lên). Đối với sinh viên chuyên ngữ (Sư phạm Tiếng Anh, Ngôn ngữ Anh), chuẩn đầu ra là **C1**.
+
+#### Q: Chứng chỉ Aptis ESOL, VSTEP và Cambridge PET có được chuyển điểm môn Anh văn chính khóa không?
+**A:** 
+- **Aptis ESOL và VSTEP:** Chỉ dùng để **miễn học phần Kỹ năng giao tiếp tiếng Anh 1 và 2**; **không** được chuyển điểm các học phần Anh văn chính khóa.
+- **Cambridge B1 Preliminary (PET):** Chỉ dùng để **xét chuẩn đầu ra ngoại ngữ**; **không** được dùng chuyển điểm học phần Anh văn.
+
+#### Q: Nộp chứng chỉ ngoại ngữ giả mạo bị xử phạt thế nào?
+**A:** Sinh viên sử dụng chứng chỉ giả mạo sẽ bị **BUỘC THÔI HỌC** theo Khoản 3 Điều 22 Quy chế đào tạo (Quyết định số 3116/QĐ-ĐHSPKT).
+
+---
+
+### Nhóm 7: Học bổng và Chính sách hỗ trợ
+
+#### Q: Tiêu chuẩn đạt Học bổng Khuyến khích học tập (KKHT) là gì?
+**A:** Sinh viên đăng ký và thi từ **15 tín chỉ trở lên** trong kỳ (không tính GDTC, GDQP-AN), không rớt môn nào (không có điểm F), không bị kỷ luật từ khiển trách trở lên, có ĐTBHK và ĐRL từ loại Khá trở lên. Mức học bổng chia thành: Khá (100% học phí), Giỏi (>= 105% học phí), Xuất sắc (>= 120% học phí).
+
+#### Q: Học bổng khuyến tài và Học bổng nữ sinh kỹ thuật có chính sách như thế nào?
+**A:** 
+- **Học bổng khuyến tài:** Dành cho Thủ khoa từng ngành (tổng điểm thi THPT 3 môn >= 26 điểm). Giá trị = **Tổng điểm thi x 1.000.000 VNĐ**, nhận trong 4 kỳ đầu.
+- **Học bổng nữ sinh kỹ thuật:** Cấp cho sinh viên nữ trúng tuyển vào 06 ngành kỹ thuật có tỷ lệ nữ < 3%. Mức cấp = **50% học phí học kỳ 1**; duy trì kỳ sau nếu ĐTBHK >= 8,0 và ĐRL >= 80.
+
+#### Q: Chính sách tín dụng vay vốn đối với sinh viên khối ngành STEM (Quyết định 29/2025/QĐ-TTg) có gì đặc biệt?
+**A:** Sinh viên hệ chính quy các ngành STEM (năm 1 đạt học lực khá THPT hoặc ĐTB lớp 12 môn Toán-Lý-Hóa-Sinh >= 8.0; từ năm 2 đạt loại Giỏi trở lên) được vay **100% toàn bộ học phí thực tế** cộng thêm chi phí sinh hoạt tối đa **5 triệu đồng/tháng** với lãi suất cực kỳ ưu đãi chỉ **4,8%/năm**.
+
+---
+
+### Nhóm 8: Đạo đức nghiên cứu & Quy định chống Đạo văn
+
+#### Q: Tỷ lệ phần trăm (%) trùng lặp cho phép trong Khóa luận tốt nghiệp của sinh viên là bao nhiêu?
+**A:** Theo Quyết định số 1047/QĐ-ĐHSPKT: Khóa luận tốt nghiệp sinh viên và báo cáo đề tài NCKH sinh viên được phép có tỷ lệ trùng lặp **không quá 40% toàn bài** và **không quá 10% từ 01 nguồn tham khảo duy nhất có trích dẫn**.
+
+#### Q: Chuẩn trích dẫn tài liệu tham khảo bắt buộc của trường là gì?
+**A:** Bắt buộc sử dụng chuẩn trích dẫn quốc tế **APA** hoặc **IEEE**.
+
+---
+
+### Nhóm 9: Thủ tục hành chính và Hướng dẫn liên hệ
+
+#### Q: Sinh viên cần xin giấy xác nhận sinh viên, giấy xác nhận vay vốn ngân hàng thì liên hệ phòng nào?
+**A:** Liên hệ **Phòng Tuyển sinh và Công tác sinh viên (SAO)** tại Phòng A1.203 - A1.204 (Tầng 2, Tòa nhà Trung tâm A1) hoặc in trực tuyến trên hệ thống `online.hcmute.edu.vn`. Điện thoại: 028.3722.2764 (ext. 8170).
+
+#### Q: Sinh viên thắc mắc về đăng ký môn học, thời khóa biểu, điểm số, bảng điểm hoặc nhận bằng tốt nghiệp liên hệ phòng nào?
+**A:** Liên hệ **Phòng Đào tạo (AAO)** tại Tòa nhà Trung tâm A1 (Phòng A1.201, A1.202 tầng 2 hoặc A1.401 tầng 4). Điện thoại: 028.3896.1333, 028.3722.1223 (ext. 8120). Email: `pdt@hcmute.edu.vn`.
+
+#### Q: Sinh viên cần đóng học phí, nhận tiền học bổng, xác nhận công nợ học phí thì liên hệ phòng nào?
+**A:** Liên hệ **Phòng Kế hoạch Tài chính (FPO)** tại Tòa nhà Trung tâm A1 (Phòng A1.102 tầng 1 hoặc A1.701, A1.702 tầng 7). Điện thoại: 028.3896.2166 (ext. 8130). Email: `phong.khtc@hcmute.edu.vn`.
+
+#### Q: Sinh viên cần gặp tổ tư vấn tâm lý khi bị stress, lo âu trong học tập thì liên hệ ở đâu?
+**A:** Sinh viên liên hệ **Tổ Tư vấn Tâm lý Sinh viên** (thuộc Phòng Tuyển sinh và Công tác sinh viên) hoặc gửi email đến `tuvan@hcmute.edu.vn` để được hỗ trợ bảo mật và hoàn toàn miễn phí.
+
+---
+
+### Nhóm 10: Đội ngũ Giảng viên các Bộ môn - Khoa Công nghệ Thông tin (FIT)
+
+#### Q: Ai đang giữ chức vụ Trưởng khoa Công nghệ Thông tin (FIT) và thông tin liên hệ là gì?
+**A:** Trưởng khoa Công nghệ Thông tin hiện nay là **GVC. TS. Lê Văn Vinh** (đồng thời là giảng viên thuộc Bộ môn Công nghệ Phần mềm). Email liên hệ: `vinhlv@hcmute.edu.vn`.
+
+#### Q: Danh sách và email liên hệ của các giảng viên Bộ môn Công nghệ Phần mềm (Khoa Công nghệ Thông tin - FIT) gồm những thầy cô nào?
+**A:** Danh sách 15 cán bộ, giảng viên thuộc Bộ môn Công nghệ Phần mềm bao gồm:
+1. **TS. Huỳnh Xuân Phụng** (Giảng viên, TS - Trưởng bộ môn) - Email: `phunghx@hcmute.edu.vn`
+2. **ThS. Trương Thị Ngọc Phượng** (Giảng viên, ThS - Phó bộ môn) - Email: `phuongttn@hcmute.edu.vn`
+3. **ThS. Nguyễn Minh Đạo** (Giảng viên chính, ThS) - Email: `daonm@hcmute.edu.vn`
+4. **ThS. Mai Tuấn Khôi** (Giảng viên, ThS) - Email: `khoimt@hcmute.edu.vn`
+5. **ThS. Nguyễn Hoài Lê** (Giảng viên, ThS) - Email: `lenh@hcmute.edu.vn`
+6. **TS. Phùng Quang Ngọc** (Giảng viên, TS) - Email: `ngocpq@hcmute.edu.vn`
+7. **TS. Lê Văn Vinh** (Giảng viên chính, TS - Trưởng khoa CNTT) - Email: `vinhlv@hcmute.edu.vn`
+8. **ThS. Nguyễn Trần Thi Văn** (Giảng viên, ThS) - Email: `nttvan@hcmute.edu.vn`
+9. **ThS. Nguyễn Thủy An** (Giảng viên, ThS) - Email: `thuyan@hcmute.edu.vn`
+10. **TS. Mai Anh Thơ** (Giảng viên chính, TS) - Email: `thoma@hcmute.edu.vn`
+11. **ThS. Nguyễn Hữu Trung** (Giảng viên, ThS) - Email: `trungnh@hcmute.edu.vn`
+12. **ThS. Vũ Đình Bảo** (Giảng viên, ThS) - Email: `baovd@hcmute.edu.vn`
+13. **ThS. Hoàng Thái Xuân Khoa** (Giảng viên, ThS) - Email: `khoahtx@hcmute.edu.vn`
+14. **ThS. Võ Quang Phúc** (Giảng viên, ThS) - Email: `phucvq@hcmute.edu.vn`
+15. **Huỳnh Thị Tố Trinh** (Trợ giảng) - Email: `trinhhtt@hcmute.edu.vn`
+
+#### Q: Danh sách và email liên hệ của các giảng viên Bộ môn Hệ thống Thông tin (Khoa Công nghệ Thông tin - FIT) gồm những ai?
+**A:** Danh sách 8 cán bộ, giảng viên thuộc Bộ môn Hệ thống Thông tin bao gồm:
+1. **GVC. TS. Nguyễn Thanh Tuấn** (Trưởng bộ môn Hệ thống Thông tin) - Email: `tuannt@hcmute.edu.vn`
+2. **ThS. Lê Thị Minh Châu** (Phó bộ môn Hệ thống Thông tin) - Email: `chaultm@hcmute.edu.vn`
+3. **TS. Nguyễn Thành Sơn** (Giảng viên Cao cấp) - Email: `sonnt@hcmute.edu.vn`
+4. **ThS. Trần Quang Khải** (Giảng viên) - Email: `khaitq@hcmute.edu.vn`
+5. **TS. Phan Thị Thể** (Giảng viên) - Email: `thept@hcmute.edu.vn`
+6. **ThS. Đoàn Minh Trí** (Giảng viên) - Email: `doanminhtri@hcmute.edu.vn`
+7. **ThS. Trần Trọng Bình** (Giảng viên) - Email: `binhtt@hcmute.edu.vn`
+8. **PGS. TS. Trương Mỹ Dung** (Giảng viên, Phó Giáo sư, Tiến sĩ) - Email: `dungtm.ht@hcmute.edu.vn`
+
+#### Q: Ai đang giữ chức vụ Phó Trưởng khoa Công nghệ Thông tin (FIT) và thông tin liên hệ là gì?
+**A:** Khoa Công nghệ Thông tin hiện nay có các Phó Trưởng khoa bao gồm:
+- **TS. Lê Vĩnh Thịnh** (thuộc Bộ môn Mạng và An ninh mạng) - Email: `thinhlv@hcmute.edu.vn`
+- **PGS. TS. Hoàng Văn Dũng** (Giảng viên Cao cấp, thuộc Bộ môn Trí tuệ Nhân tạo) - Email: `dunghv@hcmute.edu.vn`
+
+#### Q: Danh sách và email liên hệ của các giảng viên Bộ môn Mạng và An ninh mạng (Khoa Công nghệ Thông tin - FIT) gồm những ai?
+**A:** Danh sách 9 cán bộ, giảng viên thuộc Bộ môn Mạng và An ninh mạng bao gồm:
+1. **GVC. ThS. Nguyễn Thị Thanh Vân** (Trưởng bộ môn Mạng và An ninh mạng) - Email: `vanntth@hcmute.edu.vn`
+2. **ThS. Đinh Công Đoan** (Phó bộ môn Mạng và An ninh mạng) - Email: `doandc@hcmute.edu.vn`
+3. **TS. Lê Vĩnh Thịnh** (Phó Trưởng khoa CNTT) - Email: `thinhlv@hcmute.edu.vn`
+4. **GVC. TS. Huỳnh Nguyên Chính** (Giảng viên chính) - Email: `chinhhn@hcmute.edu.vn`
+5. **GVC. ThS. Nguyễn Đăng Quang** (Giảng viên chính) - Email: `quangnd@hcmute.edu.vn`
+6. **ThS. Từ Tuyết Hồng** (Giảng viên) - Email: `hongtt@hcmute.edu.vn`
+7. **TS. Trần Anh Tuấn** (Giảng viên) - Email: `tuanta@hcmute.edu.vn`
+8. **ThS. Võ Lê Phúc Hậu** (Giảng viên) - Email: `hauvlp@hcmute.edu.vn`
+9. **ThS. Đỗ Minh Hậu** (Giảng viên) - Email: `dominhhau@hcmute.edu.vn`
+
+#### Q: Danh sách và email liên hệ của các giảng viên Bộ môn Trí tuệ Nhân tạo (Khoa Công nghệ Thông tin - FIT) gồm những ai?
+**A:** Danh sách 10 cán bộ, giảng viên thuộc Bộ môn Trí tuệ Nhân tạo bao gồm:
+1. **TS. Phan Thị Huyền Trang** (Trưởng bộ môn Trí tuệ Nhân tạo) - Email: `trangpth@hcmute.edu.vn`
+2. **ThS. Quách Đình Hoàng** (Phó bộ môn Trí tuệ Nhân tạo) - Email: `hoangqd@hcmute.edu.vn`
+3. **ThS. Trần Công Tú** (Giảng viên chính) - Email: `tutc@hcmute.edu.vn`
+4. **PGS. TS. Hoàng Văn Dũng** (Giảng viên Cao cấp, Phó Trưởng khoa CNTT) - Email: `dunghv@hcmute.edu.vn`
+5. **ThS. Nguyễn Quang Ngọc** (Giảng viên) - Email: `ngocnq@hcmute.edu.vn`
+6. **ThS. Trần Tiến Đức** (Giảng viên chính) - Email: `ductt@hcmute.edu.vn`
+7. **ThS. Lê Minh Tân** (Giảng viên) - Email: `tanlm@hcmute.edu.vn`
+8. **TS. Bùi Mạnh Quân** (Giảng viên) - Email: `quanbm@hcmute.edu.vn`
+9. **ThS. Phù Khắc Anh** (Giảng viên) - Email: `anhpk@hcmute.edu.vn`
+10. **ThS. Võ Long Tuấn** (Giảng viên) - Email: `tuanvl@hcmute.edu.vn`
+

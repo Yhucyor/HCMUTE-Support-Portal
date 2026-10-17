@@ -21,6 +21,12 @@
                 </a>
             </li>
             <li>
+                <a th:href="@{/academic/sync}" th:classappend="${activeTab == 'academic'} ? 'active' : ''">
+                    <i class='bx bx-book-bookmark'></i>
+                    <span>Đồng bộ Học vụ (HCMUTE)</span>
+                </a>
+            </li>
+            <li>
                 <a th:href="@{/ticket}" th:classappend="${activeTab == 'ticket'} ? 'active' : ''">
                     <i class='bx bx-support'></i>
                     <span>Yêu cầu hỗ trợ (Ticket)</span>
@@ -50,7 +56,7 @@
                 <i class='bx bx-home'></i>
                 <span>Trang chủ chính</span>
             </a>
-            <a th:href="@{/login}" style="margin-top: 5px;">
+            <a th:href="@{/auth/logout}" style="margin-top: 5px;">
                 <i class='bx bx-log-out'></i>
                 <span>Đăng xuất</span>
             </a>

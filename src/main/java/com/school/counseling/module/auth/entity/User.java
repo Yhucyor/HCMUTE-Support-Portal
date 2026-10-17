@@ -2,16 +2,19 @@ package com.school.counseling.module.auth.entity;
 
 import com.school.counseling.common.entity.BaseEntity;
 import jakarta.persistence.*;
+// bộ thư viện chuẩn của jpa  dùng để ánh xạ code java xuống csdl trong mysql 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+// bản nâng cấp của @Builder trong Lombok dùng khi class có kế thừa extend BaseEntity 
 
-@Entity
-@Table(name = "users")
-@Getter
+@Entity // báo cho springboot và hibernate bt hibernate sẽ quản lý class này
+@Table(name = "users") // tên bảng dưới db phải là users
+@Getter // Lombok tự động tạo ra các hàm đọc getUsername() , getEmail() và gán set
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
+// baseEntity là class cha chung ở phần entity của commom dùng lại ở mọi bảng
 public class User extends BaseEntity {
 
     @Column(name = "username", nullable = false, unique = true, length = 100)
