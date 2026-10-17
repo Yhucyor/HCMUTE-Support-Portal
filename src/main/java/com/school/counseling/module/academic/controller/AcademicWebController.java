@@ -25,12 +25,14 @@ public class AcademicWebController {
         if (!currentStudentId.isBlank()) {
             AcademicSummaryResponse summary = crawlerService.getAcademicSummary(currentStudentId);
             model.addAttribute("summary", summary);
+            crawlerService.getStudentProfile(currentStudentId).ifPresent(profile ->
+                    model.addAttribute("studentProfile", profile));
         }
 
         return "academic-sync";
     }
 
-    @GetMapping({"", "/", "/grades", "/timetable", "/curriculum"})
+    @GetMapping({"", "/", "/grades", "/timetable", "/curriculum", "/info"})
     public String redirectToSync() {
         return "redirect:/academic/sync";
     }

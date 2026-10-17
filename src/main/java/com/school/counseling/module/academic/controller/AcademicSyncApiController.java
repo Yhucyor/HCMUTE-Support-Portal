@@ -7,6 +7,7 @@ import com.school.counseling.module.academic.dto.HcmuteSyncResponse;
 import com.school.counseling.module.academic.entity.CourseSchedule;
 import com.school.counseling.module.academic.entity.CurriculumSubject;
 import com.school.counseling.module.academic.entity.StudentGrade;
+import com.school.counseling.module.academic.entity.StudentProfile;
 import com.school.counseling.module.academic.entity.SyncHistory;
 import com.school.counseling.module.academic.repository.CourseScheduleRepository;
 import com.school.counseling.module.academic.repository.CurriculumSubjectRepository;
@@ -35,6 +36,15 @@ public class AcademicSyncApiController {
     public ResponseEntity<HcmuteSyncResponse> syncAcademicData(@Valid @RequestBody HcmuteSyncRequest request) {
         HcmuteSyncResponse response = crawlerService.syncStudentData(request);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<StudentProfile> getProfile(
+            @RequestParam(required = false) String studentId) {
+        String resolvedId = resolveStudentId(studentId);
+        return crawlerService.getStudentProfile(resolvedId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/summary")

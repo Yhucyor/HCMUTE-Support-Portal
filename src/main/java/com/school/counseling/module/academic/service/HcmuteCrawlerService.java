@@ -8,12 +8,13 @@ import com.school.counseling.module.academic.dto.HcmuteSyncResponse;
 import com.school.counseling.module.academic.entity.CourseSchedule;
 import com.school.counseling.module.academic.entity.CurriculumSubject;
 import com.school.counseling.module.academic.entity.StudentGrade;
+import com.school.counseling.module.academic.entity.StudentProfile;
 import com.school.counseling.module.academic.entity.SyncHistory;
 import com.school.counseling.module.academic.repository.CourseScheduleRepository;
 import com.school.counseling.module.academic.repository.CurriculumSubjectRepository;
 import com.school.counseling.module.academic.repository.StudentGradeRepository;
+import com.school.counseling.module.academic.repository.StudentProfileRepository;
 import com.school.counseling.module.academic.repository.SyncHistoryRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,7 @@ public class HcmuteCrawlerService {
     private final CourseScheduleRepository scheduleRepository;
     private final CurriculumSubjectRepository curriculumRepository;
     private final SyncHistoryRepository syncHistoryRepository;
+    private final StudentProfileRepository profileRepository;
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
@@ -49,11 +51,13 @@ public class HcmuteCrawlerService {
             CourseScheduleRepository scheduleRepository,
             CurriculumSubjectRepository curriculumRepository,
             SyncHistoryRepository syncHistoryRepository,
+            StudentProfileRepository profileRepository,
             ObjectMapper objectMapper) {
         this.gradeRepository = gradeRepository;
         this.scheduleRepository = scheduleRepository;
         this.curriculumRepository = curriculumRepository;
         this.syncHistoryRepository = syncHistoryRepository;
+        this.profileRepository = profileRepository;
         this.objectMapper = objectMapper;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(TIMEOUT)
@@ -88,16 +92,25 @@ public class HcmuteCrawlerService {
 
             log.info("Xác thực thành công sinh viên {} ({}) - Vai trò: {}", studentName, studentId, role);
 
-            // 2. Lấy mã StudyProgramID của sinh viên từ HCMUTE
+            // 2. Lấy thông tin hồ sơ sinh viên từ /student/info
+            StudentProfile profile = fetchRealStudentInfo(studentId, token);
+            if (profile != null) {
+                profileRepository.deleteByStudentId(studentId);
+                profileRepository.save(profile);
+                if (profile.getFullName() != null && !profile.getFullName().isBlank()) {
+                    studentName = profile.getFullName();
+                }
+            }
+
+            // 3. Lấy mã StudyProgramID của sinh viên từ HCMUTE
             String studyProgramId = fetchStudyProgramId(token);
             log.info("Lấy được StudyProgramID cho sinh viên {}: {}", studentId, studyProgramId);
 
-            // 3. Lấy dữ liệu thật từ các API học vụ của HCMUTE
+            // 4. Lấy dữ liệu điểm, thời khóa biểu và khung chương trình đào tạo
             List<StudentGrade> grades = fetchRealGrades(studentId, token, studyProgramId);
             List<CourseSchedule> schedules = fetchRealSchedules(studentId, token);
             List<CurriculumSubject> curriculums = fetchRealCurriculums(studentId, token, studyProgramId, grades);
 
-            // 4. Nếu cổng trường chưa mở dữ liệu CTĐT hoặc sinh viên mới, fallback nhẹ sang khung CTĐT chuẩn
             if (curriculums.isEmpty()) {
                 log.info("Cổng trường chưa trả về môn CTĐT, tự động bổ sung khung CTĐT chuẩn HCMUTE cho MSSV {}", studentId);
                 curriculums = generateDemoCurriculums(studentId, grades);
@@ -132,7 +145,7 @@ public class HcmuteCrawlerService {
                     .build();
             syncHistoryRepository.save(history);
 
-            log.info("Hoàn tất đồng bộ MSSV {}: {} môn điểm, {} lịch TKB, {} môn CTĐT",
+            log.info("Hoàn tất đồng bộ MSSV {}: Hồ sơ SV, {} môn điểm, {} lịch TKB, {} môn CTĐT",
                     studentId, grades.size(), schedules.size(), curriculums.size());
 
             return HcmuteSyncResponse.builder()
@@ -161,6 +174,82 @@ public class HcmuteCrawlerService {
                     .syncedAt(LocalDateTime.now())
                     .build();
         }
+    }
+
+    private StudentProfile fetchRealStudentInfo(String studentId, String token) {
+        try {
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(API_BASE + "/student/info"))
+                    .header("Content-Type", "application/json")
+                    .header("apiKey", API_KEY)
+                    .header("clientId", CLIENT_ID)
+                    .header("Authorization", "Bearer " + token)
+                    .timeout(TIMEOUT)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200 && response.body() != null && !response.body().isBlank()) {
+                JsonNode root = objectMapper.readTree(response.body());
+                JsonNode info = root.isArray() && root.size() > 0 ? root.get(0) : root;
+
+                String fullName = getJsonString(info, "FullName", "HoTen", "StudentName");
+                String gender = getJsonString(info, "Gender", "GioiTinh");
+                String birthday = getJsonString(info, "Birthday", "NgaySinh");
+                String birthPlace = getJsonString(info, "BirthPlace", "NoiSinh");
+                String studentClass = getJsonString(info, "Class", "LopSinhVien", "ClassName");
+                String faculty = getJsonString(info, "DepartmentName", "Khoa", "FacultyName");
+                String major = getJsonString(info, "OlogyName", "Nganh", "MajorName");
+                String academicYear = getJsonString(info, "Course", "KhoaHoc", "NienKhoa");
+                String educationType = getJsonString(info, "Modeofstudy", "LoaiHinhDaoTao", "HeDaoTao");
+                String studyProgram = getJsonString(info, "AcademicProgram", "StudyProgramName", "CTDT");
+                String academicStatus = getJsonString(info, "TinhTrangHoc", "Status");
+                if (academicStatus.isBlank()) academicStatus = "Đang học";
+                String advisor = getJsonString(info, "CoVanHocTap", "LienHeCoVHT");
+                String email = getJsonString(info, "EmailTruong", "EmailSV", "Email");
+                String phone = getJsonString(info, "MobileNumber", "DiDong", "Phone");
+                String citizenId = getJsonString(info, "CMND", "CCCD");
+                String address = getJsonString(info, "DiaChi", "DiaChiThuongTru", "Address");
+                String avatarUrl = getJsonString(info, "HinhOnlineTTSV", "FileName", "Avatar");
+
+                log.info("Cào thành công thông tin sinh viên {} ({}) - Lớp: {}, Khoa: {}",
+                        fullName, studentId, studentClass, faculty);
+
+                return StudentProfile.builder()
+                        .studentId(studentId)
+                        .fullName(fullName)
+                        .gender(gender)
+                        .birthday(birthday)
+                        .birthPlace(birthPlace)
+                        .studentClass(studentClass)
+                        .faculty(faculty)
+                        .major(major)
+                        .academicYear(academicYear)
+                        .educationType(educationType)
+                        .studyProgram(studyProgram)
+                        .academicStatus(academicStatus)
+                        .academicAdvisor(advisor)
+                        .email(email)
+                        .phone(phone)
+                        .citizenId(citizenId)
+                        .address(address)
+                        .avatarUrl(avatarUrl)
+                        .build();
+            }
+        } catch (Exception e) {
+            log.error("Lỗi khi cào thông tin sinh viên {} từ /student/info: {}", studentId, e.getMessage());
+        }
+        return generateDemoProfile(studentId);
+    }
+
+    private String getJsonString(JsonNode node, String... keys) {
+        if (node == null) return "";
+        for (String k : keys) {
+            if (node.hasNonNull(k) && !node.get(k).asText().isBlank()) {
+                return node.get(k).asText().trim();
+            }
+        }
+        return "";
     }
 
     private String fetchStudyProgramId(String token) {
@@ -194,16 +283,13 @@ public class HcmuteCrawlerService {
     private List<StudentGrade> fetchRealGrades(String studentId, String token, String studyProgramId) {
         List<StudentGrade> list = new ArrayList<>();
 
-        // 1. Thử gọi với ctdt={studyProgramId}&loai=SV
         String urlWithCtdt = API_BASE + "/student/marks?ctdt=" + (studyProgramId != null ? studyProgramId : "") + "&&loai=SV";
         fetchMarksFromUrl(urlWithCtdt, studentId, token, list);
 
-        // 2. Nếu rỗng, thử gọi với ctdt=&loai=SV
         if (list.isEmpty()) {
             fetchMarksFromUrl(API_BASE + "/student/marks?ctdt=&loai=SV", studentId, token, list);
         }
 
-        // 3. Nếu vẫn rỗng, thử gọi loai=CTDT
         if (list.isEmpty()) {
             fetchMarksFromUrl(API_BASE + "/student/marks?ctdt=" + (studyProgramId != null ? studyProgramId : "") + "&&loai=CTDT", studentId, token, list);
         }
@@ -243,7 +329,6 @@ public class HcmuteCrawlerService {
             return;
         }
 
-        // Nếu node chứa danh sách điểm các học kỳ theo từng năm (NamHoc -> DanhSachDiem)
         if (node.hasNonNull("DanhSachDiem") && node.get("DanhSachDiem").isArray()) {
             String year = node.hasNonNull("NamHoc") ? node.get("NamHoc").asText() : "";
             for (JsonNode semNode : node.get("DanhSachDiem")) {
@@ -256,7 +341,6 @@ public class HcmuteCrawlerService {
             return;
         }
 
-        // Nếu node chứa danh sách điểm môn học (DanhSachDiemHK)
         if (node.hasNonNull("DanhSachDiemHK") && node.get("DanhSachDiemHK").isArray()) {
             String semName = node.hasNonNull("HocKy") ? node.get("HocKy").asText() : semesterContext;
             for (JsonNode courseNode : node.get("DanhSachDiemHK")) {
@@ -266,7 +350,6 @@ public class HcmuteCrawlerService {
             return;
         }
 
-        // Nếu node chính là một môn học
         if (node.hasNonNull("CurriculumID") || node.hasNonNull("MaHP") || node.hasNonNull("DiemTK_10")) {
             StudentGrade g = parseSingleGrade(node, studentId, semesterContext);
             if (g != null) list.add(g);
@@ -409,7 +492,6 @@ public class HcmuteCrawlerService {
             }
         }
 
-        // 1. Gọi trực tiếp API chi tiết CTĐT: /student/studyProgram?StudyProgramID={studyProgramId}
         if (studyProgramId != null && !studyProgramId.isBlank()) {
             fetchCurriculumFromUrl(API_BASE + "/student/studyProgram?StudyProgramID=" + studyProgramId, studentId, token, 1, passedCodes, map);
             if (map.isEmpty()) {
@@ -417,12 +499,10 @@ public class HcmuteCrawlerService {
             }
         }
 
-        // 2. Thử gọi /student/orderdetail
         if (map.isEmpty()) {
             fetchCurriculumFromUrl(API_BASE + "/student/orderdetail", studentId, token, 1, passedCodes, map);
         }
 
-        // 3. Thử gọi /student/getstudyprogram
         if (map.isEmpty()) {
             fetchCurriculumFromUrl(API_BASE + "/student/getstudyprogram", studentId, token, 1, passedCodes, map);
         }
@@ -469,7 +549,6 @@ public class HcmuteCrawlerService {
             sem = node.get("Semester").asInt(currentSem);
         }
 
-        // Nếu node là một môn học
         if (node.hasNonNull("CurriculumID") || node.hasNonNull("MaHP")) {
             String code = node.hasNonNull("CurriculumID") ? node.get("CurriculumID").asText().trim() : node.get("MaHP").asText().trim();
             if (!code.isBlank() && !map.containsKey(code)) {
@@ -490,7 +569,6 @@ public class HcmuteCrawlerService {
             }
         }
 
-        // Đệ quy duyệt qua các trường đối tượng con (tbStudyPrograms, CTDT, groupSelection...)
         Iterator<Map.Entry<String, JsonNode>> fieldsIterator = node.fields();
         while (fieldsIterator.hasNext()) {
             Map.Entry<String, JsonNode> entry = fieldsIterator.next();
@@ -517,14 +595,22 @@ public class HcmuteCrawlerService {
     }
 
     @Transactional(readOnly = true)
+    public Optional<StudentProfile> getStudentProfile(String studentId) {
+        return profileRepository.findByStudentId(studentId);
+    }
+
+    @Transactional(readOnly = true)
     public AcademicSummaryResponse getAcademicSummary(String studentId) {
         List<StudentGrade> grades = gradeRepository.findByStudentIdOrderBySemesterDesc(studentId);
         List<SyncHistory> histories = syncHistoryRepository.findByStudentIdOrderBySyncedAtDesc(studentId);
+        Optional<StudentProfile> profileOpt = profileRepository.findByStudentId(studentId);
+
+        String studentName = profileOpt.map(StudentProfile::getFullName).orElse("Sinh viên " + studentId);
 
         if (grades.isEmpty()) {
             return AcademicSummaryResponse.builder()
                     .studentId(studentId)
-                    .studentName("Sinh viên " + studentId)
+                    .studentName(studentName)
                     .totalCredits(0)
                     .gpa10(0.0)
                     .gpa4(0.0)
@@ -585,7 +671,7 @@ public class HcmuteCrawlerService {
 
         return AcademicSummaryResponse.builder()
                 .studentId(studentId)
-                .studentName("Sinh viên " + studentId)
+                .studentName(studentName)
                 .totalCredits(totalPassedCredits)
                 .gpa10(gpa10)
                 .gpa4(gpa4)
@@ -629,14 +715,17 @@ public class HcmuteCrawlerService {
 
     @Transactional
     public HcmuteSyncResponse syncDemoData(String studentId) {
+        StudentProfile demoProfile = generateDemoProfile(studentId);
         List<StudentGrade> demoGrades = generateDemoGrades(studentId);
         List<CourseSchedule> demoSchedules = generateDemoSchedules(studentId);
         List<CurriculumSubject> demoCurriculums = generateDemoCurriculums(studentId, demoGrades);
 
+        profileRepository.deleteByStudentId(studentId);
         gradeRepository.deleteByStudentId(studentId);
         scheduleRepository.deleteByStudentId(studentId);
         curriculumRepository.deleteByStudentId(studentId);
 
+        profileRepository.save(demoProfile);
         gradeRepository.saveAll(demoGrades);
         scheduleRepository.saveAll(demoSchedules);
         curriculumRepository.saveAll(demoCurriculums);
@@ -658,12 +747,35 @@ public class HcmuteCrawlerService {
                 .success(true)
                 .message(message)
                 .studentId(studentId)
-                .studentName("Nguyễn Văn A (Mô phỏng)")
+                .studentName(demoProfile.getFullName())
                 .gradesCount(demoGrades.size())
                 .schedulesCount(demoSchedules.size())
                 .curriculumsCount(demoCurriculums.size())
                 .syncMode("DEMO_FALLBACK")
                 .syncedAt(LocalDateTime.now())
+                .build();
+    }
+
+    private StudentProfile generateDemoProfile(String studentId) {
+        return StudentProfile.builder()
+                .studentId(studentId)
+                .fullName("Nguyễn Văn A")
+                .gender("Nam")
+                .birthday("20/10/2003")
+                .birthPlace("TP. Hồ Chí Minh")
+                .studentClass("21110CL1A")
+                .faculty("Khoa Công nghệ Thông tin")
+                .major("Kỹ thuật Phần mềm")
+                .academicYear("Khóa 2021 - 2025")
+                .educationType("Đại học chính quy (Chất lượng cao)")
+                .studyProgram("Kỹ thuật Phần mềm - Chương trình CLC tiếng Việt")
+                .academicStatus("Đang học")
+                .academicAdvisor("TS. Nguyễn Văn Toàn (toannv@hcmute.edu.vn)")
+                .email(studentId + "@student.hcmute.edu.vn")
+                .phone("0901234567")
+                .citizenId("079203001234")
+                .address("Số 1 Võ Văn Ngân, P. Linh Chiểu, TP. Thủ Đức, TP.HCM")
+                .avatarUrl("https://ui-avatars.com/api/?name=Nguyen+Van+A&background=2563eb&color=fff")
                 .build();
     }
 
