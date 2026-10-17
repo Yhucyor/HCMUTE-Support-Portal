@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Diễn Đàn Thảo Luận Sinh Viên - QAUTE Portal</title>
+</head>
+<body>
+<div th:fragment="content">
+
+    <!-- CSRF Metadata for Secure AJAX Requests -->
+    <input type="hidden" id="csrfToken" th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}" th:value="${_csrf != null ? _csrf.token : ''}" />
+    <input type="hidden" id="csrfHeader" th:value="${_csrf != null ? _csrf.headerName : 'X-CSRF-TOKEN'}" />
+
+    <!-- Top-Right Toast Container (Single Execution, Auto-Dismiss 3s) -->
+    <div id="feedToastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1150;"></div>
+
+    <style>
+        /* ==========================================================================
+           Facebook Enterprise Feed Styling (Academic Minimalism)
+           ========================================================================== */
+        .feed-container {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        .feed-card {
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            border-radius: 12px;
+            background-color: #ffffff;
+            transition: box-shadow 0.2s ease;
+        }
+        .feed-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+        .author-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .author-avatar-sm {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .author-avatar-xs {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .feed-action-btn {
+            color: #65676b;
+            font-weight: 600;
+            font-size: 13.5px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.15s ease-in-out;
+            background: transparent;
+            border: none;
+        }
+        .feed-action-btn:hover {
+            background-color: #f2f3f5;
+            color: #1c1e21;
+        }
+        .feed-action-btn.active-like {
+            color: #e41e3f !important;
+            background-color: #fff0f3;
+        }
+        @keyframes heartPulse {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.35); }
+            100% { transform: scale(1); }
+        }
+        .animate-bounce {
+            display: inline-block;
+            animation: heartPulse 0.35s ease-in-out;
+        }
+        .comment-bubble {
+            background-color: #f0f2f5;
+            border-radius: 18px;
+            padding: 8px 14px;
+            max-width: 100%;
+            word-break: break-word;
+        }
+        .comment-action-link {
+            font-size: 12px;
+            font-weight: 600;
+            color: #65676b;
+            cursor: pointer;
+            text-decoration: none;
+            margin-right: 12px;
+        }
+        .comment-action-link:hover {
+            text-decoration: underline;
+            color: #1e3a8a;
+        }
+        .nested-reply-box {
+            border-left: 2px solid #e5e7eb;
+            margin-left: 18px;
+            padding-left: 14px;
+        }
+        .filter-nav-link {
+            font-weight: 600;
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+            padding: 8px 16px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .filter-nav-link.active {
+            color: #1e3a8a;
+            border-bottom: 2px solid #1e3a8a;
+        }
+        .image-preview-wrapper {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+        }
+        .image-preview-wrapper .btn-remove-img {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+
+    <div class="feed-container py-3">
+
+        <!-- Top Navigation Header -->
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3 pb-2 border-bottom">
+            <div>
+                <h4 class="fw-bold text-dark mb-1 d-flex align-items-center">
+                    <i class="bi bi-chat-square-quote-fill text-primary me-2"></i>Diễn Đàn Sinh Viên
+                </h4>
+                <p class="small text-muted mb-0">Không gian thảo luận, giải đáp học vụ, tìm bạn học nhóm và đời sống học đường HCMUTE</p>
+            </div>
+            <div class="mt-2 mt-md-0 d-flex gap-2">
+                <a th:href="@{/feed/official}" class="btn btn-outline-primary btn-sm fw-semibold">
+                    <i class="bi bi-megaphone me-1"></i>Bảng Tin Chính Thức
+                </a>
+                <div sec:authorize="hasAnyRole('STAFF', 'ADMIN')">
+                    <a th:href="@{/moderation/posts}" class="btn btn-outline-warning btn-sm fw-semibold">
+                        <i class="bi bi-shield-check me-1"></i>Duyệt Bài
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter & Search Bar + Tab Navigation -->
+        <div class="feed-card p-3 mb-3">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+                <!-- Tab Switching -->
+                <div class="d-flex border-bottom border-md-bottom-0 pb-2 pb-md-0">
+                    <a class="filter-nav-link" th:classappend="${currentTab == 'all' ? 'active' : ''}" 
+                       th:href="@{/feed/forum(tab='all', departmentId=${selectedDept}, q=${query})}">
+                        <i class="bi bi-globe2 me-1"></i>Tất Cả Thảo Luận
+                    </a>
+                    <a sec:authorize="isAuthenticated()" class="filter-nav-link" th:classappend="${currentTab == 'my_posts' ? 'active' : ''}" 
+                       th:href="@{/feed/forum(tab='my_posts')}">
+                        <i class="bi bi-journal-text me-1"></i>Bài Viết Của Tôi
+                    </a>
+                </div>
+
+                <!-- Department Filter & Search Bar -->
+                <form th:action="@{/feed/forum}" method="get" class="d-flex flex-wrap gap-2 align-items-center">
+                    <input type="hidden" name="tab" th:value="${currentTab}" />
+                    <select name="departmentId" class="form-select form-select-sm bg-light" style="width: auto; min-width: 170px;" onchange="this.form.submit()">
+                        <option value="">-- Tất cả Khoa / Đơn vị --</option>
+                        <option th:each="dept : ${departments}" 
+                                th:value="${dept.id}" 
+                                th:text="${dept.name}"
+                                th:selected="${dept.id == selectedDept}">Khoa CNTT</option>
+                    </select>
+                    <div class="input-group input-group-sm" style="max-width: 220px;">
+                        <input type="text" name="q" class="form-control bg-light" placeholder="Tìm kiếm..." th:value="${query}">
+                        <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Facebook-Style Mini Post Composer Trigger -->
+        <div sec:authorize="isAuthenticated()" class="feed-card p-3 mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <div class="author-avatar bg-primary bg-opacity-10 text-primary fw-bold d-flex align-items-center justify-content-center">
+                    <img th:if="${currentUserAvatar != null and currentUserAvatar != ''}" th:src="${currentUserAvatar}" class="author-avatar" alt="Avatar">
+                    <span th:unless="${currentUserAvatar != null and currentUserAvatar != ''}">
+                        <i class="bi bi-person-fill fs-5"></i>
+                    </span>
+                </div>
+                <button type="button" class="btn btn-light rounded-pill text-muted text-start flex-grow-1 px-3 py-2 border small hover-bg-gray" 
+                        data-bs-toggle="modal" data-bs-target="#createPostModal">
+                    <span th:text="${currentUserFullName != null ? currentUserFullName + ' ơi, bạn đang nghĩ gì thế?' : 'Bạn đang nghĩ gì thế? Chia sẻ câu hỏi, đồ án...'}">
+                        Bạn đang nghĩ gì thế? Chia sẻ thảo luận...
+                    </span>
+                </button>
+                <button type="button" class="btn btn-light rounded-circle p-2 text-success" data-bs-toggle="modal" data-bs-target="#createPostModal" title="Đăng ảnh minh họa">
+                    <i class="bi bi-image fs-5"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Guest Login Prompt -->
+        <div sec:authorize="isAnonymous()" class="feed-card p-4 mb-3 text-center bg-light border-0">
+            <h6 class="fw-bold text-dark mb-1">Tham gia cộng đồng sinh viên trường</h6>
+            <p class="small text-muted mb-3">Đăng nhập tài khoản sinh viên để đăng bài thảo luận, bình luận và thả tim các chủ đề học tập.</p>
+            <a th:href="@{/auth/login}" class="btn btn-primary btn-sm px-4 fw-semibold shadow-sm">
+                <i class="bi bi-box-arrow-in-right me-1"></i>Đăng Nhập Ngay
+            </a>
+        </div>
+
+        <!-- Empty Feed State -->
+        <div th:if="${posts.empty}" id="emptyFeedBox" class="feed-card p-5 text-center text-muted">
+            <i class="bi bi-chat-heart fs-1 text-muted mb-2"></i>
+            <h6 class="fw-bold text-dark" th:text="${currentTab == 'my_posts' ? 'Bạn chưa có bài viết nào' : 'Chưa có bài thảo luận phù hợp'}">Chưa có bài viết</h6>
+            <p class="small text-muted mb-0" th:text="${currentTab == 'my_posts' ? 'Hãy đăng chủ đề đầu tiên để trao đổi cùng các bạn nhé!' : 'Hãy là người đầu tiên mở đầu thảo luận sôi nổi trên diễn đàn!'}">Gợi ý đăng bài...</p>
+        </div>
+
+        <!-- Feed Posts Stream Container -->
+        <div id="feedPostsList" class="d-flex flex-column gap-3">
+            <div th:each="post : ${posts.content}" th:id="'post_card_' + ${post.id}" class="feed-card overflow-hidden">
+                
+                <!-- Card Header -->
+                <div class="p-3 pb-2 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="author-avatar bg-primary bg-opacity-10 text-primary fw-bold d-flex align-items-center justify-content-center">
+                            <img th:if="${post.authorAvatar != null and post.authorAvatar != ''}" th:src="${post.authorAvatar}" class="author-avatar" alt="Avatar">
+                            <span th:unless="${post.authorAvatar != null and post.authorAvatar != ''}">
+                                <i class="bi bi-person fs-5"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-bold text-dark" th:text="${post.authorName != null ? post.authorName : 'Sinh viên'}">Tên Tác Giả</span>
+                                <!-- Role Badge -->
+                                <span th:if="${post.authorRole == 'STAFF'}" class="badge bg-success bg-opacity-10 text-success" style="font-size: 10px;">Cán bộ</span>
+                                <span th:if="${post.authorRole == 'ADMIN'}" class="badge bg-danger bg-opacity-10 text-danger" style="font-size: 10px;">Quản trị</span>
+                                <span th:if="${post.authorRole == 'STUDENT' or post.authorRole == null}" class="badge bg-primary bg-opacity-10 text-primary" style="font-size: 10px;">Sinh viên</span>
+                            </div>
+                            <div class="text-muted" style="font-size: 11.5px;">
+                                <span th:if="${post.departmentName != null}" class="badge bg-light text-secondary border me-1" th:text="${post.departmentName}">Khoa CNTT</span>
+                                <i class="bi bi-clock me-1"></i>
+                                <span class="relative-time" th:data-time="${post.createdAt}" th:text="${post.createdAt != null ? #temporals.format(post.createdAt, 'dd/MM/yyyy HH:mm') : ''}">01/09/2026</span>
+                                <i class="bi bi-globe-americas ms-1 text-muted" title="Công khai"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Options Dropdown (Top Right) -->
+                    <div class="d-flex align-items-center gap-1">
+                        <!-- Moderation Status Badge for My Posts -->
+                        <div th:if="${currentTab == 'my_posts'}">
+                            <span th:if="${post.status == 'PENDING_APPROVAL'}" class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Chờ duyệt</span>
+                            <span th:if="${post.status == 'APPROVED'}" class="badge bg-success text-white"><i class="bi bi-check-circle me-1"></i>Đã duyệt</span>
+                            <span th:if="${post.status == 'REJECTED'}" class="badge bg-danger text-white"><i class="bi bi-x-circle me-1"></i>Bị từ chối</span>
+                        </div>
+
+                        <!-- Dropdown 3 dots -->
+                        <div class="dropdown">
+                            <button class="btn btn-link text-muted p-1 text-decoration-none" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-three-dots fs-5"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 small">
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0)" th:onclick="'copyPostLink(' + ${post.id} + ')'">
+                                        <i class="bi bi-link-45deg me-2"></i>Sao chép liên kết
+                                    </a>
+                                </li>
+                                <!-- Delete Post (Author or Staff/Admin) via AJAX -->
+                                <li th:if="${currentUserId != null and (post.authorId == currentUserId or currentUserRole == 'STAFF' or currentUserRole == 'ADMIN')}">
+                                    <a class="dropdown-item text-danger" href="javascript:void(0)" th:onclick="'deleteForumPostAjax(' + ${post.id} + ')'">
+                                        <i class="bi bi-trash3 me-2"></i>Xóa bài viết
+                                    </a>
+                                </li>
+                                <!-- Report Post (Other users) -->
+                                <li th:if="${currentUserId != null and post.authorId != currentUserId}">
+                                    <a class="dropdown-item text-muted" href="javascript:void(0)" th:data-bs-toggle="modal" th:data-bs-target="'#reportModal_' + ${post.id}">
+                                        <i class="bi bi-flag me-2"></i>Báo cáo vi phạm
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rejection Notice for Author -->
+                <div th:if="${post.status == 'REJECTED' and post.rejectionReason != null}" class="px-3 pb-2">
+                    <div class="alert alert-danger py-2 px-3 small mb-0 rounded-2">
+                        <i class="bi bi-exclamation-octagon-fill me-1"></i>Lý do từ chối: <strong th:text="${post.rejectionReason}">Lý do</strong>
+                    </div>
+                </div>
+
+                <!-- Card Content -->
+                <div class="px-3 pt-1 pb-2">
+                    <h6 class="fw-bold text-dark mb-2" th:text="${post.title}">Tiêu đề bài viết</h6>
+                    <p class="text-dark mb-2" style="white-space: pre-line; line-height: 1.6; font-size: 14.5px;" th:text="${post.content}">
+                        Nội dung bài viết...
+                    </p>
+
+                    <!-- Attached Image (Facebook Style Preview) -->
+                    <div th:if="${post.attachments != null and !post.attachments.empty}" class="mt-2 mb-1">
+                        <div th:each="att : ${post.attachments}">
+                            <img th:if="${att.fileType == 'IMAGE'}" th:src="${att.fileUrl}" class="img-fluid rounded-3 border w-100" style="max-height: 480px; object-fit: cover;" alt="Ảnh bài viết">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interaction Counters Bar -->
+                <div class="px-3 py-1 d-flex justify-content-between align-items-center text-muted small border-bottom mx-3">
+                    <span class="d-flex align-items-center">
+                        <span class="rounded-circle bg-danger text-white d-inline-flex align-items-center justify-content-center me-1" style="width: 18px; height: 18px; font-size: 10px;">
+                            <i class="bi bi-heart-fill"></i>
+                        </span>
+                        <strong class="like-counter ms-1" th:text="${post.likeCount != null ? post.likeCount : 0}">0</strong>
+                    </span>
+                    <span>
+                        <span class="comment-counter" th:text="${post.commentCount != null ? post.commentCount : 0}">0</span> bình luận
+                    </span>
+                </div>
+
+                <!-- 3 Standard Facebook Action Buttons: Like, Comment, Share -->
+                <div class="d-flex px-3 py-1">
+                    <!-- 1. Like Button (Micro-interaction AJAX) -->
+                    <button type="button" class="feed-action-btn flex-fill text-center d-flex align-items-center justify-content-center gap-1"
+                            th:classappend="${post.userLiked ? 'active-like' : ''}"
+                            th:data-post-id="${post.id}"
+                            onclick="togglePostLike(this)">
+                        <i class="bi" th:classappend="${post.userLiked ? 'bi-heart-fill text-danger' : 'bi-heart'}"></i>
+                        <span class="like-label" th:text="${post.userLiked ? 'Đã thích' : 'Thích'}">Thích</span>
+                    </button>
+
+                    <!-- 2. Comment Button (Expands comment box & focuses input) -->
+                    <button type="button" class="feed-action-btn flex-fill text-center d-flex align-items-center justify-content-center gap-1"
+                            th:onclick="'toggleCommentsBox(' + ${post.id} + ')'">
+                        <i class="bi bi-chat"></i>
+                        <span>Bình luận</span>
+                    </button>
+
+                    <!-- 3. Share Button (Copies Link) -->
+                    <button type="button" class="feed-action-btn flex-fill text-center d-flex align-items-center justify-content-center gap-1"
+                            th:onclick="'copyPostLink(' + ${post.id} + ')'">
+                        <i class="bi bi-share"></i>
+                        <span>Chia sẻ</span>
+                    </button>
+                </div>
+
+                <!-- Nested Comments Section -->
+                <div class="border-top px-3 py-3 bg-light bg-opacity-25" th:id="'commentsSection_' + ${post.id}" style="display: none;">
+                    
+                    <!-- Write Comment Input Box -->
+                    <div sec:authorize="isAuthenticated()" class="d-flex gap-2 mb-3">
+                        <div class="author-avatar-sm bg-primary bg-opacity-10 text-primary fw-bold d-flex align-items-center justify-content-center">
+                            <img th:if="${currentUserAvatar != null and currentUserAvatar != ''}" th:src="${currentUserAvatar}" class="author-avatar-sm" alt="Avatar">
+                            <span th:unless="${currentUserAvatar != null and currentUserAvatar != ''}"><i class="bi bi-person"></i></span>
+                        </div>
+                        <div class="flex-grow-1 position-relative">
+                            <input type="text" class="form-control rounded-pill pe-5 bg-light form-control-sm comment-input" 
+                                   placeholder="Viết bình luận công khai..." 
+                                   th:id="'mainCommentInput_' + ${post.id}"
+                                   th:onkeydown="'if(event.key === \'Enter\') submitCommentAjax(' + ${post.id} + ', null)'">
+                            <button type="button" class="btn btn-sm btn-link text-primary position-absolute end-0 top-50 translate-middle-y me-2 p-0 text-decoration-none"
+                                    th:onclick="'submitCommentAjax(' + ${post.id} + ', null)'" title="Gửi bình luận">
+                                <i class="bi bi-send-fill fs-6"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Comments Tree List -->
+                    <div class="d-flex flex-column gap-2" th:id="'commentsTree_' + ${post.id}">
+                        <div class="text-center py-2 text-muted small loading-comments-spinner">
+                            <span class="spinner-border spinner-border-sm me-1"></span>Đang tải bình luận...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Modal for this Post -->
+                <div class="modal fade" th:id="'reportModal_' + ${post.id}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow">
+                            <form th:action="@{/feed/forum/{id}/report(id=${post.id})}" method="post">
+                                <input type="hidden" th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}" th:value="${_csrf != null ? _csrf.token : ''}" />
+                                <div class="modal-header">
+                                    <h6 class="modal-title fw-bold text-danger"><i class="bi bi-flag-fill me-2"></i>Báo Cáo Bài Viết Vi Phạm</h6>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p class="small text-muted mb-3">Vui lòng chọn lý do để Ban Quản Trị xem xét kiểm duyệt theo quy định BRULE-POST-004:</p>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold text-dark small">Lý do báo cáo:</label>
+                                        <select name="reason" class="form-select form-select-sm" required>
+                                            <option value="SPAM">Spam / Quảng cáo không phù hợp</option>
+                                            <option value="INAPPROPRIATE_LANGUAGE">Ngôn từ thô tục, xúc phạm người khác</option>
+                                            <option value="WRONG_ACADEMIC_INFO">Thông tin học vụ, điểm số sai lệch</option>
+                                            <option value="OTHER">Lý do khác</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label fw-semibold text-dark small">Mô tả cụ thể (nếu có):</label>
+                                        <textarea name="details" rows="3" class="form-control form-control-sm" placeholder="Mô tả cụ thể vi phạm..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                                    <button type="submit" class="btn btn-danger btn-sm px-3">Gửi Báo Cáo</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top" th:if="${posts.totalPages > 1}">
+            <div class="small text-muted">
+                Trang <strong th:text="${posts.number + 1}">1</strong> / <span th:text="${posts.totalPages}">5</span>
+            </div>
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item" th:classappend="${posts.first ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/feed/forum(tab=${currentTab}, departmentId=${selectedDept}, q=${query}, page=${posts.number - 1})}">Trước</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, posts.totalPages - 1)}" th:classappend="${i == posts.number ? 'active' : ''}">
+                    <a class="page-link" th:href="@{/feed/forum(tab=${currentTab}, departmentId=${selectedDept}, q=${query}, page=${i})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${posts.last ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/feed/forum(tab=${currentTab}, departmentId=${selectedDept}, q=${query}, page=${posts.number + 1})}">Sau</a>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- ==========================================================================
+         Facebook Post Creator Modal (AJAX, Zero Full-Page Refresh)
+         ========================================================================== -->
+    <div sec:authorize="isAuthenticated()" class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 14px;">
+                <div class="modal-header border-bottom py-2.5 px-3">
+                    <h6 class="modal-title fw-bold text-dark mx-auto" id="createPostModalLabel">Tạo bài viết thảo luận</h6>
+                    <button type="button" class="btn-close ms-0" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <!-- User Info Header -->
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="author-avatar bg-primary bg-opacity-10 text-primary fw-bold d-flex align-items-center justify-content-center">
+                            <img th:if="${currentUserAvatar != null and currentUserAvatar != ''}" th:src="${currentUserAvatar}" class="author-avatar" alt="Avatar">
+                            <span th:unless="${currentUserAvatar != null and currentUserAvatar != ''}"><i class="bi bi-person-fill fs-5"></i></span>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark small" th:text="${currentUserFullName != null ? currentUserFullName : 'Bạn'}">Sinh viên</div>
+                        </div>
+                    </div>
+
+                    <!-- Post Inputs -->
+                    <form id="ajaxCreatePostForm">
+                        <div class="mb-2">
+                            <input type="text" id="postTitleInput" name="title" class="form-control form-control-sm fw-semibold" placeholder="Tiêu đề thảo luận (Ví dụ: Hỏi về đăng ký học kỳ hè...)" required>
+                        </div>
+                        <div class="mb-3">
+                            <textarea id="postContentInput" name="content" rows="4" class="form-control border-0 px-0 fs-6" placeholder="Bạn muốn chia sẻ điều gì với các bạn sinh viên?" style="resize: none; box-shadow: none;" required></textarea>
+                        </div>
+
+                        <!-- Image Preview Area -->
+                        <div id="imagePreviewArea" class="mb-3 d-none">
+                            <div class="image-preview-wrapper border rounded-3 p-1 bg-light">
+                                <img id="imagePreviewImg" src="" class="img-fluid rounded-2 w-100" style="max-height: 220px; object-fit: cover;" alt="Preview">
+                                <button type="button" class="btn-remove-img" onclick="clearSelectedImage()" title="Gỡ ảnh">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Attach Action Bar inside Modal -->
+                        <div class="p-2 border rounded-3 d-flex justify-content-between align-items-center mb-3">
+                            <span class="small fw-semibold text-muted">Thêm vào bài viết:</span>
+                            <div>
+                                <label class="btn btn-light btn-sm text-success mb-0 rounded-circle p-2" title="Ảnh minh họa">
+                                    <i class="bi bi-images fs-5"></i>
+                                    <input type="file" id="postImageInput" name="image" class="d-none" accept="image/*" onchange="handleImageSelected(this)">
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button with Spinner -->
+                        <button type="button" id="btnSubmitPost" class="btn btn-primary w-100 fw-semibold py-2 shadow-sm" onclick="submitForumPostAjax()">
+                            <span id="btnSubmitPostSpinner" class="spinner-border spinner-border-sm me-1 d-none" role="status"></span>
+                            <span id="btnSubmitPostText">Đăng Bài</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         Client JavaScript: Realtime AJAX, Nested Comments, Single Top-Right Toast
+         ========================================================================== -->
+    <script>
+        // --------------------------------------------------------------------------
+        // 1. Single Top-Right Toast Notification System (Debounced, Auto-Dismiss 3s)
+        // --------------------------------------------------------------------------
+        let lastToastMsg = '';
+        let lastToastTime = 0;
+
+        function showToast(message, type = 'success') {
+            const now = Date.now();
+            if (message === lastToastMsg && (now - lastToastTime) < 1500) {
+                return; // Prevent duplicate rapid toast triggers
+            }
+            lastToastMsg = message;
+            lastToastTime = now;
+
+            const container = document.getElementById('feedToastContainer');
+            if (!container) return;
+
+            const toastId = 'toast_' + now;
+            const icon = type === 'success' 
+                ? '<i class="bi bi-check-circle-fill text-success fs-5 me-2"></i>' 
+                : (type === 'danger' || type === 'error' ? '<i class="bi bi-exclamation-triangle-fill text-danger fs-5 me-2"></i>' : '<i class="bi bi-info-circle-fill text-primary fs-5 me-2"></i>');
+
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center border-0 shadow-lg mb-2 show bg-white" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex p-3 align-items-center">
+                        ${icon}
+                        <div class="toast-body text-dark fw-semibold small flex-grow-1 p-0 pe-2">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close ms-auto me-1" onclick="this.closest('.toast').remove()" aria-label="Close"></button>
+                    </div>
+                    <div class="progress" style="height: 3px;">
+                        <div class="progress-bar ${type === 'success' ? 'bg-success' : (type === 'danger' || type === 'error' ? 'bg-danger' : 'bg-primary')}" style="width: 100%; transition: width 3s linear;"></div>
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', toastHtml);
+            const toastEl = document.getElementById(toastId);
+            const bar = toastEl.querySelector('.progress-bar');
+            requestAnimationFrame(() => {
+                if (bar) bar.style.width = '0%';
+            });
+
+            setTimeout(() => {
+                if (toastEl && toastEl.parentNode) {
+                    toastEl.classList.remove('show');
+                    setTimeout(() => toastEl.remove(), 250);
+                }
+            }, 3000);
+        }
+
+        // --------------------------------------------------------------------------
+        // 2. Relative Time Formatter (e.g. Vừa xong, 5 phút trước)
+        // --------------------------------------------------------------------------
+        function formatRelativeTime(dateString) {
+            if (!dateString) return 'Vừa xong';
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return dateString;
+            const now = new Date();
+            const diffSeconds = Math.floor((now - date) / 1000);
+
+            if (diffSeconds < 60) return 'Vừa xong';
+            if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)} phút trước`;
+            if (diffSeconds < 86400) return `${Math.floor(diffSeconds / 3600)} giờ trước`;
+            if (diffSeconds < 604800) return `${Math.floor(diffSeconds / 86400)} ngày trước`;
+            return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.relative-time').forEach(el => {
+                const timeStr = el.getAttribute('data-time');
+                if (timeStr) {
+                    el.textContent = formatRelativeTime(timeStr);
+                }
+            });
+        });
+
+        // --------------------------------------------------------------------------
+        // 3. Post Creation via AJAX (Optimistic UI, Zero Full-Page Refresh)
+        // --------------------------------------------------------------------------
+        function handleImageSelected(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreviewImg').src = e.target.result;
+                    document.getElementById('imagePreviewArea').classList.remove('d-none');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearSelectedImage() {
+            const input = document.getElementById('postImageInput');
+            if (input) input.value = '';
+            document.getElementById('imagePreviewArea').classList.add('d-none');
+            document.getElementById('imagePreviewImg').src = '';
+        }
+
+        async function submitForumPostAjax() {
+            const titleInput = document.getElementById('postTitleInput');
+            const contentInput = document.getElementById('postContentInput');
+            const imageInput = document.getElementById('postImageInput');
+            const submitBtn = document.getElementById('btnSubmitPost');
+            const spinner = document.getElementById('btnSubmitPostSpinner');
+            const btnText = document.getElementById('btnSubmitPostText');
+
+            const title = titleInput.value.trim();
+            const content = contentInput.value.trim();
+
+            if (!title) {
+                showToast('Vui lòng nhập tiêu đề thảo luận', 'error');
+                titleInput.focus();
+                return;
+            }
+            if (!content) {
+                showToast('Vui lòng nhập nội dung bài viết', 'error');
+                contentInput.focus();
+                return;
+            }
+
+            // Set loading state (Prevent Double Submit)
+            submitBtn.disabled = true;
+            spinner.classList.remove('d-none');
+            btnText.textContent = 'Đang đăng...';
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('content', content);
+            if (imageInput.files && imageInput.files[0]) {
+                formData.append('image', imageInput.files[0]);
+            }
+
+            const token = document.getElementById('csrfToken')?.value || '';
+
+            try {
+                const response = await fetch('/api/v1/forum/posts', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': token
+                    },
+                    body: formData
+                });
+
+                const resData = await response.json();
+
+                if (response.ok && resData.success) {
+                    // Hide Modal
+                    const modalEl = document.getElementById('createPostModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) modalInstance.hide();
+
+                    // Reset form
+                    titleInput.value = '';
+                    contentInput.value = '';
+                    clearSelectedImage();
+
+                    // Prepend new post card to DOM
+                    prependPostCardToDOM(resData.data);
+
+                    // Show success Toast
+                    showToast(resData.message || 'Đăng bài thành công!', 'success');
+                } else {
+                    showToast(resData.message || 'Không thể đăng bài viết', 'error');
+                }
+            } catch (err) {
+                console.error('Lỗi khi đăng bài:', err);
+                showToast('Lỗi kết nối máy chủ khi đăng bài', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                spinner.classList.add('d-none');
+                btnText.textContent = 'Đăng Bài';
+            }
+        }
+
+        function prependPostCardToDOM(post) {
+            const feedList = document.getElementById('feedPostsList');
+            const emptyBox = document.getElementById('emptyFeedBox');
+            if (emptyBox) emptyBox.remove();
+
+            const isPending = post.status === 'PENDING_APPROVAL';
+            const statusBadge = isPending 
+                ? '<span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Chờ duyệt</span>' 
+                : '<span class="badge bg-success text-white"><i class="bi bi-check-circle me-1"></i>Đã duyệt</span>';
+
+            let imageHtml = '';
+            if (post.attachments && post.attachments.length > 0) {
+                post.attachments.forEach(att => {
+                    if (att.fileType === 'IMAGE') {
+                        imageHtml += `<div class="mt-2 mb-1"><img src="${att.fileUrl}" class="img-fluid rounded-3 border w-100" style="max-height: 480px; object-fit: cover;" alt="Ảnh bài viết"></div>`;
+                    }
+                });
+            }
+
+            const postCardHtml = `
+                <div id="post_card_${post.id}" class="feed-card overflow-hidden animate-bounce">
+                    <div class="p-3 pb-2 d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="author-avatar bg-primary bg-opacity-10 text-primary fw-bold d-flex align-items-center justify-content-center">
+                                ${post.authorAvatar ? `<img src="${post.authorAvatar}" class="author-avatar">` : '<i class="bi bi-person fs-5"></i>'}
+                            </div>
+                            <div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="fw-bold text-dark">${post.authorName || 'Bạn'}</span>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary" style="font-size: 10px;">${post.authorRole || 'Sinh viên'}</span>
+                                </div>
+                                <div class="text-muted" style="font-size: 11.5px;">
+                                    <i class="bi bi-clock me-1"></i>Vừa xong
+                                    <i class="bi bi-globe-americas ms-1 text-muted"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-1">
+                            ${statusBadge}
+                            <button class="btn btn-link text-danger p-1 text-decoration-none" onclick="deleteForumPostAjax(${post.id})" title="Xóa bài viết">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="px-3 pt-1 pb-2">
+                        <h6 class="fw-bold text-dark mb-2">${escapeHtml(post.title)}</h6>
+                        <p class="text-dark mb-2" style="white-space: pre-line; line-height: 1.6; font-size: 14.5px;">${escapeHtml(post.content)}</p>
+                        ${imageHtml}
+                    </div>
+                    <div class="px-3 py-1 d-flex justify-content-between align-items-center text-muted small border-bottom mx-3">
+                        <span class="d-flex align-items-center">
+                            <span class="rounded-circle bg-danger text-white d-inline-flex align-items-center justify-content-center me-1" style="width: 18px; height: 18px; font-size: 10px;"><i class="bi bi-heart-fill"></i></span>
+                            <strong class="like-counter ms-1">0</strong>
+                        </span>
+                        <span><span class="comment-counter">0</span> bình luận</span>
+                    </div>
+                    <div class="d-flex px-3 py-1">
+                        <button type="button" class="feed-action-btn flex-fill text-center d-flex align-items-center justify-content-center gap-1" data-post-id="${post.id}" onclick="togglePostLike(this)">
+                            <i class="bi bi-heart"></i>
+                            <span class="like-label">Thích</span>
+                        </button>
+                        <button type="button" class="feed-action-btn flex-fill text-center d-flex align-items-center justify-content-center gap-1" onclick="toggleCommentsBox(${post.id})">
+                            <i class="bi bi-chat"></i>
+                            <span>Bình luận</span>
+                        </button>
+                        <button type="button" class="feed-action-btn flex-fill text-center d-flex align-items-center justify-content-center gap-1" onclick="copyPostLink(${post.id})">
+                            <i class="bi bi-share"></i>
+                            <span>Chia sẻ</span>
+                        </button>
+                    </div>
+                    <div class="border-top px-3 py-3 bg-light bg-opacity-25" id="commentsSection_${post.id}" style="display: none;">
+                        <div class="d-flex gap-2 mb-3">
+                            <div class="author-avatar-sm bg-primary bg-opacity-10 text-primary fw-bold d-flex align-items-center justify-content-center">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            <div class="flex-grow-1 position-relative">
+                                <input type="text" class="form-control rounded-pill pe-5 bg-light form-control-sm comment-input" 
+                                       placeholder="Viết bình luận công khai..." 
+                                       id="mainCommentInput_${post.id}"
+                                       onkeydown="if(event.key === 'Enter') submitCommentAjax(${post.id}, null)">
+                                <button type="button" class="btn btn-sm btn-link text-primary position-absolute end-0 top-50 translate-middle-y me-2 p-0"
+                                        onclick="submitCommentAjax(${post.id}, null)">
+                                    <i class="bi bi-send-fill fs-6"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column gap-2" id="commentsTree_${post.id}">
+                            <div class="text-muted text-center py-2 small">Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            feedList.insertAdjacentHTML('afterbegin', postCardHtml);
+        }
+
+        // --------------------------------------------------------------------------
+        // 4. AJAX Thả Tim (Like / Unlike Micro-interaction)
+        // --------------------------------------------------------------------------
+        async function togglePostLike(btn) {
+            const postId = btn.getAttribute('data-post-id');
+            const token = document.getElementById('csrfToken')?.value || '';
+
+            try {
+                const response = await fetch(`/api/likes/toggle?targetType=POST&targetId=${postId}`, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': token }
+                });
+
+                if (response.status === 401) {
+                    showToast('Vui lòng đăng nhập để thả tim bài viết', 'info');
+                    return;
+                }
+
+                if (!response.ok) throw new Error('Không thể thả tim');
+
+                const data = await response.json();
+                const icon = btn.querySelector('i');
+                const label = btn.querySelector('.like-label');
+                const card = btn.closest('.feed-card');
+                const counter = card ? card.querySelector('.like-counter') : null;
+
+                if (counter) counter.textContent = data.likeCount;
+
+                if (data.liked) {
+                    btn.classList.add('active-like');
+                    icon.className = 'bi bi-heart-fill text-danger animate-bounce';
+                    if (label) label.textContent = 'Đã thích';
+                } else {
+                    btn.classList.remove('active-like');
+                    icon.className = 'bi bi-heart';
+                    if (label) label.textContent = 'Thích';
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi khi thả tim bài viết', 'error');
+            }
+        }
+
+        // --------------------------------------------------------------------------
+        // 5. Nested Comments Toggle & AJAX Loader
+        // --------------------------------------------------------------------------
+        const loadedCommentsPosts = new Set();
+
+        async function toggleCommentsBox(postId) {
+            const section = document.getElementById(`commentsSection_${postId}`);
+            if (!section) return;
+
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                const input = document.getElementById(`mainCommentInput_${postId}`);
+                if (input) input.focus();
+
+                // Fetch comments if not loaded yet
+                if (!loadedCommentsPosts.has(postId)) {
+                    await loadCommentsTreeAjax(postId);
+                }
+            } else {
+                section.style.display = 'none';
+            }
+        }
+
+        async function loadCommentsTreeAjax(postId) {
+            const treeContainer = document.getElementById(`commentsTree_${postId}`);
+            if (!treeContainer) return;
+
+            try {
+                const response = await fetch(`/api/v1/forum/posts/${postId}/comments`);
+                const resData = await response.json();
+
+                if (resData.success) {
+                    loadedCommentsPosts.add(postId);
+                    renderCommentsTree(postId, resData.data);
+                }
+            } catch (err) {
+                console.error('Lỗi tải bình luận:', err);
+                treeContainer.innerHTML = '<div class="text-danger small text-center py-2">Không thể tải bình luận.</div>';
+            }
+        }
+
+        function renderCommentsTree(postId, comments) {
+            const treeContainer = document.getElementById(`commentsTree_${postId}`);
+            if (!treeContainer) return;
+
+            if (!comments || comments.length === 0) {
+                treeContainer.innerHTML = '<div class="text-muted text-center py-2 small empty-cmt-hint">Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</div>';
+                return;
+            }
+
+            let html = '';
+            comments.forEach(cmt => {
+                html += renderSingleCommentBlock(postId, cmt);
+            });
+            treeContainer.innerHTML = html;
+        }
+
+        function renderSingleCommentBlock(postId, cmt) {
+            let repliesHtml = '';
+            if (cmt.replies && cmt.replies.length > 0) {
+                cmt.replies.forEach(rep => {
+                    repliesHtml += `
+                        <div class="d-flex gap-2 mt-2" id="comment_${rep.id}">
+                            <div class="author-avatar-xs bg-primary bg-opacity-10 text-primary fw-bold d-flex align-items-center justify-content-center">
+                                ${rep.authorAvatar ? `<img src="${rep.authorAvatar}" class="author-avatar-xs">` : '<i class="bi bi-person"></i>'}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="comment-bubble d-inline-block">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <strong class="text-dark small">${escapeHtml(rep.authorName)}</strong>
+                                        ${rep.authorRole === 'STAFF' ? '<span class="badge bg-success bg-opacity-10 text-success" style="font-size: 9px;">Cán bộ</span>' : ''}
+                                    </div>
+                                    <div class="text-secondary small mt-0.5" style="white-space: pre-line;">${escapeHtml(rep.content)}</div>
+                                </div>
+                                <div class="d-flex align-items-center mt-1 ps-2">
+                                    <span class="text-muted small me-2" style="font-size: 11px;">${formatRelativeTime(rep.createdAt)}</span>
+                                    <span class="comment-action-link" onclick="toggleCommentLike(${rep.id}, this)">
+                                        <i class="bi bi-heart me-0.5"></i>Thích <span class="cmt-like-count">${rep.likeCount > 0 ? rep.likeCount : ''}</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            return `
+                <div class="d-flex gap-2 mt-1" id="comment_${cmt.id}">
+                    <div class="author-avatar-sm bg-primary bg-opacity-10 text-primary fw-bold d-flex align-items-center justify-content-center">
+                        ${cmt.authorAvatar ? `<img src="${cmt.authorAvatar}" class="author-avatar-sm">` : '<i class="bi bi-person"></i>'}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="comment-bubble d-inline-block">
+                            <div class="d-flex align-items-center gap-1">
+                                <strong class="text-dark small">${escapeHtml(cmt.authorName)}</strong>
+                                ${cmt.authorRole === 'STAFF' ? '<span class="badge bg-success bg-opacity-10 text-success" style="font-size: 9px;">Cán bộ</span>' : ''}
+                            </div>
+                            <div class="text-secondary small mt-0.5" style="white-space: pre-line;">${escapeHtml(cmt.content)}</div>
+                        </div>
+                        <div class="d-flex align-items-center mt-1 ps-2">
+                            <span class="text-muted small me-2" style="font-size: 11px;">${formatRelativeTime(cmt.createdAt)}</span>
+                            <span class="comment-action-link" onclick="toggleCommentLike(${cmt.id}, this)">
+                                <i class="bi bi-heart me-0.5"></i>Thích <span class="cmt-like-count">${cmt.likeCount > 0 ? cmt.likeCount : ''}</span>
+                            </span>
+                            <span class="comment-action-link" onclick="showReplyInput(${postId}, ${cmt.id}, '${escapeHtml(cmt.authorName)}')">
+                                Phản hồi
+                            </span>
+                        </div>
+
+                        <!-- Nested Replies Container -->
+                        <div class="nested-reply-box mt-2" id="replies_container_${cmt.id}">
+                            ${repliesHtml}
+                            <!-- Dynamic Reply Form Container -->
+                            <div id="reply_input_box_${cmt.id}" class="mt-2 d-none">
+                                <div class="d-flex gap-1">
+                                    <input type="text" class="form-control form-control-sm rounded-pill bg-light" 
+                                           id="replyInput_${cmt.id}" 
+                                           placeholder="Viết phản hồi..."
+                                           onkeydown="if(event.key === 'Enter') submitCommentAjax(${postId}, ${cmt.id})">
+                                    <button class="btn btn-sm btn-primary rounded-circle px-2" onclick="submitCommentAjax(${postId}, ${cmt.id})">
+                                        <i class="bi bi-send-fill" style="font-size: 10px;"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showReplyInput(postId, commentId, authorName) {
+            const box = document.getElementById(`reply_input_box_${commentId}`);
+            if (!box) return;
+            box.classList.remove('d-none');
+            const input = document.getElementById(`replyInput_${commentId}`);
+            if (input) {
+                input.placeholder = `Trả lời ${authorName}...`;
+                input.focus();
+            }
+        }
+
+        // --------------------------------------------------------------------------
+        // 6. Submit Comment / Nested Reply via AJAX (Zero Full-Page Refresh)
+        // --------------------------------------------------------------------------
+        async function submitCommentAjax(postId, parentId) {
+            const inputEl = parentId 
+                ? document.getElementById(`replyInput_${parentId}`)
+                : document.getElementById(`mainCommentInput_${postId}`);
+
+            if (!inputEl) return;
+            const content = inputEl.value.trim();
+
+            if (!content) {
+                showToast('Vui lòng nhập nội dung bình luận', 'error');
+                inputEl.focus();
+                return;
+            }
+
+            inputEl.disabled = true;
+            const token = document.getElementById('csrfToken')?.value || '';
+
+            try {
+                const response = await fetch(`/api/v1/forum/posts/${postId}/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    },
+                    body: JSON.stringify({
+                        content: content,
+                        parentId: parentId
+                    })
+                });
+
+                if (response.status === 401) {
+                    showToast('Vui lòng đăng nhập để bình luận', 'info');
+                    return;
+                }
+
+                const resData = await response.json();
+
+                if (response.ok && resData.success) {
+                    inputEl.value = '';
+                    showToast('Đã gửi bình luận thành công!', 'success');
+
+                    // Increment comment count on card header
+                    const postCard = document.getElementById(`post_card_${postId}`);
+                    if (postCard) {
+                        const counter = postCard.querySelector('.comment-counter');
+                        if (counter) {
+                            counter.textContent = parseInt(counter.textContent || '0', 10) + 1;
+                        }
+                    }
+
+                    // Append comment to DOM
+                    const tree = document.getElementById(`commentsTree_${postId}`);
+                    if (tree) {
+                        const emptyHint = tree.querySelector('.empty-cmt-hint');
+                        if (emptyHint) emptyHint.remove();
+
+                        if (parentId) {
+                            // Append into nested reply container
+                            const repliesContainer = document.getElementById(`replies_container_${parentId}`);
+                            const replyBox = document.getElementById(`reply_input_box_${parentId}`);
+                            const newReplyHtml = `
+                                <div class="d-flex gap-2 mt-2 animate-bounce" id="comment_${resData.data.id}">
+                                    <div class="author-avatar-xs bg-primary bg-opacity-10 text-primary fw-bold d-flex align-items-center justify-content-center">
+                                        ${resData.data.authorAvatar ? `<img src="${resData.data.authorAvatar}" class="author-avatar-xs">` : '<i class="bi bi-person"></i>'}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="comment-bubble d-inline-block">
+                                            <div class="d-flex align-items-center gap-1">
+                                                <strong class="text-dark small">${escapeHtml(resData.data.authorName)}</strong>
+                                                ${resData.data.authorRole === 'STAFF' ? '<span class="badge bg-success bg-opacity-10 text-success" style="font-size: 9px;">Cán bộ</span>' : ''}
+                                            </div>
+                                            <div class="text-secondary small mt-0.5" style="white-space: pre-line;">${escapeHtml(resData.data.content)}</div>
+                                        </div>
+                                        <div class="d-flex align-items-center mt-1 ps-2">
+                                            <span class="text-muted small me-2" style="font-size: 11px;">Vừa xong</span>
+                                            <span class="comment-action-link" onclick="toggleCommentLike(${resData.data.id}, this)">
+                                                <i class="bi bi-heart me-0.5"></i>Thích
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            if (replyBox) {
+                                replyBox.insertAdjacentHTML('beforebegin', newReplyHtml);
+                                replyBox.classList.add('d-none');
+                            } else if (repliesContainer) {
+                                repliesContainer.insertAdjacentHTML('beforeend', newReplyHtml);
+                            }
+                        } else {
+                            // Append root comment
+                            const newRootHtml = renderSingleCommentBlock(postId, resData.data);
+                            tree.insertAdjacentHTML('beforeend', newRootHtml);
+                        }
+                    }
+                } else {
+                    showToast(resData.message || 'Không thể gửi bình luận', 'error');
+                }
+            } catch (err) {
+                console.error('Lỗi khi gửi bình luận:', err);
+                showToast('Lỗi kết nối máy chủ', 'error');
+            } finally {
+                inputEl.disabled = false;
+            }
+        }
+
+        // --------------------------------------------------------------------------
+        // 7. Toggle Comment Like AJAX
+        // --------------------------------------------------------------------------
+        async function toggleCommentLike(commentId, linkEl) {
+            const token = document.getElementById('csrfToken')?.value || '';
+            try {
+                const response = await fetch(`/api/v1/forum/comments/${commentId}/like`, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': token }
+                });
+
+                if (response.status === 401) {
+                    showToast('Vui lòng đăng nhập để thích bình luận', 'info');
+                    return;
+                }
+
+                const resData = await response.json();
+                if (response.ok && resData.success) {
+                    const icon = linkEl.querySelector('i');
+                    const countSpan = linkEl.querySelector('.cmt-like-count');
+                    if (resData.data.liked) {
+                        icon.className = 'bi bi-heart-fill text-danger';
+                        linkEl.classList.add('text-danger');
+                    } else {
+                        icon.className = 'bi bi-heart';
+                        linkEl.classList.remove('text-danger');
+                    }
+                    if (countSpan) {
+                        countSpan.textContent = resData.data.likeCount > 0 ? resData.data.likeCount : '';
+                    }
+                }
+            } catch (err) {
+                console.error('Lỗi thích bình luận:', err);
+            }
+        }
+
+        // --------------------------------------------------------------------------
+        // 8. Delete Forum Post via AJAX
+        // --------------------------------------------------------------------------
+        async function deleteForumPostAjax(postId) {
+            if (!confirm('Bạn có chắc chắn muốn xóa bài thảo luận này không?')) return;
+
+            const token = document.getElementById('csrfToken')?.value || '';
+            try {
+                const response = await fetch(`/api/v1/forum/posts/${postId}`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': token }
+                });
+
+                const resData = await response.json();
+                if (response.ok && resData.success) {
+                    const card = document.getElementById(`post_card_${postId}`);
+                    if (card) {
+                        card.style.transition = 'all 0.35s ease';
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.95)';
+                        setTimeout(() => card.remove(), 350);
+                    }
+                    showToast('Đã xóa bài viết thành công!', 'success');
+                } else {
+                    showToast(resData.message || 'Không thể xóa bài viết', 'error');
+                }
+            } catch (err) {
+                console.error('Lỗi xóa bài:', err);
+                showToast('Lỗi khi kết nối máy chủ để xóa bài', 'error');
+            }
+        }
+
+        // --------------------------------------------------------------------------
+        // 9. Copy Post Link Helper
+        // --------------------------------------------------------------------------
+        function copyPostLink(postId) {
+            const url = window.location.origin + '/feed/forum#post_card_' + postId;
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('Đã sao chép liên kết bài viết vào bộ nhớ tạm!', 'success');
+            }).catch(() => {
+                showToast('Không thể sao chép liên kết', 'error');
+            });
+        }
+
+        // --------------------------------------------------------------------------
+        // 10. Security XSS Protection Helper
+        // --------------------------------------------------------------------------
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</div>
+</body>
+</html>

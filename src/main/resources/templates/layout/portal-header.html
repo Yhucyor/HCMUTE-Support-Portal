@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head></head>
+
+<body>
+    <div th:fragment="portal-header(activeTab)" class="mb-4">
+        <!-- Header Banner -->
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden text-white"
+            style="background: linear-gradient(135deg, #1f242d 0%, #2c323f 100%); border-left: 5px solid var(--crimson) !important;">
+            <div class="card-body p-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="d-flex align-items-center justify-content-center bg-white bg-opacity-10 rounded-3 p-3 shadow-xs"
+                            style="width: 52px; height: 52px;">
+                            <i class="bi bi-shield-shaded text-warning fs-3"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="badge bg-danger bg-opacity-75 px-2 py-1 small text-uppercase">Bàn Làm Việc
+                                    Cán Bộ</span>
+                                <span
+                                    class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 small">SLA
+                                    Active 24/7</span>
+                            </div>
+                            <h4 class="fw-bold mb-0 text-white font-serif" style="letter-spacing: 0.5px;">Trung Tâm Điều
+                                Hành & Xử Lý Yêu Cầu</h4>
+                            <small class="text-white-50">Cổng tiếp nhận hỗ trợ học vụ trường Đại học Công Nghệ Kỹ thuật
+                                TP.HCM</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <a th:href="@{/feed/official/create}"
+                            class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-xs">
+                            <i class="bi bi-megaphone-fill me-1"></i>Đăng Thông Báo
+                        </a>
+                        <a th:href="@{/}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Xem Cổng Sinh Viên
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs Bar -->
+            <div class="px-4 py-2 bg-black bg-opacity-25 border-top border-white border-opacity-10 overflow-auto">
+                <ul class="nav nav-pills gap-2 flex-nowrap small fw-semibold">
+                    <!-- Staff Tabs -->
+                    <li class="nav-item">
+                        <a class="nav-link py-2 px-3 rounded-pill text-white-50"
+                            th:classappend="${activeTab == 'tickets' ? 'active bg-danger text-white shadow-xs' : 'hover-white'}"
+                            th:href="@{/staff/tickets}">
+                            <i class="bi bi-kanban me-1"></i>Bàn Xử Lý Ticket
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link py-2 px-3 rounded-pill text-white-50"
+                            th:classappend="${activeTab == 'moderation' ? 'active bg-danger text-white shadow-xs' : 'hover-white'}"
+                            th:href="@{/moderation/posts}">
+                            <i class="bi bi-shield-check me-1"></i>Duyệt Bài Diễn Đàn
+                        </a>
+                    </li>
+
+                    <!-- Admin Tabs -->
+                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                        <a class="nav-link py-2 px-3 rounded-pill text-white-50"
+                            th:classappend="${activeTab == 'admin-dashboard' ? 'active bg-danger text-white shadow-xs' : 'hover-white'}"
+                            th:href="@{/admin/dashboard}">
+                            <i class="bi bi-speedometer2 me-1"></i>SLA Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                        <a class="nav-link py-2 px-3 rounded-pill text-white-50"
+                            th:classappend="${activeTab == 'admin-users' ? 'active bg-danger text-white shadow-xs' : 'hover-white'}"
+                            th:href="@{/admin/users}">
+                            <i class="bi bi-people me-1"></i>Quản Trị Người Dùng
+                        </a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                        <a class="nav-link py-2 px-3 rounded-pill text-white-50"
+                            th:classappend="${activeTab == 'admin-depts' ? 'active bg-danger text-white shadow-xs' : 'hover-white'}"
+                            th:href="@{/admin/departments}">
+                            <i class="bi bi-buildings me-1"></i>Quản Lý Đơn Vị
+                        </a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                        <a class="nav-link py-2 px-3 rounded-pill text-white-50"
+                            th:classappend="${activeTab == 'admin-docs' ? 'active bg-danger text-white shadow-xs' : 'hover-white'}"
+                            th:href="@{/admin/knowledge/documents}">
+                            <i class="bi bi-file-earmark-pdf me-1"></i>Kho Công Văn AI
+                        </a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                        <a class="nav-link py-2 px-3 rounded-pill text-white-50"
+                            th:classappend="${activeTab == 'admin-visualizer' ? 'active bg-danger text-white shadow-xs' : 'hover-white'}"
+                            th:href="@{/admin/knowledge/visualizer}">
+                            <i class="bi bi-diagram-3 me-1"></i>3D Vector Space
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

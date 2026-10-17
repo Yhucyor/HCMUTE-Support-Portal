@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title th:text="${post.title + ' - QAUTE Portal'}">Chi Tiết Thông Báo</title>
+</head>
+<body>
+<div th:fragment="content">
+
+    <!-- Breadcrumb & Back -->
+    <!-- Top Action Bar -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <a th:href="@{/feed/official}" class="text-decoration-none text-muted small fw-semibold">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại Bảng tin chính thức
+        </a>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyPostLink()" title="Sao chép liên kết">
+                <i class="bi bi-link-45deg me-1"></i><span id="copyLinkText">Sao chép link</span>
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()" title="In văn bản">
+                <i class="bi bi-printer me-1"></i>In thông báo
+            </button>
+            <!-- Edit Button for Staff & Admin -->
+            <div sec:authorize="hasAnyRole('STAFF', 'ADMIN')">
+                <a th:href="@{'/feed/official/edit/' + ${post.id}}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-pencil-square me-1"></i>Chỉnh sửa
+                </a>
+            </div>
+            <!-- Delete Button for Staff & Admin -->
+            <div sec:authorize="hasAnyRole('STAFF', 'ADMIN')">
+                <form th:action="@{/feed/official/delete/{id}(id=${post.id})}" method="post" class="d-inline"
+                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa thông báo chính thức này khỏi hệ thống không?');">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-trash3 me-1"></i>Xóa thông báo
+                    </button>
+                </form>
+            </div>
+            <!-- Quick New Post for Staff & Admin -->
+            <div sec:authorize="hasAnyRole('STAFF', 'ADMIN')">
+                <a th:href="@{/feed/official/create}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i>Đăng bài mới
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Post Content Card -->
+    <div class="card border shadow-sm rounded-3 p-4 p-md-5 mb-4 bg-white">
+        <!-- Metadata Header -->
+        <div class="border-bottom pb-3 mb-4">
+            <div class="d-flex flex-wrap gap-2 mb-2 align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1" th:text="${post.departmentName != null ? post.departmentName : 'Ban Giám Hiệu'}">Phòng Ban</span>
+                    <span th:if="${post.isPinned}" class="badge bg-danger text-white"><i class="bi bi-pin-fill me-1"></i>Thông báo ghim</span>
+                </div>
+                <!-- Admin Toggle Pin Form -->
+                <form sec:authorize="hasRole('ADMIN')" th:action="@{/feed/official/toggle-pin/{id}(id=${post.id})}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-sm rounded-pill px-3 shadow-xs"
+                            th:classappend="${post.isPinned ? 'btn-outline-danger' : 'btn-outline-secondary'}">
+                        <i class="bi me-1" th:classappend="${post.isPinned ? 'bi-pin-fill' : 'bi-pin'}"></i>
+                        <span th:text="${post.isPinned ? 'Bỏ Ghim Tin Này' : 'Ghim Lên Đầu Trang'}">Ghim Lên Đầu Trang</span>
+                    </button>
+                </form>
+            </div>
+            <h3 class="fw-bold text-dark mb-2" th:text="${post.title}">Tiêu đề bài viết</h3>
+            <div class="d-flex flex-wrap gap-3 text-muted small">
+                <span><i class="bi bi-person-fill me-1"></i>Người đăng: <strong th:text="${post.authorName != null ? post.authorName : 'Cán bộ quản lý'}">Ban Đào Tạo</strong></span>
+                <span><i class="bi bi-calendar3 me-1"></i>Ngày đăng: <span th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy HH:mm')}">01/09/2026</span></span>
+                <span><i class="bi bi-eye-fill me-1 text-primary"></i>Lượt xem: <strong th:text="${post.viewCount != null ? post.viewCount : 0}">0</strong></span>
+            </div>
+        </div>
+
+        <!-- Embedded Video Player Section (Hybrid Support) -->
+        <div class="mb-4 text-center" th:if="${post.videoUrl != null and !#strings.isEmpty(post.videoUrl)}">
+            <div class="p-3 bg-dark rounded-3 shadow-sm d-inline-block w-100 text-start" style="max-width: 820px;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-white fw-semibold small">
+                        <i class="bi bi-play-btn-fill text-danger me-1 fs-6"></i>Video Hướng Dẫn & Thông Báo Chính Thức
+                    </span>
+                    <span th:if="${post.youtubeVideo}" class="badge bg-danger"><i class="bi bi-youtube me-1"></i>YouTube</span>
+                    <span th:if="${post.driveVideo}" class="badge bg-primary"><i class="bi bi-google me-1"></i>Google Drive</span>
+                    <span th:if="${post.directVideo}" class="badge bg-success"><i class="bi bi-camera-video me-1"></i>Video Máy Chủ</span>
+                </div>
+
+                <!-- 1. YouTube Player -->
+                <div th:if="${post.youtubeVideo}" class="ratio ratio-16x9 rounded overflow-hidden shadow">
+                    <iframe th:src="${post.youtubeEmbedUrl}" 
+                            title="Video Thông Báo" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen></iframe>
+                </div>
+
+                <!-- 2. Google Drive Player -->
+                <div th:if="${post.driveVideo}" class="ratio ratio-16x9 rounded overflow-hidden shadow">
+                    <iframe th:src="${post.driveEmbedUrl}" 
+                            title="Video Thông Báo Google Drive" 
+                            allow="autoplay" 
+                            allowfullscreen></iframe>
+                </div>
+
+                <!-- 3. Direct Video Player (MP4 / WebM with HTTP 206 Streaming) -->
+                <div th:if="${post.directVideo}">
+                    <video controls preload="metadata" class="w-100 rounded shadow" style="max-height: 460px; background-color: black;">
+                        <source th:src="${post.videoUrl}" type="video/mp4">
+                        Trình duyệt của bạn không hỗ trợ phát thẻ video HTML5.
+                    </video>
+                </div>
+            </div>
+        </div>
+
+        <!-- Post Body -->
+        <div class="article-content text-dark mb-4" style="line-height: 1.8; font-size: 15.5px; white-space: pre-line;" th:text="${post.content}">
+            Nội dung thông báo chi tiết...
+        </div>
+
+        <!-- Trình đọc văn bản PDF trực tiếp (Embedded PDF Viewer) -->
+        <div th:if="${post.attachments != null}" th:each="att : ${post.attachments}">
+            <div th:if="${att.fileType == 'PDF'}" class="card border rounded-4 overflow-hidden shadow-sm my-4">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center py-2.5 px-3 border-bottom">
+                    <span class="small fw-semibold text-dark d-flex align-items-center gap-2">
+                        <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+                        <span>Xem trực tiếp: <strong th:text="${att.fileName}">van-ban.pdf</strong></span>
+                    </span>
+                    <div class="d-flex align-items-center gap-2">
+                        <a th:href="@{/feed/official/attachment/{id}/view(id=${att.id})}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Toàn màn hình
+                        </a>
+                        <a th:href="@{/feed/official/attachment/{id}/download(id=${att.id})}" class="btn btn-sm btn-primary rounded-pill px-3">
+                            <i class="bi bi-download me-1"></i>Tải về PDF
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0" style="height: 720px; background-color: #525659;">
+                    <iframe th:src="@{/feed/official/attachment/{id}/view(id=${att.id})}" class="w-100 h-100 border-0" title="PDF Document Viewer"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attachments & Documents Download Section -->
+        <div class="border-top pt-4" th:if="${post.attachments != null and !post.attachments.isEmpty()}">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-paperclip me-2"></i>Tài liệu & Tệp đính kèm chính thức:</h6>
+            <div class="row g-2">
+                <div class="col-md-6" th:each="att : ${post.attachments}">
+                    <div class="p-3 bg-light border rounded-3 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center overflow-hidden me-2">
+                            <i th:if="${att.fileType == 'PDF'}" class="bi bi-file-earmark-pdf-fill fs-2 text-danger me-3"></i>
+                            <i th:if="${att.fileType == 'DOCX'}" class="bi bi-file-earmark-word-fill fs-2 text-primary me-3"></i>
+                            <i th:if="${att.fileType == 'XLSX'}" class="bi bi-file-earmark-excel-fill fs-2 text-success me-3"></i>
+                            <i th:if="${att.fileType == 'MP4'}" class="bi bi-file-earmark-play-fill fs-2 text-warning me-3"></i>
+                            <i th:if="${att.fileType != 'PDF' and att.fileType != 'DOCX' and att.fileType != 'XLSX' and att.fileType != 'MP4'}" class="bi bi-file-earmark-text-fill fs-2 text-secondary me-3"></i>
+                            
+                            <div class="text-truncate">
+                                <div class="fw-semibold text-dark text-truncate" th:text="${att.fileName}">tentep.pdf</div>
+                                <small class="text-muted" th:text="${att.fileSize != null and att.fileSize > 0 ? #numbers.formatDecimal(att.fileSize / 1024.0 / 1024.0, 1, 2) + ' MB' : (att.fileType != null ? att.fileType : 'Tệp đính kèm')}">1.2 MB</small>
+                            </div>
+                        </div>
+                        <a th:href="@{/feed/official/attachment/{id}/download(id=${att.id})}" class="btn btn-sm btn-primary px-3 text-nowrap">
+                            <i class="bi bi-download me-1"></i>Tải Về
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script copy link -->
+    <script>
+        function copyPostLink() {
+            navigator.clipboard.writeText(window.location.href).then(function() {
+                const label = document.getElementById('copyLinkText');
+                if (label) {
+                    label.textContent = 'Đã sao chép!';
+                    setTimeout(() => label.textContent = 'Sao chép link', 2500);
+                }
+            }).catch(function(err) {
+                alert('Không thể sao chép liên kết: ' + err);
+            });
+        }
+    </script>
+</div>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Bảng Tin Thông Báo Chính Thức - QAUTE Portal</title>
+</head>
+<body>
+<div th:fragment="content">
+
+    <!-- Tabs Navigation Bar (Bảng Tin vs Diễn Đàn) -->
+    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link active fw-semibold py-1 px-3" th:href="@{/feed/official}">
+                    <i class="bi bi-megaphone-fill me-1"></i>Bảng Tin Nhà Trường
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-muted fw-semibold py-1 px-3" th:href="@{/feed/forum}">
+                    <i class="bi bi-chat-square-quote me-1"></i>Diễn Đàn Sinh Viên
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Header Section with Smart Role-Based Actions -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold text-dark mb-1 d-flex align-items-center">
+                <i class="bi bi-megaphone-fill text-primary me-2"></i>Bảng Tin Thông Báo Chính Thức
+            </h4>
+            <p class="small text-muted mb-0">Các văn bản, thông tư, quy chế học vụ và thông báo chính thức từ Nhà trường & các Khoa/Phòng</p>
+        </div>
+
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <!-- 1. Cán bộ / Admin: Nút Đăng Thông Báo Mới to rõ -->
+            <div sec:authorize="hasAnyRole('STAFF', 'ADMIN')">
+                <a th:href="@{/feed/official/create}" class="btn btn-primary btn-sm px-3 shadow-sm fw-semibold">
+                    <i class="bi bi-plus-circle me-1"></i>Đăng Thông Báo Mới
+                </a>
+            </div>
+
+            <!-- 2. Sinh viên: Nút hướng dẫn sang Diễn đàn đăng bài thảo luận -->
+            <div sec:authorize="hasRole('STUDENT')">
+                <a th:href="@{/feed/forum}" class="btn btn-outline-primary btn-sm px-3 shadow-xs fw-semibold" title="Thông báo chính thức do Cán bộ ban hành. Sinh viên đăng bài tại Diễn đàn">
+                    <i class="bi bi-pencil-square me-1"></i>Đăng Bài Tại Diễn Đàn
+                </a>
+            </div>
+
+            <!-- 3. Khách vãng lai: Hướng dẫn đăng nhập -->
+            <div sec:authorize="isAnonymous()">
+                <a th:href="@{/auth/login}" class="btn btn-outline-secondary btn-sm px-3 fw-semibold">
+                    <i class="bi bi-box-arrow-in-right me-1"></i>Đăng Nhập Để Đăng Bài
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter & Search Section -->
+    <div class="card border p-3 mb-4 shadow-sm rounded-3 bg-white">
+        <form th:action="@{/feed/official}" method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" th:value="${query}" class="form-control bg-light border-start-0 ps-1" placeholder="Tìm theo tiêu đề thông báo...">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="departmentId" class="form-select bg-light">
+                    <option value="">Tất cả Đơn vị / Khoa / Phòng</option>
+                    <option th:each="dept : ${departments}" 
+                            th:value="${dept.id}" 
+                            th:text="${dept.name}" 
+                            th:selected="${selectedDept == dept.id}">Đơn vị</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill fw-semibold"><i class="bi bi-funnel me-1"></i>Lọc Tin</button>
+                <a th:href="@{/feed/official}" class="btn btn-outline-secondary" title="Đặt lại"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Announcements List Container -->
+    <div th:if="${posts.empty}" class="card p-5 text-center text-muted border shadow-sm rounded-3">
+        <i class="bi bi-newspaper fs-1 text-muted mb-3"></i>
+        <h5 class="fw-bold text-dark mb-1">Chưa có thông báo nào</h5>
+        <p class="small text-muted mb-0">Hiện chưa có thông báo chính thức nào phù hợp với bộ lọc bạn chọn.</p>
+    </div>
+
+    <div class="row g-3" th:unless="${posts.empty}">
+        <div class="col-md-6 col-lg-4" th:each="post : ${posts.content}">
+            <div class="card h-100 border shadow-sm rounded-3 overflow-hidden d-flex flex-column hover-shadow">
+                
+                <!-- Pinned & Dept Header -->
+                <div class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
+                    <span class="badge bg-primary bg-opacity-10 text-primary px-2 py-1" th:text="${post.departmentName != null ? post.departmentName : 'Nhà trường'}">Phòng Ban</span>
+                    <div class="d-flex align-items-center gap-1">
+                        <span th:if="${post.isPinned}" class="badge bg-danger text-white"><i class="bi bi-pin-fill me-1"></i>Được ghim</span>
+                        <!-- Admin Toggle Pin Button -->
+                        <form sec:authorize="hasRole('ADMIN')" th:action="@{/feed/official/toggle-pin/{id}(id=${post.id})}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm py-0 px-1 border-0" 
+                                    th:classappend="${post.isPinned ? 'text-danger' : 'text-muted'}"
+                                    th:title="${post.isPinned ? 'Bấm để Bỏ ghim bài viết này' : 'Bấm để Ghim bài viết này lên đầu'}">
+                                <i class="bi fs-6" th:classappend="${post.isPinned ? 'bi-pin-fill' : 'bi-pin'}"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title fw-bold text-dark mb-2 fs-6">
+                        <a th:href="@{/feed/official/{id}(id=${post.id})}" class="text-decoration-none text-dark hover-primary" th:text="${post.title}">Tiêu đề thông báo</a>
+                    </h5>
+                    <p class="card-text text-muted small flex-fill mb-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6;" th:text="${post.content}">
+                        Nội dung tóm tắt thông báo học vụ...
+                    </p>
+
+                    <!-- Attachment Badges -->
+                    <div class="d-flex flex-wrap gap-1 mb-3" th:if="${post.attachments != null and !post.attachments.empty}">
+                        <span th:each="att : ${post.attachments}" class="badge bg-light text-secondary border px-2 py-1 small d-inline-flex align-items-center">
+                            <i th:if="${att.fileType == 'PDF'}" class="bi bi-file-earmark-pdf-fill text-danger me-1"></i>
+                            <i th:if="${att.fileType == 'DOCX'}" class="bi bi-file-earmark-word-fill text-primary me-1"></i>
+                            <i th:if="${att.fileType == 'XLSX'}" class="bi bi-file-earmark-excel-fill text-success me-1"></i>
+                            <i th:if="${att.fileType == 'MP4'}" class="bi bi-film text-warning me-1"></i>
+                            <span th:text="${att.fileType}">PDF</span>
+                        </span>
+                        <span th:if="${post.videoStatus == 'COMPLETED'}" class="badge bg-warning bg-opacity-25 text-dark border border-warning px-2 py-1">
+                            <i class="bi bi-play-circle-fill text-danger me-1"></i>Video 40s
+                        </span>
+                    </div>
+
+                    <!-- Post Footer -->
+                    <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center text-muted" style="font-size: 12px;">
+                        <span><i class="bi bi-calendar3 me-1"></i><span th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy')}">01/09/2026</span></span>
+                        <a th:href="@{/feed/official/{id}(id=${post.id})}" class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 12px;">Chi tiết <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top" th:if="${posts.totalPages > 1}">
+        <div class="small text-muted">
+            Trang <strong th:text="${posts.number + 1}">1</strong> / <span th:text="${posts.totalPages}">5</span>
+        </div>
+        <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" th:classappend="${posts.first ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/feed/official(page=${posts.number - 1}, departmentId=${selectedDept}, q=${query})}">Trước</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, posts.totalPages - 1)}" th:classappend="${i == posts.number ? 'active' : ''}">
+                <a class="page-link" th:href="@{/feed/official(page=${i}, departmentId=${selectedDept}, q=${query})}" th:text="${i + 1}">1</a>
+            </li>
+            <li class="page-item" th:classappend="${posts.last ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/feed/official(page=${posts.number + 1}, departmentId=${selectedDept}, q=${query})}">Sau</a>
+            </li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>
