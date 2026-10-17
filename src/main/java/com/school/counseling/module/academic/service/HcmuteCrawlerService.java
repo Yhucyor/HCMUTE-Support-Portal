@@ -92,12 +92,11 @@ public class HcmuteCrawlerService {
 
             log.info("Xác thực thành công sinh viên {} ({}) - Vai trò: {}", studentName, studentId, role);
 
-            // 2. Lấy thông tin hồ sơ sinh viên từ /student/info
-            StudentProfile profile = fetchRealStudentInfo(studentId, token);
+            // 2. Lấy thông tin hồ sơ sinh viên từ HCMUTE Portal
+            StudentProfile profile = fetchRealStudentInfo(studentId, token, studentName);
             if (profile != null) {
-                profileRepository.deleteByStudentId(studentId);
-                profileRepository.save(profile);
-                if (profile.getFullName() != null && !profile.getFullName().isBlank()) {
+                profile = saveOrUpdateProfile(profile);
+                if (profile != null && profile.getFullName() != null && !profile.getFullName().isBlank()) {
                     studentName = profile.getFullName();
                 }
             }
@@ -122,6 +121,9 @@ public class HcmuteCrawlerService {
             gradeRepository.deleteByStudentId(studentId);
             scheduleRepository.deleteByStudentId(studentId);
             curriculumRepository.deleteByStudentId(studentId);
+            gradeRepository.flush();
+            scheduleRepository.flush();
+            curriculumRepository.flush();
 
             if (!grades.isEmpty()) {
                 gradeRepository.saveAll(grades);
@@ -176,24 +178,23 @@ public class HcmuteCrawlerService {
         }
     }
 
-    private StudentProfile fetchRealStudentInfo(String studentId, String token) {
+    private StudentProfile fetchRealStudentInfo(String studentId, String token, String fallbackFullName) {
         try {
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(API_BASE + "/student/info"))
-                    .header("Content-Type", "application/json")
-                    .header("apiKey", API_KEY)
-                    .header("clientId", CLIENT_ID)
-                    .header("Authorization", "Bearer " + token)
-                    .timeout(TIMEOUT)
-                    .GET()
-                    .build();
+            // Thử endpoint chính thức từ web portal: /student/StudentInfoUpdate
+            HttpResponse<String> response = sendGet(API_BASE + "/student/StudentInfoUpdate", token);
+            if (response.statusCode() != 200 || response.body() == null || response.body().isBlank()) {
+                // Thử fallback endpoint: /student/info
+                response = sendGet(API_BASE + "/student/info", token);
+            }
 
-            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 200 && response.body() != null && !response.body().isBlank()) {
                 JsonNode root = objectMapper.readTree(response.body());
                 JsonNode info = root.isArray() && root.size() > 0 ? root.get(0) : root;
 
                 String fullName = getJsonString(info, "FullName", "HoTen", "StudentName");
+                if (fullName.isBlank()) {
+                    fullName = fallbackFullName != null ? fallbackFullName : "Sinh viên " + studentId;
+                }
                 String gender = getJsonString(info, "Gender", "GioiTinh");
                 String birthday = getJsonString(info, "Birthday", "NgaySinh");
                 String birthPlace = getJsonString(info, "BirthPlace", "NoiSinh");
@@ -206,11 +207,15 @@ public class HcmuteCrawlerService {
                 String academicStatus = getJsonString(info, "TinhTrangHoc", "Status");
                 if (academicStatus.isBlank()) academicStatus = "Đang học";
                 String advisor = getJsonString(info, "CoVanHocTap", "LienHeCoVHT");
-                String email = getJsonString(info, "EmailTruong", "EmailSV", "Email");
+                String email = getJsonString(info, "EmailTruong", "EmailSV", "Email", "EmailCaNhan");
                 String phone = getJsonString(info, "MobileNumber", "DiDong", "Phone");
                 String citizenId = getJsonString(info, "CMND", "CCCD");
                 String address = getJsonString(info, "DiaChi", "DiaChiThuongTru", "Address");
                 String avatarUrl = getJsonString(info, "HinhOnlineTTSV", "FileName", "Avatar");
+
+                if (avatarUrl.isBlank()) {
+                    avatarUrl = fetchStudentAvatar(token);
+                }
 
                 log.info("Cào thành công thông tin sinh viên {} ({}) - Lớp: {}, Khoa: {}",
                         fullName, studentId, studentClass, faculty);
@@ -237,9 +242,105 @@ public class HcmuteCrawlerService {
                         .build();
             }
         } catch (Exception e) {
-            log.error("Lỗi khi cào thông tin sinh viên {} từ /student/info: {}", studentId, e.getMessage());
+            log.error("Lỗi khi cào thông tin sinh viên {} từ portal: {}", studentId, e.getMessage());
         }
-        return generateDemoProfile(studentId);
+
+        StudentProfile demo = generateDemoProfile(studentId);
+        if (fallbackFullName != null && !fallbackFullName.isBlank()) {
+            demo.setFullName(fallbackFullName);
+        }
+        return demo;
+    }
+
+    private HttpResponse<String> sendGet(String uriStr, String token) throws Exception {
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(uriStr))
+                .header("Content-Type", "application/json")
+                .header("apiKey", API_KEY)
+                .header("clientId", CLIENT_ID)
+                .header("Authorization", "Bearer " + token)
+                .timeout(TIMEOUT)
+                .GET()
+                .build();
+        return httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private String fetchStudentAvatar(String token) {
+        try {
+            HttpResponse<String> res = sendGet(API_BASE + "/student/GetAvatarWeb", token);
+            if (res.statusCode() == 200 && res.body() != null && !res.body().isBlank()) {
+                JsonNode node = objectMapper.readTree(res.body());
+                if (node.isTextual()) return node.asText();
+                return getJsonString(node, "FileName", "HinhOnlineTTSV", "Avatar", "Url");
+            }
+        } catch (Exception e) {
+            log.warn("Không thể lấy avatar từ /GetAvatarWeb: {}", e.getMessage());
+        }
+        return "";
+    }
+
+    private StudentProfile saveOrUpdateProfile(StudentProfile newProfile) {
+        if (newProfile == null || newProfile.getStudentId() == null) {
+            return null;
+        }
+        String studentId = newProfile.getStudentId();
+        StudentProfile profile = profileRepository.findByStudentId(studentId)
+                .orElse(new StudentProfile());
+
+        profile.setStudentId(studentId);
+        if (newProfile.getFullName() != null && !newProfile.getFullName().isBlank()) {
+            profile.setFullName(newProfile.getFullName());
+        }
+        if (newProfile.getGender() != null && !newProfile.getGender().isBlank()) {
+            profile.setGender(newProfile.getGender());
+        }
+        if (newProfile.getBirthday() != null && !newProfile.getBirthday().isBlank()) {
+            profile.setBirthday(newProfile.getBirthday());
+        }
+        if (newProfile.getBirthPlace() != null && !newProfile.getBirthPlace().isBlank()) {
+            profile.setBirthPlace(newProfile.getBirthPlace());
+        }
+        if (newProfile.getStudentClass() != null && !newProfile.getStudentClass().isBlank()) {
+            profile.setStudentClass(newProfile.getStudentClass());
+        }
+        if (newProfile.getFaculty() != null && !newProfile.getFaculty().isBlank()) {
+            profile.setFaculty(newProfile.getFaculty());
+        }
+        if (newProfile.getMajor() != null && !newProfile.getMajor().isBlank()) {
+            profile.setMajor(newProfile.getMajor());
+        }
+        if (newProfile.getAcademicYear() != null && !newProfile.getAcademicYear().isBlank()) {
+            profile.setAcademicYear(newProfile.getAcademicYear());
+        }
+        if (newProfile.getEducationType() != null && !newProfile.getEducationType().isBlank()) {
+            profile.setEducationType(newProfile.getEducationType());
+        }
+        if (newProfile.getStudyProgram() != null && !newProfile.getStudyProgram().isBlank()) {
+            profile.setStudyProgram(newProfile.getStudyProgram());
+        }
+        if (newProfile.getAcademicStatus() != null && !newProfile.getAcademicStatus().isBlank()) {
+            profile.setAcademicStatus(newProfile.getAcademicStatus());
+        }
+        if (newProfile.getAcademicAdvisor() != null && !newProfile.getAcademicAdvisor().isBlank()) {
+            profile.setAcademicAdvisor(newProfile.getAcademicAdvisor());
+        }
+        if (newProfile.getEmail() != null && !newProfile.getEmail().isBlank()) {
+            profile.setEmail(newProfile.getEmail());
+        }
+        if (newProfile.getPhone() != null && !newProfile.getPhone().isBlank()) {
+            profile.setPhone(newProfile.getPhone());
+        }
+        if (newProfile.getCitizenId() != null && !newProfile.getCitizenId().isBlank()) {
+            profile.setCitizenId(newProfile.getCitizenId());
+        }
+        if (newProfile.getAddress() != null && !newProfile.getAddress().isBlank()) {
+            profile.setAddress(newProfile.getAddress());
+        }
+        if (newProfile.getAvatarUrl() != null && !newProfile.getAvatarUrl().isBlank()) {
+            profile.setAvatarUrl(newProfile.getAvatarUrl());
+        }
+
+        return profileRepository.saveAndFlush(profile);
     }
 
     private String getJsonString(JsonNode node, String... keys) {
@@ -720,12 +821,14 @@ public class HcmuteCrawlerService {
         List<CourseSchedule> demoSchedules = generateDemoSchedules(studentId);
         List<CurriculumSubject> demoCurriculums = generateDemoCurriculums(studentId, demoGrades);
 
-        profileRepository.deleteByStudentId(studentId);
+        saveOrUpdateProfile(demoProfile);
         gradeRepository.deleteByStudentId(studentId);
         scheduleRepository.deleteByStudentId(studentId);
         curriculumRepository.deleteByStudentId(studentId);
+        gradeRepository.flush();
+        scheduleRepository.flush();
+        curriculumRepository.flush();
 
-        profileRepository.save(demoProfile);
         gradeRepository.saveAll(demoGrades);
         scheduleRepository.saveAll(demoSchedules);
         curriculumRepository.saveAll(demoCurriculums);
