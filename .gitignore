@@ -45,3 +45,7 @@ hs_err_pid*
 .classpath
 .project
 .settings/
+
+# Local temporary inspection files
+chunk*.js
+inspect_*.py
