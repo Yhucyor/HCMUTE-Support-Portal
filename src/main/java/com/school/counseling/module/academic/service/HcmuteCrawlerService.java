@@ -30,7 +30,6 @@ import java.util.*;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class HcmuteCrawlerService {
 
     private static final String API_BASE = "https://portalapi.hcmute.edu.vn/api";
@@ -43,11 +42,24 @@ public class HcmuteCrawlerService {
     private final CurriculumSubjectRepository curriculumRepository;
     private final SyncHistoryRepository syncHistoryRepository;
     private final ObjectMapper objectMapper;
+    private final HttpClient httpClient;
 
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(TIMEOUT)
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
+    public HcmuteCrawlerService(
+            StudentGradeRepository gradeRepository,
+            CourseScheduleRepository scheduleRepository,
+            CurriculumSubjectRepository curriculumRepository,
+            SyncHistoryRepository syncHistoryRepository,
+            ObjectMapper objectMapper) {
+        this.gradeRepository = gradeRepository;
+        this.scheduleRepository = scheduleRepository;
+        this.curriculumRepository = curriculumRepository;
+        this.syncHistoryRepository = syncHistoryRepository;
+        this.objectMapper = objectMapper;
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(TIMEOUT)
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
+    }
 
     @Transactional
     public HcmuteSyncResponse syncStudentData(HcmuteSyncRequest request) {
@@ -479,11 +491,13 @@ public class HcmuteCrawlerService {
         }
 
         // Đệ quy duyệt qua các trường đối tượng con (tbStudyPrograms, CTDT, groupSelection...)
-        node.fields().forEachRemaining(entry -> {
+        Iterator<Map.Entry<String, JsonNode>> fieldsIterator = node.fields();
+        while (fieldsIterator.hasNext()) {
+            Map.Entry<String, JsonNode> entry = fieldsIterator.next();
             if (entry.getValue().isArray() || entry.getValue().isObject()) {
                 extractCurriculumCourses(entry.getValue(), studentId, sem, passedCodes, map);
             }
-        });
+        }
     }
 
     private int parseSemesterNumber(String hk, int fallback) {
