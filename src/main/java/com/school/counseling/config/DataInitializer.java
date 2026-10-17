@@ -1,5 +1,10 @@
 package com.school.counseling.config;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.school.counseling.module.ai.entity.Faq;
+import com.school.counseling.module.ai.repository.FaqRepository;
+import com.school.counseling.module.ai.service.SmartFaqMatcherService;
 import com.school.counseling.module.auth.entity.Department;
 import com.school.counseling.module.auth.entity.Role;
 import com.school.counseling.module.auth.entity.User;
@@ -13,8 +18,13 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
 /**
- * Tự động khởi tạo dữ liệu mẫu (Roles, Departments, Sample Users) khi ứng dụng
+ * Tự động khởi tạo dữ liệu mẫu (Roles, Departments, Sample Users, FAQ Dataset) khi ứng dụng
  * chạy lần đầu
  */
 @Slf4j
@@ -26,6 +36,9 @@ public class DataInitializer implements CommandLineRunner {
     private final DepartmentRepository departmentRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FaqRepository faqRepository;
+    private final SmartFaqMatcherService smartFaqMatcherService;
+    private final ObjectMapper objectMapper;
 
     @Override
     public void run(String... args) {
@@ -75,10 +88,127 @@ public class DataInitializer implements CommandLineRunner {
             initUser("student01", "123456", "Nguyễn Văn Sinh Viên", "student01@hcmute.edu.vn", roleStudent, deptCntt);
             initUser("lecuong", "123456", "Lê Quốc Cường", "lecuong@gmail.com", roleStudent, deptCntt);
 
-            log.info("Khởi tạo dữ liệu mẫu Auth (Roles, Departments, Sample Accounts) thành công!");
+            // 4. Khởi tạo / Nạp Kho Tri Thức FAQs từ docs/dataset/faq_dataset_curated.json
+            if (faqRepository.count() == 0) {
+                log.info("Kho FAQ chưa khởi tạo. Tiến hành nạp kho tri thức FAQ...");
+                seedFaqsFromDataset(deptDoan, deptTuyenSinh, deptDaoTao, deptCntt, deptNn);
+                smartFaqMatcherService.reloadCache();
+            }
+
+            log.info("Khởi tạo dữ liệu mẫu Auth & FAQ thành công!");
         } catch (Exception e) {
             log.error("Lỗi trong quá trình khởi tạo dữ liệu mẫu: ", e);
         }
+    }
+
+    private void seedFaqsFromDataset(Department deptDoan, Department deptTuyenSinh, Department deptDaoTao, Department deptCntt, Department deptNn) {
+        try {
+            File file = new File("docs/dataset/faq_dataset_curated.json");
+            if (!file.exists()) {
+                log.info("Không tìm thấy tệp dataset FAQ tại docs/dataset/faq_dataset_curated.json, bỏ qua nạp FAQ");
+                return;
+            }
+
+            log.info("Bắt đầu nạp kho tri thức FAQ từ {}...", file.getPath());
+            List<Map<String, Object>> records = objectMapper.readValue(file, new TypeReference<>() {});
+            List<Faq> entities = new ArrayList<>();
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+
+            for (Map<String, Object> r : records) {
+                String title = (String) r.get("title");
+                String rawQuestion = (String) r.get("question");
+                String directAnswer = (String) r.get("answer");
+                List<Map<String, String>> replies = (List<Map<String, String>>) r.get("replies");
+
+                String answer = "Vui lòng liên hệ trực tiếp phòng ban phụ trách để được hướng dẫn chi tiết.";
+                if (directAnswer != null && !directAnswer.trim().isEmpty()) {
+                    answer = directAnswer.trim();
+                } else if (replies != null && !replies.isEmpty()) {
+                    String firstContent = replies.get(0).get("content");
+                    if (firstContent != null && !firstContent.trim().isEmpty()) {
+                        answer = firstContent.trim();
+                    }
+                }
+
+                String cleanQuestion = (title != null && !title.trim().isEmpty()) ? title.trim() : rawQuestion;
+                if (cleanQuestion == null || cleanQuestion.isBlank()) {
+                    continue;
+                }
+                if (cleanQuestion.length() > 490) {
+                    cleanQuestion = cleanQuestion.substring(0, 490);
+                }
+
+                LocalDateTime postDate = null;
+                Object postDateObj = r.get("post_date");
+                if (postDateObj != null) {
+                    String postDateStr = postDateObj.toString().trim();
+                    if (!postDateStr.isEmpty()) {
+                        try {
+                            postDate = LocalDateTime.parse(postDateStr, dtf);
+                        } catch (Exception ex) {
+                            log.debug("Không parse được post_date '{}'", postDateStr);
+                        }
+                    }
+                }
+
+                Department targetDept = classifyDepartment(cleanQuestion, deptDoan, deptTuyenSinh, deptDaoTao, deptCntt, deptNn);
+                String category = resolveCategory(cleanQuestion, targetDept);
+                String keywords = cleanQuestion.length() > 250 ? cleanQuestion.substring(0, 250) : cleanQuestion;
+
+                int views = 1;
+                try {
+                    Object viewsObj = r.get("views");
+                    if (viewsObj != null) {
+                        views = Integer.parseInt(viewsObj.toString().trim());
+                    }
+                } catch (Exception ignored) {}
+
+                entities.add(Faq.builder()
+                        .question(cleanQuestion)
+                        .answer(answer)
+                        .department(targetDept)
+                        .category(category)
+                        .keywords(keywords)
+                        .viewCount(views)
+                        .postDate(postDate)
+                        .isActive(true)
+                        .build());
+            }
+
+            if (!entities.isEmpty()) {
+                faqRepository.saveAll(entities);
+                log.info("Đã nạp thành công {} câu hỏi FAQ tinh tuyển vào Database!", entities.size());
+            }
+        } catch (Exception e) {
+            log.warn("Lỗi khi nạp dữ liệu từ dataset FAQ: {}", e.getMessage(), e);
+        }
+    }
+
+    private Department classifyDepartment(String text, Department deptDoan, Department deptTuyenSinh, Department deptDaoTao, Department deptCntt, Department deptNn) {
+        String lower = text.toLowerCase(Locale.ROOT);
+        if (lower.contains("tuyển sinh") || lower.contains("xét tuyển") || lower.contains("học phí") || lower.contains("chỉ tiêu") || lower.contains("thí sinh") || lower.contains("học bạ")) {
+            return deptTuyenSinh;
+        }
+        if (lower.contains("tiếng anh") || lower.contains("toeic") || lower.contains("vstep") || lower.contains("ielts") || lower.contains("đgnlta") || lower.contains("ngoại ngữ")) {
+            return deptNn;
+        }
+        if (lower.contains("công nghệ thông tin") || lower.contains("cntt") || lower.contains("lập trình") || lower.contains("phần mềm") || lower.contains("đồ án tốt nghiệp cntt")) {
+            return deptCntt;
+        }
+        if (lower.contains("đoàn") || lower.contains("hội sinh viên") || lower.contains("tình nguyện") || lower.contains("mùa hè xanh") || lower.contains("rèn luyện") || lower.contains("kết nạp")) {
+            return deptDoan;
+        }
+        return deptDaoTao;
+    }
+
+    private String resolveCategory(String text, Department dept) {
+        String lower = text.toLowerCase(Locale.ROOT);
+        if (lower.contains("học phí")) return "Học phí";
+        if (lower.contains("tiếng anh") || lower.contains("toeic")) return "Ngoại ngữ";
+        if (lower.contains("đăng ký") || lower.contains("môn học")) return "Đăng ký môn học";
+        if (lower.contains("tốt nghiệp")) return "Xét tốt nghiệp";
+        if (lower.contains("học bổng")) return "Học bổng";
+        return "Quy chế học vụ";
     }
 
     private Role initRole(String name, String description) {
