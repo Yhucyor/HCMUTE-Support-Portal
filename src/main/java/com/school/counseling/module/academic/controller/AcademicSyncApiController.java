@@ -23,7 +23,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/academic")
-@RequiredArgsConstructor
 public class AcademicSyncApiController {
 
     private final HcmuteCrawlerService crawlerService;
@@ -31,6 +30,19 @@ public class AcademicSyncApiController {
     private final CourseScheduleRepository scheduleRepository;
     private final CurriculumSubjectRepository curriculumRepository;
     private final SyncHistoryRepository syncHistoryRepository;
+
+    public AcademicSyncApiController(
+            HcmuteCrawlerService crawlerService,
+            StudentGradeRepository gradeRepository,
+            CourseScheduleRepository scheduleRepository,
+            CurriculumSubjectRepository curriculumRepository,
+            SyncHistoryRepository syncHistoryRepository) {
+        this.crawlerService = crawlerService;
+        this.gradeRepository = gradeRepository;
+        this.scheduleRepository = scheduleRepository;
+        this.curriculumRepository = curriculumRepository;
+        this.syncHistoryRepository = syncHistoryRepository;
+    }
 
     @PostMapping("/sync")
     public ResponseEntity<HcmuteSyncResponse> syncAcademicData(@Valid @RequestBody HcmuteSyncRequest request) {

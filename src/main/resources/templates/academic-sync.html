@@ -3,56 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HCMUTE Portal | Đồng bộ Học vụ Cổng trường</title>
+    <title>HCMUTE Portal | Quản lý & Đồng bộ Học vụ Cổng trường</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="/css/style.css">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f8fafc;
+        :root {
+            --primary: #1d4ed8;
+            --primary-hover: #1e40af;
+            --primary-light: #eff6ff;
+            --primary-border: #bfdbfe;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-700: #334155;
+            --slate-600: #475569;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+            --slate-100: #f1f5f9;
+            --slate-50: #f8fafc;
+            --emerald: #10b981;
+            --emerald-light: #ecfdf5;
+            --amber: #f59e0b;
+            --amber-light: #fffbeb;
+            --rose: #ef4444;
+            --rose-light: #fef2f2;
+            --radius-xl: 18px;
+            --radius-lg: 12px;
+            --radius-md: 8px;
+            --shadow-subtle: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-card: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.02);
+            --shadow-hover: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            color: #1e293b;
         }
 
-        .sync-container {
-            max-width: 1100px;
-            margin: 40px auto;
-            padding: 0 20px;
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f1f5f9;
+            color: var(--slate-800);
+            min-height: 100vh;
+            padding-bottom: 60px;
         }
 
-        .sync-header {
-            text-align: center;
-            margin-bottom: 30px;
+        /* Top Navigation Bar */
+        .top-navbar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--slate-200);
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
         }
 
-        .sync-header h1 {
-            font-size: 1.85rem;
-            color: #0f172a;
-            margin-bottom: 8px;
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--slate-900);
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
             display: flex;
             align-items: center;
             justify-content: center;
+            color: #ffffff;
+            font-size: 1.35rem;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+        }
+
+        .brand-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-subtitle {
+            font-size: 0.75rem;
+            color: var(--slate-500);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-link-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--slate-600);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 8px 14px;
+            border-radius: var(--radius-md);
+            transition: all 0.2s;
+            border: 1px solid var(--slate-200);
+            background: #ffffff;
+        }
+
+        .btn-link-back:hover {
+            color: var(--primary);
+            border-color: var(--primary-border);
+            background: var(--primary-light);
+        }
+
+        /* Container */
+        .page-container {
+            max-width: 1200px;
+            margin: 28px auto 0;
+            padding: 0 24px;
+        }
+
+        /* Banner Header */
+        .portal-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: var(--radius-xl);
+            padding: 32px 36px;
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .portal-hero::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.35) 0%, rgba(37, 99, 235, 0) 70%);
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(37, 99, 235, 0.25);
+            border: 1px solid rgba(147, 197, 253, 0.3);
+            color: #93c5fd;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .portal-hero h1 {
+            font-size: 1.85rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .portal-hero p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            max-width: 780px;
+            line-height: 1.5;
+        }
+
+        /* Card Form Synchronizer */
+        .sync-box {
+            background: #ffffff;
+            border-radius: var(--radius-xl);
+            padding: 24px 28px;
+            border: 1px solid var(--slate-200);
+            box-shadow: var(--shadow-card);
+            margin-bottom: 28px;
+        }
+
+        .sync-box-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
             gap: 10px;
         }
 
-        .sync-header p {
-            color: #64748b;
-            font-size: 0.95rem;
-            margin: 0;
+        .sync-box-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--slate-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        /* Card Form */
-        .card-box {
-            background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            border: 1px solid #e2e8f0;
-            padding: 24px 30px;
-            margin-bottom: 30px;
+        .btn-demo-fill {
+            background: var(--slate-100);
+            border: 1px solid var(--slate-200);
+            color: var(--slate-700);
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-demo-fill:hover {
+            background: #e2e8f0;
+            color: var(--slate-900);
         }
 
         .sync-form-grid {
@@ -62,6 +250,12 @@
             align-items: flex-end;
         }
 
+        @media (max-width: 768px) {
+            .sync-form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .form-group {
             display: flex;
             flex-direction: column;
@@ -69,316 +263,979 @@
         }
 
         .form-group label {
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             font-weight: 600;
-            color: #334155;
+            color: var(--slate-700);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-input-wrapper {
+            position: relative;
+        }
+
+        .form-input-wrapper i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--slate-500);
+            font-size: 1.1rem;
         }
 
         .form-control {
-            padding: 11px 14px;
-            border-radius: 10px;
-            border: 1.5px solid #cbd5e1;
+            width: 100%;
+            padding: 11px 14px 11px 40px;
+            border-radius: var(--radius-lg);
+            border: 1.5px solid var(--slate-200);
+            background: var(--slate-50);
+            color: var(--slate-900);
             font-size: 0.95rem;
+            font-weight: 500;
             outline: none;
             transition: all 0.2s;
-            background: #f8fafc;
         }
 
         .form-control:focus {
-            border-color: #2563eb;
+            border-color: var(--primary);
             background: #ffffff;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
         }
 
-        .btn-sync {
-            padding: 12px 24px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            color: white;
+        .btn-submit-sync {
+            height: 45px;
+            padding: 0 24px;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+            color: #ffffff;
             border: none;
             font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
             font-size: 0.95rem;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
             transition: all 0.2s;
-            height: 44px;
+            white-space: nowrap;
         }
 
-        .btn-sync:hover {
+        .btn-submit-sync:hover {
             background: #1e40af;
             transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
         }
 
-        .btn-sync:disabled {
+        .btn-submit-sync:disabled {
             background: #94a3b8;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
 
-        /* Result stats */
-        .stats-grid {
+        .status-alert {
+            margin-top: 16px;
+            padding: 12px 16px;
+            border-radius: var(--radius-lg);
+            font-size: 0.88rem;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-alert.info { background: var(--primary-light); color: var(--primary); border: 1px solid var(--primary-border); }
+        .status-alert.success { background: var(--emerald-light); color: #065f46; border: 1px solid #a7f3d0; }
+        .status-alert.error { background: var(--rose-light); color: #991b1b; border: 1px solid #fecaca; }
+
+        /* STUDENT PROFILE HERO CARD */
+        .profile-card {
+            background: #ffffff;
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--slate-200);
+            box-shadow: var(--shadow-card);
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .profile-main-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .profile-avatar-wrap {
+            position: relative;
+            width: 76px;
+            height: 76px;
+            flex-shrink: 0;
+        }
+
+        .profile-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background: var(--slate-100);
+        }
+
+        .status-indicator-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 14px;
+            height: 14px;
+            background: var(--emerald);
+            border: 2.5px solid #ffffff;
+            border-radius: 50%;
+        }
+
+        .profile-name-group h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--slate-900);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .badge-mssv {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-family: monospace;
+        }
+
+        .profile-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: var(--slate-600);
+            font-size: 0.88rem;
+            flex-wrap: wrap;
+        }
+
+        .profile-meta-row span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .profile-meta-row i {
+            color: var(--primary);
+        }
+
+        .profile-advisor-badge {
+            background: var(--slate-50);
+            border: 1px solid var(--slate-200);
+            padding: 12px 18px;
+            border-radius: var(--radius-lg);
+            text-align: right;
+        }
+
+        @media (max-width: 768px) {
+            .profile-advisor-badge {
+                text-align: left;
+                width: 100%;
+            }
+        }
+
+        .profile-advisor-badge .label {
+            font-size: 0.75rem;
+            color: var(--slate-500);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
+        .profile-advisor-badge .name {
+            font-weight: 700;
+            font-size: 0.92rem;
+            color: var(--slate-800);
+            margin-top: 2px;
+        }
+
+        /* ACADEMIC KPI STATS GRID */
+        .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 16px;
             margin-bottom: 24px;
         }
 
-        .stat-item {
+        @media (max-width: 992px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 576px) {
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .kpi-card {
             background: #ffffff;
-            padding: 18px 20px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-xl);
+            padding: 20px;
+            border: 1px solid var(--slate-200);
+            box-shadow: var(--shadow-subtle);
             display: flex;
             align-items: center;
-            gap: 14px;
-        }
-
-        .stat-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-        }
-
-        .stat-icon.grades { background: #dbeafe; color: #1d4ed8; }
-        .stat-icon.schedule { background: #dcfce7; color: #15803d; }
-        .stat-icon.curriculum { background: #fef3c7; color: #b45309; }
-
-        .stat-text h4 { margin: 0; font-size: 1.3rem; color: #0f172a; }
-        .stat-text p { margin: 2px 0 0; font-size: 0.82rem; color: #64748b; }
-
-        /* Tabs */
-        .tabs-header {
-            display: flex;
-            gap: 10px;
-            border-bottom: 2px solid #e2e8f0;
-            margin-bottom: 20px;
-        }
-
-        .tab-btn {
-            padding: 10px 18px;
-            font-weight: 600;
-            font-size: 0.92rem;
-            color: #64748b;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            position: relative;
-            bottom: -2px;
-            border-bottom: 2px solid transparent;
+            gap: 16px;
             transition: all 0.2s;
         }
 
-        .tab-btn.active {
-            color: #2563eb;
-            border-bottom-color: #2563eb;
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
         }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        /* Data Tables */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
+        .kpi-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
         }
 
-        .data-table th {
-            background: #f1f5f9;
-            color: #475569;
+        .kpi-icon.gpa { background: #dbeafe; color: #1d4ed8; }
+        .kpi-icon.credits { background: #dcfce7; color: #15803d; }
+        .kpi-icon.standing { background: #fef3c7; color: #b45309; }
+        .kpi-icon.courses { background: #ede9fe; color: #6d28d9; }
+
+        .kpi-info h3 {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--slate-900);
+            margin-bottom: 2px;
+            letter-spacing: -0.02em;
+        }
+
+        .kpi-info p {
+            font-size: 0.82rem;
+            color: var(--slate-500);
             font-weight: 600;
-            text-align: left;
-            padding: 12px 14px;
-            border-bottom: 1px solid #cbd5e1;
         }
 
-        .data-table td {
-            padding: 12px 14px;
-            border-bottom: 1px solid #e2e8f0;
-            color: #334155;
+        .kpi-info small {
+            font-size: 0.76rem;
+            color: var(--slate-400);
         }
 
-        .data-table tr:hover { background: #f8fafc; }
-
-        .grade-badge {
-            display: inline-block;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-size: 0.8rem;
+        /* MAIN TABS CARD */
+        .content-card {
+            background: #ffffff;
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--slate-200);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
         }
-        .grade-badge.a { background: #dcfce7; color: #166534; }
-        .grade-badge.b { background: #dbeafe; color: #1e40af; }
-        .grade-badge.c { background: #fef3c7; color: #92400e; }
-        .grade-badge.f { background: #fee2e2; color: #991b1b; }
 
-        .nav-back {
+        .tabs-nav {
+            display: flex;
+            background: var(--slate-50);
+            border-bottom: 1px solid var(--slate-200);
+            padding: 0 16px;
+            overflow-x: auto;
+        }
+
+        .tab-button {
+            padding: 16px 20px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            color: var(--slate-600);
+            background: transparent;
+            border: none;
+            cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            color: #64748b;
-            text-decoration: none;
-            font-size: 0.88rem;
-            font-weight: 500;
-            margin-bottom: 20px;
+            gap: 8px;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.2s;
+            white-space: nowrap;
         }
-        .nav-back:hover { color: #2563eb; }
+
+        .tab-button:hover {
+            color: var(--primary);
+        }
+
+        .tab-button.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: #ffffff;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .tab-content {
+            padding: 24px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* TAB 1: PROFILE DETAILS */
+        .profile-details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .profile-details-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .detail-group-card {
+            background: var(--slate-50);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--slate-200);
+            padding: 18px 20px;
+        }
+
+        .detail-group-card h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--slate-900);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--slate-200);
+            padding-bottom: 10px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 0.88rem;
+            border-bottom: 1px dashed var(--slate-200);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: var(--slate-500);
+            font-weight: 500;
+        }
+
+        .detail-val {
+            color: var(--slate-800);
+            font-weight: 600;
+            text-align: right;
+        }
+
+        /* TABLES & CONTROLS */
+        .table-filter-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            min-width: 260px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--slate-400);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 12px 8px 36px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--slate-200);
+            font-size: 0.88rem;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+        }
+
+        .select-semester {
+            padding: 8px 14px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--slate-200);
+            font-size: 0.88rem;
+            color: var(--slate-700);
+            background: #ffffff;
+            outline: none;
+            font-weight: 500;
+        }
+
+        .data-table-wrapper {
+            overflow-x: auto;
+            border: 1px solid var(--slate-200);
+            border-radius: var(--radius-lg);
+        }
+
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            text-align: left;
+        }
+
+        .custom-table th {
+            background: var(--slate-100);
+            color: var(--slate-700);
+            font-weight: 700;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--slate-200);
+            white-space: nowrap;
+        }
+
+        .custom-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--slate-200);
+            color: var(--slate-700);
+            vertical-align: middle;
+        }
+
+        .custom-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .custom-table tr:hover {
+            background: var(--slate-50);
+        }
+
+        .badge-code {
+            font-family: monospace;
+            background: var(--slate-100);
+            color: var(--slate-700);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .badge-letter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .badge-letter.a { background: #dcfce7; color: #15803d; }
+        .badge-letter.b { background: #dbeafe; color: #1e40af; }
+        .badge-letter.c { background: #fef3c7; color: #b45309; }
+        .badge-letter.f { background: #fee2e2; color: #b91c1c; }
+
+        .badge-pill-done {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #dcfce7;
+            color: #166534;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .badge-pill-pending {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--slate-100);
+            color: var(--slate-600);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 500;
+        }
+
+        .badge-day {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .badge-shift {
+            background: var(--slate-100);
+            color: var(--slate-700);
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--slate-500);
+        }
+
+        .empty-state i {
+            font-size: 3.5rem;
+            color: var(--slate-400);
+            margin-bottom: 12px;
+        }
+
+        .empty-state h4 {
+            font-size: 1.1rem;
+            color: var(--slate-800);
+            margin-bottom: 6px;
+        }
+
+        .empty-state p {
+            font-size: 0.88rem;
+        }
     </style>
 </head>
 <body>
 
-    <div class="sync-container">
-        <a href="/dashboard" class="nav-back"><i class='bx bx-left-arrow-alt'></i> Quay lại Tổng quan</a>
+    <!-- TOP NAVBAR -->
+    <header class="top-navbar">
+        <a href="/" class="nav-brand">
+            <div class="brand-icon">
+                <i class='bx bxs-graduation'></i>
+            </div>
+            <div>
+                <div class="brand-title">HCMUTE Student Portal</div>
+                <div class="brand-subtitle">Cổng Hỗ trợ & Học vụ Sinh viên</div>
+            </div>
+        </a>
 
-        <div class="sync-header">
-            <h1><i class='bx bxs-school' style="color: #2563eb;"></i> Đồng bộ Học vụ Cổng trường HCMUTE</h1>
-            <p>Nhập thông tin tài khoản sinh viên cổng <a href="https://online.hcmute.edu.vn" target="_blank" style="color:#2563eb; font-weight:600;">online.hcmute.edu.vn</a> để tự động cào Bảng điểm, Thời khóa biểu và CTĐT</p>
+        <div class="nav-actions">
+            <a href="/" class="btn-link-back">
+                <i class='bx bx-home-alt'></i> Trang chủ
+            </a>
+            <a href="https://online.hcmute.edu.vn" target="_blank" class="btn-link-back" style="color:var(--primary);">
+                <i class='bx bx-link-external'></i> online.hcmute.edu.vn
+            </a>
+        </div>
+    </header>
+
+    <div class="page-container">
+
+        <!-- HERO BANNER -->
+        <div class="portal-hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class='bx bx-sync'></i> Tính năng Tự Động Đồng Bộ Dữ Liệu
+                </div>
+                <h1><i class='bx bxs-data'></i> Quản Lý & Đồng Bộ Học Vụ Cổng Trường</h1>
+                <p>
+                    Kết nối an toàn đến Cổng Đào Tạo trực tuyến HCMUTE để tự động trích xuất và hiển thị toàn bộ 
+                    <strong>Thông tin sinh viên, Bảng điểm tích lũy, Thời khóa biểu giảng đường</strong> và 
+                    <strong>Khung chương trình đào tạo</strong>.
+                </p>
+            </div>
         </div>
 
-        <!-- FORM CRAWLER -->
-        <div class="card-box">
+        <!-- FORM CRAWLER / SYNC -->
+        <div class="sync-box">
+            <div class="sync-box-header">
+                <div class="sync-box-title">
+                    <i class='bx bx-cloud-download' style="color:var(--primary); font-size:1.3rem;"></i>
+                    Xác thực & Đồng bộ Dữ liệu từ HCMUTE Online
+                </div>
+                <button type="button" class="btn-demo-fill" id="btn-demo-fill" title="Nạp nhanh tài khoản demo để kiểm thử offline">
+                    <i class='bx bx-vial'></i> Điền nhanh tài khoản Demo (Offline)
+                </button>
+            </div>
+
             <form id="sync-form">
                 <div class="sync-form-grid">
                     <div class="form-group">
                         <label for="studentId"><i class='bx bx-id-card'></i> Mã số sinh viên (MSSV):</label>
-                        <input type="text" id="studentId" class="form-control" placeholder="Ví dụ: 21110123" required value="21110123">
+                        <div class="form-input-wrapper">
+                            <i class='bx bx-user'></i>
+                            <input type="text" id="studentId" class="form-control" placeholder="Ví dụ: 21110123 hoặc demo" 
+                                   th:value="${currentStudentId != null and currentStudentId != '' ? currentStudentId : '21110123'}" required>
+                        </div>
                     </div>
+
                     <div class="form-group">
                         <label for="password"><i class='bx bx-lock-alt'></i> Mật khẩu cổng đào tạo:</label>
-                        <input type="password" id="password" class="form-control" placeholder="Mật khẩu online.hcmute.edu.vn" required value="Password123@">
+                        <div class="form-input-wrapper">
+                            <i class='bx bx-key'></i>
+                            <input type="password" id="password" class="form-control" placeholder="Mật khẩu tài khoản sinh viên" 
+                                   value="Password123@" required>
+                        </div>
                     </div>
+
                     <div>
-                        <button type="submit" id="btn-submit" class="btn-sync">
+                        <button type="submit" id="btn-submit-sync" class="btn-submit-sync">
                             <i class='bx bx-sync'></i> <span>Đồng bộ ngay</span>
                         </button>
                     </div>
                 </div>
             </form>
-            <div id="status-msg" style="margin-top: 14px; font-size: 0.88rem; display: none;"></div>
+
+            <div id="status-alert" class="status-alert"></div>
         </div>
 
-        <!-- STATS CARDS (Show after sync) -->
-        <div id="results-section" style="display: none;">
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-icon grades"><i class='bx bx-certification'></i></div>
-                    <div class="stat-text">
-                        <h4 id="stat-grades">0</h4>
-                        <p>Môn học có điểm</p>
+        <!-- RESULTS SECTION -->
+        <div id="results-container" style="display: none;">
+
+            <!-- 1. STUDENT PROFILE HERO CARD -->
+            <div class="profile-card" id="profile-card">
+                <div class="profile-main-info">
+                    <div class="profile-avatar-wrap">
+                        <img id="p-avatar" class="profile-avatar" src="https://ui-avatars.com/api/?name=HCMUTE&background=1d4ed8&color=fff" alt="Avatar">
+                        <span class="status-indicator-dot" title="Tài khoản đang học"></span>
+                    </div>
+                    <div class="profile-name-group">
+                        <h2>
+                            <span id="p-fullName">Nguyễn Văn A</span>
+                            <span id="p-studentId" class="badge-mssv">21110001</span>
+                        </h2>
+                        <div class="profile-meta-row">
+                            <span><i class='bx bx-book-bookmark'></i> <strong id="p-major">Kỹ thuật Phần mềm</strong></span>
+                            <span><i class='bx bx-buildings'></i> <span id="p-faculty">Khoa CNTT</span></span>
+                            <span><i class='bx bx-group'></i> Lớp: <span id="p-class">21110CL1A</span></span>
+                        </div>
                     </div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-icon schedule"><i class='bx bx-calendar-event'></i></div>
-                    <div class="stat-text">
-                        <h4 id="stat-schedules">0</h4>
-                        <p>Lớp học trong TKB</p>
+
+                <div class="profile-advisor-badge">
+                    <div class="label"><i class='bx bx-user-voice'></i> Cố vấn học tập</div>
+                    <div class="name" id="p-advisor">TS. Nguyễn Văn Toàn</div>
+                    <div style="font-size:0.75rem; color:var(--slate-500); margin-top:2px;" id="p-status">Tình trạng: Đang học</div>
+                </div>
+            </div>
+
+            <!-- 2. ACADEMIC KPI STATS -->
+            <div class="kpi-grid">
+                <!-- GPA 10 & 4 -->
+                <div class="kpi-card">
+                    <div class="kpi-icon gpa"><i class='bx bx-chart'></i></div>
+                    <div class="kpi-info">
+                        <h3 id="stat-gpa10">--</h3>
+                        <p>Điểm GPA (Hệ 10)</p>
+                        <small>Hệ 4: <strong id="stat-gpa4" style="color:var(--primary);">--</strong></small>
                     </div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-icon curriculum"><i class='bx bx-book-bookmark'></i></div>
-                    <div class="stat-text">
-                        <h4 id="stat-curriculum">0</h4>
-                        <p>Môn trong CTĐT</p>
+
+                <!-- CREDITS -->
+                <div class="kpi-card">
+                    <div class="kpi-icon credits"><i class='bx bx-check-shield'></i></div>
+                    <div class="kpi-info">
+                        <h3 id="stat-credits">--</h3>
+                        <p>Tín chỉ tích lũy</p>
+                        <small>Tiến độ CTĐT</small>
+                    </div>
+                </div>
+
+                <!-- STANDING -->
+                <div class="kpi-card">
+                    <div class="kpi-icon standing"><i class='bx bx-medal'></i></div>
+                    <div class="kpi-info">
+                        <h3 id="stat-standing">--</h3>
+                        <p>Xếp loại học lực</p>
+                        <small id="stat-syncMode">Nguồn: Cổng trường</small>
+                    </div>
+                </div>
+
+                <!-- PASSED / FAILED -->
+                <div class="kpi-card">
+                    <div class="kpi-icon courses"><i class='bx bx-layer'></i></div>
+                    <div class="kpi-info">
+                        <h3 id="stat-passedCount">--</h3>
+                        <p>Môn học đã hoàn thành</p>
+                        <small>Nợ môn: <strong id="stat-failedCount" style="color:var(--rose);">0</strong></small>
                     </div>
                 </div>
             </div>
 
-            <!-- TABS DETAILS -->
-            <div class="card-box" style="padding: 16px 24px;">
-                <div class="tabs-header">
-                    <button class="tab-btn active" onclick="switchTab('grades')"><i class='bx bx-list-check'></i> Bảng Điểm Chi Tiết</button>
-                    <button class="tab-btn" onclick="switchTab('schedule')"><i class='bx bx-calendar'></i> Thời Khóa Biểu</button>
-                    <button class="tab-btn" onclick="switchTab('curriculum')"><i class='bx bx-book-open'></i> Chương Trình Đào Tạo</button>
+            <!-- 3. TABS DETAILS -->
+            <div class="content-card">
+                <nav class="tabs-nav">
+                    <button type="button" class="tab-button active" onclick="switchTab('profile')">
+                        <i class='bx bx-id-card'></i> 1. Hồ Sơ Sinh Viên
+                    </button>
+                    <button type="button" class="tab-button" onclick="switchTab('grades')">
+                        <i class='bx bx-certification'></i> 2. Bảng Điểm Chi Tiết
+                    </button>
+                    <button type="button" class="tab-button" onclick="switchTab('schedule')">
+                        <i class='bx bx-calendar'></i> 3. Thời Khóa Biểu Tuần
+                    </button>
+                    <button type="button" class="tab-button" onclick="switchTab('curriculum')">
+                        <i class='bx bx-book-open'></i> 4. Khung Chương Trình Đào Tạo
+                    </button>
+                </nav>
+
+                <!-- TAB 1: PROFILE DETAILS -->
+                <div id="tab-profile" class="tab-content active">
+                    <div class="profile-details-grid">
+                        <!-- Box 1: Thông tin Đào tạo -->
+                        <div class="detail-group-card">
+                            <h4><i class='bx bx-school' style="color:var(--primary);"></i> Thông Tin Đào Tạo</h4>
+                            <div class="detail-row">
+                                <span class="detail-label">MSSV:</span>
+                                <span class="detail-val" id="d-studentId">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Họ và tên:</span>
+                                <span class="detail-val" id="d-fullName">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Khoa / Viện:</span>
+                                <span class="detail-val" id="d-faculty">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Chuyên ngành:</span>
+                                <span class="detail-val" id="d-major">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Lớp sinh viên:</span>
+                                <span class="detail-val" id="d-studentClass">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Khóa tuyển sinh:</span>
+                                <span class="detail-val" id="d-academicYear">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Loại hình đào tạo:</span>
+                                <span class="detail-val" id="d-educationType">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Chương trình đào tạo:</span>
+                                <span class="detail-val" id="d-studyProgram">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Tình trạng học tập:</span>
+                                <span class="detail-val" id="d-academicStatus">--</span>
+                            </div>
+                        </div>
+
+                        <!-- Box 2: Thông tin Cá nhân & Liên hệ -->
+                        <div class="detail-group-card">
+                            <h4><i class='bx bx-user-pin' style="color:var(--primary);"></i> Thông Tin Cá Nhân & Liên Hệ</h4>
+                            <div class="detail-row">
+                                <span class="detail-label">Giới tính:</span>
+                                <span class="detail-val" id="d-gender">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Ngày sinh:</span>
+                                <span class="detail-val" id="d-birthday">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Nơi sinh:</span>
+                                <span class="detail-val" id="d-birthPlace">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Số CCCD / CMND:</span>
+                                <span class="detail-val" id="d-citizenId">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Cố vấn học tập:</span>
+                                <span class="detail-val" id="d-advisor">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Email sinh viên:</span>
+                                <span class="detail-val" id="d-email">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Số điện thoại:</span>
+                                <span class="detail-val" id="d-phone">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Địa chỉ liên hệ:</span>
+                                <span class="detail-val" id="d-address">--</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- TAB 1: GRADES -->
-                <div id="tab-grades" class="tab-content active">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Mã môn</th>
-                                <th>Tên môn học</th>
-                                <th style="text-align:center;">Số TC</th>
-                                <th style="text-align:center;">Điểm QT</th>
-                                <th style="text-align:center;">Điểm Thi</th>
-                                <th style="text-align:center;">Tổng kết</th>
-                                <th style="text-align:center;">Điểm chữ</th>
-                                <th>Học kỳ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="grades-body"></tbody>
-                    </table>
+                <!-- TAB 2: GRADES -->
+                <div id="tab-grades" class="tab-content">
+                    <div class="table-filter-bar">
+                        <div class="search-box">
+                            <i class='bx bx-search'></i>
+                            <input type="text" id="grade-search" class="search-input" placeholder="Tìm kiếm tên hoặc mã môn học..." onkeyup="filterGrades()">
+                        </div>
+                        <div>
+                            <select id="grade-semester-filter" class="select-semester" onchange="filterGrades()">
+                                <option value="">Tất cả học kỳ</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="data-table-wrapper">
+                        <table class="custom-table" id="grades-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã môn</th>
+                                    <th>Tên môn học</th>
+                                    <th style="text-align:center;">Số TC</th>
+                                    <th style="text-align:center;">Điểm QT</th>
+                                    <th style="text-align:center;">Điểm Thi</th>
+                                    <th style="text-align:center;">Tổng Kết (10)</th>
+                                    <th style="text-align:center;">Điểm Chữ</th>
+                                    <th>Học Kỳ</th>
+                                    <th style="text-align:center;">Kết Quả</th>
+                                </tr>
+                            </thead>
+                            <tbody id="grades-body">
+                                <tr><td colspan="9" class="empty-state">Chưa có dữ liệu bảng điểm</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <!-- TAB 2: SCHEDULE -->
+                <!-- TAB 3: SCHEDULE -->
                 <div id="tab-schedule" class="tab-content">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Thứ</th>
-                                <th>Tiết học</th>
-                                <th>Mã môn</th>
-                                <th>Tên môn học</th>
-                                <th>Phòng học</th>
-                                <th>Giảng viên phụ trách</th>
-                            </tr>
-                        </thead>
-                        <tbody id="schedule-body"></tbody>
-                    </table>
+                    <div class="table-filter-bar">
+                        <div class="search-box">
+                            <i class='bx bx-search'></i>
+                            <input type="text" id="schedule-search" class="search-input" placeholder="Tìm theo môn học, phòng học, GV..." onkeyup="filterSchedules()">
+                        </div>
+                    </div>
+
+                    <div class="data-table-wrapper">
+                        <table class="custom-table" id="schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>Thứ</th>
+                                    <th>Tiết học</th>
+                                    <th>Mã môn</th>
+                                    <th>Tên môn học</th>
+                                    <th>Nhóm lớp</th>
+                                    <th>Phòng học</th>
+                                    <th>Giảng viên phụ trách</th>
+                                </tr>
+                            </thead>
+                            <tbody id="schedule-body">
+                                <tr><td colspan="7" class="empty-state">Chưa có dữ liệu thời khóa biểu</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <!-- TAB 3: CURRICULUM -->
+                <!-- TAB 4: CURRICULUM -->
                 <div id="tab-curriculum" class="tab-content">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Học kỳ gợi ý</th>
-                                <th>Mã môn</th>
-                                <th>Tên môn học</th>
-                                <th style="text-align:center;">Số TC</th>
-                                <th style="text-align:center;">Trạng thái hoàn thành</th>
-                            </tr>
-                        </thead>
-                        <tbody id="curriculum-body"></tbody>
-                    </table>
+                    <div class="table-filter-bar">
+                        <div class="search-box">
+                            <i class='bx bx-search'></i>
+                            <input type="text" id="curriculum-search" class="search-input" placeholder="Tìm kiếm môn trong CTĐT..." onkeyup="filterCurriculum()">
+                        </div>
+                        <div>
+                            <select id="curriculum-status-filter" class="select-semester" onchange="filterCurriculum()">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="completed">Đã hoàn thành</option>
+                                <option value="pending">Chưa tích lũy</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="data-table-wrapper">
+                        <table class="custom-table" id="curriculum-table">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:center;">Học Kỳ Gợi Ý</th>
+                                    <th>Mã Môn</th>
+                                    <th>Tên Môn Học Trong Khung</th>
+                                    <th style="text-align:center;">Số TC</th>
+                                    <th style="text-align:center;">Trạng Thái Tích Lũy</th>
+                                </tr>
+                            </thead>
+                            <tbody id="curriculum-body">
+                                <tr><td colspan="5" class="empty-state">Chưa có dữ liệu chương trình đào tạo</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+
             </div>
         </div>
+
     </div>
 
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        const form = document.getElementById('sync-form');
-        const btnSubmit = document.getElementById('btn-submit');
-        const statusMsg = document.getElementById('status-msg');
-        const resultsSection = document.getElementById('results-section');
+        const syncForm = document.getElementById('sync-form');
+        const btnSubmitSync = document.getElementById('btn-submit-sync');
+        const statusAlert = document.getElementById('status-alert');
+        const resultsContainer = document.getElementById('results-container');
+        const btnDemoFill = document.getElementById('btn-demo-fill');
 
+        let rawGrades = [];
+        let rawSchedules = [];
+        let rawCurriculum = [];
+
+        // Tab Switching
         function switchTab(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            document.getElementById('tab-' + tabName).classList.add('active');
+            
+            const activeBtn = Array.from(document.querySelectorAll('.tab-button')).find(btn => 
+                btn.getAttribute('onclick').includes(tabName)
+            );
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            const targetContent = document.getElementById('tab-' + tabName);
+            if (targetContent) targetContent.classList.add('active');
         }
 
-        form.addEventListener('submit', async (e) => {
+        // Quick Demo Auto-fill
+        btnDemoFill.addEventListener('click', () => {
+            document.getElementById('studentId').value = 'demo';
+            document.getElementById('password').value = 'demo';
+            showAlert('Đã nạp nhanh tài khoản demo. Bấm "Đồng bộ ngay" để trải nghiệm bộ mô phỏng dữ liệu chuẩn!', 'info');
+        });
+
+        // Show Alert Helper
+        function showAlert(msg, type) {
+            statusAlert.className = `status-alert ${type}`;
+            statusAlert.style.display = 'flex';
+            let icon = 'bx-info-circle';
+            if (type === 'success') icon = 'bx-check-circle';
+            if (type === 'error') icon = 'bx-error-circle';
+            statusAlert.innerHTML = `<i class='bx ${icon}' style="font-size:1.3rem;"></i> <span>${msg}</span>`;
+        }
+
+        // Form Submit
+        syncForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const studentId = document.getElementById('studentId').value.trim();
             const password = document.getElementById('password').value.trim();
 
-            btnSubmit.disabled = true;
-            btnSubmit.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Đang cào dữ liệu...`;
-            statusMsg.style.display = 'block';
-            statusMsg.innerHTML = `<span style="color: #2563eb;"><i class='bx bx-loader bx-spin'></i> Đang kết nối tới cổng HCMUTE Online, vui lòng đợi trong giây lát...</span>`;
+            btnSubmitSync.disabled = true;
+            btnSubmitSync.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Đang cào dữ liệu...`;
+            showAlert('Đang kết nối tới cổng HCMUTE và trích xuất dữ liệu, vui lòng đợi trong giây lát...', 'info');
 
             try {
                 const response = await fetch('/api/academic/sync', {
@@ -388,83 +1245,252 @@
                 });
 
                 const data = await response.json();
-                btnSubmit.disabled = false;
-                btnSubmit.innerHTML = `<i class='bx bx-sync'></i> <span>Đồng bộ ngay</span>`;
+                btnSubmitSync.disabled = false;
+                btnSubmitSync.innerHTML = `<i class='bx bx-sync'></i> <span>Đồng bộ ngay</span>`;
 
                 if (response.ok && data.success) {
-                    const modeText = data.syncMode === 'LIVE_PORTAL' ? 'Trực tiếp từ Cổng trường' : 'Bộ mô phỏng dữ liệu chuẩn HCMUTE';
-                    statusMsg.innerHTML = `<span style="color: #166534; font-weight:600;"><i class='bx bx-check-circle'></i> ${data.message} (${modeText})</span>`;
-                    
-                    document.getElementById('stat-grades').innerText = data.gradesCount;
-                    document.getElementById('stat-schedules').innerText = data.schedulesCount;
-                    document.getElementById('stat-curriculum').innerText = data.curriculumsCount;
-                    resultsSection.style.display = 'block';
+                    const modeDesc = data.syncMode === 'LIVE_PORTAL' ? 'Trực tiếp từ Cổng trường HCMUTE Online' : 'Bộ mô phỏng dữ liệu chuẩn HCMUTE';
+                    showAlert(`${data.message} (${modeDesc})`, 'success');
+                    resultsContainer.style.display = 'block';
 
-                    // Load detailed tables
-                    loadDetails(studentId);
+                    // Load full details
+                    await loadAllAcademicData(studentId);
                 } else {
-                    statusMsg.innerHTML = `<span style="color: #b91c1c;"><i class='bx bx-error-circle'></i> Lỗi: ${data.message || 'Không thể đồng bộ.'}</span>`;
+                    showAlert(data.message || 'Đồng bộ thất bại. Vui lòng kiểm tra lại tài khoản hoặc kết nối mạng.', 'error');
                 }
             } catch (err) {
-                btnSubmit.disabled = false;
-                btnSubmit.innerHTML = `<i class='bx bx-sync'></i> <span>Đồng bộ ngay</span>`;
-                statusMsg.innerHTML = `<span style="color: #b91c1c;"><i class='bx bx-error-circle'></i> Lỗi kết nối đến máy chủ API.</span>`;
+                btnSubmitSync.disabled = false;
+                btnSubmitSync.innerHTML = `<i class='bx bx-sync'></i> <span>Đồng bộ ngay</span>`;
+                showAlert('Không thể kết nối đến máy chủ nội bộ. Vui lòng thử lại sau.', 'error');
             }
         });
 
-        async function loadDetails(studentId) {
-            // Load grades
-            const gRes = await fetch(`/api/academic/grades?studentId=${studentId}`);
-            const grades = await gRes.json();
-            const gBody = document.getElementById('grades-body');
-            gBody.innerHTML = grades.map(g => {
+        // Load all academic data concurrently
+        async function loadAllAcademicData(studentId) {
+            try {
+                const [pRes, sRes, gRes, schRes, cRes] = await Promise.all([
+                    fetch(`/api/academic/profile?studentId=${encodeURIComponent(studentId)}`),
+                    fetch(`/api/academic/summary?studentId=${encodeURIComponent(studentId)}`),
+                    fetch(`/api/academic/grades?studentId=${encodeURIComponent(studentId)}`),
+                    fetch(`/api/academic/schedules?studentId=${encodeURIComponent(studentId)}`),
+                    fetch(`/api/academic/curriculum?studentId=${encodeURIComponent(studentId)}`)
+                ]);
+
+                if (pRes.ok) {
+                    const profile = await pRes.json();
+                    renderProfile(profile);
+                }
+
+                if (sRes.ok) {
+                    const summary = await sRes.json();
+                    renderSummary(summary);
+                }
+
+                if (gRes.ok) {
+                    rawGrades = await gRes.json();
+                    populateSemesterFilter(rawGrades);
+                    renderGrades(rawGrades);
+                }
+
+                if (schRes.ok) {
+                    rawSchedules = await schRes.json();
+                    renderSchedules(rawSchedules);
+                }
+
+                if (cRes.ok) {
+                    rawCurriculum = await cRes.json();
+                    renderCurriculum(rawCurriculum);
+                }
+
+            } catch (err) {
+                console.error('Error loading academic details:', err);
+            }
+        }
+
+        // Render Profile
+        function renderProfile(p) {
+            if (!p) return;
+            document.getElementById('p-fullName').innerText = p.fullName || '--';
+            document.getElementById('p-studentId').innerText = p.studentId || '--';
+            document.getElementById('p-major').innerText = p.major || '--';
+            document.getElementById('p-faculty').innerText = p.faculty || '--';
+            document.getElementById('p-class').innerText = p.studentClass || '--';
+            document.getElementById('p-advisor').innerText = p.academicAdvisor || 'Chưa cập nhật';
+            document.getElementById('p-status').innerText = 'Tình trạng: ' + (p.academicStatus || 'Đang học');
+
+            if (p.avatarUrl) {
+                document.getElementById('p-avatar').src = p.avatarUrl;
+            } else {
+                document.getElementById('p-avatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.fullName || 'SV')}&background=1d4ed8&color=fff`;
+            }
+
+            // Tab 1 details
+            document.getElementById('d-studentId').innerText = p.studentId || '--';
+            document.getElementById('d-fullName').innerText = p.fullName || '--';
+            document.getElementById('d-faculty').innerText = p.faculty || '--';
+            document.getElementById('d-major').innerText = p.major || '--';
+            document.getElementById('d-studentClass').innerText = p.studentClass || '--';
+            document.getElementById('d-academicYear').innerText = p.academicYear || '--';
+            document.getElementById('d-educationType').innerText = p.educationType || '--';
+            document.getElementById('d-studyProgram').innerText = p.studyProgram || '--';
+            document.getElementById('d-academicStatus').innerText = p.academicStatus || '--';
+
+            document.getElementById('d-gender').innerText = p.gender || '--';
+            document.getElementById('d-birthday').innerText = p.birthday || '--';
+            document.getElementById('d-birthPlace').innerText = p.birthPlace || '--';
+            document.getElementById('d-citizenId').innerText = p.citizenId || '--';
+            document.getElementById('d-advisor').innerText = p.academicAdvisor || '--';
+            document.getElementById('d-email').innerText = p.email || '--';
+            document.getElementById('d-phone').innerText = p.phone || '--';
+            document.getElementById('d-address').innerText = p.address || '--';
+        }
+
+        // Render Summary
+        function renderSummary(s) {
+            if (!s) return;
+            document.getElementById('stat-gpa10').innerText = s.gpa10 !== null ? s.gpa10.toFixed(2) : '--';
+            document.getElementById('stat-gpa4').innerText = s.gpa4 !== null ? s.gpa4.toFixed(2) : '--';
+            document.getElementById('stat-credits').innerText = s.totalCredits + ' TC';
+            document.getElementById('stat-standing').innerText = s.academicStanding || '--';
+            document.getElementById('stat-passedCount').innerText = s.passedCoursesCount;
+            document.getElementById('stat-failedCount').innerText = s.failedCoursesCount;
+            document.getElementById('stat-syncMode').innerText = s.syncStatus === 'LIVE_PORTAL' ? 'Cổng online trực tiếp' : 'Bộ mô phỏng HCMUTE';
+        }
+
+        // Render Grades Table
+        function renderGrades(grades) {
+            const body = document.getElementById('grades-body');
+            if (!grades || grades.length === 0) {
+                body.innerHTML = `<tr><td colspan="9" class="empty-state">Không tìm thấy môn học nào phù hợp.</td></tr>`;
+                return;
+            }
+
+            body.innerHTML = grades.map(g => {
                 let badgeClass = 'a';
-                if(g.gradeLetter && g.gradeLetter.startsWith('B')) badgeClass = 'b';
-                else if(g.gradeLetter && g.gradeLetter.startsWith('C')) badgeClass = 'c';
-                else if(g.gradeLetter && (g.gradeLetter.startsWith('D') || g.gradeLetter.startsWith('F'))) badgeClass = 'f';
+                if (g.gradeLetter && g.gradeLetter.startsWith('B')) badgeClass = 'b';
+                else if (g.gradeLetter && g.gradeLetter.startsWith('C')) badgeClass = 'c';
+                else if (g.gradeLetter && (g.gradeLetter.startsWith('D') || g.gradeLetter.startsWith('F'))) badgeClass = 'f';
+
+                const passBadge = g.isPassed 
+                    ? `<span class="badge-pill-done"><i class='bx bx-check'></i> Đạt</span>` 
+                    : `<span class="badge-letter f" style="width:auto; padding:2px 8px; font-size:0.75rem;">Chưa đạt</span>`;
 
                 return `<tr>
-                    <td><code>${g.courseCode}</code></td>
-                    <td style="font-weight:500;">${g.courseName}</td>
-                    <td style="text-align:center;">${g.credits}</td>
+                    <td><span class="badge-code">${g.courseCode}</span></td>
+                    <td style="font-weight:600; color:var(--slate-900);">${g.courseName}</td>
+                    <td style="text-align:center; font-weight:600;">${g.credits}</td>
                     <td style="text-align:center;">${g.midtermScore !== null ? g.midtermScore : '-'}</td>
                     <td style="text-align:center;">${g.finalScore !== null ? g.finalScore : '-'}</td>
-                    <td style="text-align:center; font-weight:700; color:#2563eb;">${g.totalScore !== null ? g.totalScore : '-'}</td>
-                    <td style="text-align:center;"><span class="grade-badge ${badgeClass}">${g.gradeLetter || '-'}</span></td>
-                    <td>${g.semester}</td>
+                    <td style="text-align:center; font-weight:800; color:var(--primary);">${g.totalScore !== null ? g.totalScore : '-'}</td>
+                    <td style="text-align:center;"><span class="badge-letter ${badgeClass}">${g.gradeLetter || '-'}</span></td>
+                    <td>${g.semester || '--'}</td>
+                    <td style="text-align:center;">${passBadge}</td>
                 </tr>`;
             }).join('');
+        }
 
-            // Load schedules
-            const sRes = await fetch(`/api/academic/schedules?studentId=${studentId}`);
-            const schedules = await sRes.json();
-            const sBody = document.getElementById('schedule-body');
-            sBody.innerHTML = schedules.map(s => `<tr>
-                <td style="font-weight:700; color:#2563eb;">${s.dayOfWeek}</td>
-                <td><span style="background:#f1f5f9; padding:2px 8px; border-radius:6px; font-weight:500;">${s.shift}</span></td>
-                <td><code>${s.courseCode}</code></td>
-                <td style="font-weight:500;">${s.courseName}</td>
-                <td><strong style="color:#0f172a;"><i class='bx bx-map-pin'></i> ${s.room}</strong></td>
-                <td>${s.lecturer}</td>
+        function populateSemesterFilter(grades) {
+            const filter = document.getElementById('grade-semester-filter');
+            const semesters = [...new Set(grades.map(g => g.semester).filter(Boolean))];
+            filter.innerHTML = `<option value="">Tất cả học kỳ (${semesters.length})</option>` +
+                semesters.map(s => `<option value="${s}">${s}</option>`).join('');
+        }
+
+        function filterGrades() {
+            const query = document.getElementById('grade-search').value.toLowerCase().trim();
+            const semester = document.getElementById('grade-semester-filter').value;
+
+            const filtered = rawGrades.filter(g => {
+                const matchQuery = !query || 
+                    (g.courseCode && g.courseCode.toLowerCase().includes(query)) || 
+                    (g.courseName && g.courseName.toLowerCase().includes(query));
+                const matchSem = !semester || g.semester === semester;
+                return matchQuery && matchSem;
+            });
+            renderGrades(filtered);
+        }
+
+        // Render Schedules Table
+        function renderSchedules(schedules) {
+            const body = document.getElementById('schedule-body');
+            if (!schedules || schedules.length === 0) {
+                body.innerHTML = `<tr><td colspan="7" class="empty-state">Không có lịch học nào trong thời khóa biểu.</td></tr>`;
+                return;
+            }
+
+            body.innerHTML = schedules.map(s => `<tr>
+                <td><span class="badge-day">${s.dayOfWeek || '--'}</span></td>
+                <td><span class="badge-shift">${s.shift || '--'}</span></td>
+                <td><span class="badge-code">${s.courseCode || '--'}</span></td>
+                <td style="font-weight:600; color:var(--slate-900);">${s.courseName || '--'}</td>
+                <td><span style="font-size:0.82rem; color:var(--slate-600);">${s.groupCode || '--'}</span></td>
+                <td><strong style="color:var(--slate-900);"><i class='bx bx-map-pin' style="color:var(--primary);"></i> ${s.room || '--'}</strong></td>
+                <td>${s.lecturer || '--'}</td>
             </tr>`).join('');
+        }
 
-            // Load curriculum
-            const cRes = await fetch(`/api/academic/curriculum?studentId=${studentId}`);
-            const curriculums = await cRes.json();
-            const cBody = document.getElementById('curriculum-body');
-            cBody.innerHTML = curriculums.map(c => `<tr>
-                <td style="font-weight:600; text-align:center;">Học kỳ ${c.semesterRecommended}</td>
-                <td><code>${c.courseCode}</code></td>
-                <td style="font-weight:500;">${c.courseName}</td>
-                <td style="text-align:center;">${c.credits}</td>
+        function filterSchedules() {
+            const query = document.getElementById('schedule-search').value.toLowerCase().trim();
+            const filtered = rawSchedules.filter(s => {
+                return !query || 
+                    (s.courseCode && s.courseCode.toLowerCase().includes(query)) ||
+                    (s.courseName && s.courseName.toLowerCase().includes(query)) ||
+                    (s.room && s.room.toLowerCase().includes(query)) ||
+                    (s.lecturer && s.lecturer.toLowerCase().includes(query));
+            });
+            renderSchedules(filtered);
+        }
+
+        // Render Curriculum Table
+        function renderCurriculum(curriculums) {
+            const body = document.getElementById('curriculum-body');
+            if (!curriculums || curriculums.length === 0) {
+                body.innerHTML = `<tr><td colspan="5" class="empty-state">Không tìm thấy môn học nào trong khung chương trình.</td></tr>`;
+                return;
+            }
+
+            body.innerHTML = curriculums.map(c => `<tr>
+                <td style="text-align:center; font-weight:700; color:var(--primary);">Học kỳ ${c.semesterRecommended || '-'}</td>
+                <td><span class="badge-code">${c.courseCode}</span></td>
+                <td style="font-weight:600; color:var(--slate-900);">${c.courseName}</td>
+                <td style="text-align:center; font-weight:600;">${c.credits}</td>
                 <td style="text-align:center;">
                     ${c.isCompleted 
-                        ? `<span style="color:#166534; background:#dcfce7; padding:3px 10px; border-radius:20px; font-size:0.8rem; font-weight:600;"><i class='bx bx-check'></i> Đã hoàn thành</span>`
-                        : `<span style="color:#475569; background:#f1f5f9; padding:3px 10px; border-radius:20px; font-size:0.8rem; font-weight:500;">Chưa tích lũy</span>`
+                        ? `<span class="badge-pill-done"><i class='bx bx-check-circle'></i> Đã hoàn thành</span>`
+                        : `<span class="badge-pill-pending"><i class='bx bx-time-five'></i> Chưa tích lũy</span>`
                     }
                 </td>
             </tr>`).join('');
         }
+
+        function filterCurriculum() {
+            const query = document.getElementById('curriculum-search').value.toLowerCase().trim();
+            const status = document.getElementById('curriculum-status-filter').value;
+
+            const filtered = rawCurriculum.filter(c => {
+                const matchQuery = !query || 
+                    (c.courseCode && c.courseCode.toLowerCase().includes(query)) ||
+                    (c.courseName && c.courseName.toLowerCase().includes(query));
+                const matchStatus = !status || 
+                    (status === 'completed' && c.isCompleted) ||
+                    (status === 'pending' && !c.isCompleted);
+                return matchQuery && matchStatus;
+            });
+            renderCurriculum(filtered);
+        }
+
+        // Auto-load on page load if studentId exists
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryStudentId = urlParams.get('studentId');
+            const studentIdInput = document.getElementById('studentId');
+            const effectiveId = queryStudentId || (studentIdInput ? studentIdInput.value.trim() : '');
+
+            if (effectiveId && effectiveId !== '21110123') {
+                resultsContainer.style.display = 'block';
+                loadAllAcademicData(effectiveId);
+            }
+        });
     </script>
 </body>
 </html>

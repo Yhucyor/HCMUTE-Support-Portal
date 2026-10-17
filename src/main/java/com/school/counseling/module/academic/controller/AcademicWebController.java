@@ -11,21 +11,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/academic")
-@RequiredArgsConstructor
 public class AcademicWebController {
 
     private final HcmuteCrawlerService crawlerService;
 
+    public AcademicWebController(HcmuteCrawlerService crawlerService) {
+        this.crawlerService = crawlerService;
+    }
+
     @GetMapping("/sync")
-    public String syncPage(Model model) {
-        String currentStudentId = SecurityUtils.getCurrentUsername().orElse("");
-        model.addAttribute("currentStudentId", currentStudentId);
+    public String syncPage(@org.springframework.web.bind.annotation.RequestParam(required = false) String studentId, Model model) {
+        String effectiveStudentId = (studentId != null && !studentId.isBlank())
+                ? studentId.trim()
+                : SecurityUtils.getCurrentUsername().orElse("");
+
+        model.addAttribute("currentStudentId", effectiveStudentId);
         model.addAttribute("activeTab", "academic");
 
-        if (!currentStudentId.isBlank()) {
-            AcademicSummaryResponse summary = crawlerService.getAcademicSummary(currentStudentId);
+        if (!effectiveStudentId.isBlank()) {
+            AcademicSummaryResponse summary = crawlerService.getAcademicSummary(effectiveStudentId);
             model.addAttribute("summary", summary);
-            crawlerService.getStudentProfile(currentStudentId).ifPresent(profile ->
+            crawlerService.getStudentProfile(effectiveStudentId).ifPresent(profile ->
                     model.addAttribute("studentProfile", profile));
         }
 
