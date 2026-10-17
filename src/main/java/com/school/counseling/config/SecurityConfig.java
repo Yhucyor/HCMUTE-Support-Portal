@@ -64,6 +64,7 @@ public class SecurityConfig {
                                 "/faqs", "/api/v1/faqs/**",
                                 "/feed/official/**", "/feed/forum/**",
                                 "/auth/**", "/api/v1/auth/**",
+                                "/error",
                                 "/css/**", "/js/**", "/images/**", "/uploads/**", "/webjars/**", "/favicon.ico")
                         .permitAll()
 
