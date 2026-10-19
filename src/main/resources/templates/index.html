@@ -697,12 +697,12 @@
                 </div>
 
                 <!-- Messages Body -->
-                <div id="chatScrollArea" class="p-4 bg-[#f8fafc] space-y-3 text-xs max-h-[320px] overflow-y-auto">
-                    <div class="bg-slate-200/60 text-slate-800 p-3 rounded-2xl rounded-tl-none max-w-[90%] leading-relaxed">
+                <div id="chatScrollArea" class="p-4 bg-[#f8fafc] space-y-3 text-xs max-h-[340px] overflow-y-auto">
+                    <div class="bg-slate-200/60 text-slate-800 p-3 rounded-2xl rounded-tl-none max-w-[90%] leading-relaxed shadow-xs">
                         Xin chào! 👋 Tôi là trợ lý ảo QAUTE của HCMUTE. Bạn cần hỗ trợ thông tin gì hôm nay?
                     </div>
                     <!-- 4 Gợi ý bấm nhanh -->
-                    <div class="flex flex-col gap-1.5 pt-1">
+                    <div id="quickPromptContainer" class="flex flex-col gap-1.5 pt-1">
                         <button class="text-left px-3 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#003882] hover:text-[#003882] transition-colors text-[11px] font-medium text-slate-700 shadow-2xs" 
                                 onclick="handleQuickClick('Thông tin tuyển sinh đại học 2026')">
                             👉 Thông tin tuyển sinh 2026
@@ -720,13 +720,20 @@
                             🎫 Gửi yêu cầu hỗ trợ (Ticket SLA)
                         </button>
                     </div>
+                    <!-- Typing Indicator -->
+                    <div id="chatTypingIndicator" class="hidden flex items-center gap-1.5 p-2.5 bg-slate-200/60 rounded-2xl rounded-tl-none w-fit text-slate-500 shadow-xs">
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0.2s]"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0.4s]"></span>
+                        <span class="text-[10px] ml-1 text-slate-500 font-medium">Trợ lý đang phản hồi...</span>
+                    </div>
                 </div>
 
                 <!-- Input Chat -->
                 <div class="p-2.5 bg-white border-t border-slate-100 flex items-center gap-2">
-                    <input id="chatMessageInput" class="flex-1 text-xs border border-slate-200 rounded-full px-3.5 py-2 outline-none focus:border-[#991b1e]" 
-                           onkeydown="if(event.key === 'Enter') sendUserMsg();" placeholder="Nhập tin nhắn của bạn..." type="text">
-                    <button aria-label="Gửi tin nhắn" class="w-8 h-8 rounded-full bg-[#991b1e] hover:bg-[#831518] text-white flex items-center justify-center flex-shrink-0 transition-transform active:scale-95 shadow" onclick="sendUserMsg()">
+                    <input id="chatMessageInput" class="flex-1 text-xs border border-slate-200 rounded-full px-3.5 py-2 outline-none focus:border-[#991b1e] transition-colors" 
+                           onkeydown="if(event.key === 'Enter') sendUserMsg();" placeholder="Hỏi về tuyển sinh, học vụ, học phí..." type="text">
+                    <button id="chatSendBtn" aria-label="Gửi tin nhắn" class="w-8 h-8 rounded-full bg-[#991b1e] hover:bg-[#831518] disabled:opacity-50 text-white flex items-center justify-center flex-shrink-0 transition-transform active:scale-95 shadow" onclick="sendUserMsg()">
                         <span class="material-symbols-outlined text-[16px]">send</span>
                     </button>
                 </div>
@@ -931,50 +938,142 @@
             }
         }
 
-        function handleQuickClick(query) {
-            appendUser(query);
-            setTimeout(() => {
-                let response = 'Cảm ơn bạn đã hỏi về: "' + query + '". ';
-                if (query.includes('tuyển sinh') || query.includes('Điểm chuẩn')) {
-                    response += 'Thông tin tuyển sinh năm 2026 của HCMUTE gồm 5 phương thức: Tuyển thẳng, Học bạ THPT, Điểm thi ĐGNL ĐHQG-HCM, Điểm thi tốt nghiệp THPT, và Tuyển sinh quốc tế. Bạn có thể xem đề án chi tiết tại mục Tuyển sinh.';
-                } else if (query.includes('ngành') || query.includes('Học phí')) {
-                    response += 'HCMUTE đào tạo hơn 50 ngành chất lượng cao. Học phí đại học dao động từ 15-22 triệu/học kỳ tùy theo chương trình Chuẩn hoặc Quốc tế.';
-                } else if (query.includes('học vụ') || query.includes('Portal')) {
-                    response += 'Sinh viên có thể sử dụng tính năng "Đồng bộ học vụ HCMUTE" trong Portal để tự động lấy toàn bộ bảng điểm, thời khóa biểu và tiến độ tích lũy tín chỉ.';
-                } else {
-                    response += 'Trợ lý ảo đã ghi nhận thắc mắc. Bạn có thể bấm nút "Mở chuyên sâu" ở góc trên hộp chat để trao đổi trực tiếp với Trợ lý AI QAUTE hoặc gửi Ticket hỗ trợ cho thầy cô nhé!';
-                }
-                appendBot(response);
-            }, 600);
+        function getChatSessionId() {
+            let sid = sessionStorage.getItem('hcmute_ai_session_id');
+            if (!sid) {
+                sid = 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+                sessionStorage.setItem('hcmute_ai_session_id', sid);
+            }
+            return sid;
         }
 
-        function sendUserMsg() {
+        function formatMarkdown(text) {
+            if (!text) return '';
+            let escaped = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            // Bold **text**
+            escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-slate-900">$1</strong>');
+            // Italic *text*
+            escaped = escaped.replace(/\*(.*?)\*/g, '<em class="italic">$1</em>');
+            // Links
+            escaped = escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline font-medium hover:text-blue-800 break-all">$1</a>');
+            // Bullet points
+            escaped = escaped.replace(/^• (.*?)$/gm, '<div class="flex items-start gap-1.5 my-0.5"><span class="text-[#003882] font-bold">•</span><span>$1</span></div>');
+            escaped = escaped.replace(/^👉 (.*?)$/gm, '<div class="flex items-start gap-1.5 my-0.5"><span class="text-amber-600">👉</span><span>$1</span></div>');
+            // Line breaks
+            escaped = escaped.replace(/\n/g, '<br>');
+            return escaped;
+        }
+
+        let isAiChatLoading = false;
+
+        function setChatLoading(loading) {
+            isAiChatLoading = loading;
+            const indicator = document.getElementById('chatTypingIndicator');
+            const btn = document.getElementById('chatSendBtn');
             const input = document.getElementById('chatMessageInput');
-            const msg = input.value.trim();
-            if (!msg) return;
-            appendUser(msg);
-            input.value = '';
-            setTimeout(() => {
-                appendBot('Trợ lý HCMUTE đã ghi nhận câu hỏi: "' + msg + '". Hệ thống đang sẵn sàng hỗ trợ kết nối với Phòng Đào tạo & Ban Cố vấn học vụ!');
-            }, 600);
+            if (indicator) {
+                if (loading) {
+                    indicator.classList.remove('hidden');
+                } else {
+                    indicator.classList.add('hidden');
+                }
+            }
+            if (btn) btn.disabled = loading;
+            if (input) input.disabled = loading;
+            const scrollArea = document.getElementById('chatScrollArea');
+            if (scrollArea) scrollArea.scrollTop = scrollArea.scrollHeight;
         }
 
         function appendUser(txt) {
             const body = document.getElementById('chatScrollArea');
+            const indicator = document.getElementById('chatTypingIndicator');
             const div = document.createElement('div');
             div.className = 'bg-[#991b1e] text-white p-2.5 rounded-2xl rounded-tr-none max-w-[85%] ml-auto text-xs leading-relaxed shadow-xs';
             div.innerText = txt;
-            body.appendChild(div);
+            if (indicator) {
+                body.insertBefore(div, indicator);
+            } else {
+                body.appendChild(div);
+            }
             body.scrollTop = body.scrollHeight;
         }
 
-        function appendBot(txt) {
+        function appendBot(txt, provider) {
             const body = document.getElementById('chatScrollArea');
+            const indicator = document.getElementById('chatTypingIndicator');
             const div = document.createElement('div');
-            div.className = 'bg-slate-200/60 text-slate-800 p-3 rounded-2xl rounded-tl-none max-w-[90%] text-xs leading-relaxed shadow-xs';
-            div.innerText = txt;
-            body.appendChild(div);
+            div.className = 'bg-slate-200/60 text-slate-800 p-3 rounded-2xl rounded-tl-none max-w-[92%] text-xs leading-relaxed shadow-xs';
+            
+            let badgeHtml = '';
+            if (provider === 'hcmute-faq-knowledge') {
+                badgeHtml = '<div class="text-[10px] font-semibold text-[#003882] mb-1.5 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>Cơ sở tri thức HCMUTE (FAQ)</div>';
+            } else if (provider === 'gemini' || provider === 'ollama') {
+                badgeHtml = '<div class="text-[10px] font-semibold text-purple-700 mb-1.5 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-purple-600"></span>Trợ lý AI Trực tuyến</div>';
+            } else {
+                badgeHtml = '<div class="text-[10px] font-semibold text-[#991b1e] mb-1.5 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#991b1e]"></span>Trợ lý QAUTE</div>';
+            }
+
+            div.innerHTML = badgeHtml + '<div class="text-slate-800 space-y-1">' + formatMarkdown(txt) + '</div>';
+            if (indicator) {
+                body.insertBefore(div, indicator);
+            } else {
+                body.appendChild(div);
+            }
             body.scrollTop = body.scrollHeight;
+        }
+
+        async function sendToAi(messageText) {
+            if (isAiChatLoading) return;
+            const text = messageText.trim();
+            if (!text) return;
+
+            appendUser(text);
+            setChatLoading(true);
+
+            try {
+                const response = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: text,
+                        session_id: getChatSessionId(),
+                        provider: 'gemini'
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    appendBot(data.answer || 'Xin chào! Tôi đã ghi nhận thông tin từ bạn.', data.provider);
+                } else {
+                    appendBot('Xin lỗi, hệ thống AI hiện chưa thể phản hồi câu hỏi này. Bạn có thể mở trang <a href="/ai-chat" class="underline text-blue-600 font-bold" target="_blank">Tư vấn AI chuyên sâu</a> hoặc tra cứu mục <a href="/faqs" class="underline text-blue-600 font-bold">Hỏi đáp FAQ</a> nhé!');
+                }
+            } catch (err) {
+                console.error('Lỗi kết nối AI chatbot:', err);
+                appendBot('Không thể kết nối đến máy chủ AI. Vui lòng kiểm tra lại mạng hoặc gửi Ticket hỗ trợ cho Phòng Đào tạo!');
+            } finally {
+                setChatLoading(false);
+                const input = document.getElementById('chatMessageInput');
+                if (input) {
+                    input.focus();
+                }
+            }
+        }
+
+        function handleQuickClick(query) {
+            sendToAi(query);
+        }
+
+        function sendUserMsg() {
+            const input = document.getElementById('chatMessageInput');
+            if (!input) return;
+            const msg = input.value;
+            input.value = '';
+            sendToAi(msg);
         }
     </script>
 </body>

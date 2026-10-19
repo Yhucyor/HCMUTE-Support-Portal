@@ -17,13 +17,18 @@ import java.util.*;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AdminDashboardService {
 
     private final TicketRepository ticketRepository;
     private final DepartmentRepository departmentRepository;
     private final UserRepository userRepository;
+
+    public AdminDashboardService(TicketRepository ticketRepository, DepartmentRepository departmentRepository, UserRepository userRepository) {
+        this.ticketRepository = ticketRepository;
+        this.departmentRepository = departmentRepository;
+        this.userRepository = userRepository;
+    }
 
     public AdminSlaDashboardDto getSlaDashboardStats(String timeRange, Long departmentId) {
         LocalDateTime since = null;
