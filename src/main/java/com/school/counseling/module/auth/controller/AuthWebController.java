@@ -6,6 +6,7 @@ import com.school.counseling.module.auth.dto.RegisterRequest;
 import com.school.counseling.module.auth.repository.DepartmentRepository;
 import com.school.counseling.module.auth.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -244,5 +245,15 @@ public class AuthWebController {
             return "redirect:/auth/forgot-password?step=2&email="
                     + java.net.URLEncoder.encode(email.trim(), java.nio.charset.StandardCharsets.UTF_8);
         }
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request,
+                         HttpServletResponse response,
+                         org.springframework.security.core.Authentication authentication) {
+        if (authentication != null) {
+            new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler().logout(request, response, authentication);
+        }
+        return "redirect:/?logout=true";
     }
 }
