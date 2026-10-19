@@ -34,13 +34,13 @@
         h1, h2, h3, h4, .font-heading { font-family: 'Outfit', sans-serif; }
     </style>
 </head>
-<body class="min-h-screen bg-slate-100 flex items-center justify-center p-0 md:p-6 lg:p-10 text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
+<body class="min-h-screen w-full bg-white text-slate-800 antialiased selection:bg-blue-600 selection:text-white p-0 m-0">
 
-    <!-- Main Container Card -->
-    <div class="w-full max-w-[1340px] min-h-[760px] bg-white rounded-none md:rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row border border-slate-200/80">
+    <!-- Main Container: Full Screen Edge-to-Edge Split Layout -->
+    <div class="w-full min-h-screen flex flex-col lg:flex-row bg-white">
         
-        <!-- LEFT PANEL: HCMUTE Campus Branding (44% Width on Desktop) -->
-        <div class="relative w-full lg:w-[44%] min-h-[380px] lg:min-h-auto flex flex-col justify-between p-8 lg:p-12 text-white overflow-hidden bg-slate-900">
+        <!-- LEFT PANEL: HCMUTE Campus Branding (46% Width on Desktop, Full Height) -->
+        <div class="relative w-full lg:w-[46%] min-h-[400px] lg:min-h-screen flex flex-col justify-between p-8 lg:p-12 xl:p-16 text-white overflow-hidden bg-slate-900">
             <!-- Background Image with Navy Gradient Overlay -->
             <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkVhLgYJm2dTlpf7hQt_ekMUWKBsyBgcmmLSkBkftu1NQkQFgYxPXgrO-V9VggGoeJIw6oGQU-WaOXFNTowco9q6K_ARD1NCtpd7POl4VmCNz_pdHu9jt0TmaTwDB-njb8lgzQrWbatJHqXTxVZVLuQ_J4P5KhkAVRZSjQ-BSY3B4I3uU7joWQHfr7OknfMUG51K1mhkyiUA_VdPtnckdGCXkm4trSv_HlSHHM8I6VqbpmOkzsLrWlpNsdHvfSvcHmMw" 
                  alt="Khuôn viên Đại học Sư phạm Kỹ thuật TP.HCM" 
@@ -103,8 +103,8 @@
             </div>
         </div>
 
-        <!-- RIGHT PANEL: Authentication Form (56% Width on Desktop) -->
-        <div class="w-full lg:w-[56%] p-8 lg:p-14 flex flex-col justify-between bg-white">
+        <!-- RIGHT PANEL: Authentication Form (54% Width on Desktop, Full Height) -->
+        <div class="w-full lg:w-[54%] min-h-screen p-8 lg:p-12 xl:p-16 flex flex-col justify-between bg-white overflow-y-auto">
             
             <!-- Top Utility bar -->
             <div class="flex items-center justify-between pb-6">
