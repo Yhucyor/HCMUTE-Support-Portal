@@ -168,9 +168,9 @@
 
                 <!-- Đã đăng nhập: Nút Dashboard & Logout -->
                 <div sec:authorize="isAuthenticated()" class="flex items-center gap-2">
-                    <a th:href="@{/dashboard}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95">
+                    <a th:href="@{/dashboard}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95" th:title="${currentUser != null ? currentUser.fullName : #authentication.name}">
                         <span class="material-symbols-outlined text-[16px]">account_circle</span>
-                        <span class="hidden sm:inline">Vào Portal</span>
+                        <span class="hidden sm:inline truncate max-w-[150px]" th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
                     </a>
                     <a th:href="@{/auth/logout}" class="p-2 text-slate-500 hover:text-[#991b1e] hover:bg-slate-100 rounded-md transition-colors" title="Đăng xuất">
                         <span class="material-symbols-outlined text-[18px]">logout</span>
@@ -198,6 +198,13 @@
             <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/feed/forum}">Diễn đàn</a>
             <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/ai-chat}">Hỗ trợ AI</a>
             <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/faqs}">Tra cứu FAQ</a>
+            <div sec:authorize="isAuthenticated()" class="pt-2 border-t border-slate-200">
+                <a class="flex items-center gap-2 py-2 text-sm font-semibold text-[#003882]" th:href="@{/dashboard}">
+                    <span class="material-symbols-outlined text-[18px]">account_circle</span>
+                    <span th:text="${currentUser != null ? currentUser.fullName : #authentication.name}">Họ Tên</span>
+                </a>
+                <a class="block py-1.5 text-sm font-medium text-[#991b1e]" th:href="@{/auth/logout}">Đăng xuất</a>
+            </div>
         </div>
     </header><!-- Harvard.edu Inspired Expandable Mega Menu Overlay Panel -->
 <div class="hidden fixed inset-0 z-50 bg-[#0b1c30]/70 backdrop-blur-md transition-opacity duration-300 flex justify-end" id="harvard-mega-menu">
