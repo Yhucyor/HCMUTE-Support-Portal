@@ -19,13 +19,18 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class InternalMessageService {
 
     private final InternalStaffAdminMessageRepository messageRepository;
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
+
+    public InternalMessageService(InternalStaffAdminMessageRepository messageRepository, UserRepository userRepository, DepartmentRepository departmentRepository) {
+        this.messageRepository = messageRepository;
+        this.userRepository = userRepository;
+        this.departmentRepository = departmentRepository;
+    }
 
     @Transactional
     public InternalMessageDto sendMessage(Long senderId, SendInternalMessageRequest request) {

@@ -1,269 +1,316 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HCMUTE Support Portal | Xác thực OTP</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .login-body {
-            background-color: #f8fafc;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Xác thực mã OTP | QAUTE Portal - HCMUTE</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Outfit', 'sans-serif']
+          },
+          colors: {
+            primary: '#1d4ed8',
+            'primary-dark': '#1e40af',
+            secondary: '#2563eb',
+            navy: '#0f172a',
+            hcmute: '#a6192e'
+          }
         }
-        .login-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem 1rem;
-        }
-        .login-card {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-            width: 100%;
-            max-width: 450px;
-            text-align: center;
-        }
-        .icon-wrapper {
-            width: 64px;
-            height: 64px;
-            background: #fff1f2;
-            color: var(--crimson);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            margin: 0 auto 1.5rem;
-        }
-        .login-title {
-            font-size: 1.5rem;
-            color: #1e293b;
-            margin-bottom: 0.5rem;
-            font-weight: 700;
-        }
-        .login-subtitle {
-            color: #64748b;
-            font-size: 0.95rem;
-            margin-bottom: 2rem;
-            line-height: 1.5;
-        }
-        .login-subtitle strong {
-            color: #334155;
-        }
-
-        .otp-inputs {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-        }
-        .otp-inputs input {
-            width: 45px;
-            height: 55px;
-            border: 2px solid #cbd5e1;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #1e293b;
-            font-family: 'Inter', sans-serif;
-            background: #f8fafc;
-            transition: all 0.2s ease;
-        }
-        .otp-inputs input:focus {
-            outline: none;
-            border-color: var(--crimson);
-            background: white;
-            box-shadow: 0 0 0 4px rgba(220, 20, 60, 0.1);
-            transform: translateY(-2px);
-        }
-        
-        .alert-box {
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-align: left;
-        }
-        .alert-error {
-            background-color: #fef2f2;
-            color: #b91c1c;
-            border: 1px solid #fecaca;
-        }
-        .alert-success {
-            background-color: #f0fdf4;
-            color: #15803d;
-            border: 1px solid #bbf7d0;
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 0.9rem;
-            background: var(--crimson);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.05rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 1rem;
-        }
-        .btn-primary:hover {
-            background: var(--dark-crimson);
-            transform: translateY(-1px);
-        }
-
-        .resend-container {
-            margin-top: 1.5rem;
-            font-size: 0.9rem;
-            color: #64748b;
-        }
-        .resend-form {
-            display: inline;
-        }
-        .btn-resend {
-            background: none;
-            border: none;
-            color: var(--crimson);
-            font-weight: 600;
-            cursor: pointer;
-            padding: 0;
-            font-size: 0.9rem;
-        }
-        .btn-resend:hover {
-            text-decoration: underline;
-        }
-    </style>
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+    h1, h2, h3, h4, .font-heading { font-family: 'Outfit', sans-serif; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+  </style>
 </head>
-<body class="login-body">
+<body class="min-h-screen w-full bg-white text-slate-800 antialiased selection:bg-blue-600 selection:text-white p-0 m-0">
 
-    <header class="header login-header" style="background: var(--crimson); padding: 1rem 5%;">
-        <div class="logo">
-            <a th:href="@{/}" style="color: white; text-decoration: none; font-size: 1.2rem;">
-                <i class="fa-solid fa-graduation-cap"></i> <strong>HCMUTE Portal</strong>
-            </a>
+  <!-- Main Container: Full Screen Edge-to-Edge Split Layout -->
+  <div class="w-full min-h-screen flex flex-col lg:flex-row bg-white">
+    
+    <!-- LEFT PANEL: HCMUTE Campus Branding (46% Width on Desktop, Full Height) -->
+    <div class="relative w-full lg:w-[46%] min-h-[400px] lg:min-h-screen flex flex-col justify-between p-8 lg:p-12 xl:p-16 text-white overflow-hidden bg-slate-900">
+      <!-- Background Image with Light/Dark Gradient Overlay -->
+      <img alt="Khuôn viên Đại học Sư phạm Kỹ thuật TP.HCM" class="absolute inset-0 w-full h-full object-cover object-center filter brightness-95 transform scale-105 transition duration-1000 hover:scale-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuANQ6U4F5KF3JY79jboRgPEsTf96fZjnrkuiNS7WgPGswL_3-Z3tkkaAtwX7lf_9Hj4iPwKyYFeagOiKXvPqJIBlRXXn7Jks8D8hTudG7A6R00-YAnuowBeXSVEJ1dIQ1icfxelOPPC1rsmb1agmous-ZWPcjXgJWoM-I31hmSPZERw2sDu30AjB2IrreDTkd2ecpFO3hq4vCFCUvw8cG0MYCr4Byoq3CY1Q-LrwXdVUOP9Q_KsmyQpI0MYIo2ESZ5qSQ">
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-900/75 to-blue-950/65" style="background: linear-gradient(to top, rgba(10, 25, 47, 0.65) 0%, rgba(15, 23, 42, 0.25) 50%, rgba(10, 25, 47, 0.35) 100%);"></div>
+
+      <!-- Brand Top Section -->
+      <div class="relative z-10">
+        <a th:href="@{/}" class="flex items-center gap-3.5 group">
+          <div class="w-13 h-13 p-1.5 bg-white/95 backdrop-blur-md rounded-2xl shadow-lg ring-1 ring-white/30 flex items-center justify-center group-hover:scale-105 transition">
+            <img alt="Logo HCM-UTE" class="h-10 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwYC9h9dvAG8ZstRkEoz42R4QHd4h4tq62qtHovN3yFW8ObRLnt47QcTKnVEPcV1u4ofqjh5s-mc5ar65Udi0XTxTWYwkqfcPqfo_XEropM3uVZ_0mwLDo6oDtIqNh0twRegXoGhreLUp9gAHMOsIXqrjEKjafw5qdEv-Ei_ZWfHCM5Ztbxl7fY6hc5Cupy4pZl4JBoNj6fiz1pjtfSwyh048VjCIAyScEtmjpsqeCJa_D6rCQp8wF6vQ9LMFMJnb03Q">
+          </div>
+          <div>
+            <div class="text-[12px] font-bold tracking-widest text-blue-300 uppercase">QAUTE Portal</div>
+            <div class="text-sm font-semibold tracking-wide text-white/90">Đại học Sư phạm Kỹ thuật TP.HCM</div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Center Message / 2FA Benefits -->
+      <div class="relative z-10 my-auto py-10 lg:py-0 max-w-lg">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/20 border border-blue-400/30 backdrop-blur-md text-blue-200 text-xs font-semibold uppercase tracking-wider mb-5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          XÁC THỰC 2 LỚP BẢO MẬT
         </div>
-        <nav>
-            <ul class="nav-links" style="list-style: none;">
-                <li><a th:href="@{/auth/login}" style="color: white; text-decoration: none;">← Quay lại Đăng nhập</a></li>
-            </ul>
-        </nav>
-    </header>
+        <h1 class="text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight text-white font-heading">
+          Bảo vệ tài khoản <br>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-sky-200 to-indigo-200">an toàn tuyệt đối</span>
+        </h1>
+        <p class="mt-4 text-sm lg:text-base text-slate-300 font-normal leading-relaxed">
+          Mã xác thực một lần (OTP) giúp ngăn chặn mọi truy cập trái phép, bảo vệ toàn diện hồ sơ điểm số, học phí và dữ liệu sinh viên của bạn.
+        </p>
 
-    <div class="login-container">
-        <div class="login-card">
-            <div class="icon-wrapper">
-                <i class="fa-solid fa-envelope-open-text"></i>
-            </div>
-            <h2 class="login-title">Xác thực tài khoản</h2>
-            <p class="login-subtitle">
-                Vui lòng nhập mã OTP 6 chữ số vừa được gửi tới email<br>
-                <strong th:text="${email}">student@hcmute.edu.vn</strong>
-            </p>
-            
-            <div th:if="${errorMessage}" class="alert-box alert-error">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <span th:text="${errorMessage}"></span>
-            </div>
-            <div th:if="${successMessage}" class="alert-box alert-success">
-                <i class="fa-solid fa-circle-check"></i>
-                <span th:text="${successMessage}"></span>
-            </div>
-
-            <form th:action="@{/auth/activate}" method="post" id="otpForm">
-                <input type="hidden" name="email" th:value="${email}">
-                <input type="hidden" name="otpCode" id="hiddenOtp">
-                
-                <div class="otp-inputs" id="otpContainer">
-                    <input type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" required autofocus>
-                    <input type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
-                    <input type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
-                    <input type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
-                    <input type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
-                    <input type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
-                </div>
-                
-                <button type="submit" class="btn-primary">
-                    Kích hoạt tài khoản <i class="fa-solid fa-arrow-right ms-2"></i>
-                </button>
-            </form>
-            
-            <div class="resend-container">
-                Chưa nhận được mã? 
-                <form th:action="@{/auth/resend-activation-otp}" method="post" class="resend-form">
-                    <input type="hidden" name="email" th:value="${email}">
-                    <button type="submit" class="btn-resend">Gửi lại mã</button>
-                </form>
-            </div>
+        <!-- 3 Feature Points / Verification Benefits -->
+        <div class="mt-6 space-y-3">
+          <div class="flex items-center gap-3 text-xs text-slate-200 bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/10">
+            <span class="w-5 h-5 rounded-full bg-blue-500/40 text-blue-300 flex items-center justify-center font-bold text-xs">✓</span>
+            <span>Mã hóa bảo mật cấp độ ngân hàng (SSL/TLS 256-bit)</span>
+          </div>
+          <div class="flex items-center gap-3 text-xs text-slate-200 bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/10">
+            <span class="w-5 h-5 rounded-full bg-blue-500/40 text-blue-300 flex items-center justify-center font-bold text-xs">✓</span>
+            <span>Chống chiếm đoạt phiên đăng nhập và tài khoản học vụ</span>
+          </div>
+          <div class="flex items-center gap-3 text-xs text-slate-200 bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/10">
+            <span class="w-5 h-5 rounded-full bg-blue-500/40 text-blue-300 flex items-center justify-center font-bold text-xs">✓</span>
+            <span>Xác nhận thông báo tức thời qua hộp thư sinh viên chính chủ</span>
+          </div>
         </div>
+      </div>
+
+      <!-- Left Bottom Footer note -->
+      <div class="relative z-10 flex items-center justify-between text-xs text-slate-400 border-t border-white/10 pt-4">
+        <span>© 2026 HCMUTE - Student Portal</span>
+        <div class="flex items-center gap-1.5 text-slate-300">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <span>Bảo mật SSL 256-bit</span>
+        </div>
+      </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const inputs = document.querySelectorAll('#otpContainer input');
-            const hiddenOtp = document.getElementById('hiddenOtp');
-            const form = document.getElementById('otpForm');
+    <!-- RIGHT PANEL: OTP Form (54% Width on Desktop, Full Height) -->
+    <div class="w-full lg:w-[54%] min-h-screen p-8 lg:p-12 xl:p-16 flex flex-col justify-between bg-white overflow-y-auto">
+      
+      <!-- Top Navigation & Step Badge -->
+      <div class="flex items-center justify-between pb-6">
+        <a th:href="@{/auth/login}" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-blue-600 transition group">
+          <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          Quay lại Đăng nhập
+        </a>
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full border border-blue-200/60">
+            Bước 2: Xác thực
+          </span>
+          <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs text-slate-600 font-medium cursor-pointer hover:bg-slate-200 transition">
+            <span class="w-2 h-2 rounded-full bg-red-600"></span>
+            <span>Tiếng Việt (VI)</span>
+          </div>
+        </div>
+      </div>
 
-            // Auto focus and move to next/prev input
-            inputs.forEach((input, index) => {
-                input.addEventListener('input', function(e) {
-                    this.value = this.value.replace(/[^0-9]/g, ''); // Only numbers
-                    
-                    if (this.value && index < inputs.length - 1) {
-                        inputs[index + 1].focus();
-                    }
-                    
-                    updateHiddenInput();
-                });
+      <!-- Main Form Container -->
+      <div class="w-full max-w-md mx-auto my-auto py-4">
+        
+        <!-- Header text & Envelope Icon -->
+        <div class="text-center mb-6">
+          <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/25 ring-8 ring-blue-50 mb-4">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+          </div>
+          <h2 class="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight font-heading">Xác thực mã OTP</h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-2 max-w-sm mx-auto leading-relaxed">
+            Mã xác thực 6 chữ số đã được gửi đến hộp thư sinh viên:
+          </p>
+          <div class="inline-flex items-center gap-1.5 mt-2.5 px-3 py-1 bg-slate-100 rounded-full text-xs font-semibold text-slate-700 font-mono border border-slate-200/80">
+            <svg class="w-3.5 h-3.5 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>
+            <span th:text="${email != null && !email.isEmpty() ? email : 'student@student.hcmute.edu.vn'}">22110***@student.hcmute.edu.vn</span>
+          </div>
+        </div>
 
-                input.addEventListener('keydown', function(e) {
-                    if (e.key === 'Backspace' && !this.value && index > 0) {
-                        inputs[index - 1].focus();
-                    }
-                });
+        <!-- Feedback Alert Messages -->
+        <div th:if="${errorMessage}" class="mb-5 p-3.5 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs flex items-center gap-2.5 font-medium animate-fadeIn">
+          <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+          <span th:text="${errorMessage}">Mã OTP không chính xác hoặc đã hết hạn!</span>
+        </div>
+        <div th:if="${successMessage}" class="mb-5 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs flex items-center gap-2.5 font-medium animate-fadeIn">
+          <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+          <span th:text="${successMessage}">Mã xác thực mới đã được gửi thành công!</span>
+        </div>
 
-                // Paste full 6 digits
-                input.addEventListener('paste', function(e) {
-                    e.preventDefault();
-                    const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
-                    
-                    for (let i = 0; i < pastedData.length; i++) {
-                        if (inputs[i]) {
-                            inputs[i].value = pastedData[i];
-                            if (i < inputs.length - 1) inputs[i + 1].focus();
-                        }
-                    }
-                    updateHiddenInput();
-                });
-            });
+        <!-- 6 Digit OTP Inputs Form -->
+        <form th:action="@{/auth/activate}" method="post" id="otpForm" class="mt-4">
+          <input type="hidden" name="email" id="hiddenEmail" th:value="${email}">
+          <input type="hidden" name="otpCode" id="hiddenOtp">
+          <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-            function updateHiddenInput() {
-                let otp = '';
-                inputs.forEach(input => otp += input.value);
-                hiddenOtp.value = otp;
-            }
+          <div class="flex items-center justify-center gap-2 sm:gap-3 py-2" id="otpContainer">
+            <input autofocus class="otp-input w-11 h-14 sm:w-13 sm:h-15 text-center text-xl font-bold font-heading text-slate-800 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition shadow-sm" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+            <input class="otp-input w-11 h-14 sm:w-13 sm:h-15 text-center text-xl font-bold font-heading text-slate-800 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition shadow-sm" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+            <input class="otp-input w-11 h-14 sm:w-13 sm:h-15 text-center text-xl font-bold font-heading text-slate-800 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition shadow-sm" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+            <input class="otp-input w-11 h-14 sm:w-13 sm:h-15 text-center text-xl font-bold font-heading text-slate-800 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition shadow-sm" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+            <input class="otp-input w-11 h-14 sm:w-13 sm:h-15 text-center text-xl font-bold font-heading text-slate-800 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition shadow-sm" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+            <input class="otp-input w-11 h-14 sm:w-13 sm:h-15 text-center text-xl font-bold font-heading text-slate-800 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition shadow-sm" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+          </div>
 
-            form.addEventListener('submit', function(e) {
-                updateHiddenInput();
-                if (hiddenOtp.value.length !== 6) {
-                    e.preventDefault();
-                    alert('Vui lòng nhập đầy đủ 6 số OTP');
-                }
-            });
-        });
-    </script>
+          <!-- Helper hint -->
+          <div class="mt-2 text-center text-xs text-slate-400">
+            Bạn có thể dán toàn bộ 6 số mã OTP trực tiếp vào ô bất kỳ.
+          </div>
+
+          <!-- Timer & Resend action -->
+          <div class="flex items-center justify-between mt-6 p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-xs">
+            <div class="flex items-center gap-1.5 text-slate-600 font-medium">
+              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+              Mã hết hạn sau: <span class="font-bold text-slate-800 font-mono text-red-600" id="timer">02:00</span>
+            </div>
+            <button class="text-blue-600 font-bold hover:text-blue-700 hover:underline transition cursor-pointer" onclick="submitResend()" type="button" id="resendBtn">
+              Gửi lại mã OTP
+            </button>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="mt-6 space-y-3">
+            <button class="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white rounded-xl text-sm font-bold tracking-wide shadow-md shadow-blue-600/25 transition duration-200 flex items-center justify-center gap-2 group cursor-pointer" id="verifyBtn" type="submit">
+              <span>Xác nhận kích hoạt / Tiếp tục</span>
+              <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            </button>
+            <a class="block w-full py-2 text-center text-xs font-semibold text-slate-500 hover:text-slate-800 transition" th:href="@{/auth/login}">
+              ← Quay lại đăng nhập
+            </a>
+          </div>
+        </form>
+
+        <!-- Hidden form for resending OTP -->
+        <form id="resendForm" th:action="@{/auth/resend-activation-otp}" method="post" class="hidden">
+          <input type="hidden" name="email" th:value="${email}">
+          <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        </form>
+
+      </div>
+
+      <!-- Support Footer Note -->
+      <div class="pt-4 text-center text-[11px] text-slate-400 border-t border-slate-100">
+        Không nhận được email? Vui lòng kiểm tra mục Thư rác (Spam) hoặc liên hệ Trung tâm Dịch vụ CNTT HCMUTE.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Automatic OTP navigation & paste handling
+    const inputs = document.querySelectorAll('.otp-input');
+    const hiddenOtp = document.getElementById('hiddenOtp');
+    const otpForm = document.getElementById('otpForm');
+
+    function updateOtpValue() {
+      let code = '';
+      inputs.forEach(input => {
+        code += input.value.trim();
+      });
+      hiddenOtp.value = code;
+    }
+
+    inputs.forEach((input, index) => {
+      // Input event to allow only numeric characters and auto-advance
+      input.addEventListener('input', (e) => {
+        input.value = input.value.replace(/[^0-9]/g, '');
+        updateOtpValue();
+        if (input.value && index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        }
+      });
+
+      // Key navigation
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace') {
+          if (!input.value && index > 0) {
+            inputs[index - 1].focus();
+          }
+        } else if (e.key === 'ArrowLeft' && index > 0) {
+          inputs[index - 1].focus();
+        } else if (e.key === 'ArrowRight' && index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        }
+      });
+
+      // Full 6 digit paste handling
+      input.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const clipboard = (e.clipboardData || window.clipboardData).getData('text') || '';
+        const digits = clipboard.replace(/[^0-9]/g, '').slice(0, 6);
+        if (digits.length > 0) {
+          digits.split('').forEach((char, i) => {
+            if (inputs[i]) inputs[i].value = char;
+          });
+          updateOtpValue();
+          const targetIndex = Math.min(digits.length, inputs.length - 1);
+          inputs[targetIndex].focus();
+        }
+      });
+    });
+
+    // Form submission validation
+    otpForm.addEventListener('submit', (e) => {
+      updateOtpValue();
+      if (!hiddenOtp.value || hiddenOtp.value.length < 6) {
+        e.preventDefault();
+        alert('Vui lòng nhập đầy đủ 6 chữ số mã OTP đã gửi đến email của bạn.');
+        // Focus first empty input
+        for (let i = 0; i < inputs.length; i++) {
+          if (!inputs[i].value) {
+            inputs[i].focus();
+            break;
+          }
+        }
+        return false;
+      }
+      
+      const btn = document.getElementById('verifyBtn');
+      btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg> <span>Đang xác thực OTP...</span>`;
+    });
+
+    // Countdown Timer logic (120 seconds)
+    let timeLeft = 120;
+    const timerElem = document.getElementById('timer');
+    const resendBtn = document.getElementById('resendBtn');
+
+    const countdown = setInterval(() => {
+      if (timeLeft > 0) {
+        timeLeft--;
+        const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const s = (timeLeft % 60).toString().padStart(2, '0');
+        timerElem.textContent = `${m}:${s}`;
+      } else {
+        clearInterval(countdown);
+        timerElem.textContent = "00:00 (Hết hạn)";
+        timerElem.classList.add('text-red-600');
+      }
+    }, 1000);
+
+    function submitResend() {
+      const email = document.getElementById('hiddenEmail').value;
+      if (!email) {
+        alert('Không tìm thấy thông tin email. Vui lòng quay lại trang đăng nhập.');
+        return;
+      }
+      if (confirm('Bạn có chắc chắn muốn gửi lại mã OTP kích hoạt đến ' + email + ' không?')) {
+        document.getElementById('resendForm').submit();
+      }
+    }
+  </script>
 </body>
 </html>
