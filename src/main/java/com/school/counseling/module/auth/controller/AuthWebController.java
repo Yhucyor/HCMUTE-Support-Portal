@@ -157,6 +157,7 @@ public class AuthWebController {
     @GetMapping("/forgot-password")
     public String forgotPasswordPage(@RequestParam(value = "email", required = false) String email,
                                      @RequestParam(value = "step", defaultValue = "1") int step,
+                                     @RequestParam(value = "otpCode", required = false) String otpCode,
                                      HttpServletRequest request,
                                      Model model) {
         request.getSession(true);
@@ -165,7 +166,25 @@ public class AuthWebController {
         }
         model.addAttribute("email", email);
         model.addAttribute("step", step);
+        model.addAttribute("otpCode", otpCode);
+        if (step == 2 || step == 3) {
+            return "reset-password";
+        }
         return "forgot-password";
+    }
+
+    @GetMapping("/reset-password")
+    public String resetPasswordPage(@RequestParam(value = "email", required = false) String email,
+                                    @RequestParam(value = "otpCode", required = false) String otpCode,
+                                    HttpServletRequest request,
+                                    Model model) {
+        request.getSession(true);
+        if (SecurityUtils.isAuthenticated()) {
+            return "redirect:/home";
+        }
+        model.addAttribute("email", email);
+        model.addAttribute("otpCode", otpCode);
+        return "reset-password";
     }
 
     @PostMapping("/forgot-password/send-otp")
