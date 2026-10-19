@@ -73,6 +73,8 @@ public class DataInitializer implements CommandLineRunner {
             initUser("admin_main", "123456", "Admin Quản Trị Cấp Cao", "admin@gmail.com", roleAdmin, null);
 
             // Tài khoản Cán bộ 5 đơn vị
+            initUser("staff_academic", defaultPassword, "Cán bộ Quản lý Đào tạo", "staff.academic@hcmute.edu.vn",
+                    roleStaff, deptDaoTao);
             initUser("staff_daotao", defaultPassword, "ThS. Phạm Thị Thu Sương", "daotao.staff@hcmute.edu.vn",
                     roleStaff, deptDaoTao);
             initUser("staff_tuyensinh", defaultPassword, "ThS. Nguyễn Văn Tuyển Sinh", "tuyensinh.staff@hcmute.edu.vn",
@@ -85,6 +87,7 @@ public class DataInitializer implements CommandLineRunner {
                     deptNn);
 
             // Tài khoản Sinh viên
+            initUser("student", defaultPassword, "Nguyễn Văn Sinh Viên Mẫu", "student@student.hcmute.edu.vn", roleStudent, deptCntt);
             initUser("student01", "123456", "Nguyễn Văn Sinh Viên", "student01@hcmute.edu.vn", roleStudent, deptCntt);
             initUser("lecuong", "123456", "Lê Quốc Cường", "lecuong@gmail.com", roleStudent, deptCntt);
 
