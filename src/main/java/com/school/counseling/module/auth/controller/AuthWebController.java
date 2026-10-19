@@ -39,7 +39,14 @@ public class AuthWebController {
             return "redirect:/home";
         }
         if (error != null) {
-            model.addAttribute("errorMessage", "Tên đăng nhập hoặc mật khẩu không chính xác!");
+            Object lastException = request.getSession().getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
+            if (lastException instanceof org.springframework.security.authentication.DisabledException) {
+                model.addAttribute("errorMessage", "Tài khoản của bạn chưa được kích hoạt qua mã OTP! Vui lòng hoàn tất kích hoạt tài khoản để đăng nhập.");
+            } else if (lastException instanceof org.springframework.security.authentication.LockedException) {
+                model.addAttribute("errorMessage", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Quản trị viên.");
+            } else {
+                model.addAttribute("errorMessage", "Tên đăng nhập hoặc mật khẩu không chính xác!");
+            }
         }
         if (logout != null) {
             model.addAttribute("successMessage", "Bạn đã đăng xuất thành công khỏi hệ thống.");
