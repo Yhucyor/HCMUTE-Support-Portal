@@ -29,7 +29,6 @@ import java.util.*;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
     private final RoleRepository roleRepository;
@@ -39,6 +38,22 @@ public class DataInitializer implements CommandLineRunner {
     private final FaqRepository faqRepository;
     private final SmartFaqMatcherService smartFaqMatcherService;
     private final ObjectMapper objectMapper;
+
+    public DataInitializer(RoleRepository roleRepository,
+                           DepartmentRepository departmentRepository,
+                           UserRepository userRepository,
+                           PasswordEncoder passwordEncoder,
+                           FaqRepository faqRepository,
+                           SmartFaqMatcherService smartFaqMatcherService,
+                           ObjectMapper objectMapper) {
+        this.roleRepository = roleRepository;
+        this.departmentRepository = departmentRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.faqRepository = faqRepository;
+        this.smartFaqMatcherService = smartFaqMatcherService;
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     public void run(String... args) {

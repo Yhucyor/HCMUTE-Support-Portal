@@ -9,10 +9,23 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
-@RequiredArgsConstructor
 public class HomeController {
 
     private final DepartmentRepository departmentRepository;
+
+    public HomeController(DepartmentRepository departmentRepository) {
+        this.departmentRepository = departmentRepository;
+    }
+
+    @GetMapping("/dashboard")
+    public String dashboard() {
+        if (SecurityUtils.hasRole("ROLE_ADMIN")) {
+            return "redirect:/admin/dashboard";
+        } else if (SecurityUtils.hasRole("ROLE_STAFF")) {
+            return "redirect:/staff/tickets";
+        }
+        return "redirect:/home";
+    }
 
     @GetMapping({"/", "/home"})
     public String home(Model model) {
