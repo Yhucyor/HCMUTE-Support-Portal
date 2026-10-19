@@ -63,21 +63,9 @@
             <!-- Nav Items (Desktop) -->
             <nav class="hidden xl:flex items-center space-x-7">
                 <a class="font-semibold text-[14px] text-[#991b1e] border-b-2 border-[#991b1e] pb-1" th:href="@{/}">Trang chủ</a>
-                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/admission}">Tuyển sinh</a>
-                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/about}">Đào tạo</a>
-                
-                <div class="relative group cursor-pointer">
-                    <a th:href="@{/explore}" class="font-medium text-[14px] text-slate-700 group-hover:text-[#003882] flex items-center gap-1 transition-colors pb-1">
-                        Khám phá HCMUTE <span class="material-symbols-outlined text-[16px]">expand_more</span>
-                    </a>
-                    <!-- Submenu -->
-                    <div class="absolute top-full left-0 hidden group-hover:block bg-white border border-slate-200/80 rounded-xl shadow-xl py-2 min-w-[200px] z-50">
-                        <a th:href="@{/explore}" class="block px-4 py-2 text-xs text-slate-700 hover:bg-blue-50 hover:text-[#003882]">Sơ đồ khuôn viên</a>
-                        <a th:href="@{/research}" class="block px-4 py-2 text-xs text-slate-700 hover:bg-blue-50 hover:text-[#003882]">Nghiên cứu khoa học</a>
-                        <a th:href="@{/feed}" class="block px-4 py-2 text-xs text-slate-700 hover:bg-blue-50 hover:text-[#003882]">Bảng tin sinh viên</a>
-                        <a th:href="@{/academic/sync}" class="block px-4 py-2 text-xs text-slate-700 hover:bg-blue-50 hover:text-[#003882]">Cổng học vụ HCMUTE</a>
-                    </div>
-                </div>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/feed/forum}">Diễn đàn</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/faqs}">Tra cứu FAQ</a>
             </nav>
 
             <!-- Header Actions -->
@@ -120,9 +108,9 @@
         <!-- Mobile Drawer Menu -->
         <div id="mobileNavDrawer" class="hidden xl:hidden bg-white border-b border-slate-200 px-4 pt-3 pb-5 space-y-2.5 shadow-lg">
             <a class="block py-2 text-sm font-semibold text-[#991b1e]" th:href="@{/}">Trang chủ</a>
-            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/admission}">Tuyển sinh</a>
-            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/about}">Đào tạo</a>
-            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/explore}">Khám phá HCMUTE</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/feed/forum}">Diễn đàn</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/faqs}">Tra cứu FAQ</a>
         </div>
     </header>
 
