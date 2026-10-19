@@ -12,19 +12,45 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class HomeController {
 
     private final DepartmentRepository departmentRepository;
+    private final com.school.counseling.module.academic.service.HcmuteCrawlerService crawlerService;
+    private final com.school.counseling.module.ticket.service.TicketService ticketService;
 
-    public HomeController(DepartmentRepository departmentRepository) {
+    public HomeController(DepartmentRepository departmentRepository,
+                          com.school.counseling.module.academic.service.HcmuteCrawlerService crawlerService,
+                          com.school.counseling.module.ticket.service.TicketService ticketService) {
         this.departmentRepository = departmentRepository;
+        this.crawlerService = crawlerService;
+        this.ticketService = ticketService;
     }
 
     @GetMapping("/dashboard")
-    public String dashboard() {
+    public String dashboard(Model model) {
         if (SecurityUtils.hasRole("ROLE_ADMIN")) {
             return "redirect:/admin/dashboard";
         } else if (SecurityUtils.hasRole("ROLE_STAFF")) {
             return "redirect:/staff/tickets";
         }
-        return "redirect:/home";
+
+        UserPrincipal currentUser = SecurityUtils.getCurrentUser().orElse(null);
+        if (currentUser == null) {
+            return "redirect:/auth/login";
+        }
+
+        model.addAttribute("currentUser", currentUser);
+
+        try {
+            crawlerService.getStudentProfile(currentUser.getUsername())
+                    .ifPresent(p -> model.addAttribute("studentProfile", p));
+            model.addAttribute("academicSummary", crawlerService.getAcademicSummary(currentUser.getUsername()));
+        } catch (Exception ignored) {
+        }
+
+        try {
+            model.addAttribute("myTickets", ticketService.getMyTicketSummaries(currentUser.getId()));
+        } catch (Exception ignored) {
+        }
+
+        return "dashboard";
     }
 
     @GetMapping({"/", "/home"})
