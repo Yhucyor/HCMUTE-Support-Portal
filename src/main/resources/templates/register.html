@@ -34,13 +34,13 @@
         h1, h2, h3, h4, .font-heading { font-family: 'Outfit', sans-serif; }
     </style>
 </head>
-<body class="min-h-screen bg-slate-100 flex items-center justify-center p-0 md:p-6 lg:p-10 text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
+<body class="min-h-screen w-full bg-white text-slate-800 antialiased selection:bg-blue-600 selection:text-white p-0 m-0">
 
-    <!-- Main Container Card -->
-    <div class="w-full max-w-[1340px] min-h-[820px] bg-white rounded-none md:rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row border border-slate-200/80">
+    <!-- Main Container: Full Screen Edge-to-Edge Split Layout -->
+    <div class="w-full min-h-screen flex flex-col lg:flex-row bg-white">
         
-        <!-- LEFT PANEL: Campus Branding (40% Width on Desktop) -->
-        <div class="relative w-full lg:w-[40%] min-h-[340px] lg:min-h-auto flex flex-col justify-between p-8 lg:p-12 text-white overflow-hidden bg-slate-900">
+        <!-- LEFT PANEL: Campus Branding (42% Width on Desktop, Full Height) -->
+        <div class="relative w-full lg:w-[42%] min-h-[380px] lg:min-h-screen flex flex-col justify-between p-8 lg:p-12 xl:p-16 text-white overflow-hidden bg-slate-900">
             <!-- Background Image -->
             <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnA7CdsiBMtKduvKR_jttWWi26-E07ILVKz2TN4mwv8VfDHYENE6RsFVPGn5FcTaKSVsHHYe0OL0foHWUilz4RdsyF-XK2QtwIQB3LWliH7Nep3iCphBC9EndSyqlAvIY51tsnWp-m5fePxzdoOrqBDVf_OkbsCdHPqQQCISzJ7r3pcsHLDQ4lJ_ycGkigoKyF8Pu5ZfnZnN32LcEwgrhxkD1BV25BIg_LtRo--O4t1gvU2v4j-O_BtbCM2RqrV0BfKQ" 
                  alt="Toàn cảnh Đại học Sư phạm Kỹ thuật TP.HCM" 
@@ -99,8 +99,8 @@
             </div>
         </div>
 
-        <!-- RIGHT PANEL: Registration Form (60% Width on Desktop) -->
-        <div class="w-full lg:w-[60%] p-8 lg:p-12 flex flex-col justify-between bg-white overflow-y-auto">
+        <!-- RIGHT PANEL: Registration Form (58% Width on Desktop, Full Height) -->
+        <div class="w-full lg:w-[58%] min-h-screen p-8 lg:p-12 xl:p-16 flex flex-col justify-between bg-white overflow-y-auto">
             
             <!-- Top Nav Link -->
             <div class="flex items-center justify-between pb-4">

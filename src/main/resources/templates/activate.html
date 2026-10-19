@@ -39,13 +39,13 @@
     }
   </style>
 </head>
-<body class="min-h-screen bg-slate-50 flex items-center justify-center p-0 md:p-6 lg:p-10 text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
+<body class="min-h-screen w-full bg-white text-slate-800 antialiased selection:bg-blue-600 selection:text-white p-0 m-0">
 
-  <!-- Main Container: Split 2-Column Layout matching Login & Register screens -->
-  <div class="w-full max-w-[1340px] min-h-[760px] bg-white rounded-none md:rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row border border-slate-200/80">
+  <!-- Main Container: Full Screen Edge-to-Edge Split Layout -->
+  <div class="w-full min-h-screen flex flex-col lg:flex-row bg-white">
     
-    <!-- LEFT PANEL: HCMUTE Campus Branding (44% Width on Desktop) -->
-    <div class="relative w-full lg:w-[44%] min-h-[380px] lg:min-h-auto flex flex-col justify-between p-8 lg:p-12 text-white overflow-hidden bg-slate-900">
+    <!-- LEFT PANEL: HCMUTE Campus Branding (46% Width on Desktop, Full Height) -->
+    <div class="relative w-full lg:w-[46%] min-h-[400px] lg:min-h-screen flex flex-col justify-between p-8 lg:p-12 xl:p-16 text-white overflow-hidden bg-slate-900">
       <!-- Background Image with Light/Dark Gradient Overlay -->
       <img alt="Khuôn viên Đại học Sư phạm Kỹ thuật TP.HCM" class="absolute inset-0 w-full h-full object-cover object-center filter brightness-95 transform scale-105 transition duration-1000 hover:scale-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuANQ6U4F5KF3JY79jboRgPEsTf96fZjnrkuiNS7WgPGswL_3-Z3tkkaAtwX7lf_9Hj4iPwKyYFeagOiKXvPqJIBlRXXn7Jks8D8hTudG7A6R00-YAnuowBeXSVEJ1dIQ1icfxelOPPC1rsmb1agmous-ZWPcjXgJWoM-I31hmSPZERw2sDu30AjB2IrreDTkd2ecpFO3hq4vCFCUvw8cG0MYCr4Byoq3CY1Q-LrwXdVUOP9Q_KsmyQpI0MYIo2ESZ5qSQ">
       <div class="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-900/75 to-blue-950/65" style="background: linear-gradient(to top, rgba(10, 25, 47, 0.65) 0%, rgba(15, 23, 42, 0.25) 50%, rgba(10, 25, 47, 0.35) 100%);"></div>
@@ -104,8 +104,8 @@
       </div>
     </div>
 
-    <!-- RIGHT PANEL: OTP Form (56% Width on Desktop) -->
-    <div class="w-full lg:w-[56%] p-8 lg:p-14 flex flex-col justify-between bg-white">
+    <!-- RIGHT PANEL: OTP Form (54% Width on Desktop, Full Height) -->
+    <div class="w-full lg:w-[54%] min-h-screen p-8 lg:p-12 xl:p-16 flex flex-col justify-between bg-white overflow-y-auto">
       
       <!-- Top Navigation & Step Badge -->
       <div class="flex items-center justify-between pb-6">
