@@ -5,6 +5,7 @@ import com.school.counseling.common.util.SecurityUtils;
 import com.school.counseling.module.auth.dto.RegisterRequest;
 import com.school.counseling.module.auth.repository.DepartmentRepository;
 import com.school.counseling.module.auth.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,16 +18,22 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Slf4j
 @Controller
 @RequestMapping("/auth")
-@RequiredArgsConstructor
 public class AuthWebController {
 
     private final AuthService authService;
     private final DepartmentRepository departmentRepository;
 
+    public AuthWebController(AuthService authService, DepartmentRepository departmentRepository) {
+        this.authService = authService;
+        this.departmentRepository = departmentRepository;
+    }
+
     @GetMapping("/login")
     public String loginPage(@RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "logout", required = false) String logout,
+                            HttpServletRequest request,
                             Model model) {
+        request.getSession(true);
         if (SecurityUtils.isAuthenticated()) {
             return "redirect:/home";
         }
