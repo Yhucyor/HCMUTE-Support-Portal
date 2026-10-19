@@ -89,7 +89,10 @@ public class AuthWebController {
     }
 
     @GetMapping("/activate")
-    public String activatePage(@RequestParam(value = "email", required = false) String email, Model model) {
+    public String activatePage(@RequestParam(value = "email", required = false) String email,
+                               HttpServletRequest request,
+                               Model model) {
+        request.getSession(true);
         if (SecurityUtils.isAuthenticated()) {
             return "redirect:/home";
         }
@@ -154,7 +157,9 @@ public class AuthWebController {
     @GetMapping("/forgot-password")
     public String forgotPasswordPage(@RequestParam(value = "email", required = false) String email,
                                      @RequestParam(value = "step", defaultValue = "1") int step,
+                                     HttpServletRequest request,
                                      Model model) {
+        request.getSession(true);
         if (SecurityUtils.isAuthenticated()) {
             return "redirect:/home";
         }
