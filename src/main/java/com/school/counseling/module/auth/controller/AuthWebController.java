@@ -47,7 +47,8 @@ public class AuthWebController {
     }
 
     @GetMapping("/register")
-    public String registerPage(Model model) {
+    public String registerPage(HttpServletRequest request, Model model) {
+        request.getSession(true);
         if (SecurityUtils.isAuthenticated()) {
             return "redirect:/home";
         }
