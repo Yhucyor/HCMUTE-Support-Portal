@@ -79,15 +79,54 @@
                     <span class="material-symbols-outlined text-[16px]">expand_more</span>
                 </div>
 
-                <!-- Đã đăng nhập: Nút Dashboard & Logout -->
-                <div sec:authorize="isAuthenticated()" class="flex items-center gap-2">
-                    <a th:href="@{/dashboard}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95" th:title="${currentUser != null ? currentUser.fullName : #authentication.name}">
+                <!-- Đã đăng nhập: Student Account Dropdown Menu -->
+                <div sec:authorize="isAuthenticated()" class="relative">
+                    <button id="indexAccountToggle" 
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95" 
+                            th:title="${currentUser != null ? currentUser.fullName : #authentication.name}"
+                            aria-haspopup="true"
+                            aria-expanded="false">
                         <span class="material-symbols-outlined text-[16px]">account_circle</span>
                         <span class="hidden sm:inline truncate max-w-[150px]" th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
-                    </a>
-                    <a th:href="@{/auth/logout}" class="p-2 text-slate-500 hover:text-[#991b1e] hover:bg-slate-100 rounded-md transition-colors" title="Đăng xuất">
-                        <span class="material-symbols-outlined text-[18px]">logout</span>
-                    </a>
+                        <span class="material-symbols-outlined text-[14px]">expand_more</span>
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="indexDropdownMenu" 
+                         class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50"
+                         role="menu">
+                        <a href="/profile" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">person</span>
+                            <span>Thông tin cá nhân</span>
+                        </a>
+                        <a href="/student/dashboard" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">home</span>
+                            <span>Tổng quan</span>
+                        </a>
+                        <a href="/academic/grades" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">description</span>
+                            <span>Bảng điểm</span>
+                        </a>
+                        <a href="/academic/timetable" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                            <span>Thời khóa biểu</span>
+                        </a>
+                        <a href="/academic/curriculum" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">book</span>
+                            <span>Chương trình đào tạo</span>
+                        </a>
+                        <div class="border-t border-slate-200 my-1"></div>
+                        <a th:href="@{/auth/logout}" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">logout</span>
+                            <span>Đăng xuất</span>
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Chưa đăng nhập: Nút Đăng nhập -->
@@ -1070,6 +1109,41 @@
             input.value = '';
             sendToAi(msg);
         }
+        
+        // Index Account Dropdown Toggle
+        (function() {
+            const toggle = document.getElementById('indexAccountToggle');
+            const dropdown = document.getElementById('indexDropdownMenu');
+            
+            if (!toggle || !dropdown) return;
+            
+            // Toggle dropdown
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isHidden = dropdown.classList.contains('hidden');
+                dropdown.classList.toggle('hidden');
+                toggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+            });
+            
+            // Close on click outside
+            document.addEventListener('click', function(e) {
+                if (!dropdown.classList.contains('hidden') && 
+                    !toggle.contains(e.target) && 
+                    !dropdown.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                    toggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+            
+            // Close on ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && !dropdown.classList.contains('hidden')) {
+                    dropdown.classList.add('hidden');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.focus();
+                }
+            });
+        })();
     </script>
 </body>
 </html>
