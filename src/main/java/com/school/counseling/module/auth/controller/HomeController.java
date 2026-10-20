@@ -53,6 +53,21 @@ public class HomeController {
         return "dashboard";
     }
 
+    /**
+     * Student dashboard route: /student/dashboard
+     * Requirement 4: Menu Item "Tổng quan" sẽ navigate đến route này
+     */
+    @GetMapping("/student/dashboard")
+    public String studentDashboard(Model model) {
+        // Chỉ cho phép ROLE_STUDENT truy cập
+        if (!SecurityUtils.hasRole("ROLE_STUDENT")) {
+            return "redirect:/dashboard";
+        }
+        
+        // Redirect đến /dashboard chung (cùng template)
+        return "redirect:/dashboard";
+    }
+
     @GetMapping({"/", "/home"})
     public String home(Model model) {
         model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
