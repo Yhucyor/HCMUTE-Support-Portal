@@ -82,7 +82,19 @@ public class HomeController {
     }
 
     @GetMapping("/ai-chat")
-    public String aiChat(Model model) {
+    public String aiChat(jakarta.servlet.http.HttpServletRequest request, Model model) {
+        request.getSession(true);
+        UserPrincipal currentUser = SecurityUtils.getCurrentUser().orElse(null);
+        if (currentUser != null) {
+            model.addAttribute("currentUser", currentUser);
+            model.addAttribute("currentUserFullName", currentUser.getFullName());
+            model.addAttribute("currentUserAvatar", currentUser.getAvatarUrl());
+            String role = (currentUser.getRole() != null) ? currentUser.getRole().replace("ROLE_", "") : "STUDENT";
+            model.addAttribute("currentUserRole", role);
+            model.addAttribute("currentUserDept", currentUser.getDepartmentName() != null ? currentUser.getDepartmentName() : "Toàn trường");
+        }
+        model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
         return "ai-chat";
     }
 }
+
