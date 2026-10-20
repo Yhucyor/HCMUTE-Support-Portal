@@ -49,7 +49,7 @@
 
     <!-- 1. TOP HEADER & NAVIGATION -->
     <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[74px] flex items-center justify-between">
+        <div class="w-full px-4 sm:px-6 lg:px-8 h-[74px] flex items-center justify-between">
             <!-- Logo HCMUTE -->
             <a class="flex items-center gap-3 group py-1.5" th:href="@{/}">
                 <img alt="HCMUTE Logo" class="h-12 w-auto object-contain transition-transform group-hover:scale-105" 
@@ -63,21 +63,9 @@
             <!-- Nav Items (Desktop) -->
             <nav class="hidden xl:flex items-center space-x-7">
                 <a class="font-semibold text-[14px] text-[#991b1e] border-b-2 border-[#991b1e] pb-1" th:href="@{/}">Trang chủ</a>
-                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/admission}">Tuyển sinh</a>
-                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/about}">Đào tạo</a>
-                
-                <div class="relative group cursor-pointer">
-                    <a th:href="@{/explore}" class="font-medium text-[14px] text-slate-700 group-hover:text-[#003882] flex items-center gap-1 transition-colors pb-1">
-                        Khám phá HCMUTE <span class="material-symbols-outlined text-[16px]">expand_more</span>
-                    </a>
-                    <!-- Submenu -->
-                    <div class="absolute top-full left-0 hidden group-hover:block bg-white border border-slate-200/80 rounded-xl shadow-xl py-2 min-w-[200px] z-50">
-                        <a th:href="@{/explore}" class="block px-4 py-2 text-xs text-slate-700 hover:bg-blue-50 hover:text-[#003882]">Sơ đồ khuôn viên</a>
-                        <a th:href="@{/research}" class="block px-4 py-2 text-xs text-slate-700 hover:bg-blue-50 hover:text-[#003882]">Nghiên cứu khoa học</a>
-                        <a th:href="@{/feed}" class="block px-4 py-2 text-xs text-slate-700 hover:bg-blue-50 hover:text-[#003882]">Bảng tin sinh viên</a>
-                        <a th:href="@{/academic/sync}" class="block px-4 py-2 text-xs text-slate-700 hover:bg-blue-50 hover:text-[#003882]">Cổng học vụ HCMUTE</a>
-                    </div>
-                </div>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/feed/forum}">Diễn đàn</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/faqs}">Tra cứu FAQ</a>
             </nav>
 
             <!-- Header Actions -->
@@ -93,9 +81,9 @@
 
                 <!-- Đã đăng nhập: Nút Dashboard & Logout -->
                 <div sec:authorize="isAuthenticated()" class="flex items-center gap-2">
-                    <a th:href="@{/dashboard}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95">
+                    <a th:href="@{/dashboard}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95" th:title="${currentUser != null ? currentUser.fullName : #authentication.name}">
                         <span class="material-symbols-outlined text-[16px]">account_circle</span>
-                        <span class="hidden sm:inline">Vào Portal</span>
+                        <span class="hidden sm:inline truncate max-w-[150px]" th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
                     </a>
                     <a th:href="@{/auth/logout}" class="p-2 text-slate-500 hover:text-[#991b1e] hover:bg-slate-100 rounded-md transition-colors" title="Đăng xuất">
                         <span class="material-symbols-outlined text-[18px]">logout</span>
@@ -120,9 +108,16 @@
         <!-- Mobile Drawer Menu -->
         <div id="mobileNavDrawer" class="hidden xl:hidden bg-white border-b border-slate-200 px-4 pt-3 pb-5 space-y-2.5 shadow-lg">
             <a class="block py-2 text-sm font-semibold text-[#991b1e]" th:href="@{/}">Trang chủ</a>
-            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/admission}">Tuyển sinh</a>
-            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/about}">Đào tạo</a>
-            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/explore}">Khám phá HCMUTE</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/feed/forum}">Diễn đàn</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/faqs}">Tra cứu FAQ</a>
+            <div sec:authorize="isAuthenticated()" class="pt-2 border-t border-slate-200">
+                <a class="flex items-center gap-2 py-2 text-sm font-semibold text-[#003882]" th:href="@{/dashboard}">
+                    <span class="material-symbols-outlined text-[18px]">account_circle</span>
+                    <span th:text="${currentUser != null ? currentUser.fullName : #authentication.name}">Họ Tên</span>
+                </a>
+                <a class="block py-1.5 text-sm font-medium text-[#991b1e]" th:href="@{/auth/logout}">Đăng xuất</a>
+            </div>
         </div>
     </header>
 
