@@ -87,4 +87,16 @@ public class ProfileService {
         userRepository.save(user);
         return result.publicUrl();
     }
+
+    /**
+     * Lấy avatar URL của user
+     * @param userId User ID
+     * @return Avatar URL hoặc null nếu không có
+     */
+    @Transactional(readOnly = true)
+    public String getUserAvatarUrl(Long userId) {
+        return userRepository.findById(userId)
+                .map(User::getAvatarUrl)
+                .orElse(null);
+    }
 }
