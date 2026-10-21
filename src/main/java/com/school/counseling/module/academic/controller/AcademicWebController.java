@@ -66,15 +66,9 @@ public class AcademicWebController {
 
     @GetMapping("/timetable")
     public String timetablePage(@RequestParam(required = false) String studentId, Model model) {
-        String effectiveStudentId = resolve(studentId);
-        model.addAttribute("currentStudentId", effectiveStudentId);
-        model.addAttribute("activeTab", "schedule");
         populatePortalCredentials(model);
-        if (!effectiveStudentId.isBlank()) {
-            model.addAttribute("summary", crawlerService.getAcademicSummary(effectiveStudentId));
-            crawlerService.getStudentProfile(effectiveStudentId).ifPresent(p -> model.addAttribute("studentProfile", p));
-        }
-        return "academic-sync";
+        model.addAttribute("currentStudentId", resolve(studentId));
+        return "timetable";
     }
 
     @GetMapping("/curriculum")

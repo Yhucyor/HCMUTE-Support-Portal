@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Thời khóa biểu sinh viên | HCMUTE Student Portal</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <style>
+        @layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } }
+        ::-webkit-scrollbar { display: none; }
+    </style>
+    <!-- Tailwind CSS — Academic Horizon + HCMUTE Tokens -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "brand-blue":  "#003882", "brand-blue-dark": "#002456", "brand-red": "#991b1e",
+                        "primary":               "#0037b0", "on-primary":             "#ffffff",
+                        "primary-container":     "#1d4ed8", "on-primary-container":   "#cad3ff",
+                        "primary-fixed":         "#dce1ff", "on-primary-fixed":       "#001551",
+                        "on-primary-fixed-variant": "#0039b5", "primary-fixed-dim":   "#b7c4ff",
+                        "secondary":             "#565e74", "on-secondary":           "#ffffff",
+                        "secondary-container":   "#dae2fd", "on-secondary-container": "#5c647a",
+                        "on-secondary-fixed":    "#131b2e", "on-secondary-fixed-variant": "#3f465c",
+                        "secondary-fixed":       "#dae2fd", "secondary-fixed-dim":    "#bec6e0",
+                        "tertiary":              "#003ca3", "on-tertiary":            "#ffffff",
+                        "tertiary-container":    "#0051d6", "on-tertiary-container":  "#c9d4ff",
+                        "tertiary-fixed":        "#dbe1ff", "on-tertiary-fixed":      "#00174b",
+                        "on-tertiary-fixed-variant": "#003ea8", "tertiary-fixed-dim": "#b4c5ff",
+                        "error":                 "#ba1a1a", "on-error":               "#ffffff",
+                        "error-container":       "#ffdad6", "on-error-container":     "#93000a",
+                        "surface":               "#f8f9ff", "surface-bright":         "#f8f9ff",
+                        "surface-dim":           "#cbdbf5", "surface-variant":        "#d3e4fe",
+                        "surface-container-lowest":  "#ffffff",
+                        "surface-container-low":     "#eff4ff",
+                        "surface-container":         "#e5eeff",
+                        "surface-container-high":    "#dce9ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-surface":            "#0b1c30", "on-surface-variant":     "#434655",
+                        "inverse-surface":       "#213145", "inverse-on-surface":     "#eaf1ff",
+                        "outline":               "#747686", "outline-variant":        "#c4c5d7",
+                        "background":            "#f8f9ff", "on-background":          "#0b1c30",
+                        "surface-tint":          "#2151da", "inverse-primary":        "#b7c4ff"
+                    },
+                    borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+                    spacing: {
+                        "space-xs": "0.25rem", "space-sm": "0.5rem", "space-md": "1rem",
+                        "space-lg": "1.5rem",  "space-xl": "2rem",
+                        "gutter-sm": "1rem",   "gutter":   "1.5rem",  "gutter-lg": "2rem",
+                        "margin-sm": "1rem",   "margin":   "2rem",    "margin-lg": "3rem"
+                    },
+                    fontFamily: {
+                        "headline": ["Outfit","sans-serif"], "body": ["Inter","sans-serif"],
+                        "title-md": ["Outfit","sans-serif"]
+                    },
+                    fontSize: {
+                        "headline-lg":      ["36px",{lineHeight:"44px",letterSpacing:"-0.015em",fontWeight:"600"}],
+                        "headline-md":      ["24px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"600"}],
+                        "headline-sm":      ["20px",{lineHeight:"28px",fontWeight:"600"}],
+                        "title-md":         ["16px",{lineHeight:"24px",fontWeight:"600"}],
+                        "body-lg":          ["16px",{lineHeight:"24px",fontWeight:"400"}],
+                        "body-md":          ["14px",{lineHeight:"20px",fontWeight:"400"}],
+                        "body-sm":          ["12px",{lineHeight:"16px",fontWeight:"400"}],
+                        "label-lg":         ["14px",{lineHeight:"20px",fontWeight:"600"}],
+                        "label-md":         ["12px",{lineHeight:"16px",letterSpacing:"0.01em",fontWeight:"500"}],
+                        "label-caps":       ["11px",{lineHeight:"14px",letterSpacing:"0.05em",fontWeight:"600"}]
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-background font-body text-on-surface antialiased min-h-screen selection:bg-[#991b1e] selection:text-white">
+
+    <!-- ═══════════════════════════ TOP GLOBAL HEADER ═══════════════════════════ -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all h-[74px]">
+        <div class="w-full px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+            <a class="flex items-center gap-3 group py-1.5" th:href="@{/}">
+                <img alt="HCMUTE Logo" class="h-12 w-auto object-contain transition-transform group-hover:scale-105"
+                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKSHNb9YZP8QFQKzZ-_B_glnPE615kLoTh0DIZM9-id7Eb1Z7EZXRKcjBeCckK7VOaTPGdnMs7Cl7qdtjr1Mry3Y7d1U0S8maxw8fAHipOBnT-HFyaVBuqc6xe0fMZJf4fPlHw6UIkL0vHJV2kfl-tnjJgobCtm7Cy-KazrUCaEZefkxCcT9HC_-zWiT9twVqKg6xymALE7_hrVpAjI-XYdTFsbm3wyDRY8PxAR-vjOB00BqpW9wX9dVryQuIfZgdSA">
+                <div class="flex flex-col text-[#003882]">
+                    <span class="font-bold text-sm sm:text-base tracking-tight leading-tight">Trường Đại học Sư phạm Kỹ thuật Tp. Hồ Chí Minh</span>
+                    <span class="font-normal text-[11px] sm:text-xs tracking-normal leading-normal">HCMC University of Technology and Education</span>
+                </div>
+            </a>
+            <nav class="hidden xl:flex items-center space-x-7">
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/}">Trang chủ</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/feed/forum}">Diễn đàn</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/faqs}">Tra cứu FAQ</a>
+            </nav>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="hidden sm:flex items-center text-xs font-semibold text-slate-600 px-2 py-1 rounded cursor-pointer hover:bg-slate-100">
+                    <span>VI</span>
+                    <span class="material-symbols-outlined text-[16px]">expand_more</span>
+                </div>
+                <div sec:authorize="isAuthenticated()" class="relative">
+                    <button id="ttAccountToggle"
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95"
+                            th:title="${currentUser != null ? currentUser.fullName : #authentication.name}"
+                            aria-haspopup="true" aria-expanded="false">
+                        <span class="material-symbols-outlined text-[16px]">account_circle</span>
+                        <span class="hidden sm:inline truncate max-w-[150px]"
+                              th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
+                        <span class="material-symbols-outlined text-[14px]">expand_more</span>
+                    </button>
+                    <div id="ttDropdownMenu" class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50" role="menu">
+                        <a href="/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">person</span><span>Thông tin cá nhân</span>
+                        </a>
+                        <a href="/academic/sync" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">home</span><span>Tổng quan</span>
+                        </a>
+                        <a href="/academic/grades" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">description</span><span>Bảng điểm</span>
+                        </a>
+                        <a href="/academic/timetable" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-[#003882] bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">calendar_month</span><span>Thời khóa biểu</span>
+                        </a>
+                        <a href="/academic/curriculum" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">book</span><span>Chương trình đào tạo</span>
+                        </a>
+                        <div class="border-t border-slate-200 my-1"></div>
+                        <a th:href="@{/auth/logout}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">logout</span><span>Đăng xuất</span>
+                        </a>
+                    </div>
+                </div>
+                <div sec:authorize="!isAuthenticated()">
+                    <a class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#991b1e] hover:bg-[#831518] rounded-md shadow-sm transition-all active:scale-95" th:href="@{/auth/login}">
+                        <span class="material-symbols-outlined text-[16px]">person</span><span>Đăng nhập</span>
+                    </a>
+                </div>
+                <button aria-label="Mở menu" onclick="toggleMobileNav()" class="xl:hidden w-9 h-9 rounded-md flex items-center justify-center text-slate-700 hover:bg-slate-100">
+                    <span class="material-symbols-outlined text-[24px]">menu</span>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Drawer -->
+        <div id="mobileNavDrawer" class="hidden xl:hidden bg-white border-b border-slate-200 px-4 pt-3 pb-5 space-y-2.5 shadow-lg">
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/}">Trang chủ</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/feed/forum}">Diễn đàn</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/faqs}">Tra cứu FAQ</a>
+            <div sec:authorize="isAuthenticated()" class="pt-2 border-t border-slate-200">
+                <a class="flex items-center gap-2 py-2 text-sm font-semibold text-[#003882]" href="/academic/timetable">
+                    <span class="material-symbols-outlined text-[18px]">account_circle</span>
+                    <span th:text="${currentUser != null ? currentUser.fullName : #authentication.name}">Họ Tên</span>
+                </a>
+                <a class="block py-1.5 text-sm font-medium text-[#991b1e]" th:href="@{/auth/logout}">Đăng xuất</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════════ MAIN CONTENT ═══════════════════════════ -->
+    <main class="w-full bg-background min-h-screen pt-[74px]">
+        <div class="flex flex-col w-full">
+            <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-space-lg flex flex-col gap-space-lg">
+
+                <!-- Section 1: Breadcrumb & Title -->
+                <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md">
+                    <div class="flex flex-col gap-space-xs">
+                        <nav aria-label="Breadcrumb" class="flex items-center gap-space-xs">
+                            <a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors flex items-center gap-1" th:href="@{/}">
+                                <span class="material-symbols-outlined text-base">home</span> Trang chủ
+                            </a>
+                            <span class="text-outline text-xs">/</span>
+                            <a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors" href="/academic/sync">Học vụ cá nhân</a>
+                            <span class="text-outline text-xs">/</span>
+                            <span class="font-label-md text-label-md text-primary font-semibold">Thời khóa biểu</span>
+                        </nav>
+                        <div class="flex items-baseline gap-space-sm mt-1">
+                            <h1 class="font-headline text-headline-lg text-on-surface font-bold tracking-tight">Thời khóa biểu sinh viên</h1>
+                            <span id="semesterBadge" class="inline-flex items-center px-2 py-0.5 rounded-full font-label-caps text-label-caps font-semibold bg-surface-container-high text-primary">
+                                Học kỳ hiện tại
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Week Navigation -->
+                    <div class="flex flex-wrap items-center gap-space-sm self-start lg:self-end">
+                        <div class="flex items-center bg-surface-container-low rounded-lg p-1 shadow-sm">
+                            <button id="btnToday" onclick="goToday()"
+                                    class="px-3 py-1.5 rounded-md font-label-md text-label-md text-primary font-semibold hover:bg-surface-container-lowest transition-colors flex items-center gap-1" type="button">
+                                <span class="material-symbols-outlined text-base">today</span> Hôm nay
+                            </button>
+                            <div class="w-px h-4 bg-outline-variant mx-1"></div>
+                            <button onclick="changeWeek(-1)" class="p-1.5 rounded-md text-secondary hover:text-on-surface hover:bg-surface-container-lowest transition-colors" type="button">
+                                <span class="material-symbols-outlined text-lg">chevron_left</span>
+                            </button>
+                            <span id="weekLabel" class="font-label-md text-label-md font-semibold text-on-surface px-2">Tuần --</span>
+                            <button onclick="changeWeek(1)" class="p-1.5 rounded-md text-secondary hover:text-on-surface hover:bg-surface-container-lowest transition-colors" type="button">
+                                <span class="material-symbols-outlined text-lg">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Filter Toolbar -->
+                <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-space-md">
+                    <div class="flex flex-wrap items-center gap-space-md">
+                        <!-- Week Range Display -->
+                        <div class="flex items-center gap-2 bg-surface-container-low px-3.5 py-2 rounded-lg">
+                            <span class="material-symbols-outlined text-primary text-lg">date_range</span>
+                            <div class="flex flex-col">
+                                <span class="font-label-caps text-label-caps text-secondary text-[10px] uppercase">Tuần giảng dạy</span>
+                                <span id="weekRangeLabel" class="font-label-md text-label-md font-semibold text-on-surface">Đang tải...</span>
+                            </div>
+                        </div>
+                        <!-- View Mode -->
+                        <div class="inline-flex p-1 bg-surface-container-low rounded-lg">
+                            <button id="viewWeek" onclick="setView('week')"
+                                    class="px-3.5 py-1.5 rounded-md font-label-md text-label-md font-semibold bg-surface-container-lowest text-primary shadow-sm" type="button">Tuần</button>
+                            <button id="viewDay" onclick="setView('day')"
+                                    class="px-3.5 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors" type="button">Ngày</button>
+                            <button id="viewList" onclick="setView('list')"
+                                    class="px-3.5 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors" type="button">Danh sách</button>
+                        </div>
+                    </div>
+                    <!-- Search -->
+                    <div class="flex flex-wrap items-center gap-space-sm flex-1 xl:justify-end">
+                        <div class="relative w-full sm:w-64">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-lg">search</span>
+                            <input id="searchInput" type="text" placeholder="Tìm môn học, phòng, giảng viên..."
+                                   oninput="filterSchedule()"
+                                   class="w-full pl-9 pr-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant/30 font-label-md text-label-md text-on-surface placeholder-secondary focus:outline-none focus:border-primary focus:bg-surface-container-lowest transition-colors">
+                        </div>
+                        <button onclick="loadSchedule()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors shadow-sm" type="button">
+                            <span class="material-symbols-outlined text-base">sync</span> Đồng bộ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Section 3: KPI Summary Cards -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-space-md">
+                    <!-- Card 1: Tổng số buổi -->
+                    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                        <div class="flex items-start justify-between">
+                            <div class="flex flex-col">
+                                <span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary">Tổng buổi học</span>
+                                <div class="flex items-baseline gap-2 mt-1">
+                                    <span id="kpiTotal" class="font-headline text-headline-md font-bold text-on-surface">--</span>
+                                    <span class="font-body-md text-body-md text-secondary">buổi/tuần</span>
+                                </div>
+                            </div>
+                            <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined">calendar_view_week</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+                            <div id="kpiTotalBar" class="bg-primary h-full rounded-full transition-all" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <!-- Card 2: Môn học -->
+                    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                        <div class="flex items-start justify-between">
+                            <div class="flex flex-col">
+                                <span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary">Môn học đăng ký</span>
+                                <div class="flex items-baseline gap-2 mt-1">
+                                    <span id="kpiSubjects" class="font-headline text-headline-md font-bold text-on-surface">--</span>
+                                    <span class="font-body-md text-body-md text-secondary">môn chính thức</span>
+                                </div>
+                            </div>
+                            <div class="w-10 h-10 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-fixed">
+                                <span class="material-symbols-outlined">auto_stories</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between pt-2">
+                            <span class="font-label-md text-label-md text-secondary">Tổng số tín chỉ:</span>
+                            <span id="kpiCredits" class="font-label-md text-label-md font-bold text-primary px-2.5 py-0.5 rounded-full bg-surface-container">-- TC</span>
+                        </div>
+                    </div>
+                    <!-- Card 3: Lịch hôm nay -->
+                    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                        <div class="flex items-start justify-between">
+                            <div class="flex flex-col">
+                                <span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary">Lịch hôm nay</span>
+                                <div class="flex items-baseline gap-2 mt-1">
+                                    <span id="kpiToday" class="font-headline text-headline-md font-bold text-primary">--</span>
+                                    <span class="font-body-md text-body-md text-secondary">buổi học</span>
+                                </div>
+                            </div>
+                            <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined">event_available</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2">
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+                            <span id="todayLabel" class="font-label-md text-label-md text-on-surface font-medium">--</span>
+                        </div>
+                    </div>
+                    <!-- Card 4: Buổi kế tiếp -->
+                    <div class="bg-primary text-on-primary rounded-xl p-space-md shadow-md flex flex-col justify-between relative overflow-hidden">
+                        <div class="absolute -right-4 -bottom-4 w-28 h-28 rounded-full bg-on-primary/10 pointer-events-none"></div>
+                        <div class="flex items-start justify-between z-10">
+                            <div class="flex flex-col">
+                                <span class="font-label-caps text-label-caps uppercase tracking-wider text-on-primary-container font-semibold">Buổi học kế tiếp</span>
+                                <div class="flex items-center gap-1.5 mt-1">
+                                    <span class="material-symbols-outlined text-lg text-primary-fixed">schedule</span>
+                                    <span id="nextTime" class="font-title-md text-title-md font-bold text-on-primary">--</span>
+                                </div>
+                            </div>
+                            <span id="nextBadge" class="px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-on-primary/20 text-on-primary font-bold">--</span>
+                        </div>
+                        <div class="mt-3 z-10">
+                            <div id="nextSubject" class="font-label-lg text-label-lg font-bold truncate text-on-primary">--</div>
+                            <p id="nextDetail" class="font-body-sm text-body-sm text-on-primary/80 truncate">--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Weekly Calendar Grid -->
+                <div id="viewWeekContainer" class="w-full flex flex-col bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30">
+                    <!-- Day Header Row -->
+                    <div id="dayHeaderRow" class="grid grid-cols-8 bg-surface-container-low py-3.5 px-3 text-center select-none sticky z-20 shadow-[0_1px_3px_0_rgba(15,23,42,0.03)] border-b border-outline-variant/30 top-[74px]">
+                        <div class="flex items-center justify-center font-label-caps text-label-caps text-secondary font-bold uppercase tracking-wider">Thời gian</div>
+                        <!-- Day columns rendered by JS -->
+                    </div>
+
+                    <!-- Grid Body -->
+                    <div class="relative w-full overflow-x-auto min-h-[840px] bg-surface-container-lowest">
+                        <div class="grid grid-cols-8 divide-x divide-outline-variant/20 w-full min-w-[960px]">
+                            <!-- Time Labels Column -->
+                            <div class="flex flex-col bg-surface-container-lowest z-10 divide-y divide-outline-variant/10">
+                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">06:30</div>
+                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">07:30</div>
+                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">08:30</div>
+                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">09:30</div>
+                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">10:30</div>
+                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">11:30</div>
+                                <div class="h-14 flex items-center justify-center font-label-caps text-label-caps text-outline bg-surface-container-low/50 uppercase">Nghỉ trưa</div>
+                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">13:00</div>
+                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">14:00</div>
+                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">15:00</div>
+                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">16:00</div>
+                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">17:00</div>
+                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">18:00</div>
+                            </div>
+
+                            <!-- 7-day canvas (Mon-Sun) -->
+                            <div class="col-span-7 grid grid-cols-7 relative h-full divide-x divide-outline-variant/15" id="scheduleCanvas">
+                                <!-- Background cols + horizontal lines -->
+                                <div class="h-full bg-surface-container-low/5"></div>
+                                <div class="h-full bg-surface-container-low/5"></div>
+                                <div id="todayColBg" class="h-full bg-surface-container/25"></div>
+                                <div class="h-full bg-surface-container-low/5"></div>
+                                <div class="h-full bg-surface-container-low/5"></div>
+                                <div class="h-full bg-surface-container-low/5"></div>
+                                <div class="h-full bg-surface-container-low/15"></div>
+                                <!-- Horizontal hour lines -->
+                                <div class="absolute inset-0 pointer-events-none flex flex-col">
+                                    <div class="h-16 border-b border-outline-variant/10"></div>
+                                    <div class="h-16 border-b border-outline-variant/10 bg-surface-container-low/15"></div>
+                                    <div class="h-16 border-b border-outline-variant/10"></div>
+                                    <div class="h-16 border-b border-outline-variant/10 bg-surface-container-low/15"></div>
+                                    <div class="h-16 border-b border-outline-variant/10"></div>
+                                    <div class="h-16 border-b border-outline-variant/10 bg-surface-container-low/15"></div>
+                                    <div class="h-14 bg-surface-container-high/40 flex items-center justify-center font-label-caps text-label-caps text-secondary/70 border-y border-outline-variant/20">Khoảng nghỉ trưa (11:30 – 13:00)</div>
+                                    <div class="h-16 border-b border-outline-variant/10"></div>
+                                    <div class="h-16 border-b border-outline-variant/10 bg-surface-container-low/15"></div>
+                                    <div class="h-16 border-b border-outline-variant/10"></div>
+                                    <div class="h-16 border-b border-outline-variant/10 bg-surface-container-low/15"></div>
+                                    <div class="h-16 border-b border-outline-variant/10"></div>
+                                    <div class="h-16 bg-surface-container-low/15"></div>
+                                </div>
+                                <!-- Current time indicator -->
+                                <div id="currentTimeLine" class="absolute left-0 right-0 z-30 pointer-events-none items-center hidden">
+                                    <div id="currentTimeOffset" class="relative flex items-center">
+                                        <div class="w-2.5 h-2.5 rounded-full bg-error ring-4 ring-error-container -ml-1.5 shadow-sm"></div>
+                                        <div class="flex-1 h-0.5 bg-error"></div>
+                                        <span id="currentTimeLabel" class="absolute -top-5 left-2 bg-error text-on-error font-label-caps text-label-caps text-[9px] px-1.5 py-0.5 rounded shadow whitespace-nowrap"></span>
+                                    </div>
+                                    <div class="flex-1 h-px bg-error/30"></div>
+                                </div>
+                                <!-- Event cards container -->
+                                <div id="eventCards" class="absolute inset-0 pointer-events-none"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4b: Day View -->
+                <div id="viewDayContainer" class="hidden bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
+                    <h2 id="dayViewTitle" class="font-headline text-headline-sm font-bold text-on-surface mb-4">--</h2>
+                    <div id="dayViewList" class="space-y-3"></div>
+                </div>
+
+                <!-- Section 4c: List View -->
+                <div id="viewListContainer" class="hidden bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left" id="listTable">
+                            <thead>
+                                <tr class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps uppercase">
+                                    <th class="py-3 px-4 rounded-l-lg">Thứ</th>
+                                    <th class="py-3 px-4">Tiết</th>
+                                    <th class="py-3 px-4">Mã môn</th>
+                                    <th class="py-3 px-4">Tên môn học</th>
+                                    <th class="py-3 px-4">Phòng học</th>
+                                    <th class="py-3 px-4 rounded-r-lg">Giảng viên</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listTableBody" class="divide-y divide-outline-variant/20 text-body-md"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Section 5: Legend -->
+                <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md border border-outline-variant/30">
+                    <div class="flex flex-wrap items-center gap-space-md">
+                        <span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary font-bold">Chú thích:</span>
+                        <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded bg-primary"></span><span class="font-label-md text-label-md text-on-surface">Lý thuyết</span></div>
+                        <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded bg-tertiary"></span><span class="font-label-md text-label-md text-on-surface">Thực hành / Lab</span></div>
+                        <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded bg-primary-container"></span><span class="font-label-md text-label-md text-on-surface">Đồ án chuyên đề</span></div>
+                        <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded bg-error"></span><span class="font-label-md text-label-md text-on-surface">Đang diễn ra</span></div>
+                    </div>
+                    <div class="flex items-center gap-2 text-secondary max-w-lg">
+                        <span class="material-symbols-outlined text-primary text-base shrink-0">info</span>
+                        <p class="font-body-sm text-body-sm text-[12px]">Lịch học được đồng bộ từ <strong>Cổng Đào tạo HCMUTE</strong>. Rê chuột vào môn học để xem chi tiết.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- ═══════════════════════════ SCRIPTS ═══════════════════════════ -->
+    <script>
+    // ── Header dropdown ──────────────────────────────────────────────────────
+    (function () {
+        const btn = document.getElementById('ttAccountToggle');
+        const menu = document.getElementById('ttDropdownMenu');
+        if (!btn || !menu) return;
+        btn.addEventListener('click', e => { e.stopPropagation(); const h = menu.classList.contains('hidden'); menu.classList.toggle('hidden'); btn.setAttribute('aria-expanded', h ? 'true' : 'false'); });
+        document.addEventListener('click', e => { if (!btn.contains(e.target) && !menu.contains(e.target)) { menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); } });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && !menu.classList.contains('hidden')) { menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); btn.focus(); } });
+    })();
+    function toggleMobileNav() { document.getElementById('mobileNavDrawer')?.classList.toggle('hidden'); }
+
+    // ── Constants ─────────────────────────────────────────────────────────────
+    const DAYS = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ Nhật'];
+    const DAY_MAP = { 'Monday':0,'Tuesday':1,'Wednesday':2,'Thursday':3,'Friday':4,'Saturday':5,'Sunday':6,
+                      'Thứ Hai':0,'Thứ Ba':1,'Thứ Tư':2,'Thứ Năm':3,'Thứ Sáu':4,'Thứ Bảy':5,'Chủ Nhật':6 };
+    // Grid: 06:30 baseline, each h-16 (64px) = 1h, lunch break offset at 11:30
+    // Rows: 06:30(0), 07:30(64), 08:30(128), 09:30(192), 10:30(256), 11:30(320), lunch(320+56=376), 13:00(376), 14:00(440), 15:00(504), 16:00(568), 17:00(632), 18:00(696)
+    const ROW_HEIGHT = 64; // px per hour
+    const LUNCH_OFFSET = 56; // extra px for lunch bar
+    function timeToTop(timeStr) {
+        if (!timeStr) return 0;
+        const [h, m] = timeStr.split(':').map(Number);
+        const minutesFromBase = (h * 60 + m) - (6 * 60 + 30); // from 06:30
+        let px = (minutesFromBase / 60) * ROW_HEIGHT;
+        if (h >= 13) px += LUNCH_OFFSET; // shift down after lunch bar
+        return Math.max(0, px);
+    }
+    function timeDuration(start, end) {
+        if (!start || !end) return ROW_HEIGHT;
+        const [sh, sm] = start.split(':').map(Number);
+        const [eh, em] = end.split(':').map(Number);
+        const mins = (eh * 60 + em) - (sh * 60 + sm);
+        return Math.max(32, (mins / 60) * ROW_HEIGHT);
+    }
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    let allSchedules = [];
+    let filteredSchedules = [];
+    let currentWeekOffset = 0;
+    let currentView = 'week';
+
+    // ── Week helpers ──────────────────────────────────────────────────────────
+    function getWeekStart(offset = 0) {
+        const now = new Date();
+        const day = now.getDay(); // 0=Sun
+        const monday = new Date(now);
+        monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + offset * 7);
+        monday.setHours(0,0,0,0);
+        return monday;
+    }
+    function formatDate(d) { return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`; }
+    function isSameDay(d1, d2) { return d1.getFullYear()===d2.getFullYear() && d1.getMonth()===d2.getMonth() && d1.getDate()===d2.getDate(); }
+
+    function updateWeekUI() {
+        const monday = getWeekStart(currentWeekOffset);
+        const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+        const weekNum = getISOWeek(monday);
+        document.getElementById('weekLabel').textContent = `Tuần ${weekNum}`;
+        document.getElementById('weekRangeLabel').textContent = `Tuần ${weekNum}: ${formatDate(monday)}/${monday.getFullYear()} – ${formatDate(sunday)}/${sunday.getFullYear()}`;
+        renderDayHeaders(monday);
+        renderEventCards(monday);
+        updateCurrentTimeLine(monday);
+    }
+    function getISOWeek(d) {
+        const jan4 = new Date(d.getFullYear(), 0, 4);
+        const startOfWeek1 = new Date(jan4);
+        startOfWeek1.setDate(jan4.getDate() - (jan4.getDay() || 7) + 1);
+        const diff = d - startOfWeek1;
+        return Math.floor(diff / 604800000) + 1;
+    }
+    function changeWeek(dir) { currentWeekOffset += dir; updateWeekUI(); }
+    function goToday() { currentWeekOffset = 0; updateWeekUI(); }
+
+    // ── Day Header ────────────────────────────────────────────────────────────
+    function renderDayHeaders(monday) {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const row = document.getElementById('dayHeaderRow');
+        // Remove previously added day columns (keep first child = time column)
+        while (row.children.length > 1) row.removeChild(row.lastChild);
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(monday); d.setDate(monday.getDate() + i);
+            const isToday = isSameDay(d, today);
+            const col = document.createElement('div');
+            col.className = 'flex flex-col items-center py-1' + (isToday ? ' bg-surface-container rounded-lg shadow-sm' : '');
+            col.innerHTML = `
+                <span class="font-label-md text-label-md ${isToday ? 'font-bold text-primary flex items-center gap-1' : 'font-medium text-secondary'}">
+                    ${DAYS[i]}${isToday ? '<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>' : ''}
+                </span>
+                <span class="font-title-md text-title-md font-bold ${isToday ? 'text-primary' : 'text-on-surface'}">${formatDate(d)}</span>
+                ${isToday ? '<span class="font-label-caps text-label-caps text-[9px] px-1.5 py-0.2 rounded-full bg-primary text-on-primary mt-0.5">HÔM NAY</span>' : ''}
+            `;
+            row.appendChild(col);
+        }
+        // Highlight today column background
+        const todayCol = document.getElementById('todayColBg');
+        const now = new Date(); now.setHours(0,0,0,0);
+        const diffDays = Math.floor((now - monday) / 86400000);
+        if (diffDays >= 0 && diffDays <= 6) {
+            todayCol.style.gridColumnStart = String(diffDays + 1);
+            todayCol.className = 'h-full bg-surface-container/25';
+        } else {
+            todayCol.className = 'h-full bg-surface-container-low/5';
+        }
+    }
+
+    // ── Event Cards ───────────────────────────────────────────────────────────
+    const CARD_COLORS = [
+        'bg-surface-container-low border-primary/20 text-primary',
+        'bg-surface-container border-secondary/20 text-secondary',
+        'bg-surface-container-lowest border-l-4 border-l-tertiary border-outline-variant/30 text-on-surface',
+        'bg-surface-container-low border-primary/20 text-primary',
+    ];
+    function renderEventCards(monday) {
+        const canvas = document.getElementById('eventCards');
+        canvas.innerHTML = '';
+        canvas.style.pointerEvents = 'auto';
+        const today = new Date(); today.setHours(0,0,0,0);
+        const now = new Date();
+
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const visible = allSchedules.filter(s => {
+            if (!search) return true;
+            return (s.courseName||'').toLowerCase().includes(search) ||
+                   (s.courseCode||'').toLowerCase().includes(search) ||
+                   (s.room||'').toLowerCase().includes(search) ||
+                   (s.lecturer||'').toLowerCase().includes(search);
+        });
+
+        visible.forEach((s, idx) => {
+            const colIdx = DAY_MAP[s.dayOfWeek] ?? DAY_MAP[s.dayOfWeek];
+            if (colIdx === undefined) return;
+            const cardDate = new Date(monday); cardDate.setDate(monday.getDate() + colIdx);
+            const top = timeToTop(s.startTime);
+            const height = timeDuration(s.startTime, s.endTime);
+            const colPct = (colIdx / 7) * 100;
+            const widthPct = 100 / 7;
+
+            // Status
+            let isActive = false, isDone = false;
+            if (isSameDay(cardDate, today)) {
+                const [sh, sm] = (s.startTime||'00:00').split(':').map(Number);
+                const [eh, em] = (s.endTime||'00:00').split(':').map(Number);
+                const startMins = sh*60+sm, endMins = eh*60+em, nowMins = now.getHours()*60+now.getMinutes();
+                if (nowMins >= startMins && nowMins < endMins) isActive = true;
+                if (nowMins >= endMins) isDone = true;
+            }
+
+            const card = document.createElement('div');
+            card.className = `absolute p-1.5 z-10 group`;
+            card.style.cssText = `left:${colPct}%;width:${widthPct}%;top:${top}px;height:${height}px;`;
+
+            const isLab = (s.courseCode||'').toLowerCase().includes('lab') || (s.room||'').toLowerCase().includes('lab') || (s.courseName||'').toLowerCase().includes('thực hành');
+            const bgClass = isActive
+                ? 'bg-primary text-on-primary ring-2 ring-primary-container shadow-lg'
+                : isDone ? 'bg-surface-container-lowest/80 opacity-80 border border-outline-variant/30'
+                : isLab ? 'bg-surface-container-lowest border-l-4 border-l-tertiary border border-outline-variant/30'
+                : 'bg-surface-container-low border border-primary/20';
+
+            card.innerHTML = `
+                <div class="w-full h-full ${bgClass} rounded-xl p-2.5 flex flex-col justify-between shadow-sm cursor-pointer hover:shadow-md transition-all">
+                    <div>
+                        <div class="flex items-center justify-between gap-1 mb-1">
+                            <span class="px-1.5 py-0.5 rounded font-label-caps text-[10px] font-bold ${isActive ? 'bg-on-primary text-primary' : isDone ? 'bg-surface-container text-secondary' : isLab ? 'bg-tertiary-fixed text-on-tertiary-fixed' : 'bg-primary-fixed text-on-primary-fixed'}">
+                                ${s.courseCode||'--'}
+                            </span>
+                            ${isActive ? '<span class="flex items-center gap-1 font-label-caps text-[9px] bg-error text-on-error px-1.5 py-0.5 rounded-full font-bold"><span class="w-1.5 h-1.5 rounded-full bg-on-error animate-ping"></span>Đang học</span>' :
+                              isDone ? '<span class="font-label-caps text-[9px] bg-surface-container-high text-secondary px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><span class="material-symbols-outlined text-[10px]">check</span>Đã học</span>' :
+                              `<span class="font-label-caps text-[10px] text-secondary">${s.shift||''}</span>`}
+                        </div>
+                        <h2 class="font-label-md text-label-md font-bold ${isActive ? 'text-on-primary' : 'text-on-surface'} line-clamp-2 leading-tight">${s.courseName||'--'}</h2>
+                    </div>
+                    <div class="flex flex-col gap-0.5 font-body-sm text-body-sm text-[11px]">
+                        <div class="flex items-center gap-1 font-semibold ${isActive ? 'text-on-primary' : 'text-primary'} truncate">
+                            <span class="material-symbols-outlined text-xs">meeting_room</span>${s.room||'--'}
+                        </div>
+                        <div class="truncate ${isActive ? 'text-on-primary/90' : 'text-secondary'}">${s.lecturer||''}</div>
+                        <div class="font-label-caps text-[10px] ${isActive ? 'text-on-primary/70' : 'text-outline'}">${s.startTime||''}${s.endTime ? ' – '+s.endTime : ''}</div>
+                    </div>
+                </div>
+                <!-- Hover Popover -->
+                <div class="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 pointer-events-auto absolute ${colIdx >= 4 ? 'right-full mr-2' : 'left-full ml-2'} top-0 w-72 bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-4 shadow-2xl z-50 flex flex-col gap-3">
+                    <div>
+                        <div class="flex items-center gap-1.5 mb-1">
+                            <span class="px-2 py-0.5 rounded font-label-caps text-label-caps font-bold bg-primary text-on-primary">${s.courseCode||'--'}</span>
+                            <span class="text-xs font-semibold text-secondary">${s.groupCode||''}</span>
+                        </div>
+                        <h3 class="font-title-md text-title-md font-bold text-on-surface">${s.courseName||'--'}</h3>
+                    </div>
+                    <div class="bg-surface-container-low rounded-xl p-2.5 flex flex-col gap-1.5 text-xs">
+                        <div class="flex items-center gap-2 text-on-surface">
+                            <span class="material-symbols-outlined text-primary text-sm">schedule</span>
+                            <span class="font-medium">${DAYS[colIdx]||''} · ${s.shift||''} (${s.startTime||''}${s.endTime?' – '+s.endTime:''})</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-on-surface">
+                            <span class="material-symbols-outlined text-primary text-sm">location_on</span>
+                            <span>${s.room||'--'}</span>
+                        </div>
+                    </div>
+                    ${s.lecturer ? `<div class="flex items-center gap-2.5 p-2 rounded-xl bg-surface-container-low/60">
+                        <div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">${(s.lecturer||'').split(' ').filter(w=>w.length>1).slice(-2).map(w=>w[0]).join('')}</div>
+                        <div class="flex flex-col min-w-0">
+                            <span class="font-label-md text-label-md font-bold text-on-surface truncate">${s.lecturer}</span>
+                        </div>
+                    </div>` : ''}
+                </div>
+            `;
+            canvas.appendChild(card);
+        });
+
+        // Sunday empty state
+        const sunHasClasses = visible.some(s => (DAY_MAP[s.dayOfWeek] ?? -1) === 6);
+        if (!sunHasClasses) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'absolute pointer-events-none flex items-center justify-center';
+            emptyDiv.style.cssText = `left:${(6/7)*100}%;width:${100/7}%;top:0;bottom:0;`;
+            emptyDiv.innerHTML = `<span class="font-label-caps text-label-caps text-outline tracking-wider rotate-90">Không có lịch học</span>`;
+            canvas.appendChild(emptyDiv);
+        }
+    }
+
+    // ── Current time line ─────────────────────────────────────────────────────
+    function updateCurrentTimeLine(monday) {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const line = document.getElementById('currentTimeLine');
+        const diffDays = Math.floor((today - monday) / 86400000);
+        if (diffDays < 0 || diffDays > 6) { line.classList.add('hidden'); return; }
+        const now = new Date();
+        const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        const top = timeToTop(timeStr);
+        line.classList.remove('hidden');
+        line.style.top = top + 'px';
+        line.style.display = 'flex';
+        const pctLeft = (diffDays / 7) * 100;
+        const offset = document.getElementById('currentTimeOffset');
+        offset.style.cssText = `position:absolute;left:${pctLeft}%;width:${100/7}%;display:flex;align-items:center;`;
+        document.getElementById('currentTimeLabel').textContent = `${timeStr} Hiện tại`;
+    }
+
+    // ── Day View ──────────────────────────────────────────────────────────────
+    function renderDayView() {
+        const today = new Date();
+        document.getElementById('dayViewTitle').textContent = `${DAYS[(today.getDay()||7)-1]}, ${formatDate(today)}/${today.getFullYear()}`;
+        const daySchedules = allSchedules.filter(s => (DAY_MAP[s.dayOfWeek] ?? -1) === (today.getDay()||7)-1);
+        const container = document.getElementById('dayViewList');
+        if (daySchedules.length === 0) {
+            container.innerHTML = '<p class="text-center text-secondary py-8 font-body-md text-body-md">Không có lịch học hôm nay</p>';
+            return;
+        }
+        container.innerHTML = daySchedules.sort((a,b) => (a.startTime||'').localeCompare(b.startTime||'')).map(s => `
+            <div class="flex items-start gap-4 p-4 bg-surface-container-low rounded-xl hover:bg-surface-container transition-colors">
+                <div class="shrink-0 text-center w-16">
+                    <div class="font-label-lg text-label-lg font-bold text-primary">${s.startTime||'--'}</div>
+                    <div class="font-body-sm text-body-sm text-secondary">${s.endTime||''}</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="px-2 py-0.5 rounded font-label-caps text-label-caps font-bold bg-primary text-on-primary text-[10px]">${s.courseCode||''}</span>
+                        <span class="font-label-md text-label-md font-bold text-on-surface truncate">${s.courseName||''}</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-secondary font-body-sm text-body-sm">
+                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">meeting_room</span>${s.room||'--'}</span>
+                        ${s.lecturer ? `<span class="truncate">${s.lecturer}</span>` : ''}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ── List View ─────────────────────────────────────────────────────────────
+    function renderListView() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const visible = allSchedules.filter(s => !search ||
+            (s.courseName||'').toLowerCase().includes(search) ||
+            (s.courseCode||'').toLowerCase().includes(search) ||
+            (s.room||'').toLowerCase().includes(search));
+
+        const sorted = [...visible].sort((a,b) => (DAY_MAP[a.dayOfWeek]??9) - (DAY_MAP[b.dayOfWeek]??9) || (a.startTime||'').localeCompare(b.startTime||''));
+        document.getElementById('listTableBody').innerHTML = sorted.length === 0
+            ? '<tr><td colspan="6" class="py-8 text-center text-secondary font-body-md text-body-md">Chưa có lịch học</td></tr>'
+            : sorted.map(s => `
+                <tr class="hover:bg-surface-container-low transition-colors">
+                    <td class="py-3 px-4 font-label-md text-label-md font-medium text-on-surface">${s.dayOfWeek||'--'}</td>
+                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">${s.shift||''}</td>
+                    <td class="py-3 px-4"><span class="px-2 py-0.5 rounded font-label-caps text-label-caps font-bold bg-primary-fixed text-on-primary-fixed">${s.courseCode||'--'}</span></td>
+                    <td class="py-3 px-4 font-label-md text-label-md font-bold text-on-surface">${s.courseName||'--'}</td>
+                    <td class="py-3 px-4 font-body-sm text-body-sm text-primary font-medium">${s.room||'--'}</td>
+                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">${s.lecturer||'--'}</td>
+                </tr>
+            `).join('');
+    }
+
+    // ── KPI cards ─────────────────────────────────────────────────────────────
+    function updateKPIs() {
+        const today = new Date();
+        const todayDayIdx = (today.getDay() || 7) - 1; // Mon=0
+
+        const todaySchedules = allSchedules.filter(s => (DAY_MAP[s.dayOfWeek] ?? -1) === todayDayIdx);
+        const subjects = new Set(allSchedules.map(s => s.courseCode).filter(Boolean));
+
+        document.getElementById('kpiTotal').textContent = allSchedules.length;
+        document.getElementById('kpiTotalBar').style.width = Math.min(100, allSchedules.length * 10) + '%';
+        document.getElementById('kpiSubjects').textContent = subjects.size;
+        document.getElementById('kpiToday').textContent = todaySchedules.length;
+        document.getElementById('todayLabel').textContent = `Hôm nay: ${DAYS[todayDayIdx]} (${formatDate(today)})`;
+
+        // Total credits (rough estimate from unique subjects × avg 3)
+        document.getElementById('kpiCredits').textContent = subjects.size * 3 + ' TC';
+
+        // Next class
+        const nowMins = today.getHours() * 60 + today.getMinutes();
+        const todaySorted = todaySchedules.sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
+        const next = todaySorted.find(s => {
+            const [h,m] = (s.startTime||'00:00').split(':').map(Number);
+            return h*60+m > nowMins;
+        });
+        if (next) {
+            document.getElementById('nextTime').textContent = `${next.startTime} – ${next.endTime||''}`;
+            document.getElementById('nextSubject').textContent = next.courseName||'--';
+            document.getElementById('nextDetail').textContent = `${next.room||''}${next.lecturer ? ' · ' + next.lecturer : ''}`;
+            document.getElementById('nextBadge').textContent = 'Hôm nay';
+        } else {
+            // check tomorrow
+            const tomorrowIdx = (todayDayIdx + 1) % 7;
+            const tomorrowFirst = allSchedules.filter(s => (DAY_MAP[s.dayOfWeek]??-1) === tomorrowIdx)
+                .sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''))[0];
+            if (tomorrowFirst) {
+                document.getElementById('nextTime').textContent = `${tomorrowFirst.startTime} – ${tomorrowFirst.endTime||''}`;
+                document.getElementById('nextSubject').textContent = tomorrowFirst.courseName||'--';
+                document.getElementById('nextDetail').textContent = `${tomorrowFirst.room||''}${tomorrowFirst.lecturer ? ' · '+tomorrowFirst.lecturer : ''}`;
+                document.getElementById('nextBadge').textContent = 'Ngày mai';
+            }
+        }
+    }
+
+    // ── View switcher ─────────────────────────────────────────────────────────
+    function setView(view) {
+        currentView = view;
+        document.getElementById('viewWeekContainer').classList.toggle('hidden', view !== 'week');
+        document.getElementById('viewDayContainer').classList.toggle('hidden', view !== 'day');
+        document.getElementById('viewListContainer').classList.toggle('hidden', view !== 'list');
+        ['viewWeek','viewDay','viewList'].forEach(id => {
+            const btn = document.getElementById(id);
+            const isActive = id === `view${view.charAt(0).toUpperCase()+view.slice(1)}`;
+            btn.className = isActive
+                ? 'px-3.5 py-1.5 rounded-md font-label-md text-label-md font-semibold bg-surface-container-lowest text-primary shadow-sm'
+                : 'px-3.5 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors';
+        });
+        if (view === 'day') renderDayView();
+        if (view === 'list') renderListView();
+    }
+
+    function filterSchedule() {
+        if (currentView === 'week') renderEventCards(getWeekStart(currentWeekOffset));
+        else if (currentView === 'list') renderListView();
+    }
+
+    // ── Load data ─────────────────────────────────────────────────────────────
+    async function loadSchedule() {
+        try {
+            const res = await fetch('/api/academic/schedules');
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            allSchedules = await res.json();
+            if (!Array.isArray(allSchedules)) allSchedules = [];
+        } catch (e) {
+            console.warn('Tải lịch học thất bại:', e.message);
+            allSchedules = [];
+        }
+        updateKPIs();
+        updateWeekUI();
+        if (currentView === 'list') renderListView();
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        updateWeekUI();  // render empty week immediately
+        loadSchedule();  // then load data
+        // Auto-refresh time line every minute
+        setInterval(() => updateCurrentTimeLine(getWeekStart(currentWeekOffset)), 60000);
+    });
+    </script>
+</body>
+</html>
