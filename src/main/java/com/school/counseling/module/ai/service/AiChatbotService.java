@@ -39,7 +39,7 @@ public class AiChatbotService {
         if (query == null || query.trim().isEmpty()) {
             AiChatResponse emptyResp = new AiChatResponse();
             emptyResp.setAnswer("Xin chào! Bạn có thể đặt câu hỏi về tuyển sinh, học vụ, học phí hoặc quy trình của HCMUTE để mình giải đáp nhé.");
-            emptyResp.setSession_id(sessionId);
+            emptyResp.setSessionId(sessionId);
             emptyResp.setProvider(provider != null ? provider : "qaute-ai");
             return emptyResp;
         }
@@ -57,7 +57,7 @@ public class AiChatbotService {
                     + "• 💻 Hướng dẫn đồng bộ dữ liệu học vụ & xem điểm Portal\n"
                     + "• 🎫 Hướng dẫn tạo Ticket gửi yêu cầu tới các Phòng/Ban với cam kết SLA\n\n"
                     + "Bạn cần mình giải đáp hoặc tra cứu vấn đề gì hôm nay?");
-            greetingResp.setSession_id(sessionId);
+            greetingResp.setSessionId(sessionId);
             greetingResp.setProvider("qaute-assistant");
             return greetingResp;
         }
@@ -75,7 +75,7 @@ public class AiChatbotService {
                     + "   • 🟡 **Trung bình (MEDIUM):** Phản hồi trong vòng **72 giờ**.\n"
                     + "   • 🟢 **Thấp (LOW):** Phản hồi trong vòng **7 ngày**.\n"
                     + "5. **Bước 5:** Bạn sẽ nhận được thông báo qua Email và Portal khi Thầy/Cô phụ trách phản hồi Ticket.");
-            ticketResp.setSession_id(sessionId);
+            ticketResp.setSessionId(sessionId);
             ticketResp.setProvider("hcmute-ticket-service");
             return ticketResp;
         }
@@ -90,7 +90,7 @@ public class AiChatbotService {
                     + "   • Thời khóa biểu tuần và lịch thi chính thức.\n"
                     + "   • Tiến độ tích lũy tín chỉ và cảnh báo học vụ (nếu có).\n"
                     + "2. **Hỗ trợ kỹ thuật:** Nếu tài khoản Portal gặp lỗi đồng bộ hoặc không hiển thị điểm, bạn có thể tạo Ticket gửi trực tiếp tới Bộ phận Quản trị Kỹ thuật để được hỗ trợ nhanh nhất.");
-            portalResp.setSession_id(sessionId);
+            portalResp.setSessionId(sessionId);
             portalResp.setProvider("hcmute-portal-service");
             return portalResp;
         }
@@ -106,7 +106,7 @@ public class AiChatbotService {
                     + "4. **Phương thức 4:** Xét tuyển dựa trên điểm thi Tốt nghiệp THPT 2026.\n"
                     + "5. **Phương thức 5:** Xét tuyển kết hợp chứng chỉ Tiếng Anh quốc tế (IELTS, TOEFL...) và học bạ THPT.\n\n"
                     + "📍 *Chi tiết đề án và chỉ tiêu từng ngành:* Xem tại website chính thức https://tuyensinh.hcmute.edu.vn hoặc Hotline Tuyển sinh: **0379 668 768** / **(028) 3896 1333**.");
-            tsResp.setSession_id(sessionId);
+            tsResp.setSessionId(sessionId);
             tsResp.setProvider("hcmute-admission-service");
             return tsResp;
         }
@@ -120,7 +120,7 @@ public class AiChatbotService {
                     + "• Chương trình Chất lượng cao / Tiếng Anh: dao động khoảng **22 - 28 triệu đồng / học kỳ**.\n"
                     + "• Nhà trường có chính sách học bổng khuyến khích học tập từ 50% - 100% học phí dành cho sinh viên có thành tích xuất sắc và các học bổng tài trợ doanh nghiệp.\n\n"
                     + "🏛️ *Phòng phụ trách:* Phòng Đào tạo (A1-101) & Phòng Tuyển sinh & CTSV (A1-203).");
-            feeResp.setSession_id(sessionId);
+            feeResp.setSessionId(sessionId);
             feeResp.setProvider("hcmute-academic-service");
             return feeResp;
         }
@@ -163,7 +163,7 @@ public class AiChatbotService {
 
             AiChatResponse faqResp = new AiChatResponse();
             faqResp.setAnswer(sb.toString());
-            faqResp.setSession_id(sessionId);
+            faqResp.setSessionId(sessionId);
             faqResp.setProvider("hcmute-faq-knowledge");
             List<Object> sources = new ArrayList<>();
             sources.add(Map.of(
@@ -172,7 +172,7 @@ public class AiChatbotService {
                     "category", top.category() != null ? top.category() : "Học vụ",
                     "score", top.confidenceScore()
             ));
-            faqResp.setSources(sources);
+            faqResp.setSources(new ArrayList<>()); // Empty list thay vì null
             return faqResp;
         }
 
@@ -181,7 +181,11 @@ public class AiChatbotService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            AiChatRequest requestPayload = new AiChatRequest(cleanQuery, sessionId, provider != null ? provider : "gemini");
+            AiChatRequest requestPayload = AiChatRequest.builder()
+                .query(cleanQuery)
+                .sessionId(sessionId)
+                .provider(provider != null ? provider : "gemini")
+                .build();
             HttpEntity<AiChatRequest> requestEntity = new HttpEntity<>(requestPayload, headers);
 
             ResponseEntity<AiChatResponse> responseEntity = restTemplate.postForEntity(
@@ -210,7 +214,7 @@ public class AiChatbotService {
 
             AiChatResponse fallbackFaq = new AiChatResponse();
             fallbackFaq.setAnswer(sb.toString());
-            fallbackFaq.setSession_id(sessionId);
+            fallbackFaq.setSessionId(sessionId);
             fallbackFaq.setProvider("hcmute-faq-fallback");
             return fallbackFaq;
         }
@@ -224,7 +228,7 @@ public class AiChatbotService {
                 + "3. 📞 **Liên hệ trực tiếp:**\n"
                 + "   • Phòng Đào tạo (A1-101): (028) 3896 8641\n"
                 + "   • Phòng Tuyển sinh & CTSV (A1-203): (028) 3896 1333 - Hotline: 0379 668 768");
-        guideResp.setSession_id(sessionId);
+        guideResp.setSessionId(sessionId);
         guideResp.setProvider("hcmute-counseling-guide");
         return guideResp;
     }

@@ -24,7 +24,7 @@ public class AiChatbotController {
         
         AiChatResponse response = aiChatbotService.getChatResponse(
                 request.getQuery(),
-                request.getSession_id(),
+                request.getSessionId(), // Dùng camelCase mới
                 request.getProvider());
         return ResponseEntity.ok(response);
     }

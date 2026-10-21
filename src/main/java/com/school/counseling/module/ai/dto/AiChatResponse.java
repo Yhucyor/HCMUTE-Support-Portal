@@ -1,44 +1,50 @@
 package com.school.counseling.module.ai.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * DTO cho phản hồi từ AI Chatbot
+ * Bao gồm câu trả lời, sources, confidence và suggestion
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AiChatResponse {
-    private String answer;
-    private List<Object> sources;
-    private String session_id;
-    private String provider;
-
-    public AiChatResponse() {}
-
-    public String getAnswer() {
-        return answer;
-    }
-
-    public void setAnswer(String answer) {
-        this.answer = answer;
-    }
-
-    public List<Object> getSources() {
-        return sources;
-    }
-
-    public void setSources(List<Object> sources) {
-        this.sources = sources;
-    }
-
-    public String getSession_id() {
-        return session_id;
-    }
-
-    public void setSession_id(String session_id) {
-        this.session_id = session_id;
-    }
-
-    public String getProvider() {
-        return provider;
-    }
-
-    public void setProvider(String provider) {
-        this.provider = provider;
-    }
+    
+    private String answer; // Câu trả lời từ AI
+    
+    @JsonProperty("session_id")
+    private String sessionId; // UUID conversation
+    
+    private String provider; // Engine đã sử dụng (gemini, ollama, dify)
+    
+    private Double confidence; // Độ tin cậy 0.0 - 1.0
+    
+    private List<SourceDocument> sources; // Danh sách nguồn trích dẫn
+    
+    @JsonProperty("suggest_ticket")
+    @Builder.Default
+    private Boolean suggestTicket = false; // Gợi ý tạo Ticket khi confidence thấp
+    
+    @JsonProperty("ticket_category")
+    private String ticketCategory; // Auto-fill Department cho modal Ticket
+    
+    @JsonProperty("ticket_priority")
+    private String ticketPriority; // Gợi ý Priority (URGENT, HIGH, MEDIUM, LOW)
+    
+    private LocalDateTime timestamp; // Thời điểm sinh câu trả lời
+    
+    @JsonProperty("token_used")
+    private Integer tokenUsed; // Số token tiêu thụ (tracking cost)
+    
+    @JsonProperty("response_time_ms")
+    private Long responseTimeMs; // Thời gian xử lý (ms)
 }
