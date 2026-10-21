@@ -111,5 +111,15 @@ public class HomeController {
         model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
         return "ai-chat";
     }
+
+    @GetMapping({"/grades", "/academic-grades"})
+    public String redirectGrades() {
+        return "redirect:/academic/grades";
+    }
+
+    @GetMapping({"/timetable", "/academic-timetable"})
+    public String redirectTimetable() {
+        return "redirect:/academic/timetable";
+    }
 }
 

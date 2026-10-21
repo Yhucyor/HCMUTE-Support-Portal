@@ -88,9 +88,64 @@ public class AcademicSyncApiController {
 
     @GetMapping("/grades")
     public ResponseEntity<List<StudentGrade>> getGrades(
+            @RequestParam(required = false) String studentId,
+            @RequestParam(required = false) String semester) {
+        String resolvedId = resolveStudentId(studentId);
+
+        List<StudentGrade> list = (semester != null && !semester.isBlank())
+                ? gradeRepository.findByStudentIdAndSemesterOrderByCourseNameAsc(resolvedId, semester)
+                : gradeRepository.findByStudentIdOrderBySemesterDesc(resolvedId);
+
+        // Nếu DB chưa có nhưng sinh viên đã liên kết Portal -> Tự động kéo dữ liệu thật từ Portal!
+        if (list.isEmpty()) {
+            try {
+                Long userId = SecurityUtils.getCurrentUserId().orElse(null);
+                if (userId != null) {
+                    String portalUser = profileService.getProfile(userId).getPortalUsername();
+                    String portalPass = profileService.decodePortalPassword(userId);
+                    if (portalUser != null && !portalUser.isBlank() && portalPass != null && !portalPass.isBlank()) {
+                        log.info("Phát hiện tài khoản Portal đã liên kết, tự động đồng bộ bảng điểm thật cho {}", portalUser);
+                        HcmuteSyncResponse res = crawlerService.syncStudentData(HcmuteSyncRequest.builder()
+                                .studentId(portalUser)
+                                .password(portalPass)
+                                .build());
+                        if (res.isSuccess()) {
+                            list = (semester != null && !semester.isBlank())
+                                    ? gradeRepository.findByStudentIdAndSemesterOrderByCourseNameAsc(portalUser, semester)
+                                    : gradeRepository.findByStudentIdOrderBySemesterDesc(portalUser);
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                log.warn("Tự động đồng bộ Portal khi lấy bảng điểm thất bại: {}", ex.getMessage());
+            }
+        }
+
+        // Fallback kiểm tra username nếu studentId lưu khác
+        if (list.isEmpty()) {
+            String loginUser = SecurityUtils.getCurrentUsername().orElse("");
+            if (!loginUser.isBlank() && !loginUser.equalsIgnoreCase(resolvedId)) {
+                list = (semester != null && !semester.isBlank())
+                        ? gradeRepository.findByStudentIdAndSemesterOrderByCourseNameAsc(loginUser, semester)
+                        : gradeRepository.findByStudentIdOrderBySemesterDesc(loginUser);
+            }
+        }
+
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/grades/semesters")
+    public ResponseEntity<List<String>> getGradeSemesters(
             @RequestParam(required = false) String studentId) {
         String resolvedId = resolveStudentId(studentId);
-        return ResponseEntity.ok(gradeRepository.findByStudentIdOrderBySemesterDesc(resolvedId));
+        List<String> semesters = gradeRepository.findDistinctSemestersByStudentId(resolvedId);
+        if (semesters.isEmpty()) {
+            String loginUser = SecurityUtils.getCurrentUsername().orElse("");
+            if (!loginUser.isBlank() && !loginUser.equalsIgnoreCase(resolvedId)) {
+                semesters = gradeRepository.findDistinctSemestersByStudentId(loginUser);
+            }
+        }
+        return ResponseEntity.ok(semesters);
     }
 
     @GetMapping("/schedules")

@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Bảng điểm sinh viên | HCMUTE Student Portal</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <style>
+        @layer base { html, body { margin: 0; padding: 0; } }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        @media print {
+            header, #filterToolbar, #topActionButtons, #gradeViewSwitcher, #gradesEmptyAlert, #ttDropdownMenu, #mobileNavDrawer, .no-print {
+                display: none !important;
+            }
+            main {
+                padding-top: 0 !important;
+                background: #ffffff !important;
+            }
+            .print-header {
+                display: block !important;
+            }
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+            .shadow-sm, .shadow-md, .shadow-2xs {
+                box-shadow: none !important;
+            }
+            .border {
+                border-color: #cbd5e1 !important;
+            }
+            .table-print-border {
+                border: 1px solid #94a3b8 !important;
+            }
+            .table-print-border th, .table-print-border td {
+                border: 1px solid #cbd5e1 !important;
+            }
+        }
+    </style>
+    <!-- Tailwind CSS — Academic Horizon + HCMUTE Tokens -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "brand-blue":  "#003882", "brand-blue-dark": "#002456", "brand-red": "#991b1e",
+                        "primary":               "#0037b0", "on-primary":             "#ffffff",
+                        "primary-container":     "#1d4ed8", "on-primary-container":   "#cad3ff",
+                        "primary-fixed":         "#dce1ff", "on-primary-fixed":       "#001551",
+                        "on-primary-fixed-variant": "#0039b5", "primary-fixed-dim":   "#b7c4ff",
+                        "secondary":             "#565e74", "on-secondary":           "#ffffff",
+                        "secondary-container":   "#dae2fd", "on-secondary-container": "#5c647a",
+                        "on-secondary-fixed":    "#131b2e", "on-secondary-fixed-variant": "#3f465c",
+                        "secondary-fixed":       "#dae2fd", "secondary-fixed-dim":    "#bec6e0",
+                        "tertiary":              "#003ca3", "on-tertiary":            "#ffffff",
+                        "tertiary-container":    "#0051d6", "on-tertiary-container":  "#c9d4ff",
+                        "tertiary-fixed":        "#dbe1ff", "on-tertiary-fixed":      "#00174b",
+                        "on-tertiary-fixed-variant": "#003ea8", "tertiary-fixed-dim": "#b4c5ff",
+                        "error":                 "#ba1a1a", "on-error":               "#ffffff",
+                        "error-container":       "#ffdad6", "on-error-container":     "#93000a",
+                        "surface":               "#f8f9ff", "surface-bright":         "#f8f9ff",
+                        "surface-dim":           "#cbdbf5", "surface-variant":        "#d3e4fe",
+                        "surface-container-lowest":  "#ffffff",
+                        "surface-container-low":     "#eff4ff",
+                        "surface-container":         "#e5eeff",
+                        "surface-container-high":    "#dce9ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-surface":            "#0b1c30", "on-surface-variant":     "#434655",
+                        "inverse-surface":       "#213145", "inverse-on-surface":     "#eaf1ff",
+                        "outline":               "#747686", "outline-variant":        "#c4c5d7",
+                        "background":            "#f8f9ff", "on-background":          "#0b1c30",
+                        "surface-tint":          "#2151da", "inverse-primary":        "#b7c4ff"
+                    },
+                    borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+                    spacing: {
+                        "space-xs": "0.25rem", "space-sm": "0.5rem", "space-md": "1rem",
+                        "space-lg": "1.5rem",  "space-xl": "2rem",
+                        "gutter-sm": "1rem",   "gutter":   "1.5rem",  "gutter-lg": "2rem",
+                        "margin-sm": "1rem",   "margin":   "2rem",    "margin-lg": "3rem"
+                    },
+                    fontFamily: {
+                        "headline": ["Outfit","sans-serif"], "body": ["Inter","sans-serif"],
+                        "title-md": ["Outfit","sans-serif"]
+                    },
+                    fontSize: {
+                        "headline-lg":      ["32px",{lineHeight:"40px",letterSpacing:"-0.015em",fontWeight:"700"}],
+                        "headline-md":      ["24px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"600"}],
+                        "headline-sm":      ["20px",{lineHeight:"28px",fontWeight:"600"}],
+                        "title-md":         ["16px",{lineHeight:"24px",fontWeight:"600"}],
+                        "body-lg":          ["16px",{lineHeight:"24px",fontWeight:"400"}],
+                        "body-md":          ["14px",{lineHeight:"20px",fontWeight:"400"}],
+                        "body-sm":          ["12px",{lineHeight:"16px",fontWeight:"400"}],
+                        "label-lg":         ["14px",{lineHeight:"20px",fontWeight:"600"}],
+                        "label-md":         ["12px",{lineHeight:"16px",letterSpacing:"0.01em",fontWeight:"500"}],
+                        "label-caps":       ["11px",{lineHeight:"14px",letterSpacing:"0.05em",fontWeight:"600"}]
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-background font-body text-on-surface antialiased min-h-screen selection:bg-[#991b1e] selection:text-white"
+      th:data-student-id="${currentStudentId}"
+      th:data-portal-linked="${portalLinked}"
+      th:data-portal-user="${savedPortalUsername}">
+
+    <!-- ═══════════════════════════ TOP GLOBAL HEADER ═══════════════════════════ -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all h-[74px]">
+        <div class="w-full px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+            <a class="flex items-center gap-3 group py-1.5" th:href="@{/}">
+                <img alt="HCMUTE Logo" class="h-12 w-auto object-contain transition-transform group-hover:scale-105"
+                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKSHNb9YZP8QFQKzZ-_B_glnPE615kLoTh0DIZM9-id7Eb1Z7EZXRKcjBeCckK7VOaTPGdnMs7Cl7qdtjr1Mry3Y7d1U0S8maxw8fAHipOBnT-HFyaVBuqc6xe0fMZJf4fPlHw6UIkL0vHJV2kfl-tnjJgobCtm7Cy-KazrUCaEZefkxCcT9HC_-zWiT9twVqKg6xymALE7_hrVpAjI-XYdTFsbm3wyDRY8PxAR-vjOB00BqpW9wX9dVryQuIfZgdSA">
+                <div class="flex flex-col text-[#003882]">
+                    <span class="font-bold text-sm sm:text-base tracking-tight leading-tight">Trường Đại học Sư phạm Kỹ thuật Tp. Hồ Chí Minh</span>
+                    <span class="font-normal text-[11px] sm:text-xs tracking-normal leading-normal">HCMC University of Technology and Education</span>
+                </div>
+            </a>
+            <nav class="hidden xl:flex items-center space-x-7">
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/}">Trang chủ</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/feed/forum}">Diễn đàn</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/faqs}">Tra cứu FAQ</a>
+            </nav>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="hidden sm:flex items-center text-xs font-semibold text-slate-600 px-2 py-1 rounded cursor-pointer hover:bg-slate-100">
+                    <span>VI</span>
+                    <span class="material-symbols-outlined text-[16px]">expand_more</span>
+                </div>
+                <div sec:authorize="isAuthenticated()" class="relative">
+                    <button id="ttAccountToggle"
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95"
+                            th:title="${currentUser != null ? currentUser.fullName : #authentication.name}"
+                            aria-haspopup="true" aria-expanded="false">
+                        <span class="material-symbols-outlined text-[16px]">account_circle</span>
+                        <span class="hidden sm:inline truncate max-w-[150px]"
+                              th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
+                        <span class="material-symbols-outlined text-[14px]">expand_more</span>
+                    </button>
+                    <div id="ttDropdownMenu" class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50 min-w-[210px]" role="menu">
+                        <a href="/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">person</span><span>Thông tin cá nhân</span>
+                        </a>
+                        <a href="/academic/sync" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">home</span><span>Tổng quan học vụ</span>
+                        </a>
+                        <a href="/academic/grades" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-[#003882] bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">description</span><span>Bảng điểm</span>
+                        </a>
+                        <a href="/academic/timetable" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">calendar_month</span><span>Thời khóa biểu</span>
+                        </a>
+                        <a href="/academic/curriculum" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">book</span><span>Chương trình đào tạo</span>
+                        </a>
+                        <div class="border-t border-slate-200 my-1"></div>
+                        <a th:href="@{/auth/logout}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">logout</span><span>Đăng xuất</span>
+                        </a>
+                    </div>
+                </div>
+                <div sec:authorize="!isAuthenticated()">
+                    <a class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#991b1e] hover:bg-[#831518] rounded-md shadow-sm transition-all active:scale-95" th:href="@{/auth/login}">
+                        <span class="material-symbols-outlined text-[16px]">person</span><span>Đăng nhập</span>
+                    </a>
+                </div>
+                <button aria-label="Mở menu" onclick="toggleMobileNav()" class="xl:hidden w-9 h-9 rounded-md flex items-center justify-center text-slate-700 hover:bg-slate-100">
+                    <span class="material-symbols-outlined text-[24px]">menu</span>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Drawer -->
+        <div id="mobileNavDrawer" class="hidden xl:hidden bg-white border-b border-slate-200 px-4 pt-3 pb-5 space-y-2.5 shadow-lg">
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/}">Trang chủ</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/feed/forum}">Diễn đàn</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/faqs}">Tra cứu FAQ</a>
+            <div sec:authorize="isAuthenticated()" class="pt-2 border-t border-slate-200">
+                <a class="flex items-center gap-2 py-2 text-sm font-semibold text-[#003882]" href="/academic/grades">
+                    <span class="material-symbols-outlined text-[18px]">description</span>
+                    <span th:text="${currentUser != null ? currentUser.fullName : #authentication.name}">Họ Tên</span>
+                </a>
+                <a class="block py-1.5 text-sm font-medium text-[#991b1e]" th:href="@{/auth/logout}">Đăng xuất</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════════ PRINT HEADER (CHỈ XUẤT HIỆN KHI IN) ═══════════════════════════ -->
+    <div class="print-header hidden p-6 text-black border-b-2 border-black mb-6">
+        <div class="flex justify-between items-start text-xs uppercase">
+            <div class="text-center font-bold">
+                <p>BỘ GIÁO DỤC VÀ ĐÀO TẠO</p>
+                <p class="font-extrabold text-sm">TRƯỜNG ĐH SƯ PHẠM KỸ THUẬT TP.HCM</p>
+                <p class="text-[10px] lowercase text-slate-600">Phòng Đào tạo - Cổng thông tin sinh viên</p>
+            </div>
+            <div class="text-center font-bold">
+                <p>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+                <p class="font-semibold text-xs capitalize">Độc lập - Tự do - Hạnh phúc</p>
+                <p class="text-[10px] text-slate-500">-------------------</p>
+            </div>
+        </div>
+        <div class="text-center my-4">
+            <h1 class="text-xl font-bold uppercase tracking-wide">BẢNG ĐIỂM KẾT QUẢ HỌC TẬP SINH VIÊN</h1>
+            <p class="text-xs italic text-slate-600">(Dữ liệu trích xuất từ hệ thống quản lý đào tạo HCMUTE)</p>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-dashed border-slate-300">
+            <div>
+                <p><strong>Họ và tên:</strong> <span th:text="${studentProfile != null ? studentProfile.fullName : (currentUser != null ? currentUser.fullName : currentStudentId)}">Nguyễn Văn A</span></p>
+                <p><strong>Mã số sinh viên (MSSV):</strong> <span th:text="${currentStudentId}">21110001</span></p>
+                <p><strong>Lớp sinh hoạt:</strong> <span th:text="${studentProfile != null ? studentProfile.studentClass : '--'}">211101A</span></p>
+            </div>
+            <div>
+                <p><strong>Ngành đào tạo:</strong> <span th:text="${studentProfile != null ? studentProfile.major : 'Công nghệ Thông tin'}">Công nghệ Thông tin</span></p>
+                <p><strong>Khoa:</strong> <span th:text="${studentProfile != null ? studentProfile.faculty : 'Khoa CNTT'}">Khoa CNTT</span></p>
+                <p><strong>Khóa tuyển sinh:</strong> <span th:text="${studentProfile != null ? studentProfile.academicYear : '2021-2025'}">2021-2025</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════ MAIN CONTENT ═══════════════════════════ -->
+    <main class="w-full bg-background min-h-screen pt-[74px]">
+        <div class="flex flex-col w-full">
+            <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-space-lg flex flex-col gap-space-lg">
+
+                <!-- Section 1: Breadcrumb & Title -->
+                <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md">
+                    <div class="flex flex-col gap-space-xs">
+                        <nav aria-label="Breadcrumb" class="flex items-center gap-space-xs">
+                            <a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors flex items-center gap-1" th:href="@{/}">
+                                <span class="material-symbols-outlined text-base">home</span> Trang chủ
+                            </a>
+                            <span class="text-outline text-xs">/</span>
+                            <a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors" href="/academic/sync">Học vụ cá nhân</a>
+                            <span class="text-outline text-xs">/</span>
+                            <span class="font-label-md text-label-md text-primary font-semibold">Bảng điểm</span>
+                        </nav>
+                        <div class="flex flex-wrap items-center gap-2.5 mt-1">
+                            <h1 class="font-headline text-headline-lg text-on-surface font-bold tracking-tight">Bảng điểm học tập sinh viên</h1>
+                            <!-- Badge trạng thái liên kết Portal -->
+                            <span th:if="${portalLinked}" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                Dữ liệu thật từ Portal (MSSV: <strong th:text="${savedPortalUsername}">21110123</strong>)
+                            </span>
+                            <a th:unless="${portalLinked}" href="/profile" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition-colors shadow-2xs">
+                                <span class="material-symbols-outlined text-[15px]">link</span>
+                                Chưa liên kết Cổng trường trong Profile &rarr;
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Top Action Buttons (In, Xuất Excel, Đồng bộ) -->
+                    <div id="topActionButtons" class="flex flex-wrap items-center gap-2 self-start lg:self-end">
+                        <button onclick="window.print()" class="px-3.5 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-slate-700 font-label-md text-label-md font-semibold border border-outline-variant/30 transition-colors flex items-center gap-1.5 shadow-2xs" type="button" title="In bảng điểm chính thức">
+                            <span class="material-symbols-outlined text-base text-primary">print</span> In bảng điểm
+                        </button>
+                        <button onclick="exportGradesCsv()" class="px-3.5 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-slate-700 font-label-md text-label-md font-semibold border border-outline-variant/30 transition-colors flex items-center gap-1.5 shadow-2xs" type="button" title="Xuất file CSV / Excel">
+                            <span class="material-symbols-outlined text-base text-emerald-600">download</span> Xuất CSV
+                        </button>
+                        <button id="topSyncBtn" onclick="triggerSync()" class="px-4 py-2 rounded-lg bg-[#003882] hover:bg-[#002456] text-white font-label-md text-label-md font-semibold transition-all shadow-sm flex items-center gap-1.5 active:scale-95" type="button" title="Đồng bộ trực tiếp kết quả điểm từ Cổng trường">
+                            <span class="material-symbols-outlined text-base">sync</span> Đồng bộ Portal
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Section 1b: Sinh viên Mini Info Header Card -->
+                <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-5 shadow-sm border border-outline-variant/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#003882] to-[#1d4ed8] text-white flex items-center justify-center font-bold font-headline text-lg shadow-sm shrink-0">
+                            <span th:text="${studentProfile != null && studentProfile.fullName != null ? #strings.substring(studentProfile.fullName, 0, 1) : (currentUser != null ? #strings.substring(currentUser.fullName, 0, 1) : 'S')}">S</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <div class="flex items-center gap-2">
+                                <h2 class="font-headline text-headline-sm font-bold text-on-surface"
+                                    th:text="${studentProfile != null ? studentProfile.fullName : (currentUser != null ? currentUser.fullName : currentStudentId)}">Nguyễn Văn A</h2>
+                                <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200"
+                                      th:text="${studentProfile != null ? studentProfile.studentClass : 'Lớp: --'}">211101A</span>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-secondary mt-1">
+                                <span>MSSV: <strong class="text-on-surface font-semibold" th:text="${currentStudentId}">21110001</strong></span>
+                                <span class="hidden sm:inline text-outline-variant">•</span>
+                                <span>Ngành: <strong class="text-on-surface font-semibold" th:text="${studentProfile != null ? studentProfile.major : 'Công nghệ Thông tin'}">CNTT</strong></span>
+                                <span class="hidden sm:inline text-outline-variant">•</span>
+                                <span>Khoa: <strong class="text-on-surface font-semibold" th:text="${studentProfile != null ? studentProfile.faculty : 'Khoa CNTT'}">Khoa CNTT</strong></span>
+                                <span class="hidden sm:inline text-outline-variant">•</span>
+                                <span>Khóa: <strong class="text-on-surface font-semibold" th:text="${studentProfile != null ? studentProfile.academicYear : '2023 - 2027'}">2023 - 2027</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 self-stretch md:self-auto justify-end border-t md:border-t-0 pt-3 md:pt-0 border-slate-100">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span th:text="${studentProfile != null ? studentProfile.academicStatus : 'Đang học'}">Đang học chính quy</span>
+                        </span>
+                        <a href="/profile" class="p-2 rounded-lg text-secondary hover:text-primary hover:bg-slate-100 transition-colors" title="Chỉnh sửa thông tin liên kết Portal">
+                            <span class="material-symbols-outlined text-[20px]">manage_accounts</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Section 2: KPI Academic Summary Cards (4 Cards matching timetable.html design) -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-space-md">
+                    <!-- Card 1: GPA Hệ 4 -->
+                    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-all flex flex-col justify-between border border-outline-variant/30">
+                        <div class="flex items-start justify-between">
+                            <div class="flex flex-col">
+                                <span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary">Điểm tích lũy (Hệ 4)</span>
+                                <div class="flex items-baseline gap-1.5 mt-1">
+                                    <span id="kpiGpa4" class="font-headline text-headline-md font-bold text-primary"
+                                          th:text="${summary != null && summary.gpa4 != null ? #numbers.formatDecimal(summary.gpa4, 1, 2) : '--'}">--</span>
+                                    <span class="font-body-md text-body-md text-secondary">/ 4.00</span>
+                                </div>
+                            </div>
+                            <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined">grade</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between pt-2">
+                            <span class="font-label-md text-label-md text-secondary">Xếp loại học lực:</span>
+                            <span id="kpiStandingBadge" class="font-label-md text-label-md font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                  th:text="${summary != null && summary.academicStanding != null ? summary.academicStanding : 'Chưa xếp loại'}">--</span>
+                        </div>
+                        <div class="mt-2.5 w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+                            <div id="kpiGpa4Bar" class="bg-primary h-full rounded-full transition-all" style="width:0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Điểm trung bình hệ 10 -->
+                    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-all flex flex-col justify-between border border-outline-variant/30">
+                        <div class="flex items-start justify-between">
+                            <div class="flex flex-col">
+                                <span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary">Điểm trung bình (Hệ 10)</span>
+                                <div class="flex items-baseline gap-1.5 mt-1">
+                                    <span id="kpiGpa10" class="font-headline text-headline-md font-bold text-on-surface"
+                                          th:text="${summary != null && summary.gpa10 != null ? #numbers.formatDecimal(summary.gpa10, 1, 2) : '--'}">--</span>
+                                    <span class="font-body-md text-body-md text-secondary">/ 10.0</span>
+                                </div>
+                            </div>
+                            <div class="w-10 h-10 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-fixed">
+                                <span class="material-symbols-outlined">analytics</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between pt-2">
+                            <span class="font-label-md text-label-md text-secondary">Thang điểm 10 quy đổi:</span>
+                            <span id="kpiGpa10Rate" class="font-label-md text-label-md font-semibold text-secondary">Đạt chuẩn</span>
+                        </div>
+                        <div class="mt-2.5 w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+                            <div id="kpiGpa10Bar" class="bg-secondary h-full rounded-full transition-all" style="width:0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Tín chỉ tích lũy -->
+                    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-all flex flex-col justify-between border border-outline-variant/30">
+                        <div class="flex items-start justify-between">
+                            <div class="flex flex-col">
+                                <span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary">Tín chỉ tích lũy</span>
+                                <div class="flex items-baseline gap-1.5 mt-1">
+                                    <span id="kpiCredits" class="font-headline text-headline-md font-bold text-on-surface"
+                                          th:text="${summary != null ? summary.totalCredits : '--'}">--</span>
+                                    <span class="font-body-md text-body-md text-secondary">/ 132 TC</span>
+                                </div>
+                            </div>
+                            <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined">assignment_turned_in</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between pt-2">
+                            <span class="font-label-md text-label-md text-secondary">Tiến độ tốt nghiệp:</span>
+                            <span id="kpiCreditsPercent" class="font-label-md text-label-md font-bold text-primary px-2.5 py-0.5 rounded-full bg-surface-container">--%</span>
+                        </div>
+                        <div class="mt-2.5 w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+                            <div id="kpiCreditsBar" class="bg-primary h-full rounded-full transition-all" style="width:0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Tổng hợp học phần (Blue Card) -->
+                    <div class="bg-[#003882] text-white rounded-xl p-space-md shadow-md flex flex-col justify-between relative overflow-hidden">
+                        <div class="absolute -right-4 -bottom-4 w-28 h-28 rounded-full bg-white/10 pointer-events-none"></div>
+                        <div class="flex items-start justify-between z-10">
+                            <div class="flex flex-col">
+                                <span class="font-label-caps text-label-caps uppercase tracking-wider text-blue-200 font-semibold">Kết quả học phần</span>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span id="kpiPassedCount" class="font-title-md text-title-md font-bold text-emerald-300 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-base">check_circle</span>
+                                        <span th:text="${summary != null ? summary.passedCoursesCount : '--'}">--</span> Đạt
+                                    </span>
+                                    <span class="text-white/40">·</span>
+                                    <span id="kpiFailedCount" class="font-title-md text-title-md font-bold text-rose-300 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-base">cancel</span>
+                                        <span th:text="${summary != null ? summary.failedCoursesCount : '0'}">0</span> Nợ
+                                    </span>
+                                </div>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-white/20 text-white font-bold">Chính thức</span>
+                        </div>
+                        <div class="mt-3 z-10">
+                            <div id="kpiPassedRatio" class="font-label-md text-label-md font-bold text-white">Tỷ lệ hoàn thành: --%</div>
+                            <p class="font-body-sm text-body-sm text-white/80 truncate">Cập nhật tự động từ Cổng trường</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State Alert if no grades found yet -->
+                <div id="gradesEmptyAlert" class="hidden p-5 rounded-xl bg-blue-50 border border-blue-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-primary shrink-0">
+                            <span class="material-symbols-outlined text-xl">school</span>
+                        </div>
+                        <div>
+                            <div class="font-label-md text-label-md font-bold text-on-surface">Chưa có dữ liệu bảng điểm trong hệ thống</div>
+                            <div class="font-body-sm text-body-sm text-secondary">Nhấn nút bên cạnh để đồng bộ dữ liệu thật từ Cổng Đào tạo HCMUTE hoặc nạp dữ liệu mẫu thử nghiệm.</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button onclick="triggerSync()" class="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-semibold hover:bg-primary-container transition-colors shadow-xs" type="button">
+                            Đồng bộ dữ liệu ngay
+                        </button>
+                        <a href="/profile" class="px-3.5 py-2 rounded-lg border border-slate-300 text-slate-700 bg-white font-label-md text-label-md font-medium hover:bg-slate-50 transition-colors">
+                            Cấu hình Portal trong Profile
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Section 3: HCMUTE Portal Standard Filter Toolbar (Khung bộ lọc chuẩn Cổng trường HCMUTE) -->
+                <div id="filterToolbar" class="bg-surface-container-lowest rounded-xl p-4 sm:p-5 shadow-sm border border-outline-variant/30 flex flex-col gap-4">
+                    <!-- Hàng trên: 3 Dropdown Outlined Floating-label (Năm học, Học kỳ, Trạng thái) chuẩn Cổng Portal -->
+                    <div class="flex flex-wrap items-center gap-3 sm:gap-4">
+                        <!-- 1. Năm học -->
+                        <fieldset class="border border-slate-300 rounded-md px-3 pb-1 pt-0 bg-white hover:border-slate-400 focus-within:border-primary transition-colors flex-1 sm:flex-initial min-w-[160px] sm:w-48 shadow-2xs">
+                            <legend class="text-[11px] text-slate-500 font-medium px-1 select-none">Năm học</legend>
+                            <select id="filterYear" onchange="applyFilters()"
+                                    class="w-full bg-transparent text-[14px] text-slate-800 font-medium outline-none cursor-pointer py-1 border-0 focus:ring-0">
+                                <option value="" selected>Tất cả năm học</option>
+                                <option value="2026-2027">2026-2027</option>
+                                <option value="2025-2026">2025-2026</option>
+                                <option value="2024-2025">2024-2025</option>
+                                <option value="2023-2024">2023-2024</option>
+                                <option value="2022-2023">2022-2023</option>
+                            </select>
+                        </fieldset>
+
+                        <!-- 2. Học kỳ -->
+                        <fieldset class="border border-slate-300 rounded-md px-3 pb-1 pt-0 bg-white hover:border-slate-400 focus-within:border-primary transition-colors flex-1 sm:flex-initial min-w-[160px] sm:w-56 shadow-2xs">
+                            <legend class="text-[11px] text-slate-500 font-medium px-1 select-none">Học kỳ</legend>
+                            <select id="filterSemester" onchange="applyFilters()"
+                                    class="w-full bg-transparent text-[14px] text-slate-800 font-medium outline-none cursor-pointer py-1 border-0 focus:ring-0">
+                                <option value="" selected>Tất cả học kỳ</option>
+                                <!-- JS tự động điền danh sách học kỳ có dữ liệu -->
+                            </select>
+                        </fieldset>
+
+                        <!-- 3. Trạng thái kết quả môn -->
+                        <fieldset class="border border-slate-300 rounded-md px-3 pb-1 pt-0 bg-white hover:border-slate-400 focus-within:border-primary transition-colors flex-1 sm:flex-initial min-w-[160px] sm:w-52 shadow-2xs">
+                            <legend class="text-[11px] text-slate-500 font-medium px-1 select-none">Kết quả học phần</legend>
+                            <select id="filterStatus" onchange="applyFilters()"
+                                    class="w-full bg-transparent text-[14px] text-slate-800 font-medium outline-none cursor-pointer py-1 border-0 focus:ring-0">
+                                <option value="ALL" selected>Tất cả kết quả</option>
+                                <option value="PASSED">Chỉ môn đã đạt (Qua môn)</option>
+                                <option value="FAILED">Môn chưa đạt / Nợ (F)</option>
+                            </select>
+                        </fieldset>
+
+                        <!-- Nút Reset về tất cả -->
+                        <button onclick="resetFilters()"
+                                class="px-3.5 py-2.5 rounded-md font-label-md text-label-md text-secondary hover:text-primary hover:bg-surface-container transition-colors flex items-center gap-1 border border-outline-variant/30 shrink-0 shadow-2xs" type="button" title="Hiển thị toàn bộ lịch sử điểm">
+                            <span class="material-symbols-outlined text-base">restart_alt</span> Xem tất cả
+                        </button>
+                    </div>
+
+                    <!-- Hàng dưới: Chuyển đổi chế độ xem, Tìm kiếm môn & Đếm kết quả -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-outline-variant/20">
+                        <!-- Chế độ xem: Theo học kỳ, Toàn khóa, Thống kê -->
+                        <div id="gradeViewSwitcher" class="inline-flex p-1 bg-surface-container-low rounded-lg">
+                            <button id="btnViewGrouped" onclick="setViewMode('grouped')"
+                                    class="px-3.5 py-1.5 rounded-md font-label-md text-label-md font-semibold bg-surface-container-lowest text-primary shadow-sm flex items-center gap-1.5" type="button">
+                                <span class="material-symbols-outlined text-sm">view_agenda</span> Theo học kỳ
+                            </button>
+                            <button id="btnViewFlat" onclick="setViewMode('flat')"
+                                    class="px-3.5 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors flex items-center gap-1.5" type="button">
+                                <span class="material-symbols-outlined text-sm">table_rows</span> Toàn khóa
+                            </button>
+                            <button id="btnViewChart" onclick="setViewMode('chart')"
+                                    class="px-3.5 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors flex items-center gap-1.5" type="button">
+                                <span class="material-symbols-outlined text-sm">bar_chart</span> Phân bố điểm
+                            </button>
+                        </div>
+
+                        <!-- Thống kê nhanh kết quả hiển thị -->
+                        <div class="hidden md:flex items-center gap-2 text-secondary text-xs bg-surface-container-low px-3 py-1.5 rounded-lg">
+                            <span class="material-symbols-outlined text-sm text-primary">filter_list</span>
+                            <span id="filteredStatsLabel" class="font-medium text-on-surface">Đang tải bảng điểm...</span>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-2.5 flex-1 justify-end">
+                            <!-- Search Input -->
+                            <div class="relative w-full sm:w-72">
+                                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-base">search</span>
+                                <input id="searchInput" type="text" placeholder="Tìm theo tên môn, mã môn..."
+                                       oninput="applyFilters()"
+                                       class="w-full pl-9 pr-3 py-1.5 rounded-lg bg-surface-container-low border border-outline-variant/30 text-sm text-on-surface placeholder-secondary focus:outline-none focus:border-primary focus:bg-white transition-colors">
+                            </div>
+
+                            <!-- Sync Button -->
+                            <button id="syncBtn" onclick="triggerSync()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors shadow-sm" type="button" title="Đồng bộ trực tiếp kết quả điểm từ Cổng trường">
+                                <span class="material-symbols-outlined text-base">sync</span> Đồng bộ Portal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════ VIEW CONTAINER 1: THEO TỪNG HỌC KỲ ═══════════════════════════ -->
+                <div id="viewGroupedContainer" class="flex flex-col gap-space-lg">
+                    <!-- Được sinh tự động bởi JS theo từng nhóm học kỳ -->
+                    <div id="semesterGroupsList" class="flex flex-col gap-6"></div>
+                </div>
+
+                <!-- ═══════════════════════════ VIEW CONTAINER 2: BẢNG TOÀN KHÓA ═══════════════════════════ -->
+                <div id="viewFlatContainer" class="hidden bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
+                    <div class="p-4 bg-surface-container-low/70 border-b border-outline-variant/20 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-xl">table_chart</span>
+                            <h2 class="font-headline text-headline-sm font-bold text-on-surface">Danh sách toàn bộ môn học</h2>
+                        </div>
+                        <span id="flatCountBadge" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-primary-fixed text-on-primary-fixed">0 môn</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left table-print-border" id="flatGradesTable">
+                            <thead>
+                                <tr class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps uppercase border-b border-outline-variant/30">
+                                    <th class="py-3 px-3 text-center w-12">STT</th>
+                                    <th class="py-3 px-3">Học kỳ</th>
+                                    <th class="py-3 px-3">Mã môn</th>
+                                    <th class="py-3 px-4 min-w-[220px]">Tên môn học</th>
+                                    <th class="py-3 px-2 text-center">Số TC</th>
+                                    <th class="py-3 px-2 text-center">Điểm QT</th>
+                                    <th class="py-3 px-2 text-center">Điểm CK</th>
+                                    <th class="py-3 px-2 text-center font-bold">Tổng kết</th>
+                                    <th class="py-3 px-2 text-center">Điểm chữ</th>
+                                    <th class="py-3 px-2 text-center">Thang 4</th>
+                                    <th class="py-3 px-3 text-center">Kết quả</th>
+                                </tr>
+                            </thead>
+                            <tbody id="flatGradesBody" class="divide-y divide-outline-variant/15 text-body-md"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════ VIEW CONTAINER 3: THỐNG KÊ & PHÂN BỐ ĐIỂM ═══════════════════════════ -->
+                <div id="viewChartContainer" class="hidden flex flex-col gap-6">
+                    <!-- Phân bố điểm chữ A/B/C/D/F -->
+                    <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/30 flex flex-col gap-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-outline-variant/20 pb-4">
+                            <div>
+                                <h2 class="font-headline text-headline-sm font-bold text-on-surface">Phân bố điểm chữ & Tỷ lệ môn học</h2>
+                                <p class="text-xs text-secondary mt-0.5">Thống kê cơ cấu điểm số theo các thang điểm quy đổi của HCMUTE</p>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 self-start sm:self-auto">
+                                Tỷ lệ hoàn thành: <strong id="chartCompletionRate">--%</strong>
+                            </span>
+                        </div>
+
+                        <!-- Grade Letters Bar Breakdown -->
+                        <div id="gradeLettersGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"></div>
+
+                        <!-- Progress by semesters -->
+                        <div class="mt-4 pt-4 border-t border-outline-variant/20">
+                            <h3 class="font-label-lg text-label-lg font-bold text-on-surface mb-3 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-base">trending_up</span> Tiến độ điểm trung bình qua các học kỳ
+                            </h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm" id="semesterProgressTable">
+                                    <thead>
+                                        <tr class="bg-surface-container-low text-secondary font-label-caps uppercase text-xs">
+                                            <th class="py-2.5 px-3">Học kỳ</th>
+                                            <th class="py-2.5 px-3 text-center">Số môn</th>
+                                            <th class="py-2.5 px-3 text-center">Số TC đăng ký</th>
+                                            <th class="py-2.5 px-3 text-center">Số TC đạt</th>
+                                            <th class="py-2.5 px-3 text-center">GPA HK (Hệ 10)</th>
+                                            <th class="py-2.5 px-3 text-center">GPA HK (Hệ 4)</th>
+                                            <th class="py-2.5 px-3 text-center">Xếp loại</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="semesterProgressBody" class="divide-y divide-outline-variant/15 font-medium"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: Official HCMUTE Grading Scale Reference Table -->
+                <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm border border-outline-variant/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary font-bold">Thang điểm HCMUTE:</span>
+                        <div class="flex items-center gap-1.5"><span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800">A / A+</span><span class="text-xs text-secondary">3.8 - 4.0</span></div>
+                        <div class="flex items-center gap-1.5"><span class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-800">B / B+</span><span class="text-xs text-secondary">3.0 - 3.5</span></div>
+                        <div class="flex items-center gap-1.5"><span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800">C / C+</span><span class="text-xs text-secondary">2.0 - 2.5</span></div>
+                        <div class="flex items-center gap-1.5"><span class="px-2 py-0.5 rounded text-[11px] font-bold bg-orange-100 text-orange-800">D / D+</span><span class="text-xs text-secondary">1.0 - 1.5</span></div>
+                        <div class="flex items-center gap-1.5"><span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-100 text-rose-800">F (Rớt)</span><span class="text-xs text-secondary">0.0</span></div>
+                    </div>
+                    <div class="flex items-center gap-2 text-secondary max-w-md">
+                        <span class="material-symbols-outlined text-primary text-base shrink-0">verified</span>
+                        <p class="font-body-sm text-body-sm text-[12px]">Điểm số được liên kết trực tiếp theo chuẩn đào tạo tín chỉ <strong>Trường ĐH Sư phạm Kỹ thuật TP.HCM</strong>.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- ═══════════════════════════ TOAST NOTIFICATION ═══════════════════════════ -->
+    <div id="gradesToast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium"></div>
+
+    <!-- ═══════════════════════════ JAVASCRIPT ENGINE ═══════════════════════════ -->
+    <script>
+    // ── Global Variables ──────────────────────────────────────────────────────
+    let allGrades = [];
+    let academicSummary = null;
+    let currentViewMode = 'grouped'; // 'grouped' | 'flat' | 'chart'
+
+    // ── Top Header Menu ───────────────────────────────────────────────────────
+    (function () {
+        const btn = document.getElementById('ttAccountToggle');
+        const menu = document.getElementById('ttDropdownMenu');
+        if (!btn || !menu) return;
+        btn.addEventListener('click', e => { e.stopPropagation(); const h = menu.classList.contains('hidden'); menu.classList.toggle('hidden'); btn.setAttribute('aria-expanded', h ? 'true' : 'false'); });
+        document.addEventListener('click', e => { if (!btn.contains(e.target) && !menu.contains(e.target)) { menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); } });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && !menu.classList.contains('hidden')) { menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); btn.focus(); } });
+    })();
+    function toggleMobileNav() { document.getElementById('mobileNavDrawer')?.classList.toggle('hidden'); }
+
+    // ── Thang điểm chuyển đổi chuẩn HCMUTE ─────────────────────────────────────
+    const GRADE_CONVERT = {
+        'A+': { gpa4: 4.0, class: 'bg-emerald-100 text-emerald-800 border-emerald-300', label: 'Xuất sắc' },
+        'A':  { gpa4: 3.8, class: 'bg-emerald-50 text-emerald-700 border-emerald-200', label: 'Giỏi' },
+        'B+': { gpa4: 3.5, class: 'bg-blue-100 text-blue-800 border-blue-300', label: 'Khá giỏi' },
+        'B':  { gpa4: 3.0, class: 'bg-blue-50 text-blue-700 border-blue-200', label: 'Khá' },
+        'C+': { gpa4: 2.5, class: 'bg-amber-100 text-amber-800 border-amber-300', label: 'TB Khá' },
+        'C':  { gpa4: 2.0, class: 'bg-amber-50 text-amber-700 border-amber-200', label: 'Trung bình' },
+        'D+': { gpa4: 1.5, class: 'bg-orange-100 text-orange-800 border-orange-300', label: 'TB Yếu' },
+        'D':  { gpa4: 1.0, class: 'bg-orange-50 text-orange-700 border-orange-200', label: 'Yếu' },
+        'F':  { gpa4: 0.0, class: 'bg-rose-100 text-rose-800 border-rose-300 font-bold', label: 'Kém (Nợ môn)' }
+    };
+
+    function getGrade4(g) {
+        if (!g) return 0.0;
+        const letter = (g.gradeLetter || '').trim().toUpperCase();
+        if (GRADE_CONVERT[letter]) return GRADE_CONVERT[letter].gpa4;
+        const total = g.totalScore != null ? g.totalScore : 0;
+        if (total >= 9.0) return 4.0;
+        if (total >= 8.5) return 3.8;
+        if (total >= 8.0) return 3.5;
+        if (total >= 7.0) return 3.0;
+        if (total >= 6.0) return 2.5;
+        if (total >= 5.5) return 2.0;
+        if (total >= 5.0) return 1.5;
+        if (total >= 4.0) return 1.0;
+        return 0.0;
+    }
+
+    function getGradeLetter(g) {
+        if (g && g.gradeLetter && g.gradeLetter.trim()) return g.gradeLetter.trim().toUpperCase();
+        const total = g && g.totalScore != null ? g.totalScore : 0;
+        if (total >= 9.0) return 'A+';
+        if (total >= 8.5) return 'A';
+        if (total >= 8.0) return 'B+';
+        if (total >= 7.0) return 'B';
+        if (total >= 6.0) return 'C+';
+        if (total >= 5.5) return 'C';
+        if (total >= 5.0) return 'D+';
+        if (total >= 4.0) return 'D';
+        return 'F';
+    }
+
+    function isCoursePassed(g) {
+        if (g && g.isPassed != null) return g.isPassed;
+        const letter = getGradeLetter(g);
+        if (letter === 'F') return false;
+        return (g.totalScore != null ? g.totalScore >= 4.0 : true);
+    }
+
+    // ── Load Grades & Summary ─────────────────────────────────────────────────
+    async function loadGradesData() {
+        const studentId = document.body.dataset.studentId || '';
+        try {
+            // 1. Lấy Academic Summary
+            const summaryUrl = studentId ? `/api/academic/summary?studentId=${encodeURIComponent(studentId)}` : '/api/academic/summary';
+            const sumRes = await fetch(summaryUrl);
+            if (sumRes.ok) {
+                academicSummary = await sumRes.json();
+                renderKPIs(academicSummary);
+            }
+        } catch (e) {
+            console.debug('Lỗi nạp summary:', e.message);
+        }
+
+        try {
+            // 2. Lấy danh sách điểm
+            const gradesUrl = studentId ? `/api/academic/grades?studentId=${encodeURIComponent(studentId)}` : '/api/academic/grades';
+            const res = await fetch(gradesUrl);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            allGrades = await res.json();
+            if (!Array.isArray(allGrades)) allGrades = [];
+        } catch (e) {
+            console.warn('Lỗi nạp điểm:', e.message);
+            allGrades = [];
+        }
+
+        // Kiểm tra và hiển thị empty alert nếu không có điểm
+        const emptyAlert = document.getElementById('gradesEmptyAlert');
+        if (emptyAlert) {
+            emptyAlert.classList.toggle('hidden', allGrades.length > 0);
+        }
+
+        // Tự động populate danh sách Học kỳ vào dropdown filter
+        populateSemesterFilter();
+
+        // Cập nhật lại KPIs tính trực tiếp từ danh sách điểm thực tế nếu summary chưa có
+        if (!academicSummary || !academicSummary.totalCredits) {
+            recalculateKPIsFromGrades(allGrades);
+        }
+
+        // Render views
+        applyFilters();
+    }
+
+    // ── Populate Semester Filter Dropdown ─────────────────────────────────────
+    function populateSemesterFilter() {
+        const sel = document.getElementById('filterSemester');
+        if (!sel) return;
+        const currentVal = sel.value;
+
+        // Trích xuất các học kỳ duy nhất từ dữ liệu
+        const semSet = new Set();
+        allGrades.forEach(g => {
+            if (g.semester && g.semester.trim()) semSet.add(g.semester.trim());
+        });
+
+        // Sắp xếp học kỳ mới nhất trước
+        const sortedSems = Array.from(semSet).sort((a,b) => b.localeCompare(a, undefined, { numeric: true }));
+
+        sel.innerHTML = '<option value="" selected>Tất cả học kỳ</option>' +
+            sortedSems.map(s => `<option value="${s}">${s}</option>`).join('');
+
+        if (currentVal && semSet.has(currentVal)) {
+            sel.value = currentVal;
+        }
+    }
+
+    // ── KPI Rendering ─────────────────────────────────────────────────────────
+    function renderKPIs(sum) {
+        if (!sum) return;
+        if (sum.gpa4 != null) {
+            const g4 = sum.gpa4.toFixed(2);
+            document.getElementById('kpiGpa4').textContent = g4;
+            document.getElementById('kpiGpa4Bar').style.width = Math.min(100, (sum.gpa4 / 4.0) * 100) + '%';
+        }
+        if (sum.academicStanding) {
+            document.getElementById('kpiStandingBadge').textContent = sum.academicStanding;
+        }
+        if (sum.gpa10 != null) {
+            const g10 = sum.gpa10.toFixed(2);
+            document.getElementById('kpiGpa10').textContent = g10;
+            document.getElementById('kpiGpa10Bar').style.width = Math.min(100, (sum.gpa10 / 10.0) * 100) + '%';
+            document.getElementById('kpiGpa10Rate').textContent = sum.gpa10 >= 8.0 ? 'Loại Giỏi' : sum.gpa10 >= 7.0 ? 'Loại Khá' : sum.gpa10 >= 5.0 ? 'Trung bình' : 'Cảnh báo';
+        }
+        if (sum.totalCredits != null) {
+            document.getElementById('kpiCredits').textContent = sum.totalCredits;
+            const pct = Math.min(100, Math.round((sum.totalCredits / 132) * 100));
+            document.getElementById('kpiCreditsPercent').textContent = pct + '%';
+            document.getElementById('kpiCreditsBar').style.width = pct + '%';
+        }
+        if (sum.passedCoursesCount != null) {
+            document.getElementById('kpiPassedCount').innerHTML = `<span class="material-symbols-outlined text-base">check_circle</span> ${sum.passedCoursesCount} Đạt`;
+        }
+        if (sum.failedCoursesCount != null) {
+            document.getElementById('kpiFailedCount').innerHTML = `<span class="material-symbols-outlined text-base">cancel</span> ${sum.failedCoursesCount} Nợ`;
+            const totalC = (sum.passedCoursesCount || 0) + (sum.failedCoursesCount || 0);
+            if (totalC > 0) {
+                const ratio = Math.round(((sum.passedCoursesCount || 0) / totalC) * 100);
+                document.getElementById('kpiPassedRatio').textContent = `Tỷ lệ hoàn thành: ${ratio}%`;
+            }
+        }
+    }
+
+    function recalculateKPIsFromGrades(grades) {
+        if (!grades || grades.length === 0) return;
+        let totalCredits = 0;
+        let sumScore10 = 0;
+        let sumScore4 = 0;
+        let countCreditsWithScore = 0;
+        let passed = 0, failed = 0;
+
+        grades.forEach(g => {
+            const credits = g.credits || 0;
+            const isPass = isCoursePassed(g);
+            if (isPass) {
+                passed++;
+                totalCredits += credits;
+            } else {
+                failed++;
+            }
+            if (g.totalScore != null && credits > 0) {
+                sumScore10 += g.totalScore * credits;
+                sumScore4 += getGrade4(g) * credits;
+                countCreditsWithScore += credits;
+            }
+        });
+
+        const gpa10 = countCreditsWithScore > 0 ? (sumScore10 / countCreditsWithScore) : 0;
+        const gpa4 = countCreditsWithScore > 0 ? (sumScore4 / countCreditsWithScore) : 0;
+
+        let standing = 'Trung bình';
+        if (gpa4 >= 3.6) standing = 'Xuất sắc';
+        else if (gpa4 >= 3.2) standing = 'Giỏi';
+        else if (gpa4 >= 2.5) standing = 'Khá';
+        else if (gpa4 < 2.0) standing = 'Yếu';
+
+        renderKPIs({
+            gpa4: gpa4,
+            gpa10: gpa10,
+            academicStanding: standing,
+            totalCredits: totalCredits,
+            passedCoursesCount: passed,
+            failedCoursesCount: failed
+        });
+    }
+
+    // ── Apply Filters (Lọc dữ liệu tức thì) ──────────────────────────────────
+    function applyFilters() {
+        const yearVal = document.getElementById('filterYear').value.trim();
+        const semVal = document.getElementById('filterSemester').value.trim();
+        const statusVal = document.getElementById('filterStatus').value;
+        const searchVal = document.getElementById('searchInput').value.trim().toLowerCase();
+
+        const filtered = allGrades.filter(g => {
+            // Lọc theo năm học
+            if (yearVal) {
+                const semStr = g.semester || '';
+                if (!semStr.includes(yearVal)) return false;
+            }
+            // Lọc theo học kỳ
+            if (semVal) {
+                if ((g.semester || '').trim() !== semVal) return false;
+            }
+            // Lọc theo trạng thái
+            if (statusVal === 'PASSED' && !isCoursePassed(g)) return false;
+            if (statusVal === 'FAILED' && isCoursePassed(g)) return false;
+
+            // Tìm kiếm
+            if (searchVal) {
+                const name = (g.courseName || '').toLowerCase();
+                const code = (g.courseCode || '').toLowerCase();
+                const sem = (g.semester || '').toLowerCase();
+                if (!name.includes(searchVal) && !code.includes(searchVal) && !sem.includes(searchVal)) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        // Cập nhật nhãn thống kê
+        const totalCreds = filtered.reduce((acc, c) => acc + (c.credits || 0), 0);
+        document.getElementById('filteredStatsLabel').textContent = `Hiển thị ${filtered.length} môn học (${totalCreds} tín chỉ)`;
+        document.getElementById('flatCountBadge').textContent = `${filtered.length} môn (${totalCreds} TC)`;
+
+        // Render theo view mode đang chọn
+        if (currentViewMode === 'grouped') {
+            renderGroupedView(filtered);
+        } else if (currentViewMode === 'flat') {
+            renderFlatView(filtered);
+        } else if (currentViewMode === 'chart') {
+            renderChartView(filtered);
+        }
+    }
+
+    function resetFilters() {
+        document.getElementById('filterYear').value = '';
+        document.getElementById('filterSemester').value = '';
+        document.getElementById('filterStatus').value = 'ALL';
+        document.getElementById('searchInput').value = '';
+        applyFilters();
+    }
+
+    // ── View Mode Switcher ───────────────────────────────────────────────────
+    function setViewMode(mode) {
+        currentViewMode = mode;
+        document.getElementById('viewGroupedContainer').classList.toggle('hidden', mode !== 'grouped');
+        document.getElementById('viewFlatContainer').classList.toggle('hidden', mode !== 'flat');
+        document.getElementById('viewChartContainer').classList.toggle('hidden', mode !== 'chart');
+
+        const modes = ['Grouped', 'Flat', 'Chart'];
+        modes.forEach(m => {
+            const btn = document.getElementById('btnView' + m);
+            const isAct = (m.toLowerCase() === mode);
+            btn.className = isAct
+                ? 'px-3.5 py-1.5 rounded-md font-label-md text-label-md font-semibold bg-surface-container-lowest text-primary shadow-sm flex items-center gap-1.5'
+                : 'px-3.5 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors flex items-center gap-1.5';
+        });
+
+        applyFilters();
+    }
+
+    // ── Render 1: Theo từng học kỳ (Grouped View) ────────────────────────────
+    function renderGroupedView(grades) {
+        const container = document.getElementById('semesterGroupsList');
+        if (!container) return;
+
+        if (grades.length === 0) {
+            container.innerHTML = `
+                <div class="bg-surface-container-lowest rounded-xl p-12 text-center shadow-sm border border-outline-variant/30">
+                    <span class="material-symbols-outlined text-4xl text-secondary">search_off</span>
+                    <h3 class="font-headline text-headline-sm font-bold text-on-surface mt-2">Không tìm thấy môn học nào phù hợp</h3>
+                    <p class="font-body-md text-secondary mt-1">Vui lòng thay đổi từ khóa tìm kiếm hoặc điều chỉnh lại bộ lọc Năm học / Học kỳ.</p>
+                    <button onclick="resetFilters()" class="mt-4 px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-semibold text-sm transition-colors">
+                        Xóa tất cả bộ lọc
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        // Gom nhóm theo semester
+        const groups = {};
+        grades.forEach(g => {
+            const sem = (g.semester && g.semester.trim()) ? g.semester.trim() : 'Chưa phân loại học kỳ';
+            if (!groups[sem]) groups[sem] = [];
+            groups[sem].push(g);
+        });
+
+        // Sắp xếp các học kỳ mới nhất trước
+        const sortedSemKeys = Object.keys(groups).sort((a,b) => b.localeCompare(a, undefined, { numeric: true }));
+
+        let html = '';
+        sortedSemKeys.forEach((semName, groupIndex) => {
+            const semGrades = groups[semName];
+
+            // Tính thống kê học kỳ
+            let semCredits = 0;
+            let semScore10 = 0;
+            let semScore4 = 0;
+            let semCreditsScored = 0;
+            let semPassed = 0;
+
+            semGrades.forEach(g => {
+                const cred = g.credits || 0;
+                semCredits += cred;
+                if (isCoursePassed(g)) semPassed++;
+                if (g.totalScore != null && cred > 0) {
+                    semScore10 += g.totalScore * cred;
+                    semScore4 += getGrade4(g) * cred;
+                    semCreditsScored += cred;
+                }
+            });
+
+            const semGpa10 = semCreditsScored > 0 ? (semScore10 / semCreditsScored).toFixed(2) : '--';
+            const semGpa4 = semCreditsScored > 0 ? (semScore4 / semCreditsScored).toFixed(2) : '--';
+
+            html += `
+                <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden transition-all duration-200">
+                    <!-- Semester Header Bar -->
+                    <div class="px-5 py-4 bg-surface-container-low/70 border-b border-outline-variant/20 flex flex-wrap items-center justify-between gap-3 cursor-pointer select-none"
+                         onclick="toggleSemesterGroup('${groupIndex}')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+                                <span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                            </div>
+                            <div>
+                                <h2 class="font-headline text-headline-sm font-bold text-on-surface">${semName}</h2>
+                                <div class="flex flex-wrap items-center gap-2 text-xs text-secondary mt-0.5">
+                                    <span>${semGrades.length} môn học</span>
+                                    <span>•</span>
+                                    <span><strong>${semCredits}</strong> tín chỉ đăng ký</span>
+                                    <span>•</span>
+                                    <span class="text-emerald-700 font-semibold">${semPassed}/${semGrades.length} môn đạt</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick semester badges -->
+                        <div class="flex items-center gap-3">
+                            <div class="hidden sm:flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-2xs text-xs font-semibold">
+                                <span class="text-secondary">ĐTB HK (10):</span>
+                                <span class="text-primary font-bold text-sm">${semGpa10}</span>
+                                <span class="text-slate-300">|</span>
+                                <span class="text-secondary">Hệ 4:</span>
+                                <span class="text-emerald-700 font-bold text-sm">${semGpa4}</span>
+                            </div>
+                            <button class="p-1 rounded text-secondary hover:text-on-surface" type="button" aria-label="Thu gọn / Mở rộng">
+                                <span id="chevron-${groupIndex}" class="material-symbols-outlined transition-transform duration-200">expand_less</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Grades Table for Semester -->
+                    <div id="semContent-${groupIndex}" class="overflow-x-auto">
+                        <table class="w-full text-left table-print-border">
+                            <thead>
+                                <tr class="bg-surface-container-low/40 text-on-surface-variant font-label-caps text-label-caps uppercase border-b border-outline-variant/20">
+                                    <th class="py-3 px-3 text-center w-12">STT</th>
+                                    <th class="py-3 px-3 w-32">Mã môn</th>
+                                    <th class="py-3 px-4 min-w-[200px]">Tên môn học</th>
+                                    <th class="py-3 px-2 text-center w-16">Số TC</th>
+                                    <th class="py-3 px-2 text-center w-20">Điểm QT</th>
+                                    <th class="py-3 px-2 text-center w-20">Điểm CK</th>
+                                    <th class="py-3 px-2 text-center w-20 font-bold">Tổng kết</th>
+                                    <th class="py-3 px-2 text-center w-20">Điểm chữ</th>
+                                    <th class="py-3 px-2 text-center w-20">Thang 4</th>
+                                    <th class="py-3 px-3 text-center w-24">Kết quả</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant/15 text-body-md">
+                                ${semGrades.map((g, idx) => renderGradeRow(g, idx + 1)).join('')}
+                            </tbody>
+                            <!-- Semester Summary Footer -->
+                            <tfoot>
+                                <tr class="bg-surface-container-low/60 font-semibold text-xs text-on-surface border-t-2 border-outline-variant/30">
+                                    <td colspan="3" class="py-3 px-4 text-right">Tổng kết học kỳ:</td>
+                                    <td class="py-3 px-2 text-center font-bold text-primary">${semCredits} TC</td>
+                                    <td colspan="2" class="py-3 px-2 text-center text-secondary">--</td>
+                                    <td class="py-3 px-2 text-center font-bold text-primary">${semGpa10}</td>
+                                    <td class="py-3 px-2 text-center text-secondary">--</td>
+                                    <td class="py-3 px-2 text-center font-bold text-emerald-700">${semGpa4}</td>
+                                    <td class="py-3 px-3 text-center text-emerald-700">${semPassed}/${semGrades.length} Đạt</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    function toggleSemesterGroup(idx) {
+        const content = document.getElementById(`semContent-${idx}`);
+        const chevron = document.getElementById(`chevron-${idx}`);
+        if (!content || !chevron) return;
+        const isCollapsed = content.classList.contains('hidden');
+        content.classList.toggle('hidden', !isCollapsed);
+        chevron.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+
+    // ── Render Grade Row ──────────────────────────────────────────────────────
+    function renderGradeRow(g, stt, showSemesterColumn = false) {
+        const passed = isCoursePassed(g);
+        const letter = getGradeLetter(g);
+        const g4 = getGrade4(g);
+        const conv = GRADE_CONVERT[letter] || { class: 'bg-slate-100 text-slate-800 border-slate-200' };
+
+        const mid = g.midtermScore != null ? g.midtermScore.toFixed(1) : '--';
+        const fin = g.finalScore != null ? g.finalScore.toFixed(1) : '--';
+        const tot = g.totalScore != null ? g.totalScore.toFixed(1) : '--';
+
+        return `
+            <tr class="hover:bg-surface-container-low/50 transition-colors ${!passed ? 'bg-rose-50/30' : ''}">
+                <td class="py-3 px-3 text-center font-body-sm text-secondary">${stt}</td>
+                ${showSemesterColumn ? `<td class="py-3 px-3 text-xs font-medium text-slate-700 whitespace-nowrap">${g.semester||'--'}</td>` : ''}
+                <td class="py-3 px-3 font-mono text-xs font-semibold text-primary whitespace-nowrap">
+                    <span class="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed">${g.courseCode||'--'}</span>
+                </td>
+                <td class="py-3 px-4 font-label-md text-label-md font-bold text-on-surface">
+                    ${g.courseName||'--'}
+                </td>
+                <td class="py-3 px-2 text-center font-body-md font-semibold text-on-surface">${g.credits != null ? g.credits : '--'}</td>
+                <td class="py-3 px-2 text-center font-body-md text-secondary">${mid}</td>
+                <td class="py-3 px-2 text-center font-body-md text-secondary">${fin}</td>
+                <td class="py-3 px-2 text-center font-body-md font-bold ${passed ? 'text-primary' : 'text-rose-600'}">${tot}</td>
+                <td class="py-3 px-2 text-center">
+                    <span class="px-2 py-0.5 rounded-md text-xs font-bold border ${conv.class}">${letter}</span>
+                </td>
+                <td class="py-3 px-2 text-center font-body-md font-semibold ${passed ? 'text-emerald-700' : 'text-rose-600'}">${g4.toFixed(1)}</td>
+                <td class="py-3 px-3 text-center">
+                    ${passed ?
+                        '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Đạt</span>' :
+                        '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Học lại</span>'
+                    }
+                </td>
+            </tr>
+        `;
+    }
+
+    // ── Render 2: Bảng toàn khóa (Flat Table) ────────────────────────────────
+    function renderFlatView(grades) {
+        const body = document.getElementById('flatGradesBody');
+        if (!body) return;
+        if (grades.length === 0) {
+            body.innerHTML = '<tr><td colspan="11" class="py-12 text-center text-secondary">Không có môn học nào phù hợp với bộ lọc</td></tr>';
+            return;
+        }
+        body.innerHTML = grades.map((g, idx) => renderGradeRow(g, idx + 1, true)).join('');
+    }
+
+    // ── Render 3: Thống kê & Phân bố điểm ─────────────────────────────────────
+    function renderChartView(grades) {
+        const grid = document.getElementById('gradeLettersGrid');
+        if (!grid) return;
+
+        const counts = { 'A+': 0, 'A': 0, 'B+': 0, 'B': 0, 'C+': 0, 'C': 0, 'D+': 0, 'D': 0, 'F': 0 };
+        let total = grades.length;
+        let passed = 0;
+
+        grades.forEach(g => {
+            const letter = getGradeLetter(g);
+            if (counts[letter] !== undefined) counts[letter]++;
+            if (isCoursePassed(g)) passed++;
+        });
+
+        const pctComplete = total > 0 ? Math.round((passed / total) * 100) : 0;
+        document.getElementById('chartCompletionRate').textContent = `${pctComplete}% (${passed}/${total} môn)`;
+
+        const letterKeys = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F'];
+        grid.innerHTML = letterKeys.map(k => {
+            const c = counts[k] || 0;
+            const pct = total > 0 ? Math.round((c / total) * 100) : 0;
+            const conf = GRADE_CONVERT[k] || { class: 'bg-slate-100 text-slate-800', label: '' };
+            return `
+                <div class="bg-surface-container-low rounded-xl p-3.5 flex flex-col justify-between border border-outline-variant/30">
+                    <div class="flex items-center justify-between">
+                        <span class="px-2.5 py-0.5 rounded text-sm font-bold border ${conf.class}">${k}</span>
+                        <span class="text-xs font-semibold text-secondary">${conf.label}</span>
+                    </div>
+                    <div class="mt-3">
+                        <div class="flex items-baseline justify-between">
+                            <span class="text-2xl font-bold font-headline text-on-surface">${c}</span>
+                            <span class="text-xs font-semibold text-secondary">${pct}%</span>
+                        </div>
+                        <div class="mt-1.5 w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full ${k === 'F' ? 'bg-rose-500' : 'bg-primary'}" style="width:${pct}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Tiến độ qua các học kỳ
+        const semGroups = {};
+        grades.forEach(g => {
+            const sem = g.semester || 'Chưa phân loại';
+            if (!semGroups[sem]) semGroups[sem] = [];
+            semGroups[sem].push(g);
+        });
+
+        const sortedSems = Object.keys(semGroups).sort((a,b) => b.localeCompare(a, undefined, { numeric: true }));
+        const progBody = document.getElementById('semesterProgressBody');
+        if (progBody) {
+            progBody.innerHTML = sortedSems.map(s => {
+                const list = semGroups[s];
+                let creds = 0, passedCreds = 0, sum10 = 0, sum4 = 0, scCredits = 0;
+                list.forEach(g => {
+                    const c = g.credits || 0;
+                    creds += c;
+                    if (isCoursePassed(g)) passedCreds += c;
+                    if (g.totalScore != null && c > 0) {
+                        sum10 += g.totalScore * c;
+                        sum4 += getGrade4(g) * c;
+                        scCredits += c;
+                    }
+                });
+                const gpa10 = scCredits > 0 ? (sum10 / scCredits).toFixed(2) : '--';
+                const gpa4 = scCredits > 0 ? (sum4 / scCredits).toFixed(2) : '--';
+                let rank = 'Trung bình';
+                if (scCredits > 0) {
+                    const num4 = parseFloat(gpa4);
+                    if (num4 >= 3.6) rank = 'Xuất sắc';
+                    else if (num4 >= 3.2) rank = 'Giỏi';
+                    else if (num4 >= 2.5) rank = 'Khá';
+                    else if (num4 < 2.0) rank = 'Yếu';
+                }
+                return `
+                    <tr class="hover:bg-surface-container-low transition-colors">
+                        <td class="py-2.5 px-3 font-semibold text-on-surface">${s}</td>
+                        <td class="py-2.5 px-3 text-center text-secondary">${list.length}</td>
+                        <td class="py-2.5 px-3 text-center font-semibold text-on-surface">${creds}</td>
+                        <td class="py-2.5 px-3 text-center text-emerald-700 font-semibold">${passedCreds}</td>
+                        <td class="py-2.5 px-3 text-center font-bold text-primary">${gpa10}</td>
+                        <td class="py-2.5 px-3 text-center font-bold text-emerald-700">${gpa4}</td>
+                        <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 rounded text-xs font-semibold bg-surface-container text-secondary">${rank}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    }
+
+    // ── Kích hoạt đồng bộ điểm từ Portal ──────────────────────────────────────
+    async function triggerSync() {
+        const syncBtn = document.getElementById('syncBtn');
+        const topSyncBtn = document.getElementById('topSyncBtn');
+        const origContent = syncBtn ? syncBtn.innerHTML : '';
+        const origTopContent = topSyncBtn ? topSyncBtn.innerHTML : '';
+
+        const setSpin = (loading) => {
+            if (syncBtn) {
+                syncBtn.disabled = loading;
+                syncBtn.innerHTML = loading ? `<span class="material-symbols-outlined text-base animate-spin">refresh</span> Đang kéo dữ liệu...` : origContent;
+            }
+            if (topSyncBtn) {
+                topSyncBtn.disabled = loading;
+                topSyncBtn.innerHTML = loading ? `<span class="material-symbols-outlined text-base animate-spin">refresh</span> Đang đồng bộ...` : origTopContent;
+            }
+        };
+
+        setSpin(true);
+
+        try {
+            const studentId = document.body.dataset.studentId || '';
+            const portalLinked = document.body.dataset.portalLinked === 'true';
+            const portalUser = document.body.dataset.portalUser || '';
+
+            if (!portalLinked) {
+                const confirmed = confirm('Bạn chưa lưu mật khẩu Cổng trường HCMUTE trong Hồ sơ cá nhân (Profile).\n\nNhấn "OK" để chuyển đến trang Profile để liên kết tài khoản và đồng bộ bảng điểm thật.');
+                if (confirmed) {
+                    window.location.href = '/profile';
+                    return;
+                }
+            }
+
+            const targetStudentId = portalUser || studentId || '21110001';
+            const res = await fetch('/api/academic/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    studentId: targetStudentId,
+                    password: '' // Server sẽ tự động lấy mật khẩu mã hóa trong Profile
+                })
+            });
+
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+
+            if (data.success) {
+                showToast(`Đồng bộ thành công! Đã cập nhật ${data.gradesCount || 0} môn học và ${data.schedulesCount || 0} lịch học.`, 'success');
+                // Tải lại dữ liệu mới nhất
+                await loadGradesData();
+            } else {
+                showToast(`Đồng bộ chưa hoàn tất: ${data.message || 'Không có phản hồi từ máy chủ'}`, 'error');
+            }
+        } catch (e) {
+            console.error('Lỗi đồng bộ:', e);
+            showToast('Lỗi khi đồng bộ từ Cổng trường: ' + e.message, 'error');
+        } finally {
+            setSpin(false);
+        }
+    }
+
+    // ── Xuất File CSV / Excel ────────────────────────────────────────────────
+    function exportGradesCsv() {
+        if (!allGrades || allGrades.length === 0) {
+            showToast('Không có dữ liệu bảng điểm để xuất!', 'error');
+            return;
+        }
+
+        const headers = ['STT', 'Hoc Ky', 'Ma Mon', 'Ten Mon Hoc', 'So Tin Chi', 'Diem Qua Trinh', 'Diem Cuoi Ky', 'Tong Ket (He 10)', 'Diem Chu', 'Thang Diem 4', 'Ket Qua'];
+        const rows = allGrades.map((g, idx) => [
+            idx + 1,
+            `"${(g.semester||'').replace(/"/g, '""')}"`,
+            `"${(g.courseCode||'').replace(/"/g, '""')}"`,
+            `"${(g.courseName||'').replace(/"/g, '""')}"`,
+            g.credits != null ? g.credits : '',
+            g.midtermScore != null ? g.midtermScore : '',
+            g.finalScore != null ? g.finalScore : '',
+            g.totalScore != null ? g.totalScore : '',
+            `"${getGradeLetter(g)}"`,
+            getGrade4(g),
+            isCoursePassed(g) ? 'Dat' : 'Khong Dat'
+        ]);
+
+        const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `BangDiem_HCMUTE_${document.body.dataset.studentId || 'SinhVien'}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast('Đã xuất file bảng điểm thành công!', 'success');
+    }
+
+    // ── Floating Toast System ────────────────────────────────────────────────
+    function showToast(msg, type = 'info') {
+        const toast = document.getElementById('gradesToast');
+        if (!toast) return;
+        toast.className = 'fixed bottom-6 right-6 z-50 transition-all duration-300 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium';
+        if (type === 'success') {
+            toast.className += ' bg-emerald-600 text-white border-emerald-500';
+            toast.innerHTML = `<span class="material-symbols-outlined text-base">check_circle</span><span>${msg}</span>`;
+        } else if (type === 'error') {
+            toast.className += ' bg-rose-600 text-white border-rose-500';
+            toast.innerHTML = `<span class="material-symbols-outlined text-base">error</span><span>${msg}</span>`;
+        } else {
+            toast.className += ' bg-slate-900 text-white border-slate-700';
+            toast.innerHTML = `<span class="material-symbols-outlined text-base">info</span><span>${msg}</span>`;
+        }
+        toast.classList.remove('opacity-0', 'translate-y-20', 'pointer-events-none');
+        setTimeout(() => {
+            toast.classList.add('opacity-0', 'translate-y-20', 'pointer-events-none');
+        }, 4000);
+    }
+
+    // ── Khởi chạy khi tài liệu sẵn sàng ─────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        loadGradesData();
+    });
+    </script>
+</body>
+</html>
