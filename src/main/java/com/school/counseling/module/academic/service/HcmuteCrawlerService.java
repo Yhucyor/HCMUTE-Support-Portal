@@ -504,9 +504,13 @@ public class HcmuteCrawlerService {
         else if (m.hasNonNull("SoTC")) credits = m.get("SoTC").asInt(0);
 
         Double totalScore = null;
-        if (m.hasNonNull("DiemTK_10")) totalScore = m.get("DiemTK_10").asDouble();
-        else if (m.hasNonNull("DiemTK")) totalScore = m.get("DiemTK").asDouble();
-        else if (m.hasNonNull("TotalMark")) totalScore = m.get("TotalMark").asDouble();
+        if (m.hasNonNull("DiemTK_10") && !m.get("DiemTK_10").asText().isBlank()) {
+            try { totalScore = m.get("DiemTK_10").asDouble(); } catch (Exception ignored) {}
+        } else if (m.hasNonNull("DiemTK") && !m.get("DiemTK").asText().isBlank()) {
+            try { totalScore = m.get("DiemTK").asDouble(); } catch (Exception ignored) {}
+        } else if (m.hasNonNull("TotalMark") && !m.get("TotalMark").asText().isBlank()) {
+            try { totalScore = m.get("TotalMark").asDouble(); } catch (Exception ignored) {}
+        }
 
         String gradeLetter = "";
         if (m.hasNonNull("DiemTK_Chu")) gradeLetter = m.get("DiemTK_Chu").asText().trim();
@@ -522,8 +526,15 @@ public class HcmuteCrawlerService {
         else if (m.hasNonNull("DiemCK")) finalScore = m.get("DiemCK").asDouble();
         else if (m.hasNonNull("DiemThi_10")) finalScore = m.get("DiemThi_10").asDouble();
 
-        boolean isPassed = (m.hasNonNull("IsPass") && "1".equals(m.get("IsPass").asText()))
-                || (totalScore != null && totalScore >= 4.0 && !"F".equalsIgnoreCase(gradeLetter));
+        // Chỉ đánh giá kết quả đạt/rớt khi môn học đã có điểm kết quả cuối cùng trên Portal
+        boolean hasFinalResult = (totalScore != null) || (!gradeLetter.isBlank() && !"--".equals(gradeLetter));
+
+        Boolean isPassed = null;
+        if (hasFinalResult) {
+            isPassed = (m.hasNonNull("IsPass") && "1".equals(m.get("IsPass").asText()))
+                    || (totalScore != null && totalScore >= 4.0 && !"F".equalsIgnoreCase(gradeLetter))
+                    || (!gradeLetter.isBlank() && !"F".equalsIgnoreCase(gradeLetter) && !"--".equals(gradeLetter));
+        }
 
         String sem = (semesterName != null && !semesterName.isBlank()) ? semesterName
                 : (m.hasNonNull("HocKy") ? m.get("HocKy").asText() : "Học kỳ");
@@ -776,8 +787,19 @@ public class HcmuteCrawlerService {
         for (StudentGrade g : grades) {
             int credits = g.getCredits() != null ? g.getCredits() : 0;
             Double score10 = g.getTotalScore();
+            String letter = g.getGradeLetter() != null ? g.getGradeLetter().trim().toUpperCase() : "";
 
-            if (Boolean.TRUE.equals(g.getIsPassed())) {
+            // QUAN TRỌNG: Môn nào chưa có điểm tổng kết cuối cùng trên Portal thì bỏ qua, KHÔNG tính vào GPA / Nợ môn
+            boolean hasFinalResult = (score10 != null) || (!letter.isBlank() && !"--".equals(letter));
+            if (!hasFinalResult) {
+                continue;
+            }
+
+            boolean isPassed = Boolean.TRUE.equals(g.getIsPassed())
+                    || (score10 != null && score10 >= 4.0 && !"F".equals(letter))
+                    || (!letter.isBlank() && !"F".equals(letter));
+
+            if (isPassed) {
                 passedCount++;
                 totalPassedCredits += credits;
             } else {
@@ -787,7 +809,11 @@ public class HcmuteCrawlerService {
             if (score10 != null && credits > 0) {
                 totalCreditsForGpa += credits;
                 weightedScore10Sum += score10 * credits;
-                weightedScore4Sum += convertScale10To4(score10, g.getGradeLetter()) * credits;
+                weightedScore4Sum += convertScale10To4(score10, letter) * credits;
+            } else if (!letter.isBlank() && credits > 0) {
+                double score4 = convertScale10To4(null, letter);
+                totalCreditsForGpa += credits;
+                weightedScore4Sum += score4 * credits;
             }
         }
 
@@ -827,7 +853,7 @@ public class HcmuteCrawlerService {
                 .build();
     }
 
-    private double convertScale10To4(double score10, String letter) {
+    private double convertScale10To4(Double score10, String letter) {
         if (letter != null && !letter.isBlank()) {
             return switch (letter.trim().toUpperCase()) {
                 case "A+", "A" -> 4.0;
@@ -840,6 +866,7 @@ public class HcmuteCrawlerService {
                 default -> 0.0;
             };
         }
+        if (score10 == null) return 0.0;
         if (score10 >= 8.5) return 4.0;
         if (score10 >= 8.0) return 3.5;
         if (score10 >= 7.0) return 3.0;
@@ -988,11 +1015,16 @@ public class HcmuteCrawlerService {
         list.add(createGrade(studentId, "DBMS330264", "Hệ cơ sở dữ liệu", 3, 8.5, 9.0, 8.8, "A", "Học kỳ 1 (2024-2025)", true));
         list.add(createGrade(studentId, "MATH230301", "Xác suất thống kê", 3, 7.5, 7.5, 7.5, "B", "Học kỳ 1 (2024-2025)", true));
 
+        // HK01 (2025-2026) - Học phần đang học (chưa có điểm thi cuối kỳ & tổng kết)
+        list.add(createGrade(studentId, "SWEN330252", "Công nghệ phần mềm", 3, 8.5, null, null, "", "Học kỳ 1 (2025-2026)", null));
+        list.add(createGrade(studentId, "WENG330154", "Lập trình Web nâng cao", 3, null, null, null, "", "Học kỳ 1 (2025-2026)", null));
+        list.add(createGrade(studentId, "MOBL330354", "Phát triển ứng dụng di động", 3, 8.0, null, null, "", "Học kỳ 1 (2025-2026)", null));
+
         return list;
     }
 
     private StudentGrade createGrade(String studentId, String code, String name, int credits,
-                                     Double midterm, Double finalScore, Double total, String letter, String semester, boolean passed) {
+                                     Double midterm, Double finalScore, Double total, String letter, String semester, Boolean passed) {
         return StudentGrade.builder()
                 .studentId(studentId)
                 .courseCode(code)

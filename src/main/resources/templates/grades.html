@@ -457,13 +457,14 @@
                         </fieldset>
 
                         <!-- 3. Trạng thái kết quả môn -->
-                        <fieldset class="border border-slate-300 rounded-md px-3 pb-1 pt-0 bg-white hover:border-slate-400 focus-within:border-primary transition-colors flex-1 sm:flex-initial min-w-[160px] sm:w-52 shadow-2xs">
+                        <fieldset class="border border-slate-300 rounded-md px-3 pb-1 pt-0 bg-white hover:border-slate-400 focus-within:border-primary transition-colors flex-1 sm:flex-initial min-w-[160px] sm:w-56 shadow-2xs">
                             <legend class="text-[11px] text-slate-500 font-medium px-1 select-none">Kết quả học phần</legend>
                             <select id="filterStatus" onchange="applyFilters()"
                                     class="w-full bg-transparent text-[14px] text-slate-800 font-medium outline-none cursor-pointer py-1 border-0 focus:ring-0">
                                 <option value="ALL" selected>Tất cả kết quả</option>
                                 <option value="PASSED">Chỉ môn đã đạt (Qua môn)</option>
                                 <option value="FAILED">Môn chưa đạt / Nợ (F)</option>
+                                <option value="IN_PROGRESS">Môn đang học / Chưa có điểm</option>
                             </select>
                         </fieldset>
 
@@ -648,11 +649,20 @@
         'F':  { gpa4: 0.0, class: 'bg-rose-100 text-rose-800 border-rose-300 font-bold', label: 'Kém (Nợ môn)' }
     };
 
+    // Kiểm tra xem môn học đã có điểm kết quả cuối cùng trên Portal chưa
+    function hasGradeResult(g) {
+        if (!g) return false;
+        if (g.totalScore != null) return true;
+        const letter = (g.gradeLetter || '').trim().toUpperCase();
+        return !!(letter && letter !== '--' && letter !== 'CHƯA CÓ' && ['A+','A','B+','B','C+','C','D+','D','F'].includes(letter));
+    }
+
     function getGrade4(g) {
-        if (!g) return 0.0;
+        if (!hasGradeResult(g)) return null;
         const letter = (g.gradeLetter || '').trim().toUpperCase();
         if (GRADE_CONVERT[letter]) return GRADE_CONVERT[letter].gpa4;
-        const total = g.totalScore != null ? g.totalScore : 0;
+        const total = g.totalScore != null ? g.totalScore : null;
+        if (total == null) return null;
         if (total >= 9.0) return 4.0;
         if (total >= 8.5) return 3.8;
         if (total >= 8.0) return 3.5;
@@ -665,8 +675,12 @@
     }
 
     function getGradeLetter(g) {
-        if (g && g.gradeLetter && g.gradeLetter.trim()) return g.gradeLetter.trim().toUpperCase();
-        const total = g && g.totalScore != null ? g.totalScore : 0;
+        if (!hasGradeResult(g)) return '--';
+        if (g && g.gradeLetter && g.gradeLetter.trim() && g.gradeLetter.trim() !== '--') {
+            return g.gradeLetter.trim().toUpperCase();
+        }
+        const total = g && g.totalScore != null ? g.totalScore : null;
+        if (total == null) return '--';
         if (total >= 9.0) return 'A+';
         if (total >= 8.5) return 'A';
         if (total >= 8.0) return 'B+';
@@ -679,7 +693,8 @@
     }
 
     function isCoursePassed(g) {
-        if (g && g.isPassed != null) return g.isPassed;
+        if (!hasGradeResult(g)) return null; // Môn đang học hoặc chưa có điểm
+        if (g.isPassed != null) return g.isPassed;
         const letter = getGradeLetter(g);
         if (letter === 'F') return false;
         return (g.totalScore != null ? g.totalScore >= 4.0 : true);
@@ -721,10 +736,8 @@
         // Tự động populate danh sách Học kỳ vào dropdown filter
         populateSemesterFilter();
 
-        // Cập nhật lại KPIs tính trực tiếp từ danh sách điểm thực tế nếu summary chưa có
-        if (!academicSummary || !academicSummary.totalCredits) {
-            recalculateKPIsFromGrades(allGrades);
-        }
+        // Cập nhật lại KPIs tính trực tiếp từ danh sách điểm thực tế (chỉ tính môn đã có điểm)
+        recalculateKPIsFromGrades(allGrades);
 
         // Render views
         applyFilters();
@@ -791,25 +804,35 @@
 
     function recalculateKPIsFromGrades(grades) {
         if (!grades || grades.length === 0) return;
-        let totalCredits = 0;
+        let totalPassedCredits = 0;
         let sumScore10 = 0;
         let sumScore4 = 0;
         let countCreditsWithScore = 0;
-        let passed = 0, failed = 0;
+        let passed = 0, failed = 0, inProgress = 0;
 
         grades.forEach(g => {
             const credits = g.credits || 0;
+            // QUAN TRỌNG: Môn nào chưa có điểm kết quả cuối cùng trên Portal thì BỎ QUA không tính!
+            if (!hasGradeResult(g)) {
+                inProgress++;
+                return; // Không tính vào GPA và không tính vào nợ môn!
+            }
+
             const isPass = isCoursePassed(g);
-            if (isPass) {
+            if (isPass === true) {
                 passed++;
-                totalCredits += credits;
-            } else {
+                totalPassedCredits += credits;
+            } else if (isPass === false) {
                 failed++;
             }
+
+            const g4 = getGrade4(g);
             if (g.totalScore != null && credits > 0) {
                 sumScore10 += g.totalScore * credits;
-                sumScore4 += getGrade4(g) * credits;
                 countCreditsWithScore += credits;
+            }
+            if (g4 != null && credits > 0) {
+                sumScore4 += g4 * credits;
             }
         });
 
@@ -820,13 +843,14 @@
         if (gpa4 >= 3.6) standing = 'Xuất sắc';
         else if (gpa4 >= 3.2) standing = 'Giỏi';
         else if (gpa4 >= 2.5) standing = 'Khá';
-        else if (gpa4 < 2.0) standing = 'Yếu';
+        else if (gpa4 < 2.0 && (passed + failed > 0)) standing = 'Cảnh báo học vụ';
+        else if (passed + failed === 0) standing = inProgress > 0 ? 'Đang học' : 'Chưa có dữ liệu';
 
         renderKPIs({
             gpa4: gpa4,
             gpa10: gpa10,
             academicStanding: standing,
-            totalCredits: totalCredits,
+            totalCredits: totalPassedCredits,
             passedCoursesCount: passed,
             failedCoursesCount: failed
         });
@@ -849,9 +873,10 @@
             if (semVal) {
                 if ((g.semester || '').trim() !== semVal) return false;
             }
-            // Lọc theo trạng thái
-            if (statusVal === 'PASSED' && !isCoursePassed(g)) return false;
-            if (statusVal === 'FAILED' && isCoursePassed(g)) return false;
+            // Lọc theo trạng thái kết quả
+            if (statusVal === 'PASSED' && isCoursePassed(g) !== true) return false;
+            if (statusVal === 'FAILED' && isCoursePassed(g) !== false) return false;
+            if (statusVal === 'IN_PROGRESS' && hasGradeResult(g)) return false;
 
             // Tìm kiếm
             if (searchVal) {
@@ -941,21 +966,35 @@
         sortedSemKeys.forEach((semName, groupIndex) => {
             const semGrades = groups[semName];
 
-            // Tính thống kê học kỳ
+            // Tính thống kê học kỳ: chỉ tính môn đã có điểm tổng kết cuối cùng
             let semCredits = 0;
             let semScore10 = 0;
             let semScore4 = 0;
             let semCreditsScored = 0;
             let semPassed = 0;
+            let semGradedCount = 0;
+            let semInProgressCount = 0;
 
             semGrades.forEach(g => {
                 const cred = g.credits || 0;
                 semCredits += cred;
-                if (isCoursePassed(g)) semPassed++;
+
+                // Nếu môn chưa có điểm kết quả cuối cùng -> không tính vào GPA kỳ này
+                if (!hasGradeResult(g)) {
+                    semInProgressCount++;
+                    return;
+                }
+
+                semGradedCount++;
+                if (isCoursePassed(g) === true) semPassed++;
+
+                const g4 = getGrade4(g);
                 if (g.totalScore != null && cred > 0) {
                     semScore10 += g.totalScore * cred;
-                    semScore4 += getGrade4(g) * cred;
                     semCreditsScored += cred;
+                }
+                if (g4 != null && cred > 0) {
+                    semScore4 += g4 * cred;
                 }
             });
 
@@ -978,7 +1017,8 @@
                                     <span>•</span>
                                     <span><strong>${semCredits}</strong> tín chỉ đăng ký</span>
                                     <span>•</span>
-                                    <span class="text-emerald-700 font-semibold">${semPassed}/${semGrades.length} môn đạt</span>
+                                    <span class="text-emerald-700 font-semibold">${semPassed}/${semGradedCount} môn đạt</span>
+                                    ${semInProgressCount > 0 ? `<span class="text-amber-700 font-medium">(${semInProgressCount} đang học)</span>` : ''}
                                 </div>
                             </div>
                         </div>
@@ -1027,7 +1067,9 @@
                                     <td class="py-3 px-2 text-center font-bold text-primary">${semGpa10}</td>
                                     <td class="py-3 px-2 text-center text-secondary">--</td>
                                     <td class="py-3 px-2 text-center font-bold text-emerald-700">${semGpa4}</td>
-                                    <td class="py-3 px-3 text-center text-emerald-700">${semPassed}/${semGrades.length} Đạt</td>
+                                    <td class="py-3 px-3 text-center text-emerald-700">
+                                        ${semGradedCount > 0 ? `${semPassed}/${semGradedCount} Đạt` : 'Đang học'}
+                                    </td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -1050,17 +1092,29 @@
 
     // ── Render Grade Row ──────────────────────────────────────────────────────
     function renderGradeRow(g, stt, showSemesterColumn = false) {
+        const hasResult = hasGradeResult(g);
         const passed = isCoursePassed(g);
         const letter = getGradeLetter(g);
         const g4 = getGrade4(g);
-        const conv = GRADE_CONVERT[letter] || { class: 'bg-slate-100 text-slate-800 border-slate-200' };
+        const conv = (hasResult && GRADE_CONVERT[letter]) ? GRADE_CONVERT[letter] : { class: 'bg-slate-100 text-slate-600 border-slate-200' };
 
         const mid = g.midtermScore != null ? g.midtermScore.toFixed(1) : '--';
         const fin = g.finalScore != null ? g.finalScore.toFixed(1) : '--';
-        const tot = g.totalScore != null ? g.totalScore.toFixed(1) : '--';
+        const tot = (hasResult && g.totalScore != null) ? g.totalScore.toFixed(1) : '--';
+
+        const rowBg = !hasResult ? '' : (passed === false ? 'bg-rose-50/30' : '');
+
+        let statusBadge = '';
+        if (!hasResult) {
+            statusBadge = '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs"><span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>Đang học</span>';
+        } else if (passed === true) {
+            statusBadge = '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Đạt</span>';
+        } else {
+            statusBadge = '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Học lại</span>';
+        }
 
         return `
-            <tr class="hover:bg-surface-container-low/50 transition-colors ${!passed ? 'bg-rose-50/30' : ''}">
+            <tr class="hover:bg-surface-container-low/50 transition-colors ${rowBg}">
                 <td class="py-3 px-3 text-center font-body-sm text-secondary">${stt}</td>
                 ${showSemesterColumn ? `<td class="py-3 px-3 text-xs font-medium text-slate-700 whitespace-nowrap">${g.semester||'--'}</td>` : ''}
                 <td class="py-3 px-3 font-mono text-xs font-semibold text-primary whitespace-nowrap">
@@ -1072,16 +1126,13 @@
                 <td class="py-3 px-2 text-center font-body-md font-semibold text-on-surface">${g.credits != null ? g.credits : '--'}</td>
                 <td class="py-3 px-2 text-center font-body-md text-secondary">${mid}</td>
                 <td class="py-3 px-2 text-center font-body-md text-secondary">${fin}</td>
-                <td class="py-3 px-2 text-center font-body-md font-bold ${passed ? 'text-primary' : 'text-rose-600'}">${tot}</td>
+                <td class="py-3 px-2 text-center font-body-md font-bold ${hasResult ? (passed ? 'text-primary' : 'text-rose-600') : 'text-secondary'}">${tot}</td>
                 <td class="py-3 px-2 text-center">
                     <span class="px-2 py-0.5 rounded-md text-xs font-bold border ${conv.class}">${letter}</span>
                 </td>
-                <td class="py-3 px-2 text-center font-body-md font-semibold ${passed ? 'text-emerald-700' : 'text-rose-600'}">${g4.toFixed(1)}</td>
+                <td class="py-3 px-2 text-center font-body-md font-semibold ${hasResult ? (passed ? 'text-emerald-700' : 'text-rose-600') : 'text-secondary'}">${g4 != null ? g4.toFixed(1) : '--'}</td>
                 <td class="py-3 px-3 text-center">
-                    ${passed ?
-                        '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Đạt</span>' :
-                        '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Học lại</span>'
-                    }
+                    ${statusBadge}
                 </td>
             </tr>
         `;
@@ -1104,22 +1155,28 @@
         if (!grid) return;
 
         const counts = { 'A+': 0, 'A': 0, 'B+': 0, 'B': 0, 'C+': 0, 'C': 0, 'D+': 0, 'D': 0, 'F': 0 };
-        let total = grades.length;
+        let gradedTotal = 0;
         let passed = 0;
+        let inProgressCount = 0;
 
         grades.forEach(g => {
+            if (!hasGradeResult(g)) {
+                inProgressCount++;
+                return;
+            }
+            gradedTotal++;
             const letter = getGradeLetter(g);
             if (counts[letter] !== undefined) counts[letter]++;
-            if (isCoursePassed(g)) passed++;
+            if (isCoursePassed(g) === true) passed++;
         });
 
-        const pctComplete = total > 0 ? Math.round((passed / total) * 100) : 0;
-        document.getElementById('chartCompletionRate').textContent = `${pctComplete}% (${passed}/${total} môn)`;
+        const pctComplete = gradedTotal > 0 ? Math.round((passed / gradedTotal) * 100) : 0;
+        document.getElementById('chartCompletionRate').textContent = `${pctComplete}% (${passed}/${gradedTotal} môn có điểm${inProgressCount > 0 ? `, ${inProgressCount} đang học` : ''})`;
 
         const letterKeys = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F'];
         grid.innerHTML = letterKeys.map(k => {
             const c = counts[k] || 0;
-            const pct = total > 0 ? Math.round((c / total) * 100) : 0;
+            const pct = gradedTotal > 0 ? Math.round((c / gradedTotal) * 100) : 0;
             const conf = GRADE_CONVERT[k] || { class: 'bg-slate-100 text-slate-800', label: '' };
             return `
                 <div class="bg-surface-container-low rounded-xl p-3.5 flex flex-col justify-between border border-outline-variant/30">
@@ -1267,9 +1324,8 @@
             g.midtermScore != null ? g.midtermScore : '',
             g.finalScore != null ? g.finalScore : '',
             g.totalScore != null ? g.totalScore : '',
-            `"${getGradeLetter(g)}"`,
-            getGrade4(g),
-            isCoursePassed(g) ? 'Dat' : 'Khong Dat'
+            getGrade4(g) != null ? getGrade4(g) : '',
+            !hasGradeResult(g) ? 'Dang hoc' : (isCoursePassed(g) === true ? 'Dat' : 'Khong Dat')
         ]);
 
         const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
