@@ -58,7 +58,10 @@ async function handleSendMessage(e) {
     e.preventDefault();
     
     const message = messageInput.value.trim();
-    if (!message) return;
+    if (!message || message.length < 3) {
+        alert('Vui lòng nhập câu hỏi (tối thiểu 3 ký tự)');
+        return;
+    }
     
     // Disable input while processing
     setInputState(false);
@@ -72,8 +75,56 @@ async function handleSendMessage(e) {
     // Show typing indicator
     const typingIndicator = showTypingIndicator();
     
-    // Send via SSE streaming
-    await streamChatResponse(message, typingIndicator);
+    // Send via regular POST (simpler than SSE for now)
+    await sendChatMessage(message, typingIndicator);
+}
+
+/**
+ * Send chat message via POST /api/ai/chat (non-streaming)
+ */
+async function sendChatMessage(message, typingIndicator) {
+    try {
+        const requestBody = {
+            query: message,
+            sessionId: sessionId,
+            provider: 'default'
+        };
+        
+        const response = await fetch('/api/ai/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Remove typing indicator
+        typingIndicator.remove();
+        
+        // Add AI response
+        addAssistantMessage(data.data);
+        
+        // Update sessionId if provided
+        if (data.data.sessionId) {
+            sessionId = data.data.sessionId;
+            // Update URL without reload
+            window.history.pushState({}, '', `/ai/chat/${sessionId}`);
+        }
+        
+    } catch (error) {
+        console.error('Chat error:', error);
+        typingIndicator.remove();
+        showErrorMessage(error.message || 'Có lỗi xảy ra khi kết nối với AI. Vui lòng thử lại.');
+    } finally {
+        setInputState(true);
+    }
 }
 
 /**
@@ -203,21 +254,117 @@ function handleSSEEvent(eventType, data) {
  */
 function addUserMessage(text) {
     const messageDiv = document.createElement('div');
-    messageDiv.className = 'message user-message';
+    messageDiv.className = 'flex items-start justify-end gap-3 pl-8 md:pl-16 message-animate';
     
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'message-content';
-    contentDiv.textContent = text;
+    messageDiv.innerHTML = `
+        <div class="flex flex-col items-end max-w-xl">
+            <div class="flex items-center gap-1.5 mb-1">
+                <span class="text-xs font-semibold text-text-primary">${isAuthenticated ? 'Bạn' : 'Guest'}</span>
+                <span class="text-[11px] text-text-muted">${new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+            <div class="p-3.5 rounded-2xl rounded-tr-xs bg-primary text-white leading-relaxed text-sm shadow-xs">
+                ${escapeHtml(text)}
+            </div>
+        </div>
+        <div class="w-8 h-8 rounded-full bg-primary-subtle text-primary font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-xs border border-primary/30 mt-1">
+            ${isAuthenticated ? 'BẠN' : 'GU'}
+        </div>
+    `;
     
-    const timeDiv = document.createElement('div');
-    timeDiv.className = 'message-time';
-    timeDiv.textContent = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-    
-    messageDiv.appendChild(contentDiv);
-    messageDiv.appendChild(timeDiv);
-    chatMessages.appendChild(messageDiv);
-    
+    const container = chatMessages.querySelector('.max-w-\\[860px\\]');
+    container.appendChild(messageDiv);
     scrollToBottom();
+}
+
+/**
+ * Add assistant message bubble to chat
+ */
+function addAssistantMessage(data) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'flex items-start gap-3.5 pr-2 message-animate';
+    
+    // Render markdown content
+    const contentHtml = typeof marked !== 'undefined' ? marked.parse(data.answer) : escapeHtml(data.answer);
+    
+    // Build sources HTML
+    let sourcesHtml = '';
+    if (data.sources && data.sources.length > 0) {
+        sourcesHtml = `
+            <div class="mt-3 p-3 bg-surface-subtle rounded-lg border border-border-ui">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="material-symbols-outlined text-sm text-text-muted">link</span>
+                    <span class="text-xs font-semibold text-text-secondary">Nguồn tham khảo</span>
+                </div>
+                <div class="space-y-1.5">
+                    ${data.sources.map(src => `
+                        <div class="text-xs text-text-secondary hover:text-primary cursor-pointer">
+                            <span class="material-symbols-outlined text-[14px] align-middle mr-1">article</span>
+                            <span>${escapeHtml(src.title || 'Tài liệu')}</span>
+                            ${src.score ? `<span class="text-[10px] text-text-muted"> (${Math.round(src.score * 100)}% độ chính xác)</span>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    messageDiv.innerHTML = `
+        <div class="w-8 h-8 rounded-full bg-primary-subtle p-0.5 border border-primary/20 flex items-center justify-center flex-shrink-0 shadow-xs mt-1">
+            <img alt="AI" class="w-full h-full object-contain" 
+                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg"/>
+        </div>
+        <div class="flex-1 flex flex-col space-y-4 min-w-0">
+            <div class="flex items-center gap-2">
+                <span class="font-heading font-bold text-xs text-primary">Trợ lý AI học vụ HCMUTE</span>
+                <span class="px-2 py-0.2 rounded-full text-[10px] font-medium bg-primary-subtle text-primary border border-primary/20">Gemini 1.5 Pro</span>
+                <span class="text-[11px] text-text-muted">• ${new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+            <div class="text-sm text-text-primary leading-relaxed prose prose-sm max-w-none">
+                ${contentHtml}
+            </div>
+            ${sourcesHtml}
+            
+            <!-- Feedback & Actions Bar -->
+            <div class="flex items-center gap-3 pt-2">
+                <div class="flex items-center gap-1">
+                    <button class="feedback-btn w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-success hover:bg-green-50 transition-all" 
+                            data-message-id="${data.messageId || ''}"
+                            data-feedback="POSITIVE"
+                            onclick="submitFeedback(this)"
+                            title="Hữu ích">
+                        <span class="material-symbols-outlined text-[16px]">thumb_up</span>
+                    </button>
+                    <button class="feedback-btn w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-error hover:bg-red-50 transition-all" 
+                            data-message-id="${data.messageId || ''}"
+                            data-feedback="NEGATIVE"
+                            onclick="submitFeedback(this)"
+                            title="Không hữu ích">
+                        <span class="material-symbols-outlined text-[16px]">thumb_down</span>
+                    </button>
+                </div>
+                <div class="h-4 w-px bg-border-ui"></div>
+                <button class="copy-btn w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-primary hover:bg-primary-subtle transition-all" 
+                        data-content="${escapeHtml(data.answer)}"
+                        onclick="copyResponse(this)"
+                        title="Sao chép">
+                    <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    const container = chatMessages.querySelector('.max-w-\\[860px\\]');
+    container.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+/**
+ * Escape HTML to prevent XSS
+ */
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 /**
