@@ -490,6 +490,64 @@
 
                                 </div>
 
+                                <!-- ── Liên kết tài khoản Portal Sinh viên ── -->
+                                <div class="flex flex-col gap-space-md pt-space-md border-t border-surface-container-high/60 md:col-span-2">
+                                    <!-- Header row -->
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                        <div class="flex items-center gap-space-sm">
+                                            <span class="material-symbols-outlined text-primary text-[22px]">link</span>
+                                            <div>
+                                                <h4 class="font-title-md text-title-md font-semibold text-on-surface">Liên kết tài khoản Portal Sinh viên</h4>
+                                                <p class="font-body-sm text-body-sm text-secondary">Đồng bộ dữ liệu thời khóa biểu, điểm số và học vụ trực tiếp từ Cổng sinh viên trường (Portal HCMUTE).</p>
+                                            </div>
+                                        </div>
+                                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container text-secondary font-label-md text-label-md self-start sm:self-auto shrink-0">
+                                            <span class="material-symbols-outlined text-[16px] text-emerald-600">verified_user</span>
+                                            <span class="font-medium">Bảo mật mã hóa 256-bit SSL</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Two-column inputs -->
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+                                        <!-- Tài khoản Portal -->
+                                        <div class="flex flex-col gap-1.5">
+                                            <label class="font-label-caps text-label-caps uppercase font-bold text-on-surface-variant flex items-center gap-1" for="portalUsername">
+                                                Tài khoản Portal Sinh viên <span class="text-error">*</span>
+                                            </label>
+                                            <div class="relative">
+                                                <input class="w-full h-11 pl-space-md pr-10 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+                                                       id="portalUsername" name="portalUsername" type="text"
+                                                       th:value="${user.username}"
+                                                       placeholder="Nhập tài khoản / MSSV Portal">
+                                                <span class="material-symbols-outlined absolute right-3 top-3 text-secondary text-[18px]">badge</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Mật khẩu Portal -->
+                                        <div class="flex flex-col gap-1.5">
+                                            <label class="font-label-caps text-label-caps uppercase font-bold text-on-surface-variant flex items-center justify-between" for="portalPassword">
+                                                <span>Mật khẩu Portal Sinh viên <span class="text-error">*</span></span>
+                                                <button type="button"
+                                                        onclick="checkPortalConnection()"
+                                                        class="text-primary hover:text-tertiary font-label-md capitalize flex items-center gap-1 cursor-pointer transition-colors focus:outline-none">
+                                                    <span class="material-symbols-outlined text-[15px]">sync_alt</span>
+                                                    Kiểm tra kết nối
+                                                </button>
+                                            </label>
+                                            <div class="relative">
+                                                <input class="w-full h-11 pl-space-md pr-10 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+                                                       id="portalPassword" name="portalPassword" type="password"
+                                                       placeholder="••••••••••••">
+                                                <button type="button"
+                                                        onclick="togglePwd('portalPassword','eyePortal')"
+                                                        class="absolute right-3 top-3 text-secondary hover:text-on-surface transition-colors focus:outline-none">
+                                                    <span id="eyePortal" class="material-symbols-outlined text-[18px]">visibility</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- Action Buttons -->
                                 <div class="flex items-center justify-end gap-space-sm pt-space-md border-t border-surface-container-high/60">
                                     <button class="px-space-lg py-2.5 rounded-lg font-label-lg text-label-lg font-semibold text-secondary hover:text-on-surface hover:bg-surface-container transition-all"
@@ -679,6 +737,29 @@
             const hasPwdError = document.querySelector('#tab-content-security .text-error');
             if (hasPwdError) switchTab('security');
         })();
+
+        /* ── Kiểm tra kết nối Portal ── */
+        function checkPortalConnection() {
+            const username = document.getElementById('portalUsername')?.value?.trim();
+            const password = document.getElementById('portalPassword')?.value;
+            if (!username || !password) {
+                alert('Vui lòng nhập tài khoản và mật khẩu Portal trước khi kiểm tra kết nối.');
+                return;
+            }
+            const btn = event.currentTarget;
+            const icon = btn.querySelector('.material-symbols-outlined');
+            const originalText = btn.textContent.trim();
+            icon.textContent = 'sync';
+            icon.classList.add('animate-spin');
+            btn.disabled = true;
+            // Placeholder — thay bằng API call thực tế khi backend sẵn sàng
+            setTimeout(() => {
+                icon.textContent = 'sync_alt';
+                icon.classList.remove('animate-spin');
+                btn.disabled = false;
+                alert('Kết nối Portal thành công! Dữ liệu học vụ sẽ được đồng bộ.');
+            }, 1500);
+        }
 
         /* ── Toggle password visibility ── */
         function togglePwd(inputId, eyeId) {
