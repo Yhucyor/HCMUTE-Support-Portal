@@ -23,7 +23,7 @@ public class HomeController {
         this.ticketService = ticketService;
     }
 
-    @GetMapping("/dashboard")
+    @GetMapping({"/dashboard", "/student/dashboard"})
     public String dashboard(Model model) {
         if (SecurityUtils.hasRole("ROLE_ADMIN")) {
             return "redirect:/admin/dashboard";
@@ -36,36 +36,7 @@ public class HomeController {
             return "redirect:/auth/login";
         }
 
-        model.addAttribute("currentUser", currentUser);
-
-        try {
-            crawlerService.getStudentProfile(currentUser.getUsername())
-                    .ifPresent(p -> model.addAttribute("studentProfile", p));
-            model.addAttribute("academicSummary", crawlerService.getAcademicSummary(currentUser.getUsername()));
-        } catch (Exception ignored) {
-        }
-
-        try {
-            model.addAttribute("myTickets", ticketService.getMyTicketSummaries(currentUser.getId()));
-        } catch (Exception ignored) {
-        }
-
-        return "dashboard";
-    }
-
-    /**
-     * Student dashboard route: /student/dashboard
-     * Requirement 4: Menu Item "Tổng quan" sẽ navigate đến route này
-     */
-    @GetMapping("/student/dashboard")
-    public String studentDashboard(Model model) {
-        // Chỉ cho phép ROLE_STUDENT truy cập
-        if (!SecurityUtils.hasRole("ROLE_STUDENT")) {
-            return "redirect:/dashboard";
-        }
-        
-        // Redirect đến /dashboard chung (cùng template)
-        return "redirect:/dashboard";
+        return "redirect:/academic/sync";
     }
 
     @GetMapping({"/", "/home"})
