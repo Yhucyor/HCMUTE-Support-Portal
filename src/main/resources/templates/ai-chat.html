@@ -79,73 +79,105 @@
 </head>
 <body class="bg-background font-sans text-sm text-text-primary antialiased min-h-screen flex flex-col">
 
-<!-- ═══════════════════════════ FIXED HEADER ═══════════════════════════ -->
-<header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-border-ui transition-all duration-300">
+<!-- 1. TOP HEADER & NAVIGATION (giống index.html) -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all">
     <div class="w-full px-4 sm:px-6 lg:px-8 h-[74px] flex items-center justify-between">
-        <!-- Logo & Brand -->
+        <!-- Logo HCMUTE -->
         <a class="flex items-center gap-3 group py-1.5" th:href="@{/}">
-            <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-[#003882] to-[#1d4ed8] flex items-center justify-center shadow-md transition-transform group-hover:scale-105">
-                <span class="material-symbols-outlined text-white text-2xl font-bold">school</span>
-            </div>
-            <div class="flex flex-col">
-                <span class="font-heading font-bold text-base text-text-primary tracking-tight leading-tight">QAUTE PORTAL</span>
-                <span class="text-[11px] text-text-secondary font-medium tracking-wide">HCMUTE Student Hub</span>
+            <img alt="HCMUTE Logo" class="h-12 w-auto object-contain transition-transform group-hover:scale-105" 
+                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKSHNb9YZP8QFQKzZ-_B_glnPE615kLoTh0DIZM9-id7Eb1Z7EZXRKcjBeCckK7VOaTPGdnMs7Cl7qdtjr1Mry3Y7d1U0S8maxw8fAHipOBnT-HFyaVBuqc6xe0fMZJf4fPlHw6UIkL0vHJV2kfl-tnjJgobCtm7Cy-KazrUCaEZefkxCcT9HC_-zWiT9twVqKg6xymALE7_hrVpAjI-XYdTFsbm3wyDRY8PxAR-vjOB00BqpW9wX9dVryQuIfZgdSA">
+            <div class="flex flex-col text-[#003882]">
+                <span class="font-bold text-sm sm:text-base tracking-tight leading-tight text-[#003882]">Trường Đại học Sư phạm Kỹ thuật Tp. Hồ Chí Minh</span>
+                <span class="font-normal text-[11px] sm:text-xs text-[#003882] tracking-normal leading-normal">HCMC University of Technology and Education</span>
             </div>
         </a>
-        
-        <!-- Navigation Links (Desktop) -->
-        <nav class="hidden lg:flex items-center gap-1">
-            <a class="px-4 py-2 rounded-lg text-sm font-medium text-text-secondary hover:text-primary hover:bg-primary-subtle transition-all" th:href="@{/academic/sync}">
-                <span class="material-symbols-outlined text-lg align-middle mr-1.5">dashboard</span>Tổng quan
-            </a>
-            <a class="px-4 py-2 rounded-lg text-sm font-medium text-primary bg-primary-subtle transition-all" th:href="@{/ai/chat}">
-                <span class="material-symbols-outlined text-lg align-middle mr-1.5" style="font-variation-settings: 'FILL' 1;">smart_toy</span>Trợ lý AI
-            </a>
-            <a class="px-4 py-2 rounded-lg text-sm font-medium text-text-secondary hover:text-primary hover:bg-primary-subtle transition-all" th:href="@{/tickets/my-tickets}">
-                <span class="material-symbols-outlined text-lg align-middle mr-1.5">support_agent</span>Hỗ trợ
-            </a>
-            <a class="px-4 py-2 rounded-lg text-sm font-medium text-text-secondary hover:text-primary hover:bg-primary-subtle transition-all" th:href="@{/feed}">
-                <span class="material-symbols-outlined text-lg align-middle mr-1.5">article</span>Bảng tin
-            </a>
+
+        <!-- Nav Items (Desktop) -->
+        <nav class="hidden xl:flex items-center space-x-7">
+            <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/}">Trang chủ</a>
+            <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/feed/forum}">Diễn đàn</a>
+            <a class="font-semibold text-[14px] text-[#991b1e] border-b-2 border-[#991b1e] pb-1" th:href="@{/ai/chat}">Hỗ trợ AI</a>
+            <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/faqs}">Tra cứu FAQ</a>
+            <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
         </nav>
-        
-        <!-- User Menu (Right Side) -->
-        <div class="flex items-center gap-3">
-            <!-- Notifications (optional) -->
-            <button class="hidden sm:flex w-10 h-10 items-center justify-center rounded-full hover:bg-surface-subtle transition-colors relative" type="button">
-                <span class="material-symbols-outlined text-text-secondary">notifications</span>
-                <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+
+        <!-- Header Actions -->
+        <div class="flex items-center gap-2 sm:gap-3">
+            <button aria-label="Tìm kiếm" class="w-9 h-9 rounded-full flex items-center justify-center text-slate-600 hover:text-[#003882] hover:bg-slate-100 transition-colors">
+                <span class="material-symbols-outlined text-[20px]">search</span>
             </button>
-            
-            <!-- User Profile Dropdown -->
-            <div sec:authorize="isAuthenticated()" class="relative group">
-                <button class="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-surface-subtle transition-all" type="button">
-                    <div class="w-8 h-8 rounded-full bg-primary-subtle text-primary font-bold text-xs flex items-center justify-center shadow-xs border border-primary/30"
-                         th:text="${currentUser != null ? #strings.substring(currentUser.fullName, 0, 2).toUpperCase() : 'AN'}">AN</div>
-                    <div class="hidden sm:flex flex-col items-start">
-                        <span class="text-xs font-semibold text-text-primary leading-tight" th:text="${currentUser != null ? currentUser.fullName : 'User'}">Anh Nguyễn</span>
-                        <span class="text-[10px] text-text-secondary" th:text="${currentUser != null ? currentUser.studentCode : ''}">2151050000</span>
-                    </div>
-                    <span class="material-symbols-outlined text-text-muted text-lg">arrow_drop_down</span>
+
+            <div class="hidden sm:flex items-center text-xs font-semibold text-slate-600 px-2 py-1 rounded cursor-pointer hover:bg-slate-100">
+                <span>VI</span>
+                <span class="material-symbols-outlined text-[16px]">expand_more</span>
+            </div>
+
+            <!-- Đã đăng nhập: Student Account Dropdown Menu -->
+            <div sec:authorize="isAuthenticated()" class="relative">
+                <button id="aiChatAccountToggle" 
+                        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95" 
+                        th:title="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}"
+                        aria-haspopup="true"
+                        aria-expanded="false">
+                    <span class="material-symbols-outlined text-[16px]">account_circle</span>
+                    <span class="hidden sm:inline truncate max-w-[150px]" th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
+                    <span class="material-symbols-outlined text-[14px]">expand_more</span>
                 </button>
+                
                 <!-- Dropdown Menu -->
-                <div class="hidden group-hover:block absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-lg border border-border-ui p-2 z-50">
-                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-subtle text-sm text-text-primary transition-all" th:href="@{/profile}">
-                        <span class="material-symbols-outlined text-text-secondary">account_circle</span>Hồ sơ cá nhân
+                <div id="aiChatDropdownMenu" 
+                     class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50"
+                     role="menu">
+                    <a href="/profile" 
+                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">person</span>
+                        <span>Thông tin cá nhân</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-subtle text-sm text-text-primary transition-all" th:href="@{/settings}">
-                        <span class="material-symbols-outlined text-text-secondary">settings</span>Cài đặt
+                    <a href="/academic/sync" 
+                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">home</span>
+                        <span>Tổng quan</span>
                     </a>
-                    <hr class="my-2 border-border-ui"/>
-                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 text-sm text-error transition-all" th:href="@{/auth/logout}">
-                        <span class="material-symbols-outlined">logout</span>Đăng xuất
+                    <a href="/academic/grades" 
+                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">description</span>
+                        <span>Bảng điểm</span>
+                    </a>
+                    <a href="/academic/timetable" 
+                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                        <span>Thời khóa biểu</span>
+                    </a>
+                    <a href="/academic/curriculum" 
+                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">book</span>
+                        <span>Chương trình đào tạo</span>
+                    </a>
+                    <a href="/tickets/my-tickets" 
+                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">confirmation_number</span>
+                        <span>Ticket hỗ trợ</span>
+                    </a>
+                    <div class="border-t border-slate-200 my-1"></div>
+                    <a th:href="@{/auth/logout}" 
+                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">logout</span>
+                        <span>Đăng xuất</span>
                     </a>
                 </div>
             </div>
-            
-            <!-- Mobile Menu Toggle -->
-            <button class="lg:hidden w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-subtle transition-colors" id="mobileMenuToggle" type="button">
-                <span class="material-symbols-outlined text-text-primary">menu</span>
+
+            <!-- Chưa đăng nhập: Nút Đăng nhập -->
+            <div sec:authorize="!isAuthenticated()">
+                <a class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#991b1e] hover:bg-[#831518] rounded-md shadow-sm transition-all active:scale-95" th:href="@{/auth/login}">
+                    <span class="material-symbols-outlined text-[16px]">person</span>
+                    <span>Đăng nhập</span>
+                </a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button aria-label="Mở menu" id="mobileMenuToggle" class="xl:hidden w-9 h-9 rounded-md flex items-center justify-center text-slate-700 hover:bg-slate-100">
+                <span class="material-symbols-outlined text-[24px]">menu</span>
             </button>
         </div>
     </div>
@@ -396,8 +428,41 @@
 </script>
 <script th:src="@{/js/ai-chat.js}"></script>
 
-<!-- Mobile & UI Interactions -->
+<!-- Header Dropdown & Mobile Interactions -->
 <script>
+    // AI Chat Account Dropdown Toggle (từ index.html)
+    (function() {
+        const toggle = document.getElementById('aiChatAccountToggle');
+        const dropdown = document.getElementById('aiChatDropdownMenu');
+        if (!toggle || !dropdown) return;
+        
+        // Toggle dropdown
+        toggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isHidden = dropdown.classList.contains('hidden');
+            dropdown.classList.toggle('hidden');
+            toggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+        });
+        
+        // Close on click outside
+        document.addEventListener('click', function(e) {
+            if (!dropdown.classList.contains('hidden') && 
+                !toggle.contains(e.target) && 
+                !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+        
+        // Close on ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !dropdown.classList.contains('hidden')) {
+                dropdown.classList.add('hidden');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    })();
+    
     // Mobile menu toggle
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const sidebar = document.querySelector('aside');
