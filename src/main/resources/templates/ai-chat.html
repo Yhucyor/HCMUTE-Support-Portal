@@ -340,6 +340,58 @@
                                             <div class="text-sm text-text-primary leading-relaxed prose prose-sm max-w-none" th:utext="${msg.content}">
                                                 AI response content
                                             </div>
+                                            
+                                            <!-- Source Documents (if available) -->
+                                            <div th:if="${msg.sources != null and !msg.sources.isEmpty()}" class="mt-3 p-3 bg-surface-subtle rounded-lg border border-border-ui">
+                                                <div class="flex items-center gap-2 mb-2">
+                                                    <span class="material-symbols-outlined text-sm text-text-muted">link</span>
+                                                    <span class="text-xs font-semibold text-text-secondary">Nguồn tham khảo</span>
+                                                </div>
+                                                <div class="space-y-1.5">
+                                                    <div th:each="src : ${msg.sources}" class="text-xs text-text-secondary hover:text-primary cursor-pointer">
+                                                        <span class="material-symbols-outlined text-[14px] align-middle mr-1">article</span>
+                                                        <span th:text="${src.title}">Document title</span>
+                                                        <span class="text-[10px] text-text-muted" th:if="${src.score != null}" th:text="' (' + ${#numbers.formatDecimal(src.score * 100, 0, 0)} + '% độ chính xác)'"> (95%)</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Feedback & Actions Bar -->
+                                            <div class="flex items-center gap-3 pt-2">
+                                                <!-- Feedback Buttons -->
+                                                <div class="flex items-center gap-1">
+                                                    <button class="feedback-btn w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-success hover:bg-green-50 transition-all" 
+                                                            th:data-message-id="${msg.id}"
+                                                            data-feedback="POSITIVE"
+                                                            onclick="submitFeedback(this)"
+                                                            title="Hữu ích">
+                                                        <span class="material-symbols-outlined text-[16px]">thumb_up</span>
+                                                    </button>
+                                                    <button class="feedback-btn w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-error hover:bg-red-50 transition-all" 
+                                                            th:data-message-id="${msg.id}"
+                                                            data-feedback="NEGATIVE"
+                                                            onclick="submitFeedback(this)"
+                                                            title="Không hữu ích">
+                                                        <span class="material-symbols-outlined text-[16px]">thumb_down</span>
+                                                    </button>
+                                                </div>
+                                                
+                                                <div class="h-4 w-px bg-border-ui"></div>
+                                                
+                                                <!-- Copy Button -->
+                                                <button class="copy-btn w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-primary hover:bg-primary-subtle transition-all" 
+                                                        th:data-content="${msg.content}"
+                                                        onclick="copyResponse(this)"
+                                                        title="Sao chép">
+                                                    <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                                                </button>
+                                                
+                                                <!-- Regenerate Button (optional) -->
+                                                <button class="w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-primary hover:bg-primary-subtle transition-all" 
+                                                        title="Tạo lại câu trả lời">
+                                                    <span class="material-symbols-outlined text-[16px]">refresh</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -507,6 +559,97 @@
             });
         }
     };
+    
+    // Submit feedback (Thumbs Up/Down)
+    window.submitFeedback = function(button) {
+        const messageId = button.dataset.messageId;
+        const feedbackType = button.dataset.feedback; // "POSITIVE" or "NEGATIVE"
+        
+        fetch('/api/ai/feedback', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                messageId: messageId,
+                feedbackType: feedbackType
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                // Visual feedback: fill icon and disable
+                button.querySelector('.material-symbols-outlined').style.fontVariationSettings = "'FILL' 1";
+                button.classList.add(feedbackType === 'POSITIVE' ? 'text-success' : 'text-error');
+                button.disabled = true;
+                
+                // Disable opposite button
+                const container = button.parentElement;
+                const buttons = container.querySelectorAll('.feedback-btn');
+                buttons.forEach(btn => btn.disabled = true);
+                
+                // Show toast (optional)
+                showToast(feedbackType === 'POSITIVE' ? 'Cảm ơn phản hồi của bạn! 👍' : 'Cảm ơn, chúng tôi sẽ cải thiện! 👎');
+            } else {
+                showToast('Không thể gửi phản hồi. Vui lòng thử lại.', 'error');
+            }
+        })
+        .catch(err => {
+            console.error('Feedback error:', err);
+            showToast('Lỗi kết nối. Vui lòng thử lại.', 'error');
+        });
+    };
+    
+    // Copy response to clipboard
+    window.copyResponse = function(button) {
+        const content = button.dataset.content;
+        
+        // Remove HTML tags for plain text
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = content;
+        const plainText = tempDiv.textContent || tempDiv.innerText || '';
+        
+        navigator.clipboard.writeText(plainText).then(() => {
+            // Visual feedback
+            const icon = button.querySelector('.material-symbols-outlined');
+            const originalIcon = icon.textContent;
+            icon.textContent = 'done';
+            button.classList.add('text-success', 'bg-green-50');
+            
+            setTimeout(() => {
+                icon.textContent = originalIcon;
+                button.classList.remove('text-success', 'bg-green-50');
+            }, 2000);
+            
+            showToast('Đã sao chép câu trả lời! 📋');
+        }).catch(err => {
+            console.error('Copy error:', err);
+            showToast('Không thể sao chép. Vui lòng thử lại.', 'error');
+        });
+    };
+    
+    // Simple toast notification
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `fixed bottom-4 right-4 px-4 py-3 rounded-lg shadow-lg text-sm font-medium text-white transition-all z-50 ${
+            type === 'success' ? 'bg-success' : 'bg-error'
+        }`;
+        toast.textContent = message;
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
+        }, 10);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(10px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
 </script>
 
 </body>

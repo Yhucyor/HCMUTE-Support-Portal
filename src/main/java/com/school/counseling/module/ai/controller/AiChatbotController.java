@@ -107,4 +107,25 @@ public class AiChatbotController {
         conversationService.convertToTicket(sessionId, ticketId);
         return ResponseEntity.ok(ApiResponse.success(null, "Đã chuyển hội thoại thành Ticket"));
     }
+
+    /**
+     * 🆕 PHASE 5: Submit feedback cho AI message (Thumbs Up/Down)
+     */
+    @PostMapping("/feedback")
+    public ResponseEntity<ApiResponse<Void>> submitFeedback(
+            @RequestBody FeedbackRequest request,
+            @AuthenticationPrincipal User currentUser) {
+        
+        conversationService.submitFeedback(request.getMessageId(), request.getFeedbackType(), currentUser);
+        return ResponseEntity.ok(ApiResponse.success(null, "Đã ghi nhận phản hồi của bạn"));
+    }
+
+    /**
+     * Inner DTO cho Feedback Request
+     */
+    @lombok.Data
+    public static class FeedbackRequest {
+        private Long messageId;
+        private String feedbackType; // "POSITIVE" or "NEGATIVE"
+    }
 }

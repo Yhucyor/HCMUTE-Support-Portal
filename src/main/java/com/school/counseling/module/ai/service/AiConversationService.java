@@ -9,6 +9,7 @@ import com.school.counseling.module.ai.dto.AiChatResponse;
 import com.school.counseling.module.ai.dto.SourceDocument;
 import com.school.counseling.module.ai.entity.*;
 import com.school.counseling.module.ai.repository.AiChatMessageRepository;
+import com.school.counseling.module.ai.repository.AiMessageFeedbackRepository;
 import com.school.counseling.module.ai.repository.ConversationRepository;
 import com.school.counseling.module.auth.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,7 @@ public class AiConversationService {
     
     private final ConversationRepository conversationRepository;
     private final AiChatMessageRepository messageRepository;
+    private final AiMessageFeedbackRepository feedbackRepository; // 🆕 Phase 5
     private final AiChatbotService aiChatbotService; // Delegate AI logic
     private final ObjectMapper objectMapper;
     
@@ -327,6 +329,35 @@ public class AiConversationService {
         conversationRepository.save(conversation);
         
         log.info("Converted conversation {} to ticket {}", sessionId, ticketId);
+    }
+
+    /**
+     * 🆕 PHASE 5: Submit feedback cho AI message
+     */
+    @Transactional
+    public void submitFeedback(Long messageId, String feedbackTypeStr, User user) {
+        AiChatMessage message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageId));
+        
+        // Parse feedbackType
+        FeedbackType feedbackType;
+        try {
+            feedbackType = FeedbackType.valueOf(feedbackTypeStr);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid feedback type: " + feedbackTypeStr);
+        }
+        
+        // Create or update feedback
+        AiMessageFeedback feedback = feedbackRepository.findByMessageIdAndUserId(messageId, user.getId())
+                .orElse(AiMessageFeedback.builder()
+                        .message(message)
+                        .user(user)
+                        .build());
+        
+        feedback.setFeedbackType(feedbackType);
+        feedbackRepository.save(feedback);
+        
+        log.info("User {} submitted {} feedback for message {}", user.getId(), feedbackType, messageId);
     }
     
     /**
