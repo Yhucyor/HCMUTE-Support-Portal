@@ -29,6 +29,12 @@ public class CourseSchedule extends BaseEntity {
     @Column(name = "shift", length = 50)
     private String shift; // Tiết 1-3, Tiết 7-9...
 
+    @Column(name = "start_time", length = 10)
+    private String startTime; // HH:mm e.g. "07:30"
+
+    @Column(name = "end_time", length = 10)
+    private String endTime;   // HH:mm e.g. "09:15"
+
     @Column(name = "room", length = 100)
     private String room; // A1-302, E1-401...
 
@@ -37,4 +43,10 @@ public class CourseSchedule extends BaseEntity {
 
     @Column(name = "semester", length = 100)
     private String semester;
+
+    @Column(name = "group_code", length = 30)
+    private String groupCode; // nhóm/tổ học
+
+    @Column(name = "credits")
+    private Integer credits;
 }

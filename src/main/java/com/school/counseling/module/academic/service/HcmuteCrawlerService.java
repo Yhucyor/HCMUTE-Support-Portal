@@ -593,15 +593,30 @@ public class HcmuteCrawlerService {
                         String room = s.hasNonNull("Phong") && !s.get("Phong").asText().isBlank() ? s.get("Phong").asText() : "Chưa xếp phòng";
                         String lecturer = s.hasNonNull("HoTenGV") ? s.get("HoTenGV").asText() : "Giảng viên bộ môn";
 
+                        String[] times = calculateTimesFromShift(shift);
+                        String startTime = s.hasNonNull("GioBatDau") && !s.get("GioBatDau").asText().isBlank()
+                                ? s.get("GioBatDau").asText().trim() : times[0];
+                        String endTime = s.hasNonNull("GioKetThuc") && !s.get("GioKetThuc").asText().isBlank()
+                                ? s.get("GioKetThuc").asText().trim() : times[1];
+                        String groupCode = s.hasNonNull("Nhom") ? s.get("Nhom").asText().trim()
+                                : (s.hasNonNull("MaLHP") && s.get("MaLHP").asText().contains("_")
+                                ? s.get("MaLHP").asText().substring(s.get("MaLHP").asText().indexOf("_") + 1) : "");
+                        int credits = s.hasNonNull("SoTinChi") ? s.get("SoTinChi").asInt(3)
+                                : (s.hasNonNull("STC") ? s.get("STC").asInt(3) : 3);
+
                         list.add(CourseSchedule.builder()
                                 .studentId(studentId)
                                 .courseCode(courseCode)
                                 .courseName(courseName)
                                 .dayOfWeek(dayOfWeek)
                                 .shift(shift)
+                                .startTime(startTime)
+                                .endTime(endTime)
                                 .room(room)
                                 .lecturer(lecturer)
                                 .semester(currentTerm + " (" + currentYear + ")")
+                                .groupCode(groupCode)
+                                .credits(credits)
                                 .build());
                     }
                 }
@@ -992,6 +1007,29 @@ public class HcmuteCrawlerService {
                 .build();
     }
 
+    public static String[] calculateTimesFromShift(String shift) {
+        if (shift == null || shift.isBlank()) return new String[]{"07:30", "09:45"};
+        String[] startTimes = {
+            "", "07:30", "08:15", "09:00", "10:00", "10:45", "11:30",
+            "13:00", "13:45", "14:30", "15:30", "16:15", "17:00",
+            "18:00", "18:45", "19:30"
+        };
+        String[] endTimes = {
+            "", "08:15", "09:00", "09:45", "10:45", "11:30", "12:15",
+            "13:45", "14:30", "15:15", "16:15", "17:00", "17:45",
+            "18:45", "19:30", "20:15"
+        };
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d+)\\s*[-–]\\s*(\\d+)").matcher(shift);
+        if (m.find()) {
+            int s = Integer.parseInt(m.group(1));
+            int e = Integer.parseInt(m.group(2));
+            String start = (s >= 1 && s < startTimes.length) ? startTimes[s] : "07:30";
+            String end = (e >= 1 && e < endTimes.length) ? endTimes[e] : "09:45";
+            return new String[]{start, end};
+        }
+        return new String[]{"07:30", "09:45"};
+    }
+
     private List<CourseSchedule> generateDemoSchedules(String studentId) {
         List<CourseSchedule> list = new ArrayList<>();
         String semester = "HK01 (2024-2025)";
@@ -1002,9 +1040,13 @@ public class HcmuteCrawlerService {
                 .courseName("Lập trình hướng đối tượng")
                 .dayOfWeek("Thứ 2")
                 .shift("Tiết 1 - 3")
+                .startTime("07:30")
+                .endTime("09:45")
                 .room("A1-302")
                 .lecturer("TS. Trần Nam Dũng")
                 .semester(semester)
+                .groupCode("01CLC")
+                .credits(3)
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -1013,9 +1055,13 @@ public class HcmuteCrawlerService {
                 .courseName("Phát triển ứng dụng Web")
                 .dayOfWeek("Thứ 3")
                 .shift("Tiết 7 - 9")
+                .startTime("13:00")
+                .endTime("15:15")
                 .room("E1-401")
                 .lecturer("ThS. Nguyễn Văn Toàn")
                 .semester(semester)
+                .groupCode("02CLC")
+                .credits(3)
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -1024,9 +1070,13 @@ public class HcmuteCrawlerService {
                 .courseName("Hệ điều hành")
                 .dayOfWeek("Thứ 4")
                 .shift("Tiết 4 - 6")
+                .startTime("10:00")
+                .endTime("12:15")
                 .room("B2-205")
                 .lecturer("PGS.TS. Lê Hoài Bắc")
                 .semester(semester)
+                .groupCode("01")
+                .credits(3)
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -1035,9 +1085,13 @@ public class HcmuteCrawlerService {
                 .courseName("Mạng máy tính")
                 .dayOfWeek("Thứ 5")
                 .shift("Tiết 1 - 3")
+                .startTime("07:30")
+                .endTime("09:45")
                 .room("C1-102")
                 .lecturer("ThS. Đỗ Thị Thu Hiền")
                 .semester(semester)
+                .groupCode("03")
+                .credits(3)
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -1046,9 +1100,28 @@ public class HcmuteCrawlerService {
                 .courseName("Trí tuệ nhân tạo")
                 .dayOfWeek("Thứ 6")
                 .shift("Tiết 7 - 9")
+                .startTime("13:00")
+                .endTime("15:15")
                 .room("E1-304")
                 .lecturer("TS. Hoàng Lê Minh")
                 .semester(semester)
+                .groupCode("01CLC")
+                .credits(3)
+                .build());
+
+        list.add(CourseSchedule.builder()
+                .studentId(studentId)
+                .courseCode("ENG202")
+                .courseName("Tiếng Anh chuyên ngành CNTT 2")
+                .dayOfWeek("Thứ 7")
+                .shift("Tiết 2 - 4")
+                .startTime("08:15")
+                .endTime("10:45")
+                .room("C1-204")
+                .lecturer("Cô Sarah Jenkins")
+                .semester(semester)
+                .groupCode("02")
+                .credits(3)
                 .build());
 
         return list;
