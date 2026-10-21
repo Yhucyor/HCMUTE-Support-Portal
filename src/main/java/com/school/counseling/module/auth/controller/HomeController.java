@@ -121,5 +121,10 @@ public class HomeController {
     public String redirectTimetable() {
         return "redirect:/academic/timetable";
     }
+
+    @GetMapping({"/curriculum", "/academic-curriculum", "/chuong-trinh-dao-tao"})
+    public String redirectCurriculum() {
+        return "redirect:/academic/curriculum";
+    }
 }
 

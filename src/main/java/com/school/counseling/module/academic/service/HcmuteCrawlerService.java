@@ -3,6 +3,8 @@ package com.school.counseling.module.academic.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.school.counseling.module.academic.dto.AcademicSummaryResponse;
+import com.school.counseling.module.academic.dto.CurriculumCourseDto;
+import com.school.counseling.module.academic.dto.CurriculumSummaryDto;
 import com.school.counseling.module.academic.dto.HcmuteSyncRequest;
 import com.school.counseling.module.academic.dto.HcmuteSyncResponse;
 import com.school.counseling.module.academic.entity.CourseSchedule;
@@ -853,6 +855,151 @@ public class HcmuteCrawlerService {
                 .syncStatus(latestHistory != null ? latestHistory.getStatus() : "LIVE_PORTAL")
                 .lastSyncedAt(latestHistory != null ? latestHistory.getSyncedAt() : LocalDateTime.now())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public CurriculumSummaryDto getCurriculumSummary(String studentId) {
+        List<CurriculumSubject> curriculums = curriculumRepository.findByStudentIdOrderBySemesterRecommendedAsc(studentId);
+        List<StudentGrade> grades = gradeRepository.findByStudentIdOrderBySemesterDesc(studentId);
+        Optional<StudentProfile> profileOpt = profileRepository.findByStudentId(studentId);
+        List<SyncHistory> histories = syncHistoryRepository.findByStudentIdOrderBySyncedAtDesc(studentId);
+
+        // Nếu chưa có curriculums trong DB, fallback tạo demo để hiển thị lộ trình mẫu
+        if (curriculums.isEmpty()) {
+            curriculums = generateDemoCurriculums(studentId, grades);
+        }
+
+        // Tạo map tra cứu điểm theo courseCode (ưu tiên bản ghi điểm mới nhất/đạt)
+        Map<String, StudentGrade> gradeMap = new HashMap<>();
+        for (StudentGrade g : grades) {
+            if (g.getCourseCode() != null && !g.getCourseCode().isBlank()) {
+                String code = g.getCourseCode().trim();
+                if (!gradeMap.containsKey(code) || Boolean.TRUE.equals(g.getIsPassed())) {
+                    gradeMap.put(code, g);
+                }
+            }
+        }
+
+        List<CurriculumCourseDto> courseDtos = new ArrayList<>();
+        int totalRequiredCredits = 0;
+        int completedCredits = 0;
+        int inProgressCredits = 0;
+        int completedCount = 0;
+        int inProgressCount = 0;
+
+        for (CurriculumSubject cs : curriculums) {
+            int credits = cs.getCredits() != null ? cs.getCredits() : 0;
+            totalRequiredCredits += credits;
+
+            int sem = cs.getSemesterRecommended() != null ? cs.getSemesterRecommended() : 1;
+            String knowledgeBlock = resolveKnowledgeBlock(sem, cs.getCourseName());
+
+            String status = "NOT_TAKEN";
+            String statusLabel = "Chưa học";
+            String gradeLetter = "--";
+            Double finalScore = null;
+            Double scale4Score = null;
+
+            StudentGrade g = gradeMap.get(cs.getCourseCode() != null ? cs.getCourseCode().trim() : "");
+            if (g != null) {
+                if (Boolean.TRUE.equals(g.getIsPassed())) {
+                    status = "COMPLETED";
+                    statusLabel = "Đã đạt";
+                    gradeLetter = (g.getGradeLetter() != null && !g.getGradeLetter().isBlank()) ? g.getGradeLetter().trim() : "P";
+                    finalScore = g.getTotalScore();
+                    scale4Score = convertScale10To4(g.getTotalScore(), g.getGradeLetter());
+                    completedCredits += credits;
+                    completedCount++;
+                } else if (g.getIsPassed() == null || g.getTotalScore() == null) {
+                    status = "IN_PROGRESS";
+                    statusLabel = "Đang học";
+                    gradeLetter = "--";
+                    inProgressCredits += credits;
+                    inProgressCount++;
+                } else {
+                    status = "FAILED";
+                    statusLabel = "Chưa đạt";
+                    gradeLetter = (g.getGradeLetter() != null && !g.getGradeLetter().isBlank()) ? g.getGradeLetter().trim() : "F";
+                    finalScore = g.getTotalScore();
+                    scale4Score = convertScale10To4(g.getTotalScore(), g.getGradeLetter());
+                }
+            } else if (Boolean.TRUE.equals(cs.getIsCompleted())) {
+                status = "COMPLETED";
+                statusLabel = "Đã đạt";
+                gradeLetter = "P";
+                completedCredits += credits;
+                completedCount++;
+            }
+
+            courseDtos.add(CurriculumCourseDto.builder()
+                    .id(cs.getId())
+                    .courseCode(cs.getCourseCode())
+                    .courseName(cs.getCourseName())
+                    .credits(credits)
+                    .semesterRecommended(sem)
+                    .knowledgeBlock(knowledgeBlock)
+                    .status(status)
+                    .statusLabel(statusLabel)
+                    .gradeLetter(gradeLetter)
+                    .finalScore(finalScore)
+                    .scale4Score(scale4Score)
+                    .build());
+        }
+
+        // Đảm bảo tổng tín chỉ chuẩn theo ngành (tối thiểu 132 TC)
+        if (totalRequiredCredits < 132 && totalRequiredCredits > 0) {
+            totalRequiredCredits = 132;
+        }
+
+        int remainingCredits = Math.max(0, totalRequiredCredits - completedCredits);
+        double progressPercentage = totalRequiredCredits > 0
+                ? Math.min(100.0, Math.round(((double) completedCredits / totalRequiredCredits) * 1000.0) / 10.0)
+                : 0.0;
+
+        int totalCourses = courseDtos.size();
+        int remainingCourses = Math.max(0, totalCourses - completedCount - inProgressCount);
+
+        StudentProfile profile = profileOpt.orElse(null);
+        SyncHistory latestHistory = histories.isEmpty() ? null : histories.get(0);
+
+        return CurriculumSummaryDto.builder()
+                .studentId(studentId)
+                .studentName(profile != null ? profile.getFullName() : "Sinh viên " + studentId)
+                .major(profile != null && profile.getMajor() != null ? profile.getMajor() : "Công nghệ Thông tin")
+                .faculty(profile != null && profile.getFaculty() != null ? profile.getFaculty() : "Khoa CNTT")
+                .className(profile != null && profile.getStudentClass() != null ? profile.getStudentClass() : "--")
+                .academicYear(profile != null && profile.getAcademicYear() != null ? profile.getAcademicYear() : "2021 - 2025")
+                .totalRequiredCredits(totalRequiredCredits)
+                .completedCredits(completedCredits)
+                .inProgressCredits(inProgressCredits)
+                .remainingCredits(remainingCredits)
+                .progressPercentage(progressPercentage)
+                .completedCoursesCount(completedCount)
+                .inProgressCoursesCount(inProgressCount)
+                .remainingCoursesCount(remainingCourses)
+                .totalCoursesCount(totalCourses)
+                .courses(courseDtos)
+                .lastSyncedAt(latestHistory != null ? latestHistory.getSyncedAt() : LocalDateTime.now())
+                .syncStatus(latestHistory != null ? latestHistory.getStatus() : "LIVE_PORTAL")
+                .build();
+    }
+
+    private String resolveKnowledgeBlock(int semester, String courseName) {
+        if (courseName != null) {
+            String lower = courseName.toLowerCase();
+            if (lower.contains("khóa luận") || lower.contains("đồ án tốt nghiệp") || lower.contains("thực tập")) {
+                return "Thực tập & Tốt nghiệp";
+            }
+        }
+        if (semester <= 2) {
+            return "Đại cương";
+        } else if (semester <= 4) {
+            return "Cơ sở ngành";
+        } else if (semester <= 6) {
+            return "Chuyên ngành";
+        } else {
+            return "Thực tập & Tốt nghiệp";
+        }
     }
 
     private double convertScale10To4(Double score10, String letter) {

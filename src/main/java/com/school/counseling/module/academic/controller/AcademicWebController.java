@@ -2,6 +2,7 @@ package com.school.counseling.module.academic.controller;
 
 import com.school.counseling.common.util.SecurityUtils;
 import com.school.counseling.module.academic.dto.AcademicSummaryResponse;
+import com.school.counseling.module.academic.dto.CurriculumSummaryDto;
 import com.school.counseling.module.academic.service.HcmuteCrawlerService;
 import com.school.counseling.module.auth.service.ProfileService;
 import org.slf4j.Logger;
@@ -81,11 +82,16 @@ public class AcademicWebController {
         model.addAttribute("currentStudentId", effectiveStudentId);
         model.addAttribute("activeTab", "curriculum");
         populatePortalCredentials(model);
+        SecurityUtils.getCurrentUser().ifPresent(user -> model.addAttribute("currentUser", user));
+
+        CurriculumSummaryDto curriculum = crawlerService.getCurriculumSummary(effectiveStudentId);
+        model.addAttribute("curriculum", curriculum);
+
         if (!effectiveStudentId.isBlank()) {
             model.addAttribute("summary", crawlerService.getAcademicSummary(effectiveStudentId));
             crawlerService.getStudentProfile(effectiveStudentId).ifPresent(p -> model.addAttribute("studentProfile", p));
         }
-        return "academic-sync";
+        return "curriculum";
     }
 
     @GetMapping({"", "/", "/info"})

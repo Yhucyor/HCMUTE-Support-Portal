@@ -2,6 +2,7 @@ package com.school.counseling.module.academic.controller;
 
 import com.school.counseling.common.util.SecurityUtils;
 import com.school.counseling.module.academic.dto.AcademicSummaryResponse;
+import com.school.counseling.module.academic.dto.CurriculumSummaryDto;
 import com.school.counseling.module.academic.dto.HcmuteSyncRequest;
 import com.school.counseling.module.academic.dto.HcmuteSyncResponse;
 import com.school.counseling.module.academic.entity.CourseSchedule;
@@ -203,6 +204,13 @@ public class AcademicSyncApiController {
             @RequestParam(required = false) String studentId) {
         String resolvedId = resolveStudentId(studentId);
         return ResponseEntity.ok(curriculumRepository.findByStudentIdOrderBySemesterRecommendedAsc(resolvedId));
+    }
+
+    @GetMapping("/curriculum/summary")
+    public ResponseEntity<CurriculumSummaryDto> getCurriculumSummary(
+            @RequestParam(required = false) String studentId) {
+        String resolvedId = resolveStudentId(studentId);
+        return ResponseEntity.ok(crawlerService.getCurriculumSummary(resolvedId));
     }
 
     @GetMapping("/history")
