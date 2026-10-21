@@ -15,7 +15,8 @@ import com.school.counseling.module.academic.repository.CurriculumSubjectReposit
 import com.school.counseling.module.academic.repository.StudentGradeRepository;
 import com.school.counseling.module.academic.repository.StudentProfileRepository;
 import com.school.counseling.module.academic.repository.SyncHistoryRepository;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,9 +34,10 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@Slf4j
 @Service
 public class HcmuteCrawlerService {
+
+    private static final Logger log = LoggerFactory.getLogger(HcmuteCrawlerService.class);
 
     private static final String API_BASE = "https://portalapi.hcmute.edu.vn/api";
     private static final String API_KEY = "utepscRBF0zT2Mqo6vMw69YMOH43IrB2RtXBS0EHit2kzvL2auxaFJBvw==";

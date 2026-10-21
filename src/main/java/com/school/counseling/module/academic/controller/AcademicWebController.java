@@ -4,17 +4,19 @@ import com.school.counseling.common.util.SecurityUtils;
 import com.school.counseling.module.academic.dto.AcademicSummaryResponse;
 import com.school.counseling.module.academic.service.HcmuteCrawlerService;
 import com.school.counseling.module.auth.service.ProfileService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@Slf4j
 @Controller
 @RequestMapping("/academic")
 public class AcademicWebController {
+
+    private static final Logger log = LoggerFactory.getLogger(AcademicWebController.class);
 
     private final HcmuteCrawlerService crawlerService;
     private final ProfileService profileService;
