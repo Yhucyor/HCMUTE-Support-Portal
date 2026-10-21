@@ -36,6 +36,13 @@ public class AiChatbotController {
             @Valid @RequestBody AiChatRequest request,
             @AuthenticationPrincipal User currentUser) {
         
+        // DEBUG: Check if currentUser is injected properly
+        if (currentUser != null) {
+            System.out.println("✅ AI Chat - Authenticated User: " + currentUser.getUsername() + " (ID: " + currentUser.getId() + ")");
+        } else {
+            System.out.println("❌ AI Chat - currentUser is NULL (not authenticated)");
+        }
+        
         AiChatResponse response = conversationService.chat(request, currentUser);
         return ResponseEntity.ok(ApiResponse.success(response));
     }

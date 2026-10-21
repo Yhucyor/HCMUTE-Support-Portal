@@ -95,6 +95,7 @@ async function sendChatMessage(message, typingIndicator) {
             headers: {
                 'Content-Type': 'application/json'
             },
+            credentials: 'include',  // 🔥 CRITICAL: Include session cookies for authentication
             body: JSON.stringify(requestBody)
         });
         
@@ -162,6 +163,7 @@ async function streamChatResponse(message, typingIndicator) {
             headers: {
                 'Content-Type': 'application/json'
             },
+            credentials: 'include',  // Include session cookies
             body: JSON.stringify(requestBody)
         });
         
@@ -588,7 +590,8 @@ async function deleteConversation(sessionId) {
     
     try {
         const response = await fetch(`/api/ai/conversations/${sessionId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            credentials: 'include'  // Include session cookies
         });
         
         if (response.ok) {
