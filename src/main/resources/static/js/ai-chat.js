@@ -558,11 +558,26 @@ function scrollToBottom() {
 }
 
 /**
- * Start new chat
+ * Start new chat (without page reload to preserve sidebar)
  */
 function startNewChat() {
+    // Generate new session ID
     sessionId = generateUUID();
-    window.location.href = '/ai/chat';
+    
+    // Clear chat messages (keep sidebar intact)
+    const container = chatMessages.querySelector('.max-w-\\[860px\\]');
+    if (container) {
+        container.innerHTML = '';
+    }
+    
+    // Update URL without reload
+    window.history.pushState({}, '', '/ai/chat');
+    
+    // Reset input and focus
+    messageInput.value = '';
+    messageInput.focus();
+    
+    console.log('New chat started with sessionId:', sessionId);
 }
 
 /**
