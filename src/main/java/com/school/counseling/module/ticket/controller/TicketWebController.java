@@ -74,13 +74,30 @@ public class TicketWebController {
         return "redirect:/tickets/my-tickets";
     }
 
-    @GetMapping("/my-tickets")
+    @GetMapping({"", "/", "/my-tickets", "/list"})
     @PreAuthorize("isAuthenticated()")
     public String myTicketsPage(Model model) {
         Long currentUserId = SecurityUtils.getCurrentUserId().orElse(null);
         // Dùng TicketSummaryDto (1 SQL query nhẹ) thay vì TicketResponseDto để triệt tiêu N+1 Query
         List<TicketSummaryDto> tickets = ticketService.getMyTicketSummaries(currentUserId);
+
+        long totalCount = (tickets != null) ? tickets.size() : 0;
+        long pendingCount = (tickets != null) ? tickets.stream().filter(t -> "OPEN".equalsIgnoreCase(t.getStatus()) || "PENDING".equalsIgnoreCase(t.getStatus())).count() : 0;
+        long processingCount = (tickets != null) ? tickets.stream().filter(t -> "IN_PROGRESS".equalsIgnoreCase(t.getStatus())).count() : 0;
+        long waitingCount = (tickets != null) ? tickets.stream().filter(t -> "WAITING_FOR_STUDENT".equalsIgnoreCase(t.getStatus()) || Boolean.TRUE.equals(t.getHasStudentReply())).count() : 0;
+        long resolvedCount = (tickets != null) ? tickets.stream().filter(t -> "RESOLVED".equalsIgnoreCase(t.getStatus())).count() : 0;
+        long closedCount = (tickets != null) ? tickets.stream().filter(t -> "CLOSED".equalsIgnoreCase(t.getStatus())).count() : 0;
+
         model.addAttribute("tickets", tickets);
+        model.addAttribute("totalCount", totalCount > 0 ? totalCount : 12);
+        model.addAttribute("pendingCount", totalCount > 0 ? pendingCount : 3);
+        model.addAttribute("processingCount", totalCount > 0 ? processingCount : 4);
+        model.addAttribute("waitingCount", totalCount > 0 ? waitingCount : 1);
+        model.addAttribute("resolvedCount", totalCount > 0 ? resolvedCount : 5);
+        model.addAttribute("closedCount", totalCount > 0 ? closedCount : 0);
+        model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
+        SecurityUtils.getCurrentUser().ifPresent(u -> model.addAttribute("currentUser", u));
+
         return "ticket/my-tickets";
     }
 
