@@ -76,7 +76,7 @@
 
     <!-- ═══════════════════════════ FIXED HEADER ═══════════════════════════ -->
     <header class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 transition-all duration-300">
-        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-[68px] flex items-center justify-between">
+        <div class="w-full px-4 sm:px-6 lg:px-8 h-[74px] flex items-center justify-between">
             <a class="flex items-center gap-3 group py-1.5" th:href="@{/}">
                 <img alt="HCMUTE Logo" class="h-12 w-auto object-contain transition-transform group-hover:scale-105"
                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKSHNb9YZP8QFQKzZ-_B_glnPE615kLoTh0DIZM9-id7Eb1Z7EZXRKcjBeCckK7VOaTPGdnMs7Cl7qdtjr1Mry3Y7d1U0S8maxw8fAHipOBnT-HFyaVBuqc6xe0fMZJf4fPlHw6UIkL0vHJV2kfl-tnjJgobCtm7Cy-KazrUCaEZefkxCcT9HC_-zWiT9twVqKg6xymALE7_hrVpAjI-XYdTFsbm3wyDRY8PxAR-vjOB00BqpW9wX9dVryQuIfZgdSA">
@@ -100,19 +100,19 @@
                 <div sec:authorize="isAuthenticated()" class="relative">
                     <button id="ttAccountToggle"
                             class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95"
-                            th:title="${currentUser != null ? currentUser.fullName : #authentication.name}"
+                            th:title="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}"
                             aria-haspopup="true" aria-expanded="false">
                         <span class="material-symbols-outlined text-[16px]">account_circle</span>
                         <span class="hidden sm:inline truncate max-w-[150px]"
                               th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
                         <span class="material-symbols-outlined text-[14px]">expand_more</span>
                     </button>
-                    <div id="ttDropdownMenu" class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50 min-w-[210px]" role="menu">
+                    <div id="ttDropdownMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50" role="menu">
                         <a href="/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
                             <span class="material-symbols-outlined text-[18px]">person</span><span>Thông tin cá nhân</span>
                         </a>
                         <a href="/academic/sync" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                            <span class="material-symbols-outlined text-[18px]">home</span><span>Tổng quan học vụ</span>
+                            <span class="material-symbols-outlined text-[18px]">home</span><span>Tổng quan</span>
                         </a>
                         <a href="/academic/grades" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
                             <span class="material-symbols-outlined text-[18px]">description</span><span>Bảng điểm</span>
@@ -124,7 +124,7 @@
                             <span class="material-symbols-outlined text-[18px]">book</span><span>Chương trình đào tạo</span>
                         </a>
                         <a href="/tickets/my-tickets" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-[#003882] bg-slate-50 transition-colors">
-                            <span class="material-symbols-outlined text-[18px]">support_agent</span><span>Yêu cầu hỗ trợ (Tickets)</span>
+                            <span class="material-symbols-outlined text-[18px]">confirmation_number</span><span>Ticket hỗ trợ</span>
                         </a>
                         <div class="border-t border-slate-200 my-1"></div>
                         <a th:href="@{/auth/logout}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
@@ -150,9 +150,13 @@
             <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/faqs}">Tra cứu FAQ</a>
             <a class="block py-2 text-sm font-semibold text-[#003882]" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
             <div sec:authorize="isAuthenticated()" class="pt-2 border-t border-slate-200">
-                <a class="flex items-center gap-2 py-2 text-sm font-semibold text-[#003882]" href="/tickets/my-tickets">
-                    <span class="material-symbols-outlined text-[18px]">support_agent</span>
-                    <span th:text="${currentUser != null ? currentUser.fullName : #authentication.name}">Họ Tên</span>
+                <a class="flex items-center gap-2 py-2 text-sm font-semibold text-[#003882]" href="/academic/sync">
+                    <span class="material-symbols-outlined text-[18px]">home</span>
+                    <span>Tổng quan học tập</span>
+                </a>
+                <a class="flex items-center gap-2 py-2 text-sm font-medium text-slate-700" href="/profile">
+                    <span class="material-symbols-outlined text-[18px]">person</span>
+                    <span th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
                 </a>
                 <a class="block py-1.5 text-sm font-medium text-[#991b1e]" th:href="@{/auth/logout}">Đăng xuất</a>
             </div>
@@ -160,7 +164,7 @@
     </header>
 
     <!-- ═══════════════════════════ MAIN CONTENT CANVAS ═══════════════════════════ -->
-    <div class="flex-1 flex flex-col pt-[72px]">
+    <div class="flex-1 flex flex-col pt-[74px]">
         <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-7 flex flex-col gap-6">
 
             <!-- Toast Notification -->

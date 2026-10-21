@@ -66,6 +66,7 @@
                 <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/feed/forum}">Diễn đàn</a>
                 <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/ai-chat}">Hỗ trợ AI</a>
                 <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/faqs}">Tra cứu FAQ</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
             </nav>
 
             <!-- Header Actions -->
@@ -83,7 +84,7 @@
                 <div sec:authorize="isAuthenticated()" class="relative">
                     <button id="indexAccountToggle" 
                             class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95" 
-                            th:title="${currentUser != null ? currentUser.fullName : #authentication.name}"
+                            th:title="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}"
                             aria-haspopup="true"
                             aria-expanded="false">
                         <span class="material-symbols-outlined text-[16px]">account_circle</span>
@@ -100,7 +101,7 @@
                             <span class="material-symbols-outlined text-[18px]">person</span>
                             <span>Thông tin cá nhân</span>
                         </a>
-                        <a href="/student/dashboard" 
+                        <a href="/academic/sync" 
                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
                             <span class="material-symbols-outlined text-[18px]">home</span>
                             <span>Tổng quan</span>
@@ -119,6 +120,11 @@
                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
                             <span class="material-symbols-outlined text-[18px]">book</span>
                             <span>Chương trình đào tạo</span>
+                        </a>
+                        <a href="/tickets/my-tickets" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">confirmation_number</span>
+                            <span>Ticket hỗ trợ</span>
                         </a>
                         <div class="border-t border-slate-200 my-1"></div>
                         <a th:href="@{/auth/logout}" 
@@ -150,10 +156,15 @@
             <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/feed/forum}">Diễn đàn</a>
             <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/ai-chat}">Hỗ trợ AI</a>
             <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/faqs}">Tra cứu FAQ</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
             <div sec:authorize="isAuthenticated()" class="pt-2 border-t border-slate-200">
-                <a class="flex items-center gap-2 py-2 text-sm font-semibold text-[#003882]" th:href="@{/dashboard}">
-                    <span class="material-symbols-outlined text-[18px]">account_circle</span>
-                    <span th:text="${currentUser != null ? currentUser.fullName : #authentication.name}">Họ Tên</span>
+                <a class="flex items-center gap-2 py-2 text-sm font-semibold text-[#003882]" href="/academic/sync">
+                    <span class="material-symbols-outlined text-[18px]">home</span>
+                    <span>Tổng quan học tập</span>
+                </a>
+                <a class="flex items-center gap-2 py-2 text-sm font-medium text-slate-700" href="/profile">
+                    <span class="material-symbols-outlined text-[18px]">person</span>
+                    <span th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
                 </a>
                 <a class="block py-1.5 text-sm font-medium text-[#991b1e]" th:href="@{/auth/logout}">Đăng xuất</a>
             </div>
