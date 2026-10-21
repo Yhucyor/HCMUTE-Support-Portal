@@ -77,7 +77,10 @@
         };
     </script>
 </head>
-<body class="bg-background font-body text-on-surface antialiased min-h-screen selection:bg-[#991b1e] selection:text-white">
+<body class="bg-background font-body text-on-surface antialiased min-h-screen selection:bg-[#991b1e] selection:text-white"
+      th:data-student-id="${currentStudentId}"
+      th:data-portal-linked="${portalLinked}"
+      th:data-portal-user="${savedPortalUsername}">
 
     <!-- ═══════════════════════════ TOP GLOBAL HEADER ═══════════════════════════ -->
     <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all h-[74px]">
@@ -231,7 +234,7 @@
                                    oninput="filterSchedule()"
                                    class="w-full pl-9 pr-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant/30 font-label-md text-label-md text-on-surface placeholder-secondary focus:outline-none focus:border-primary focus:bg-surface-container-lowest transition-colors">
                         </div>
-                        <button onclick="loadSchedule()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors shadow-sm" type="button">
+                        <button id="syncBtn" onclick="triggerSync()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors shadow-sm" type="button">
                             <span class="material-symbols-outlined text-base">sync</span> Đồng bộ
                         </button>
                     </div>
@@ -312,6 +315,25 @@
                             <div id="nextSubject" class="font-label-lg text-label-lg font-bold truncate text-on-primary">--</div>
                             <p id="nextDetail" class="font-body-sm text-body-sm text-on-primary/80 truncate">--</p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Empty State Notice if no schedule exists yet -->
+                <div id="ttEmptyAlert" class="hidden mb-space-md p-4 rounded-xl bg-blue-50 border border-blue-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary text-2xl">info</span>
+                        <div>
+                            <div class="font-label-md text-label-md font-bold text-on-surface">Chưa có dữ liệu thời khóa biểu</div>
+                            <div class="font-body-sm text-body-sm text-secondary">Hệ thống chưa tìm thấy lịch học cho tài khoản của bạn. Nhấn nút bên cạnh để nạp dữ liệu mẫu thử nghiệm hoặc đến trang Học vụ để liên kết cổng trường.</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button onclick="triggerSync()" class="px-3.5 py-1.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-semibold hover:bg-primary-container transition-colors shadow-xs" type="button">
+                            Nạp dữ liệu mẫu Demo
+                        </button>
+                        <a href="/academic/sync" class="px-3.5 py-1.5 rounded-lg border border-slate-300 text-slate-700 bg-white font-label-md text-label-md font-medium hover:bg-slate-50 transition-colors">
+                            Cổng học vụ
+                        </a>
                     </div>
                 </div>
 
@@ -445,9 +467,38 @@
     // ── Constants ─────────────────────────────────────────────────────────────
     const DAYS = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ Nhật'];
     const DAY_MAP = { 'Monday':0,'Tuesday':1,'Wednesday':2,'Thursday':3,'Friday':4,'Saturday':5,'Sunday':6,
-                      'Thứ Hai':0,'Thứ Ba':1,'Thứ Tư':2,'Thứ Năm':3,'Thứ Sáu':4,'Thứ Bảy':5,'Chủ Nhật':6 };
+                      'Thứ Hai':0,'Thứ Ba':1,'Thứ Tư':2,'Thứ Năm':3,'Thứ Sáu':4,'Thứ Bảy':5,'Chủ Nhật':6,
+                      'Thứ 2':0,'Thứ 3':1,'Thứ 4':2,'Thứ 5':3,'Thứ 6':4,'Thứ 7':5,'CN':6 };
+
+    // HCMUTE tiết → giờ bắt đầu (chuẩn hệ 15 tiết/ngày)
+    const TIET_START = {
+        1:'07:30', 2:'08:15', 3:'09:00', 4:'09:45', 5:'10:30', 6:'11:15',
+        7:'13:00', 8:'13:45', 9:'14:30', 10:'15:15', 11:'16:00', 12:'16:45',
+        13:'17:30', 14:'18:15', 15:'19:00'
+    };
+    const TIET_END = {
+        1:'08:15', 2:'09:00', 3:'09:45', 4:'10:30', 5:'11:15', 6:'12:00',
+        7:'13:45', 8:'14:30', 9:'15:15', 10:'16:00', 11:'16:45', 12:'17:30',
+        13:'18:15', 14:'19:00', 15:'19:45'
+    };
+
+    /** Parse "Tiết 1-3" hoặc "Tiết 7-9" → { startTime, endTime } */
+    function parseShift(shift) {
+        if (!shift) return { startTime: null, endTime: null };
+        const m = shift.match(/(\d+)\s*[-–]\s*(\d+)/);
+        if (m) {
+            const s = parseInt(m[1]), e = parseInt(m[2]);
+            return { startTime: TIET_START[s] || null, endTime: TIET_END[e] || null };
+        }
+        const single = shift.match(/(\d+)/);
+        if (single) {
+            const t = parseInt(single[1]);
+            return { startTime: TIET_START[t] || null, endTime: TIET_END[t] || null };
+        }
+        return { startTime: null, endTime: null };
+    }
+
     // Grid: 06:30 baseline, each h-16 (64px) = 1h, lunch break offset at 11:30
-    // Rows: 06:30(0), 07:30(64), 08:30(128), 09:30(192), 10:30(256), 11:30(320), lunch(320+56=376), 13:00(376), 14:00(440), 15:00(504), 16:00(568), 17:00(632), 18:00(696)
     const ROW_HEIGHT = 64; // px per hour
     const LUNCH_OFFSET = 56; // extra px for lunch bar
     function timeToTop(timeStr) {
@@ -798,9 +849,57 @@
             console.warn('Tải lịch học thất bại:', e.message);
             allSchedules = [];
         }
+
+        // Đảm bảo startTime/endTime luôn có giá trị hợp lệ để tính vị trí grid
+        allSchedules.forEach(s => {
+            if (!s.startTime || !s.endTime) {
+                const parsed = parseShift(s.shift);
+                if (!s.startTime) s.startTime = parsed.startTime || '07:30';
+                if (!s.endTime) s.endTime = parsed.endTime || '09:45';
+            }
+        });
+
+        // Nếu sinh viên chưa có thời khóa biểu, hiển thị banner nhắc nhở
+        const emptyAlert = document.getElementById('ttEmptyAlert');
+        if (emptyAlert) {
+            emptyAlert.classList.toggle('hidden', allSchedules.length > 0);
+        }
+
         updateKPIs();
         updateWeekUI();
         if (currentView === 'list') renderListView();
+    }
+
+    // ── Kích hoạt đồng bộ thông minh ──────────────────────────────────────────
+    async function triggerSync() {
+        const syncBtn = document.getElementById('syncBtn');
+        const origContent = syncBtn ? syncBtn.innerHTML : '';
+        if (syncBtn) {
+            syncBtn.disabled = true;
+            syncBtn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">refresh</span> Đang đồng bộ...`;
+        }
+        try {
+            const studentId = document.body.dataset.studentId || '21110001';
+            const res = await fetch('/api/academic/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    studentId: studentId,
+                    password: 'demo'
+                })
+            });
+            const data = await res.json();
+            if (data && data.success) {
+                await loadSchedule();
+            }
+        } catch (err) {
+            console.error('Lỗi khi đồng bộ:', err);
+        } finally {
+            if (syncBtn) {
+                syncBtn.disabled = false;
+                syncBtn.innerHTML = origContent;
+            }
+        }
     }
 
     // ── Init ──────────────────────────────────────────────────────────────────
