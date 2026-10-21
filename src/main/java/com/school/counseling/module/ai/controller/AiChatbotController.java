@@ -12,12 +12,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
 /**
  * REST API Controller cho AI Chatbot với Database Persistence
  * Phase 2: Service Layer Refactor - Tích hợp AiConversationService
+ * Phase 3: SSE Streaming Response
  */
 @RestController
 @RequestMapping("/api/ai")
@@ -36,6 +38,17 @@ public class AiChatbotController {
         
         AiChatResponse response = conversationService.chat(request, currentUser);
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /**
+     * 🔥 PHASE 3: SSE Streaming Chat Endpoint (giống ChatGPT typing effect)
+     */
+    @PostMapping("/chat-stream")
+    public SseEmitter chatStream(
+            @Valid @RequestBody AiChatRequest request,
+            @AuthenticationPrincipal User currentUser) {
+        
+        return conversationService.chatStream(request, currentUser);
     }
 
     /**

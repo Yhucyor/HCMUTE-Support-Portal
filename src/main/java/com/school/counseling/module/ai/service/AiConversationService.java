@@ -17,12 +17,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -38,6 +43,9 @@ public class AiConversationService {
     private final AiChatMessageRepository messageRepository;
     private final AiChatbotService aiChatbotService; // Delegate AI logic
     private final ObjectMapper objectMapper;
+    
+    // ExecutorService cho async streaming
+    private final ExecutorService executorService = Executors.newCachedThreadPool();
     
     @Value("${app.ai.max-messages-per-day:100}")
     private int maxMessagesPerDay;
@@ -320,4 +328,160 @@ public class AiConversationService {
         
         log.info("Converted conversation {} to ticket {}", sessionId, ticketId);
     }
+    
+    /**
+     * 🔥 PHASE 3: SSE Streaming Chat Response
+     * Stream AI response theo từng chunk (giống ChatGPT)
+     * 
+     * @param request AiChatRequest
+     * @param currentUser User đang đăng nhập
+     * @return SseEmitter phát sự kiện theo thời gian thực
+     */
+    public SseEmitter chatStream(AiChatRequest request, User currentUser) {
+        // Timeout 3 phút cho streaming
+        SseEmitter emitter = new SseEmitter(180_000L);
+        
+        // Chạy async để không block request thread
+        CompletableFuture.runAsync(() -> {
+            try {
+                // 1. Validate rate limit
+                if (currentUser != null) {
+                    validateRateLimit(currentUser.getId());
+                }
+                
+                // 2. Load/Create conversation
+                Conversation conversation = getOrCreateConversation(
+                    request.getSessionId(), 
+                    currentUser, 
+                    request.getQuery()
+                );
+                
+                // 3. Save user message
+                saveUserMessage(conversation, request.getQuery());
+                
+                // 4. Gửi event "thinking" để hiển thị loading indicator
+                emitter.send(SseEmitter.event()
+                    .name("thinking")
+                    .data("{\"status\":\"processing\",\"message\":\"Đang suy nghĩ...\"}")
+                );
+                
+                long startTime = System.currentTimeMillis();
+                
+                // 5. Gọi AI Engine (blocking call - sẽ cải thiện sau nếu AI service hỗ trợ streaming)
+                AiChatResponse aiResponse = aiChatbotService.getChatResponse(
+                    request.getQuery(),
+                    conversation.getSessionId(),
+                    request.getProvider()
+                );
+                
+                // 6. Stream response theo chunks (simulate typing effect)
+                String fullAnswer = aiResponse.getAnswer();
+                streamTextInChunks(emitter, fullAnswer);
+                
+                // 7. Enrich metadata
+                long responseTime = System.currentTimeMillis() - startTime;
+                enrichResponse(aiResponse, responseTime, conversation);
+                
+                // 8. Gửi metadata cuối cùng (sources, suggestions, confidence)
+                emitter.send(SseEmitter.event()
+                    .name("metadata")
+                    .data(objectMapper.writeValueAsString(new StreamMetadata(
+                        aiResponse.getConfidence(),
+                        aiResponse.getSources(),
+                        aiResponse.getSuggestTicket() ? List.of(aiResponse.getTicketCategory()) : List.of(),
+                        responseTime,
+                        conversation.getSessionId()
+                    )))
+                );
+                
+                // 9. Save assistant message
+                saveAssistantMessage(conversation, aiResponse);
+                updateConversationMetadata(conversation);
+                
+                // 10. Complete stream
+                emitter.send(SseEmitter.event()
+                    .name("done")
+                    .data("{\"status\":\"completed\"}")
+                );
+                emitter.complete();
+                
+                log.info("SSE Stream completed - SessionId: {}, Duration: {}ms", 
+                    conversation.getSessionId(), responseTime);
+                
+            } catch (RateLimitExceededException | ResourceNotFoundException ex) {
+                try {
+                    emitter.send(SseEmitter.event()
+                        .name("error")
+                        .data("{\"error\":\"" + ex.getMessage() + "\"}")
+                    );
+                } catch (IOException e) {
+                    log.error("Failed to send error event", e);
+                }
+                emitter.completeWithError(ex);
+                
+            } catch (Exception ex) {
+                log.error("SSE Stream error", ex);
+                try {
+                    emitter.send(SseEmitter.event()
+                        .name("error")
+                        .data("{\"error\":\"Có lỗi xảy ra khi xử lý yêu cầu\"}")
+                    );
+                } catch (IOException e) {
+                    log.error("Failed to send error event", e);
+                }
+                emitter.completeWithError(ex);
+            }
+        }, executorService);
+        
+        // Handle client disconnect
+        emitter.onCompletion(() -> log.debug("SSE Emitter completed"));
+        emitter.onTimeout(() -> {
+            log.warn("SSE Emitter timeout");
+            emitter.complete();
+        });
+        
+        return emitter;
+    }
+    
+    /**
+     * Stream text theo chunks với typing effect
+     */
+    private void streamTextInChunks(SseEmitter emitter, String text) throws IOException {
+        int chunkSize = 20; // Số ký tự mỗi chunk
+        int delay = 30; // ms delay giữa các chunk (tạo hiệu ứng typing)
+        
+        for (int i = 0; i < text.length(); i += chunkSize) {
+            int end = Math.min(i + chunkSize, text.length());
+            String chunk = text.substring(i, end);
+            
+            emitter.send(SseEmitter.event()
+                .name("chunk")
+                .data(objectMapper.writeValueAsString(new StreamChunk(chunk)))
+            );
+            
+            // Sleep để tạo typing effect
+            try {
+                Thread.sleep(delay);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+    }
+    
+    /**
+     * DTO cho stream chunk
+     */
+    private record StreamChunk(String content) {}
+    
+    /**
+     * DTO cho metadata cuối stream
+     */
+    private record StreamMetadata(
+        Double confidence,
+        List<SourceDocument> sources,
+        List<String> suggestedTickets,
+        Long responseTimeMs,
+        String sessionId
+    ) {}
 }
