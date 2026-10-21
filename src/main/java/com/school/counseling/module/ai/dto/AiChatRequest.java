@@ -26,7 +26,7 @@ public class AiChatRequest {
     @JsonProperty("session_id")
     private String sessionId; // UUID của conversation
     
-    @Pattern(regexp = "gemini|ollama|dify|python", message = "Provider không hợp lệ")
+    @Pattern(regexp = "gemini|ollama|dify|python|default", message = "Provider không hợp lệ")
     @Builder.Default
     private String provider = "gemini"; // Default engine
     

@@ -110,4 +110,7 @@ app:
   # ─── AI Engine chung ─────────────────────────────────────────────────────────
   ai:
     default-engine: ${AI_DEFAULT_ENGINE:GEMINI}
-    similarity-threshold: ${AI_SIMILARITY_THRESHOLD:0.90}
+    similarity-threshold: ${AI_SIMILARITY_THRESHOLD:0.70}
+    # Phase 2 & 3 Configuration
+    max-messages-per-day: ${AI_MAX_MESSAGES_PER_DAY:100}
+    context-window-size: ${AI_CONTEXT_WINDOW_SIZE:5}
