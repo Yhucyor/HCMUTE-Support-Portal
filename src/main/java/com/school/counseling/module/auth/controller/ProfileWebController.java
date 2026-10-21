@@ -39,6 +39,7 @@ public class ProfileWebController {
 
         UserProfileDto profile = profileService.getProfile(currentUser.getId());
         model.addAttribute("user", profile);
+        model.addAttribute("currentUser", currentUser);
         model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
 
         if (!model.containsAttribute("updateProfileRequest")) {
