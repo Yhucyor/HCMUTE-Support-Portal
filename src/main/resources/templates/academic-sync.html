@@ -1243,10 +1243,17 @@
 
         <!-- FORM CRAWLER / SYNC -->
         <div class="sync-box">
+            <!-- Banner khi đã có credentials lưu sẵn -->
+            <div th:if="${portalLinked}"
+                 style="display:flex; align-items:center; gap:10px; padding:10px 14px; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:10px; margin-bottom:16px; font-size:0.88rem; color:#065f46;">
+                <i class='bx bx-link-alt' style="font-size:1.2rem; color:#059669;"></i>
+                <span>Đã liên kết tài khoản Portal <strong th:text="${savedPortalUsername}"></strong> — hệ thống sẽ tự đồng bộ dữ liệu khi trang tải xong.</span>
+            </div>
+
             <div class="sync-box-header">
                 <div class="sync-box-title">
                     <i class='bx bx-cloud-download' style="color:var(--primary); font-size:1.3rem;"></i>
-                    Xác thực & Đồng bộ Dữ liệu từ HCMUTE Online
+                    Xác thực &amp; Đồng bộ Dữ liệu từ HCMUTE Online
                 </div>
                 <button type="button" class="btn-demo-fill" id="btn-demo-fill" title="Nạp nhanh tài khoản demo để kiểm thử offline">
                     <i class='bx bx-vial'></i> Điền nhanh tài khoản Demo (Offline)
@@ -1254,13 +1261,18 @@
             </div>
 
             <form id="sync-form">
+                <!-- Hidden fields chứa saved credentials để JS đọc (không hiển thị ra UI) -->
+                <input type="hidden" id="savedPortalUsername" th:value="${savedPortalUsername}">
+                <input type="hidden" id="savedPortalPassword" th:value="${savedPortalPassword}">
+                <input type="hidden" id="portalLinkedFlag" th:value="${portalLinked != null and portalLinked ? 'true' : 'false'}">
+
                 <div class="sync-form-grid">
                     <div class="form-group">
                         <label for="studentId"><i class='bx bx-id-card'></i> Mã số sinh viên (MSSV):</label>
                         <div class="form-input-wrapper">
                             <i class='bx bx-user'></i>
-                            <input type="text" id="studentId" class="form-control" placeholder="Ví dụ: 21110123 hoặc demo" 
-                                   th:value="${currentStudentId != null and currentStudentId != '' ? currentStudentId : '21110123'}" required>
+                            <input type="text" id="studentId" class="form-control" placeholder="Ví dụ: 21110123 hoặc demo"
+                                   th:value="${savedPortalUsername != null and savedPortalUsername != ''} ? ${savedPortalUsername} : ${currentStudentId != null and currentStudentId != '' ? currentStudentId : ''}" required>
                         </div>
                     </div>
 
@@ -1268,8 +1280,9 @@
                         <label for="password"><i class='bx bx-lock-alt'></i> Mật khẩu cổng đào tạo:</label>
                         <div class="form-input-wrapper">
                             <i class='bx bx-key'></i>
-                            <input type="password" id="password" class="form-control" placeholder="Mật khẩu tài khoản sinh viên" 
-                                   value="Password123@" required>
+                            <input type="password" id="password" class="form-control"
+                                   th:placeholder="${portalLinked} ? '••••••• (đã lưu sẵn)' : 'Mật khẩu tài khoản sinh viên'"
+                                   th:required="${!portalLinked}">
                         </div>
                     </div>
 
@@ -1862,11 +1875,33 @@
             const urlParams = new URLSearchParams(window.location.search);
             const queryStudentId = urlParams.get('studentId');
             const studentIdInput = document.getElementById('studentId');
+            const passwordInput = document.getElementById('password');
+            const portalLinkedFlag = document.getElementById('portalLinkedFlag')?.value === 'true';
+            const savedUsername = document.getElementById('savedPortalUsername')?.value || '';
+            const savedPassword = document.getElementById('savedPortalPassword')?.value || '';
+
+            // Pre-fill từ saved credentials
+            if (portalLinkedFlag && savedUsername && studentIdInput) {
+                studentIdInput.value = savedUsername;
+            }
+            if (portalLinkedFlag && savedPassword && passwordInput) {
+                passwordInput.value = savedPassword;
+            }
+
             const effectiveId = queryStudentId || (studentIdInput ? studentIdInput.value.trim() : '');
 
             if (effectiveId && effectiveId !== '21110123') {
                 resultsContainer.style.display = 'block';
                 loadAllAcademicData(effectiveId);
+            }
+
+            // Auto-sync nếu đã có credentials lưu sẵn
+            if (portalLinkedFlag && savedUsername && savedPassword) {
+                // Delay nhỏ để trang render xong
+                setTimeout(() => {
+                    showAlert('Đang tự động đồng bộ dữ liệu học vụ từ Portal...', 'info');
+                    syncForm.dispatchEvent(new Event('submit'));
+                }, 600);
             }
 
             // Update today date badge

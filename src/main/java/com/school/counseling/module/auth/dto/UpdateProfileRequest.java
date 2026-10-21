@@ -25,4 +25,8 @@ public class UpdateProfileRequest {
     private String phone;
 
     private Long departmentId;
+
+    // Liên kết tài khoản Portal Sinh viên (tuỳ chọn)
+    private String portalUsername;
+    private String portalPassword; // plain text, sẽ mã hoá Base64 khi lưu
 }

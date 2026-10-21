@@ -21,6 +21,8 @@ public class UserProfileDto {
     private String email;
     private String phone;
     private String avatarUrl;
+    private String portalUsername;   // pre-fill form liên kết Portal
+    private boolean portalLinked;    // true nếu đã lưu credentials
     private String role;
     private Long departmentId;
     private String departmentName;
@@ -37,6 +39,9 @@ public class UserProfileDto {
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .avatarUrl(user.getAvatarUrl())
+                .portalUsername(user.getPortalUsername())
+                .portalLinked(user.getPortalUsername() != null && !user.getPortalUsername().isBlank()
+                        && user.getPortalPasswordEnc() != null && !user.getPortalPasswordEnc().isBlank())
                 .role(user.getRole() != null ? user.getRole().getName() : null)
                 .departmentId(user.getDepartment() != null ? user.getDepartment().getId() : null)
                 .departmentName(user.getDepartment() != null ? user.getDepartment().getName() : null)
