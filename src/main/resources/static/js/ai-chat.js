@@ -113,9 +113,21 @@ async function sendChatMessage(message, typingIndicator) {
         
         // Update sessionId if provided
         if (data.data.sessionId) {
-            sessionId = data.data.sessionId;
-            // Update URL without reload
-            window.history.pushState({}, '', `/ai/chat/${sessionId}`);
+            const newSessionId = data.data.sessionId;
+            
+            // Nếu đây là conversation mới (sessionId thay đổi)
+            if (sessionId !== newSessionId) {
+                sessionId = newSessionId;
+                
+                // Redirect to conversation page để load sidebar với conversation mới
+                // Delay 1s để user nhìn thấy response trước khi redirect
+                setTimeout(() => {
+                    window.location.href = `/ai/chat/${sessionId}`;
+                }, 1000);
+            } else {
+                // Update URL without reload
+                window.history.pushState({}, '', `/ai/chat/${sessionId}`);
+            }
         }
         
     } catch (error) {
