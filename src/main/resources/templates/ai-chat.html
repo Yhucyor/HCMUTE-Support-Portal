@@ -121,10 +121,10 @@
             <div sec:authorize="isAuthenticated()" class="relative group">
                 <button class="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-surface-subtle transition-all" type="button">
                     <div class="w-8 h-8 rounded-full bg-primary-subtle text-primary font-bold text-xs flex items-center justify-center shadow-xs border border-primary/30"
-                         th:text="${#strings.substring(currentUser?.fullName, 0, 2)?.toUpperCase()}">AN</div>
+                         th:text="${currentUser != null ? #strings.substring(currentUser.fullName, 0, 2).toUpperCase() : 'AN'}">AN</div>
                     <div class="hidden sm:flex flex-col items-start">
-                        <span class="text-xs font-semibold text-text-primary leading-tight" th:text="${currentUser?.fullName}">Anh Nguyễn</span>
-                        <span class="text-[10px] text-text-secondary" th:text="${currentUser?.studentCode}">2151050000</span>
+                        <span class="text-xs font-semibold text-text-primary leading-tight" th:text="${currentUser != null ? currentUser.fullName : 'User'}">Anh Nguyễn</span>
+                        <span class="text-[10px] text-text-secondary" th:text="${currentUser != null ? currentUser.studentCode : ''}">2151050000</span>
                     </div>
                     <span class="material-symbols-outlined text-text-muted text-lg">arrow_drop_down</span>
                 </button>
@@ -265,7 +265,7 @@
                         
                         <!-- User Info (if authenticated) -->
                         <div sec:authorize="isAuthenticated()" class="hidden sm:flex items-center gap-2">
-                            <span class="text-xs text-text-secondary" th:text="${currentUser?.fullName}">User Name</span>
+                            <span class="text-xs text-text-secondary" th:text="${currentUser != null ? currentUser.fullName : ''}">User Name</span>
                         </div>
                     </header>
                     
@@ -280,7 +280,7 @@
                                     <div th:if="${msg.role.name() == 'USER'}" class="flex items-start justify-end gap-3 pl-8 md:pl-16">
                                         <div class="flex flex-col items-end max-w-xl">
                                             <div class="flex items-center gap-1.5 mb-1">
-                                                <span class="text-xs font-semibold text-text-primary" th:text="${currentUser?.fullName}">User</span>
+                                                <span class="text-xs font-semibold text-text-primary" th:text="${currentUser != null ? currentUser.fullName : 'User'}">User</span>
                                                 <span class="text-[11px] text-text-muted" th:text="${#temporals.format(msg.createdAt, 'HH:mm')}">10:24</span>
                                             </div>
                                             <div class="p-3.5 rounded-2xl rounded-tr-xs bg-primary text-white leading-relaxed text-sm shadow-xs" th:text="${msg.content}">
@@ -288,7 +288,7 @@
                                             </div>
                                         </div>
                                         <div class="w-8 h-8 rounded-full bg-primary-subtle text-primary font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-xs border border-primary/30 mt-1"
-                                             th:text="${#strings.substring(currentUser?.fullName, 0, 2)?.toUpperCase()}">
+                                             th:text="${currentUser != null ? #strings.substring(currentUser.fullName, 0, 2).toUpperCase() : 'AN'}">
                                             AN
                                         </div>
                                     </div>
