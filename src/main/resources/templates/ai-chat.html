@@ -14,6 +14,23 @@
             html, body { margin: 0; padding: 0; }
             body { overscroll-behavior: none; }
         }
+        
+        /* Custom Scrollbar for Sidebar */
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* Main scrollbar (thinner) */
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
@@ -191,9 +208,9 @@
             <div class="flex-1 flex overflow-hidden bg-white shadow-sm border border-border-ui">
                 
                 <!-- ================= LEFT PANEL: CONVERSATION HISTORY (~280px) ================= -->
-                <aside class="w-[280px] flex-shrink-0 flex flex-col bg-background border-r border-border-ui hidden md:flex">
-                    <!-- Sidebar Header & Action -->
-                    <div class="p-3.5 flex flex-col gap-3 bg-white border-b border-border-ui">
+                <aside class="w-[280px] flex-shrink-0 flex flex-col bg-background border-r border-border-ui hidden md:flex h-full">
+                    <!-- Sidebar Header & Action (Fixed) -->
+                    <div class="flex-shrink-0 p-3.5 flex flex-col gap-3 bg-white border-b border-border-ui">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <div class="w-7 h-7 rounded-lg bg-primary-subtle flex items-center justify-center text-primary">
@@ -220,8 +237,8 @@
                         </div>
                     </div>
                     
-                    <!-- Scrollable Grouped History -->
-                    <div class="flex-1 overflow-y-auto px-2 py-3 space-y-4">
+                    <!-- Scrollable Grouped History (flex-1 với overflow-y-auto) -->
+                    <div class="flex-1 overflow-y-auto px-2 py-3 space-y-4 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent hover:scrollbar-thumb-slate-400">
                         <div th:if="${recentConversations != null and !recentConversations.isEmpty()}">
                             <!-- Group: HÔM NAY -->
                             <div class="space-y-1">
