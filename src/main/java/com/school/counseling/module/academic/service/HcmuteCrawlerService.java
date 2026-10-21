@@ -19,12 +19,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -62,7 +66,31 @@ public class HcmuteCrawlerService {
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(TIMEOUT)
                 .followRedirects(HttpClient.Redirect.NORMAL)
+                .sslContext(buildTrustAllSslContext())
                 .build();
+    }
+
+    /**
+     * Tạo SSLContext bỏ qua certificate verification.
+     * Cần thiết vì portalapi.hcmute.edu.vn dùng certificate
+     * không có trong Java default truststore.
+     */
+    private static SSLContext buildTrustAllSslContext() {
+        try {
+            TrustManager[] trustAll = new TrustManager[]{
+                new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+                    public void checkClientTrusted(X509Certificate[] chain, String authType) {}
+                    public void checkServerTrusted(X509Certificate[] chain, String authType) {}
+                }
+            };
+            SSLContext ctx = SSLContext.getInstance("TLS");
+            ctx.init(null, trustAll, new java.security.SecureRandom());
+            return ctx;
+        } catch (Exception e) {
+            log.warn("Không thể tạo trust-all SSLContext, dùng default: {}", e.getMessage());
+            try { return SSLContext.getDefault(); } catch (Exception ex) { throw new RuntimeException(ex); }
+        }
     }
 
     @Transactional
