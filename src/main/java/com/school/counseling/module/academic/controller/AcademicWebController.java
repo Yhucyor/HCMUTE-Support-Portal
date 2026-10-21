@@ -92,9 +92,19 @@ public class AcademicWebController {
     // ── helpers ──────────────────────────────────────────────────────────────
 
     private String resolve(String studentId) {
-        return (studentId != null && !studentId.isBlank())
-                ? studentId.trim()
-                : SecurityUtils.getCurrentUsername().orElse("");
+        if (studentId != null && !studentId.isBlank()) {
+            return studentId.trim();
+        }
+        try {
+            Long userId = SecurityUtils.getCurrentUserId().orElse(null);
+            if (userId != null) {
+                String portalUsername = profileService.getProfile(userId).getPortalUsername();
+                if (portalUsername != null && !portalUsername.isBlank()) {
+                    return portalUsername.trim();
+                }
+            }
+        } catch (Exception ignored) {}
+        return SecurityUtils.getCurrentUsername().orElse("");
     }
 
     /**
