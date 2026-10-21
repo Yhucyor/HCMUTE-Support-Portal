@@ -17,6 +17,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.school.counseling.module.academic.dto.HcmuteSyncRequest;
+import com.school.counseling.module.academic.service.HcmuteCrawlerService;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Slf4j
@@ -28,6 +30,7 @@ public class ProfileWebController {
 
     private final ProfileService profileService;
     private final DepartmentRepository departmentRepository;
+    private final HcmuteCrawlerService crawlerService;
 
     @GetMapping
     public String viewProfile(Model model) {
@@ -44,6 +47,8 @@ public class ProfileWebController {
                     .email(profile.getEmail())
                     .phone(profile.getPhone())
                     .departmentId(profile.getDepartmentId())
+                    .portalUsername(profile.getPortalUsername())
+                    // portalPassword không pre-fill vì lý do bảo mật
                     .build();
             model.addAttribute("updateProfileRequest", updateRequest);
         }
@@ -70,8 +75,30 @@ public class ProfileWebController {
                 .orElseThrow(() -> new AppException("Chưa đăng nhập"));
 
         try {
-            profileService.updateProfile(currentUserId, request);
-            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật hồ sơ cá nhân thành công!");
+            UserProfileDto updated = profileService.updateProfile(currentUserId, request);
+
+            // Đồng bộ dữ liệu thật từ Portal nếu có tài khoản & mật khẩu
+            String portalUser = updated.getPortalUsername();
+            String portalPass = (request.getPortalPassword() != null && !request.getPortalPassword().isBlank())
+                    ? request.getPortalPassword().trim()
+                    : profileService.decodePortalPassword(currentUserId);
+
+            if (portalUser != null && !portalUser.isBlank() && portalPass != null && !portalPass.isBlank()) {
+                try {
+                    crawlerService.syncStudentData(HcmuteSyncRequest.builder()
+                            .studentId(portalUser)
+                            .password(portalPass)
+                            .build());
+                    redirectAttributes.addFlashAttribute("successMessage",
+                            "Cập nhật hồ sơ và đồng bộ dữ liệu thật từ Cổng đào tạo HCMUTE thành công!");
+                } catch (Exception syncEx) {
+                    log.warn("Đồng bộ dữ liệu Portal sau khi cập nhật hồ sơ thất bại: {}", syncEx.getMessage());
+                    redirectAttributes.addFlashAttribute("successMessage",
+                            "Cập nhật thông tin thành công! (Dữ liệu học vụ sẽ được đồng bộ khi vào Thời khóa biểu)");
+                }
+            } else {
+                redirectAttributes.addFlashAttribute("successMessage", "Cập nhật hồ sơ cá nhân thành công!");
+            }
         } catch (Exception ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }

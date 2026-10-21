@@ -1,278 +1,818 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HCMUTE - Hồ sơ cá nhân</title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Hồ sơ cá nhân | HCMUTE Student Portal</title>
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
-        rel="stylesheet">
-    <!-- Boxicons (Icon Library) -->
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <!-- Portal CSS -->
-    <link rel="stylesheet" th:href="@{/css/portal.css}">
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <style>
-        .profile-container {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 2rem;
-            margin-top: 1rem;
-        }
-
-        .profile-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-        }
-
-        .avatar-section {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .avatar-lg {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid var(--portal-bg);
-            margin-bottom: 1rem;
-        }
-
-        .upload-btn {
-            background: var(--portal-bg);
-            color: var(--text-dark);
-            border: 1px solid var(--border-color);
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            margin-top: 10px;
-            transition: background 0.3s;
-        }
-
-        .upload-btn:hover {
-            background: #e0e6ed;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--text-dark);
-            font-size: 0.95rem;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-family: 'Inter', sans-serif;
-            font-size: 1rem;
-            color: var(--text-dark);
-            transition: border-color 0.3s;
-            box-sizing: border-box;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--crimson);
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-
-        .btn-save {
-            background: var(--crimson);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .btn-save:hover {
-            background: #8a1525;
-        }
-
-        .section-header {
-            margin-top: 0;
-            margin-bottom: 1.5rem;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-dark);
-        }
+        @layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } }
+        ::-webkit-scrollbar { display: none; }
     </style>
+    <!-- Tailwind CSS — Academic Horizon + HCMUTE Brand Tokens -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        /* ── HCMUTE Brand ── */
+                        "brand-red":  "#991b1e",
+                        "brand-red-hover": "#831518",
+                        "brand-blue": "#003882",
+                        "brand-blue-dark": "#002456",
+                        /* ── Academic Horizon Palette ── */
+                        "primary":               "#0037b0",
+                        "on-primary":            "#ffffff",
+                        "primary-container":     "#1d4ed8",
+                        "on-primary-container":  "#cad3ff",
+                        "primary-fixed":         "#dce1ff",
+                        "on-primary-fixed":      "#001551",
+                        "inverse-primary":       "#b7c4ff",
+                        "secondary":             "#565e74",
+                        "on-secondary":          "#ffffff",
+                        "secondary-container":   "#dae2fd",
+                        "on-secondary-container":"#5c647a",
+                        "tertiary":              "#003ca3",
+                        "on-tertiary":           "#ffffff",
+                        "tertiary-container":    "#0051d6",
+                        "on-tertiary-container": "#c9d4ff",
+                        "error":                 "#ba1a1a",
+                        "on-error":              "#ffffff",
+                        "error-container":       "#ffdad6",
+                        "on-error-container":    "#93000a",
+                        "surface":               "#f8f9ff",
+                        "surface-dim":           "#cbdbf5",
+                        "surface-bright":        "#f8f9ff",
+                        "surface-container-lowest":  "#ffffff",
+                        "surface-container-low":     "#eff4ff",
+                        "surface-container":         "#e5eeff",
+                        "surface-container-high":    "#dce9ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-variant":       "#d3e4fe",
+                        "on-surface":            "#0b1c30",
+                        "on-surface-variant":    "#434655",
+                        "inverse-surface":       "#213145",
+                        "inverse-on-surface":    "#eaf1ff",
+                        "outline":               "#747686",
+                        "outline-variant":       "#c4c5d7",
+                        "background":            "#f8f9ff",
+                        "on-background":         "#0b1c30"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem", lg: "0.75rem", xl: "1rem", "2xl": "1.5rem", full: "9999px"
+                    },
+                    spacing: {
+                        "space-xs": "0.25rem", "space-sm": "0.5rem", "space-md": "1rem",
+                        "space-lg": "1.5rem",  "space-xl": "2rem",
+                        "gutter-sm": "1rem",   "gutter":   "1.5rem",   "gutter-lg": "2rem",
+                        "margin-sm": "1rem",   "margin":   "2rem",     "margin-lg": "3rem"
+                    },
+                    fontFamily: {
+                        "headline": ["Outfit", "sans-serif"],
+                        "body":     ["Inter", "sans-serif"],
+                        "display":  ["Outfit", "sans-serif"]
+                    },
+                    fontSize: {
+                        "display":          ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "headline-lg":      ["36px", { lineHeight: "44px", letterSpacing: "-0.015em", fontWeight: "600" }],
+                        "headline-md":      ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
+                        "headline-sm":      ["20px", { lineHeight: "28px", fontWeight: "600" }],
+                        "title-md":         ["16px", { lineHeight: "24px", fontWeight: "600" }],
+                        "body-lg":          ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "body-md":          ["14px", { lineHeight: "20px", fontWeight: "400" }],
+                        "body-sm":          ["12px", { lineHeight: "16px", fontWeight: "400" }],
+                        "label-lg":         ["14px", { lineHeight: "20px", fontWeight: "600" }],
+                        "label-md":         ["12px", { lineHeight: "16px", letterSpacing: "0.01em", fontWeight: "500" }],
+                        "label-caps":       ["11px", { lineHeight: "14px", letterSpacing: "0.05em", fontWeight: "600" }]
+                    }
+                }
+            }
+        };
+    </script>
 </head>
+<body class="bg-surface font-body text-on-surface antialiased selection:bg-[#991b1e] selection:text-white">
 
-<body>
-
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <i class='bx bx-menu menu-icon'></i>
-            <span class="logo-text">Portal</span>
-        </div>
-        <ul class="sidebar-menu">
-            <li>
-                <a th:href="@{/dashboard}">
-                    <i class='bx bxs-dashboard'></i>
-                    <span>Tổng quan</span>
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <i class='bx bx-bot'></i>
-                    <span>Trợ lý AI</span>
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <i class='bx bx-support'></i>
-                    <span>Yêu cầu hỗ trợ</span>
-                </a>
-            </li>
-            <li>
-                <a th:href="@{/feed}">
-                    <i class='bx bx-news'></i>
-                    <span>Bảng tin sinh viên</span>
-                </a>
-            </li>
-            <li>
-                <a th:href="@{/profile}" class="active">
-                    <i class='bx bx-user'></i>
-                    <span>Hồ sơ cá nhân</span>
-                </a>
-            </li>
-        </ul>
-        <div class="sidebar-footer">
-            <a th:href="@{/}">
-                <i class='bx bx-log-out'></i>
-                <span>Đăng xuất</span>
+    <!-- ═══════════════════════════════════════
+         TOP GLOBAL HEADER (giống index/faqs/forum)
+    ═══════════════════════════════════════════ -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all h-[74px]">
+        <div class="w-full px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+            <!-- Logo HCMUTE -->
+            <a class="flex items-center gap-3 group py-1.5" th:href="@{/}">
+                <img alt="HCMUTE Logo" class="h-12 w-auto object-contain transition-transform group-hover:scale-105"
+                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKSHNb9YZP8QFQKzZ-_B_glnPE615kLoTh0DIZM9-id7Eb1Z7EZXRKcjBeCckK7VOaTPGdnMs7Cl7qdtjr1Mry3Y7d1U0S8maxw8fAHipOBnT-HFyaVBuqc6xe0fMZJf4fPlHw6UIkL0vHJV2kfl-tnjJgobCtm7Cy-KazrUCaEZefkxCcT9HC_-zWiT9twVqKg6xymALE7_hrVpAjI-XYdTFsbm3wyDRY8PxAR-vjOB00BqpW9wX9dVryQuIfZgdSA">
+                <div class="flex flex-col text-[#003882]">
+                    <span class="font-bold text-sm sm:text-base tracking-tight leading-tight text-[#003882]">Trường Đại học Sư phạm Kỹ thuật Tp. Hồ Chí Minh</span>
+                    <span class="font-normal text-[11px] sm:text-xs text-[#003882] tracking-normal leading-normal">HCMC University of Technology and Education</span>
+                </div>
             </a>
-        </div>
-    </aside>
 
-    <!-- MAIN CONTENT WRAPPER -->
-    <div class="main-wrapper">
+            <!-- Nav Desktop -->
+            <nav class="hidden xl:flex items-center space-x-7">
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/}">Trang chủ</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/feed/forum}">Diễn đàn</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/faqs}">Tra cứu FAQ</a>
+            </nav>
 
-        <!-- TOPBAR -->
-        <header class="topbar">
-            <div class="search-bar">
-                <i class='bx bx-search' style="color: var(--text-gray);"></i>
-                <input type="text" placeholder="Tìm kiếm dịch vụ, bài viết...">
-            </div>
-
-            <div class="topbar-right">
-                <div class="topbar-icon">
-                    <i class='bx bx-bell'></i>
-                    <span class="badge">3</span>
+            <!-- Header Actions -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="hidden sm:flex items-center text-xs font-semibold text-slate-600 px-2 py-1 rounded cursor-pointer hover:bg-slate-100">
+                    <span>VI</span>
+                    <span class="material-symbols-outlined text-[16px]">expand_more</span>
                 </div>
 
-                <div class="user-profile">
-                    <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=A51C30&color=fff" alt="Avatar">
-                    <div class="user-info">
-                        <span class="user-name">Nguyễn Văn A</span>
-                        <span class="user-role">Sinh viên K23</span>
+                <!-- Đã đăng nhập -->
+                <div sec:authorize="isAuthenticated()" class="relative">
+                    <button id="profileAccountToggle"
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95"
+                            th:title="${currentUser != null ? currentUser.fullName : #authentication.name}"
+                            aria-haspopup="true" aria-expanded="false">
+                        <span class="material-symbols-outlined text-[16px]">account_circle</span>
+                        <span class="hidden sm:inline truncate max-w-[150px]"
+                              th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
+                        <span class="material-symbols-outlined text-[14px]">expand_more</span>
+                    </button>
+                    <div id="profileDropdownMenu"
+                         class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50"
+                         role="menu">
+                        <a href="/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-[#003882] bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">person</span>
+                            <span>Thông tin cá nhân</span>
+                        </a>
+                        <a href="/academic/sync" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">home</span>
+                            <span>Tổng quan</span>
+                        </a>
+                        <a href="/academic/grades" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">description</span>
+                            <span>Bảng điểm</span>
+                        </a>
+                        <a href="/academic/timetable" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                            <span>Thời khóa biểu</span>
+                        </a>
+                        <a href="/academic/curriculum" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">book</span>
+                            <span>Chương trình đào tạo</span>
+                        </a>
+                        <div class="border-t border-slate-200 my-1"></div>
+                        <a th:href="@{/auth/logout}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">logout</span>
+                            <span>Đăng xuất</span>
+                        </a>
                     </div>
-                    <i class='bx bx-chevron-down' style="color: var(--text-gray);"></i>
-                </div>
-            </div>
-        </header>
-
-        <!-- PAGE CONTENT -->
-        <main class="page-content">
-            <div class="page-header">
-                <h1 class="page-title">Hồ sơ cá nhân</h1>
-                <span class="breadcrumb">Quản lý thông tin tài khoản và bảo mật</span>
-            </div>
-
-            <div class="profile-container">
-                <!-- Cột trái: Avatar & Thông tin ngắn -->
-                <div class="profile-card avatar-section">
-                    <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=A51C30&color=fff&size=200"
-                        alt="Avatar" class="avatar-lg">
-                    <h3 style="margin-bottom: 5px;">Nguyễn Văn A</h3>
-                    <p style="color: var(--text-gray); margin-top: 0;">Sinh viên - Khoa CNTT</p>
-                    <button class="upload-btn"><i class='bx bx-upload'></i> Tải ảnh lên</button>
                 </div>
 
-                <!-- Cột phải: Form cập nhật thông tin -->
-                <div class="profile-card">
-                    <h3 class="section-header">Thông tin chi tiết</h3>
-                    <form action="#" method="post">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="fullname">Họ và tên</label>
-                                <input type="text" id="fullname" class="form-control" value="Nguyễn Văn A">
-                            </div>
-                            <div class="form-group">
-                                <label for="studentId">Mã số sinh viên (MSSV)</label>
-                                <input type="text" id="studentId" class="form-control" value="23110001" disabled
-                                    style="background: #f5f5f5;">
-                            </div>
-                        </div>
+                <!-- Chưa đăng nhập -->
+                <div sec:authorize="!isAuthenticated()">
+                    <a class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#991b1e] hover:bg-[#831518] rounded-md shadow-sm transition-all active:scale-95" th:href="@{/auth/login}">
+                        <span class="material-symbols-outlined text-[16px]">person</span>
+                        <span>Đăng nhập</span>
+                    </a>
+                </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="email">Email trường</label>
-                                <input type="email" id="email" class="form-control"
-                                    value="23110001@student.hcmute.edu.vn" disabled style="background: #f5f5f5;">
-                            </div>
-                            <div class="form-group">
-                                <label for="phone">Số điện thoại</label>
-                                <input type="text" id="phone" class="form-control" value="0901234567">
-                            </div>
-                        </div>
+                <!-- Mobile Menu Button -->
+                <button aria-label="Mở menu" onclick="toggleMobileNav()" class="xl:hidden w-9 h-9 rounded-md flex items-center justify-center text-slate-700 hover:bg-slate-100">
+                    <span class="material-symbols-outlined text-[24px]">menu</span>
+                </button>
+            </div>
+        </div>
 
-                        <div class="form-group">
-                            <label for="address">Địa chỉ liên hệ</label>
-                            <input type="text" id="address" class="form-control"
-                                value="1 Võ Văn Ngân, Phường Linh Chiểu, Thủ Đức">
-                        </div>
+        <!-- Mobile Drawer -->
+        <div id="mobileNavDrawer" class="hidden xl:hidden bg-white border-b border-slate-200 px-4 pt-3 pb-5 space-y-2.5 shadow-lg">
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/}">Trang chủ</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/feed/forum}">Diễn đàn</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/faqs}">Tra cứu FAQ</a>
+            <div sec:authorize="isAuthenticated()" class="pt-2 border-t border-slate-200">
+                <a class="flex items-center gap-2 py-2 text-sm font-semibold text-[#003882]" href="/profile">
+                    <span class="material-symbols-outlined text-[18px]">account_circle</span>
+                    <span th:text="${currentUser != null ? currentUser.fullName : #authentication.name}">Họ Tên</span>
+                </a>
+                <a class="block py-1.5 text-sm font-medium text-[#991b1e]" th:href="@{/auth/logout}">Đăng xuất</a>
+            </div>
+        </div>
+    </header>
 
-                        <h3 class="section-header" style="margin-top: 2.5rem;">Đổi mật khẩu</h3>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="oldPassword">Mật khẩu hiện tại</label>
-                                <input type="password" id="oldPassword" class="form-control" placeholder="••••••••">
-                            </div>
-                            <div class="form-group">
-                                <label for="newPassword">Mật khẩu mới</label>
-                                <input type="password" id="newPassword" class="form-control"
-                                    placeholder="Tạo mật khẩu mới">
-                            </div>
-                        </div>
+    <!-- ═══════════════════════════════════════
+         MAIN CONTENT
+    ═══════════════════════════════════════════ -->
+    <main class="w-full bg-surface min-h-screen">
+        <div class="flex flex-col w-full">
 
-                        <div style="text-align: right; margin-top: 1rem;">
-                            <button type="submit" class="btn-save">Lưu thay đổi</button>
-                        </div>
-                    </form>
+            <!-- Sub-Header Banner -->
+            <section class="relative w-full bg-surface-container-lowest border-b border-surface-container-high/60 pt-[74px]">
+                <div class="max-w-7xl mx-auto px-margin-sm lg:px-margin py-space-xl">
+                    <!-- Breadcrumb -->
+                    <nav class="flex items-center gap-space-xs text-secondary font-body-md text-body-md mb-2">
+                        <a class="hover:text-primary transition-colors flex items-center gap-1" th:href="@{/}">
+                            <span class="material-symbols-outlined text-[16px]">home</span>
+                            <span>Trang chủ</span>
+                        </a>
+                        <span class="text-secondary/60">/</span>
+                        <span class="text-on-surface font-semibold">Hồ sơ cá nhân</span>
+                    </nav>
+                    <h1 class="font-display text-headline-lg font-bold tracking-tight text-on-surface leading-tight">
+                        Hồ sơ cá nhân
+                    </h1>
+                    <p class="font-body-lg text-body-lg text-on-surface-variant mt-1 max-w-2xl">
+                        Quản lý thông tin tài khoản, định danh học vụ và bảo mật sinh viên HCMUTE
+                    </p>
+                </div>
+            </section>
+
+            <!-- Flash Messages -->
+            <div class="max-w-7xl mx-auto w-full px-margin-sm lg:px-margin pt-space-md">
+                <div th:if="${successMessage}"
+                     class="flex items-center gap-3 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-body-md font-medium">
+                    <span class="material-symbols-outlined text-[20px] text-emerald-500">check_circle</span>
+                    <span th:text="${successMessage}"></span>
+                </div>
+                <div th:if="${errorMessage}"
+                     class="flex items-center gap-3 px-4 py-3 bg-error-container border border-error/20 rounded-xl text-on-error-container text-body-md font-medium">
+                    <span class="material-symbols-outlined text-[20px] text-error">error</span>
+                    <span th:text="${errorMessage}"></span>
                 </div>
             </div>
 
-        </main>
+            <!-- Main Content Layout -->
+            <section class="max-w-7xl mx-auto w-full px-margin-sm lg:px-margin py-space-xl">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
 
+                    <!-- ══════════════════════════════════════
+                         LEFT COLUMN: Identity & Quick Links (4 cols)
+                    ══════════════════════════════════════════ -->
+                    <aside class="lg:col-span-4 flex flex-col gap-gutter">
+
+                        <!-- Profile Identity Card -->
+                        <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col items-center text-center relative overflow-hidden transition-all duration-300 hover:shadow-md">
+                            <!-- Color bar accent -->
+                            <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#003882] to-[#0037b0]"></div>
+
+                            <!-- Avatar -->
+                            <div class="relative mt-space-sm mb-space-md">
+                                <div class="w-28 h-28 rounded-full overflow-hidden ring-4 ring-surface-container shadow-md">
+                                    <img th:if="${user.avatarUrl != null and !user.avatarUrl.isEmpty()}"
+                                         th:src="${user.avatarUrl}"
+                                         th:alt="${user.fullName}"
+                                         class="w-full h-full object-cover">
+                                    <!-- Fallback: initials avatar -->
+                                    <div th:unless="${user.avatarUrl != null and !user.avatarUrl.isEmpty()}"
+                                         class="w-full h-full bg-gradient-to-br from-[#003882] to-[#0037b0] text-white flex items-center justify-center font-headline text-2xl font-bold">
+                                        <span th:text="${user.fullName != null and user.fullName.length() >= 2} ? ${user.fullName.substring(0,1).toUpperCase()} : 'U'">A</span>
+                                    </div>
+                                </div>
+                                <!-- Camera upload button -->
+                                <label for="avatarFileInput"
+                                       class="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-[#003882] text-white flex items-center justify-center shadow-lg hover:bg-[#002456] transition-transform duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+                                       title="Thay đổi ảnh đại diện">
+                                    <span class="material-symbols-outlined text-[18px]">photo_camera</span>
+                                </label>
+                            </div>
+
+                            <!-- User Name & Role -->
+                            <h2 class="font-headline text-headline-sm font-bold text-on-surface" th:text="${user.fullName}">Họ Tên</h2>
+                            <span class="font-body-md text-body-md text-secondary mt-0.5" th:text="${user.username}">username</span>
+
+                            <!-- Role badges -->
+                            <div class="mt-space-xs flex flex-wrap gap-space-xs justify-center items-center">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full font-label-caps text-label-caps uppercase font-semibold bg-surface-container text-primary">
+                                    <th:block th:text="${user.role == 'ADMIN'} ? 'Quản trị viên' : (${user.role == 'STAFF'} ? 'Cán bộ / Giảng viên' : 'Sinh viên chính quy')">Sinh viên</th:block>
+                                </span>
+                            </div>
+
+                            <!-- Department Info -->
+                            <div class="w-full mt-space-md pt-space-md bg-surface-container-low/60 rounded-lg p-space-sm flex flex-col gap-space-xs text-left">
+                                <div class="flex items-center gap-space-sm text-on-surface">
+                                    <span class="material-symbols-outlined text-primary text-[20px]">account_balance</span>
+                                    <span class="font-label-lg text-label-lg"
+                                          th:text="${user.departmentName != null} ? ${user.departmentName} : 'Chưa xác định đơn vị'">Khoa</span>
+                                </div>
+                                <div class="flex items-center gap-space-sm text-on-surface-variant font-body-sm text-body-sm">
+                                    <span class="material-symbols-outlined text-secondary text-[18px]">badge</span>
+                                    <span>MSSV: <strong class="text-on-surface font-semibold" th:text="${user.username}">—</strong></span>
+                                </div>
+                                <!-- Status indicator -->
+                                <div class="flex items-center gap-space-sm font-body-sm text-body-sm"
+                                     th:classappend="${user.status != null and user.status.name() == 'ACTIVE'} ? 'text-emerald-600' : 'text-slate-400'">
+                                    <span class="w-2.5 h-2.5 rounded-full"
+                                          th:classappend="${user.status != null and user.status.name() == 'ACTIVE'} ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'"></span>
+                                    <span class="font-medium"
+                                          th:text="${user.status != null and user.status.name() == 'ACTIVE'} ? 'Tài khoản đang hoạt động' : 'Tài khoản bị tạm khóa'">Trạng thái</span>
+                                </div>
+                            </div>
+
+                            <!-- Member Since -->
+                            <div class="w-full mt-space-md pt-space-sm flex items-center justify-between text-secondary font-body-sm text-body-sm border-t border-surface-container-high/60">
+                                <span>Thành viên từ:</span>
+                                <span class="font-medium text-on-surface"
+                                      th:text="${user.createdAt != null} ? ${#temporals.format(user.createdAt, 'dd/MM/yyyy')} : '—'">—</span>
+                            </div>
+
+                            <!-- Avatar upload form (hidden input) -->
+                            <form th:action="@{/profile/avatar}" method="post" enctype="multipart/form-data" id="avatarForm" class="hidden">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <input id="avatarFileInput" type="file" name="file" accept="image/*"
+                                       onchange="document.getElementById('avatarForm').submit()">
+                            </form>
+                        </div>
+
+                        <!-- Quick Navigation Card -->
+                        <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
+                            <div class="flex items-center justify-between mb-space-sm">
+                                <span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary font-bold">Truy cập nhanh</span>
+                                <span class="material-symbols-outlined text-secondary text-[18px]">tune</span>
+                            </div>
+                            <nav class="flex flex-col gap-1.5">
+                                <a class="group flex items-center justify-between px-space-md py-2.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all" href="/academic/sync">
+                                    <div class="flex items-center gap-space-sm">
+                                        <span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors text-[20px]">dashboard</span>
+                                        <span class="font-label-lg text-label-lg">Tổng quan học vụ</span>
+                                    </div>
+                                    <span class="material-symbols-outlined text-secondary text-[18px] group-hover:translate-x-1 transition-transform">chevron_right</span>
+                                </a>
+                                <a class="group flex items-center justify-between px-space-md py-2.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all" href="/academic/grades">
+                                    <div class="flex items-center gap-space-sm">
+                                        <span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors text-[20px]">grade</span>
+                                        <span class="font-label-lg text-label-lg">Bảng điểm &amp; Kết quả</span>
+                                    </div>
+                                    <span class="material-symbols-outlined text-secondary text-[18px] group-hover:translate-x-1 transition-transform">chevron_right</span>
+                                </a>
+                                <a class="group flex items-center justify-between px-space-md py-2.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all" href="/academic/timetable">
+                                    <div class="flex items-center gap-space-sm">
+                                        <span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors text-[20px]">calendar_month</span>
+                                        <span class="font-label-lg text-label-lg">Thời khóa biểu tuần</span>
+                                    </div>
+                                    <span class="material-symbols-outlined text-secondary text-[18px] group-hover:translate-x-1 transition-transform">chevron_right</span>
+                                </a>
+                                <a class="group flex items-center justify-between px-space-md py-2.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all" href="/academic/curriculum">
+                                    <div class="flex items-center gap-space-sm">
+                                        <span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors text-[20px]">menu_book</span>
+                                        <span class="font-label-lg text-label-lg">Chương trình đào tạo</span>
+                                    </div>
+                                    <span class="material-symbols-outlined text-secondary text-[18px] group-hover:translate-x-1 transition-transform">chevron_right</span>
+                                </a>
+                                <a class="group flex items-center justify-between px-space-md py-2.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all" href="/tickets">
+                                    <div class="flex items-center gap-space-sm">
+                                        <span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors text-[20px]">support_agent</span>
+                                        <span class="font-label-lg text-label-lg">Quản lý Ticket hỗ trợ</span>
+                                    </div>
+                                    <span class="material-symbols-outlined text-secondary text-[18px] group-hover:translate-x-1 transition-transform">chevron_right</span>
+                                </a>
+                            </nav>
+                        </div>
+
+                        <!-- AUN-QA Notice -->
+                        <div class="bg-gradient-to-br from-surface-container to-surface-container-high rounded-xl p-space-md text-on-surface-variant shadow-sm flex items-start gap-space-sm">
+                            <span class="material-symbols-outlined text-primary text-[24px] mt-0.5 shrink-0">verified_user</span>
+                            <div class="flex flex-col gap-0.5">
+                                <span class="font-title-md text-title-md text-on-surface">Đảm bảo chuẩn AUN-QA</span>
+                                <span class="font-body-sm text-body-sm text-secondary">Dữ liệu hồ sơ sinh viên được đồng bộ trực tiếp với hệ thống quản lý đào tạo Edusoft HCMUTE.</span>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- ══════════════════════════════════════
+                         RIGHT COLUMN: Tabs & Forms (8 cols)
+                    ══════════════════════════════════════════ -->
+                    <div class="lg:col-span-8 flex flex-col gap-gutter">
+
+                        <!-- Tab Strip -->
+                        <div class="bg-surface-container-lowest p-1.5 rounded-xl shadow-sm flex flex-wrap sm:flex-nowrap items-center gap-1.5">
+                            <button class="flex-1 flex items-center justify-center gap-space-xs py-2.5 px-space-md rounded-lg font-label-lg text-label-lg font-semibold bg-primary text-on-primary shadow-sm transition-all duration-200"
+                                    id="tab-btn-info" onclick="switchTab('info')">
+                                <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+                                <span>Thông tin cá nhân</span>
+                            </button>
+                            <button class="flex-1 flex items-center justify-center gap-space-xs py-2.5 px-space-md rounded-lg font-label-lg text-label-lg font-semibold text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all duration-200"
+                                    id="tab-btn-security" onclick="switchTab('security')">
+                                <span class="material-symbols-outlined text-[18px]">lock_reset</span>
+                                <span>Đổi mật khẩu</span>
+                            </button>
+                        </div>
+
+                        <!-- ── TAB 1: Cập nhật thông tin ── -->
+                        <div id="tab-content-info" class="bg-surface-container-lowest rounded-xl p-space-lg lg:p-space-xl shadow-sm flex flex-col gap-space-lg">
+                            <!-- Section heading -->
+                            <div class="flex items-start gap-space-md pb-space-sm border-b border-surface-container-high/60">
+                                <div class="w-12 h-12 rounded-xl bg-surface-container text-primary flex items-center justify-center shadow-sm shrink-0">
+                                    <span class="material-symbols-outlined text-[24px]">manage_accounts</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <h3 class="font-headline text-headline-sm font-bold text-on-surface">Cập nhật thông tin sinh viên</h3>
+                                    <p class="font-body-md text-body-md text-secondary">
+                                        Thông tin cơ bản tài khoản phục vụ công tác liên lạc, cấp văn bằng và dịch vụ sinh viên.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Update Profile Form -->
+                            <form th:action="@{/profile/update}" method="post" th:object="${updateProfileRequest}" novalidate
+                                  class="flex flex-col gap-space-lg">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+
+                                    <!-- Họ và tên -->
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="font-label-caps text-label-caps uppercase font-bold text-on-surface-variant flex items-center gap-1" for="fullName">
+                                            Họ và tên <span class="text-error">*</span>
+                                        </label>
+                                        <input class="w-full h-11 px-space-md rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+                                               id="fullName" th:field="*{fullName}" type="text" required
+                                               placeholder="Nhập họ và tên đầy đủ"
+                                               th:classappend="${#fields.hasErrors('fullName')} ? 'border-error focus:ring-error/20' : ''">
+                                        <p th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}" class="text-label-md text-error"></p>
+                                    </div>
+
+                                    <!-- Số điện thoại -->
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="font-label-caps text-label-caps uppercase font-bold text-on-surface-variant flex items-center gap-1" for="phone">
+                                            Số điện thoại liên lạc
+                                        </label>
+                                        <input class="w-full h-11 px-space-md rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+                                               id="phone" th:field="*{phone}" type="tel"
+                                               placeholder="09xxxxxxxx">
+                                    </div>
+
+                                    <!-- Tên đăng nhập / MSSV (read-only) -->
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="font-label-caps text-label-caps uppercase font-bold text-on-surface-variant flex items-center justify-between" for="username">
+                                            <span>Tên đăng nhập (MSSV)</span>
+                                            <span class="text-secondary font-label-md lowercase normal-case">Cố định</span>
+                                        </label>
+                                        <div class="relative">
+                                            <input class="w-full h-11 pl-space-md pr-10 rounded-lg bg-surface-container-high/50 text-secondary font-body-md text-body-md border border-outline-variant cursor-not-allowed"
+                                                   id="username" th:value="${user.username}" disabled readonly type="text">
+                                            <span class="material-symbols-outlined absolute right-3 top-3 text-secondary text-[18px]">lock</span>
+                                        </div>
+                                        <span class="font-body-sm text-body-sm text-secondary">Được đồng bộ từ phòng Đào tạo, không thể sửa đổi</span>
+                                    </div>
+
+                                    <!-- Email -->
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="font-label-caps text-label-caps uppercase font-bold text-on-surface-variant flex items-center justify-between" for="email">
+                                            <span>Email <span class="text-error">*</span></span>
+                                            <span class="inline-flex items-center gap-1 text-emerald-600 font-label-md capitalize">
+                                                <span class="material-symbols-outlined text-[14px]">check_circle</span> Đã xác thực
+                                            </span>
+                                        </label>
+                                        <input class="w-full h-11 px-space-md rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+                                               id="email" th:field="*{email}" type="email"
+                                               placeholder="email@student.hcmute.edu.vn"
+                                               th:classappend="${#fields.hasErrors('email')} ? 'border-error focus:ring-error/20' : ''">
+                                        <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-label-md text-error"></p>
+                                    </div>
+
+                                    <!-- Khoa / Đơn vị -->
+                                    <div class="flex flex-col gap-1.5 md:col-span-2">
+                                        <label class="font-label-caps text-label-caps uppercase font-bold text-on-surface-variant" for="departmentId">
+                                            Khoa / Đơn vị quản lý
+                                        </label>
+                                        <div class="relative">
+                                            <select class="w-full h-11 pl-space-md pr-10 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none appearance-none cursor-pointer transition-all"
+                                                    id="departmentId" th:field="*{departmentId}">
+                                                <option value="">-- Chọn Khoa / Đơn vị --</option>
+                                                <option th:each="dept : ${departments}"
+                                                        th:value="${dept.id}"
+                                                        th:text="${dept.name}">Khoa</option>
+                                            </select>
+                                            <span class="material-symbols-outlined absolute right-3 top-3 text-secondary text-[20px] pointer-events-none">expand_more</span>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <!-- ── Liên kết tài khoản Portal Sinh viên ── -->
+                                <div class="flex flex-col gap-space-md pt-space-md border-t border-surface-container-high/60 md:col-span-2">
+                                    <!-- Header row -->
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                        <div class="flex items-center gap-space-sm">
+                                            <span class="material-symbols-outlined text-primary text-[22px]">link</span>
+                                            <div>
+                                                <h4 class="font-title-md text-title-md font-semibold text-on-surface">Liên kết tài khoản Portal Sinh viên</h4>
+                                                <p class="font-body-sm text-body-sm text-secondary">Đồng bộ dữ liệu thời khóa biểu, điểm số và học vụ trực tiếp từ Cổng sinh viên trường (Portal HCMUTE).</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                                            <!-- Badge trạng thái liên kết -->
+                                            <span th:if="${user.portalLinked}"
+                                                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-label-md text-label-md">
+                                                <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                                                <span class="font-medium">Đã liên kết</span>
+                                            </span>
+                                            <span th:unless="${user.portalLinked}"
+                                                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 font-label-md text-label-md">
+                                                <span class="material-symbols-outlined text-[16px]">link_off</span>
+                                                <span class="font-medium">Chưa liên kết</span>
+                                            </span>
+                                            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container text-secondary font-label-md text-label-md">
+                                                <span class="material-symbols-outlined text-[16px] text-emerald-600">verified_user</span>
+                                                <span class="font-medium">256-bit SSL</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Two-column inputs -->
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+                                        <!-- Tài khoản Portal -->
+                                        <div class="flex flex-col gap-1.5">
+                                            <label class="font-label-caps text-label-caps uppercase font-bold text-on-surface-variant flex items-center gap-1" for="portalUsername">
+                                                Tài khoản Portal Sinh viên <span class="text-error">*</span>
+                                            </label>
+                                            <div class="relative">
+                                                <input class="w-full h-11 pl-space-md pr-10 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+                                                       id="portalUsername" name="portalUsername" type="text"
+                                                       th:value="${updateProfileRequest.portalUsername != null and !updateProfileRequest.portalUsername.isEmpty()} ? ${updateProfileRequest.portalUsername} : ${user.username}"
+                                                       placeholder="Nhập tài khoản / MSSV Portal">
+                                                <span class="material-symbols-outlined absolute right-3 top-3 text-[18px]"
+                                                      th:classappend="${user.portalLinked} ? 'text-emerald-500' : 'text-secondary'">
+                                                    <th:block th:text="${user.portalLinked} ? 'verified' : 'badge'"></th:block>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Mật khẩu Portal -->
+                                        <div class="flex flex-col gap-1.5">
+                                            <label class="font-label-caps text-label-caps uppercase font-bold text-on-surface-variant flex items-center justify-between" for="portalPassword">
+                                                <span>Mật khẩu Portal Sinh viên <span class="text-error">*</span></span>
+                                                <button type="button"
+                                                        onclick="checkPortalConnection()"
+                                                        class="text-primary hover:text-tertiary font-label-md capitalize flex items-center gap-1 cursor-pointer transition-colors focus:outline-none">
+                                                    <span class="material-symbols-outlined text-[15px]">sync_alt</span>
+                                                    Kiểm tra kết nối
+                                                </button>
+                                            </label>
+                                            <div class="relative">
+                                                <input class="w-full h-11 pl-space-md pr-10 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+                                                       id="portalPassword" name="portalPassword" type="password"
+                                                       th:placeholder="${user.portalLinked} ? '••••••• (giữ nguyên nếu không đổi)' : 'Nhập mật khẩu Portal'">
+                                                <button type="button"
+                                                        onclick="togglePwd('portalPassword','eyePortal')"
+                                                        class="absolute right-3 top-3 text-secondary hover:text-on-surface transition-colors focus:outline-none">
+                                                    <span id="eyePortal" class="material-symbols-outlined text-[18px]">visibility</span>
+                                                </button>
+                                            </div>
+                                            <!-- Hint khi đã liên kết -->
+                                            <p th:if="${user.portalLinked}" class="text-label-md text-emerald-600 flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[14px]">info</span>
+                                                Đã lưu mật khẩu. Để trống nếu không muốn thay đổi.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex items-center justify-end gap-space-sm pt-space-md border-t border-surface-container-high/60">
+                                    <button class="px-space-lg py-2.5 rounded-lg font-label-lg text-label-lg font-semibold text-secondary hover:text-on-surface hover:bg-surface-container transition-all"
+                                            onclick="this.form.reset()" type="button">
+                                        Huỷ bỏ
+                                    </button>
+                                    <button class="flex items-center gap-space-xs px-space-xl py-2.5 rounded-lg font-label-lg text-label-lg font-semibold bg-primary text-on-primary hover:bg-tertiary-container shadow-md hover:shadow-lg active:scale-95 transition-all"
+                                            type="submit">
+                                        <span class="material-symbols-outlined text-[18px]">save</span>
+                                        <span>Lưu thay đổi</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- ── TAB 2: Đổi mật khẩu ── -->
+                        <div id="tab-content-security" class="hidden bg-surface-container-lowest rounded-xl p-space-lg lg:p-space-xl shadow-sm flex flex-col gap-space-lg">
+                            <!-- Section heading -->
+                            <div class="flex items-start gap-space-md pb-space-sm border-b border-surface-container-high/60">
+                                <div class="w-12 h-12 rounded-xl bg-error-container/40 text-error flex items-center justify-center shadow-sm shrink-0">
+                                    <span class="material-symbols-outlined text-[24px]">lock_reset</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <h3 class="font-headline text-headline-sm font-bold text-on-surface">Bảo mật tài khoản</h3>
+                                    <p class="font-body-md text-body-md text-secondary">
+                                        Cập nhật mật khẩu để bảo vệ tài khoản sinh viên của bạn. Mật khẩu mới cần tối thiểu 6 ký tự.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Change Password Form -->
+                            <form th:action="@{/profile/change-password}" method="post" th:object="${changePasswordRequest}" novalidate
+                                  class="flex flex-col gap-space-md">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                                <!-- Mật khẩu hiện tại -->
+                                <div class="flex flex-col gap-1.5">
+                                    <label class="font-label-caps text-label-caps uppercase font-bold text-on-surface-variant flex items-center gap-1" for="currentPassword">
+                                        Mật khẩu hiện tại <span class="text-error">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <input class="w-full h-11 pl-space-md pr-10 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+                                               id="currentPassword" th:field="*{currentPassword}" type="password"
+                                               placeholder="Nhập mật khẩu hiện tại"
+                                               th:classappend="${#fields.hasErrors('currentPassword')} ? 'border-error' : ''">
+                                        <button type="button" onclick="togglePwd('currentPassword','eye0')"
+                                                class="absolute right-3 top-3 text-secondary hover:text-on-surface transition-colors focus:outline-none">
+                                            <span id="eye0" class="material-symbols-outlined text-[18px]">visibility</span>
+                                        </button>
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('currentPassword')}" th:errors="*{currentPassword}" class="text-label-md text-error"></p>
+                                </div>
+
+                                <!-- Mật khẩu mới -->
+                                <div class="flex flex-col gap-1.5">
+                                    <label class="font-label-caps text-label-caps uppercase font-bold text-on-surface-variant flex items-center gap-1" for="newPassword">
+                                        Mật khẩu mới <span class="text-error">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <input class="w-full h-11 pl-space-md pr-10 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+                                               id="newPassword" th:field="*{newPassword}" type="password"
+                                               placeholder="Tạo mật khẩu mới (tối thiểu 6 ký tự)"
+                                               th:classappend="${#fields.hasErrors('newPassword')} ? 'border-error' : ''">
+                                        <button type="button" onclick="togglePwd('newPassword','eye1')"
+                                                class="absolute right-3 top-3 text-secondary hover:text-on-surface transition-colors focus:outline-none">
+                                            <span id="eye1" class="material-symbols-outlined text-[18px]">visibility</span>
+                                        </button>
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword}" class="text-label-md text-error"></p>
+                                </div>
+
+                                <!-- Xác nhận mật khẩu -->
+                                <div class="flex flex-col gap-1.5">
+                                    <label class="font-label-caps text-label-caps uppercase font-bold text-on-surface-variant flex items-center gap-1" for="confirmPassword">
+                                        Xác nhận mật khẩu mới <span class="text-error">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <input class="w-full h-11 pl-space-md pr-10 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+                                               id="confirmPassword" th:field="*{confirmPassword}" type="password"
+                                               placeholder="Nhập lại mật khẩu mới"
+                                               th:classappend="${#fields.hasErrors('confirmPassword')} ? 'border-error' : ''">
+                                        <button type="button" onclick="togglePwd('confirmPassword','eye2')"
+                                                class="absolute right-3 top-3 text-secondary hover:text-on-surface transition-colors focus:outline-none">
+                                            <span id="eye2" class="material-symbols-outlined text-[18px]">visibility</span>
+                                        </button>
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" class="text-label-md text-error"></p>
+                                </div>
+
+                                <!-- Security note -->
+                                <div class="flex items-start gap-2.5 px-4 py-3 bg-primary-fixed/40 border border-primary-fixed rounded-lg">
+                                    <span class="material-symbols-outlined text-[18px] text-primary mt-0.5 shrink-0">info</span>
+                                    <p class="font-body-sm text-body-sm text-on-surface-variant">Sau khi đổi mật khẩu, bạn sẽ cần đăng nhập lại trên tất cả thiết bị.</p>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex items-center justify-end gap-space-sm pt-space-md border-t border-surface-container-high/60">
+                                    <button class="px-space-lg py-2.5 rounded-lg font-label-lg text-label-lg font-semibold text-secondary hover:text-on-surface hover:bg-surface-container transition-all"
+                                            type="reset">
+                                        Huỷ bỏ
+                                    </button>
+                                    <button class="flex items-center gap-space-xs px-space-xl py-2.5 rounded-lg font-label-lg text-label-lg font-semibold bg-error text-on-error hover:bg-on-error-container shadow-md hover:shadow-lg active:scale-95 transition-all"
+                                            type="submit">
+                                        <span class="material-symbols-outlined text-[18px]">lock_reset</span>
+                                        <span>Cập nhật mật khẩu</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                    </div>
+                    <!-- / RIGHT COLUMN -->
+
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Save Toast Notification -->
+    <div id="save-toast"
+         class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface px-space-lg py-3 rounded-xl shadow-xl flex items-center gap-space-sm transform translate-y-24 opacity-0 pointer-events-none transition-all duration-300 z-50">
+        <span class="material-symbols-outlined text-emerald-400 text-[20px]">check_circle</span>
+        <span class="font-label-lg text-label-lg">Cập nhật hồ sơ sinh viên thành công!</span>
     </div>
 
-</body>
+    <!-- ═══════════════════════════════════════
+         SCRIPTS
+    ═══════════════════════════════════════════ -->
+    <script>
+        /* ── Header dropdown ── */
+        (function () {
+            const toggleBtn = document.getElementById('profileAccountToggle');
+            const dropdownMenu = document.getElementById('profileDropdownMenu');
+            if (!toggleBtn || !dropdownMenu) return;
+            toggleBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const isHidden = dropdownMenu.classList.contains('hidden');
+                dropdownMenu.classList.toggle('hidden');
+                toggleBtn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+            });
+            document.addEventListener('click', function (e) {
+                if (!toggleBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownMenu.classList.add('hidden');
+                    toggleBtn.setAttribute('aria-expanded', 'false');
+                }
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && !dropdownMenu.classList.contains('hidden')) {
+                    dropdownMenu.classList.add('hidden');
+                    toggleBtn.setAttribute('aria-expanded', 'false');
+                    toggleBtn.focus();
+                }
+            });
+        })();
 
+        /* ── Mobile nav ── */
+        function toggleMobileNav() {
+            const drawer = document.getElementById('mobileNavDrawer');
+            if (drawer) drawer.classList.toggle('hidden');
+        }
+
+        /* ── Tab switching ── */
+        const TAB_ACTIVE   = 'bg-primary text-on-primary shadow-sm';
+        const TAB_INACTIVE = 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container';
+
+        function switchTab(tabName) {
+            const btnInfo = document.getElementById('tab-btn-info');
+            const btnSec  = document.getElementById('tab-btn-security');
+            const cInfo   = document.getElementById('tab-content-info');
+            const cSec    = document.getElementById('tab-content-security');
+
+            if (tabName === 'info') {
+                btnInfo.className = btnInfo.className.replace(TAB_INACTIVE, '').trim() + ' ' + TAB_ACTIVE;
+                btnSec.className  = btnSec.className.replace(TAB_ACTIVE, '').trim()   + ' ' + TAB_INACTIVE;
+                cInfo.classList.remove('hidden');
+                cSec.classList.add('hidden');
+            } else {
+                btnSec.className  = btnSec.className.replace(TAB_INACTIVE, '').trim() + ' ' + TAB_ACTIVE;
+                btnInfo.className = btnInfo.className.replace(TAB_ACTIVE, '').trim()  + ' ' + TAB_INACTIVE;
+                cSec.classList.remove('hidden');
+                cInfo.classList.add('hidden');
+            }
+        }
+
+        /* Auto-open security tab if validation errors exist there */
+        (function () {
+            const hasPwdError = document.querySelector('#tab-content-security p.text-error');
+            if (hasPwdError) switchTab('security');
+        })();
+
+        /* ── Kiểm tra kết nối Portal (gọi API thật) ── */
+        function checkPortalConnection() {
+            const username = document.getElementById('portalUsername')?.value?.trim();
+            const password = document.getElementById('portalPassword')?.value?.trim();
+            if (!username || !password) {
+                alert('Vui lòng nhập tài khoản và mật khẩu Portal trước khi kiểm tra kết nối.');
+                return;
+            }
+            const btn = event.currentTarget;
+            const icon = btn.querySelector('.material-symbols-outlined');
+            icon.textContent = 'sync';
+            icon.style.animation = 'spin 1s linear infinite';
+            btn.disabled = true;
+
+            const csrfToken = document.querySelector('input[name="_csrf"]')?.value || '';
+            const csrfHeader = 'X-CSRF-TOKEN';
+
+            fetch('/api/v1/profile/portal/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', [csrfHeader]: csrfToken },
+                body: JSON.stringify({ portalUsername: username, portalPassword: password })
+            })
+            .then(r => r.json())
+            .then(data => {
+                icon.textContent = 'sync_alt';
+                icon.style.animation = '';
+                btn.disabled = false;
+                if (data.success) {
+                    alert('✅ ' + (data.message || 'Kết nối Portal thành công!'));
+                } else {
+                    alert('❌ ' + (data.message || 'Xác thực thất bại. Kiểm tra lại tài khoản/mật khẩu.'));
+                }
+            })
+            .catch(() => {
+                icon.textContent = 'sync_alt';
+                icon.style.animation = '';
+                btn.disabled = false;
+                alert('❌ Không thể kết nối đến máy chủ. Vui lòng thử lại sau.');
+            });
+        }
+
+        /* ── Toggle password visibility ── */
+        function togglePwd(inputId, eyeId) {
+            const input = document.getElementById(inputId);
+            const eye   = document.getElementById(eyeId);
+            if (!input || !eye) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                eye.textContent = 'visibility_off';
+            } else {
+                input.type = 'password';
+                eye.textContent = 'visibility';
+            }
+        }
+    </script>
+</body>
 </html>

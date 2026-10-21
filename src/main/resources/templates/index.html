@@ -79,15 +79,54 @@
                     <span class="material-symbols-outlined text-[16px]">expand_more</span>
                 </div>
 
-                <!-- Đã đăng nhập: Nút Dashboard & Logout -->
-                <div sec:authorize="isAuthenticated()" class="flex items-center gap-2">
-                    <a th:href="@{/dashboard}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95" th:title="${currentUser != null ? currentUser.fullName : #authentication.name}">
+                <!-- Đã đăng nhập: Student Account Dropdown Menu -->
+                <div sec:authorize="isAuthenticated()" class="relative">
+                    <button id="indexAccountToggle" 
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95" 
+                            th:title="${currentUser != null ? currentUser.fullName : #authentication.name}"
+                            aria-haspopup="true"
+                            aria-expanded="false">
                         <span class="material-symbols-outlined text-[16px]">account_circle</span>
                         <span class="hidden sm:inline truncate max-w-[150px]" th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
-                    </a>
-                    <a th:href="@{/auth/logout}" class="p-2 text-slate-500 hover:text-[#991b1e] hover:bg-slate-100 rounded-md transition-colors" title="Đăng xuất">
-                        <span class="material-symbols-outlined text-[18px]">logout</span>
-                    </a>
+                        <span class="material-symbols-outlined text-[14px]">expand_more</span>
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="indexDropdownMenu" 
+                         class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50"
+                         role="menu">
+                        <a href="/profile" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">person</span>
+                            <span>Thông tin cá nhân</span>
+                        </a>
+                        <a href="/student/dashboard" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">home</span>
+                            <span>Tổng quan</span>
+                        </a>
+                        <a href="/academic/grades" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">description</span>
+                            <span>Bảng điểm</span>
+                        </a>
+                        <a href="/academic/timetable" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                            <span>Thời khóa biểu</span>
+                        </a>
+                        <a href="/academic/curriculum" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">book</span>
+                            <span>Chương trình đào tạo</span>
+                        </a>
+                        <div class="border-t border-slate-200 my-1"></div>
+                        <a th:href="@{/auth/logout}" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">logout</span>
+                            <span>Đăng xuất</span>
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Chưa đăng nhập: Nút Đăng nhập -->
@@ -149,11 +188,11 @@
                     
                     <!-- CTA Buttons -->
                     <div class="flex flex-wrap items-center gap-4">
-                        <a class="inline-flex items-center gap-2 px-6 py-3 rounded bg-[#991b1e] hover:bg-[#831518] text-white text-sm font-semibold shadow-lg transition-transform active:scale-95" th:href="@{/about}">
+                        <a class="inline-flex items-center gap-2 px-6 py-3 rounded bg-[#991b1e] hover:bg-[#831518] text-white text-sm font-semibold shadow-lg transition-transform active:scale-95" href="#">
                             <span>Khám phá chương trình đào tạo</span>
                             <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
                         </a>
-                        <a class="inline-flex items-center gap-2 px-6 py-3 rounded border border-white/70 hover:bg-white/10 text-white text-sm font-semibold transition-colors" th:href="@{/explore}">
+                        <a class="inline-flex items-center gap-2 px-6 py-3 rounded border border-white/70 hover:bg-white/10 text-white text-sm font-semibold transition-colors" href="#">
                             <span>Tìm hiểu về HCMUTE</span>
                         </a>
                     </div>
@@ -256,7 +295,7 @@
                         Đa dạng ngành nghề, đáp ứng nhu cầu nguồn nhân lực chất lượng cao trong thời đại công nghệ 4.0.
                     </p>
                 </div>
-                <a class="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#003882] hover:text-[#991b1e] transition-colors whitespace-nowrap" th:href="@{/about}">
+                <a class="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#003882] hover:text-[#991b1e] transition-colors whitespace-nowrap" href="#">
                     <span>Xem tất cả ngành đào tạo</span>
                     <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
                 </a>
@@ -280,7 +319,7 @@
                         <p class="text-xs text-slate-500 leading-relaxed mb-4 flex-1">
                             Đào tạo nguồn nhân lực chất lượng cao trong lĩnh vực CNTT, Trí tuệ nhân tạo (AI), Kỹ thuật dữ liệu...
                         </p>
-                        <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline" th:href="@{/about}">
+                        <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline" href="#">
                             <span>Khám phá chương trình</span>
                             <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
                         </a>
@@ -303,7 +342,7 @@
                         <p class="text-xs text-slate-500 leading-relaxed mb-4 flex-1">
                             Cơ điện tử, Ô tô, Điện - Điện tử, Tự động hóa hiện đại, gắn liền thực tiễn doanh nghiệp.
                         </p>
-                        <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline" th:href="@{/about}">
+                        <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline" href="#">
                             <span>Khám phá chương trình</span>
                             <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
                         </a>
@@ -326,7 +365,7 @@
                         <p class="text-xs text-slate-500 leading-relaxed mb-4 flex-1">
                             Logistics, Quản lý công nghiệp, Thương mại điện tử, tư duy chiến lược và hội nhập toàn cầu.
                         </p>
-                        <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline" th:href="@{/about}">
+                        <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline" href="#">
                             <span>Khám phá chương trình</span>
                             <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
                         </a>
@@ -349,7 +388,7 @@
                         <p class="text-xs text-slate-500 leading-relaxed mb-4 flex-1">
                             Ngôn ngữ Anh, Sư phạm công nghệ, trang bị năng lực hội nhập và mở rộng nghề nghiệp tương lai.
                         </p>
-                        <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline" th:href="@{/about}">
+                        <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline" href="#">
                             <span>Khám phá chương trình</span>
                             <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
                         </a>
@@ -395,7 +434,7 @@
                         <p class="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
                             Trường Đại học Sư phạm Kỹ thuật TP.HCM chính thức công bố phương án tuyển sinh năm 2026 với nhiều điểm mới hấp dẫn, tiếp tục gia tăng cơ hội trúng tuyển cho học sinh toàn quốc...
                         </p>
-                        <a class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#991b1e] hover:underline" th:href="@{/admission}">
+                        <a class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#991b1e] hover:underline" href="#">
                             <span>Đọc tiếp</span>
                             <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
                         </a>
@@ -420,7 +459,7 @@
                                     Sinh viên HCMUTE đạt giải cao tại Cuộc thi Sáng tạo Kỹ thuật toàn quốc 2026
                                 </h4>
                             </div>
-                            <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline mt-2" th:href="@{/research}">
+                            <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline mt-2" href="#">
                                 <span>Đọc tiếp</span>
                                 <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
                             </a>
@@ -466,7 +505,7 @@
                                     Ký kết hợp tác chiến lược đào tạo &amp; nghiên cứu với các trường đại học quốc tế
                                 </h4>
                             </div>
-                            <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline mt-2" th:href="@{/about}">
+                            <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline mt-2" href="#">
                                 <span>Đọc tiếp</span>
                                 <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
                             </a>
@@ -569,7 +608,7 @@
                             <span>Chỉ đường Google Maps</span>
                         </a>
                         <a class="inline-flex items-center gap-2 px-4 py-2.5 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg transition-colors justify-center" 
-                           th:href="@{/explore}">
+                           href="#">
                             <span class="material-symbols-outlined text-[16px]">map</span>
                             <span>Xem sơ đồ trường</span>
                         </a>
@@ -610,7 +649,7 @@
                         <p class="text-xs sm:text-sm text-blue-100/90 leading-relaxed max-w-md mb-6">
                             Hệ thống phòng thí nghiệm hiện đại, đội ngũ chuyên gia giàu kinh nghiệm và nhiều dự án nghiên cứu có tầm ảnh hưởng.
                         </p>
-                        <a class="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-md transition-colors" th:href="@{/research}">
+                        <a class="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-md transition-colors" href="#">
                             <span>Tìm hiểu thêm</span>
                             <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
                         </a>
@@ -752,11 +791,11 @@
                     <p class="text-xs text-blue-100/80">Khám phá ngành học, tìm kiếm thông tin tuyển sinh và liên hệ ngay với chúng tôi.</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <a class="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-[#003882] text-xs font-bold rounded shadow hover:bg-slate-100 transition-colors" th:href="@{/admission}">
+                    <a class="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-[#003882] text-xs font-bold rounded shadow hover:bg-slate-100 transition-colors" href="#">
                         <span>Thông tin tuyển sinh</span>
                         <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
                     </a>
-                    <a class="inline-flex items-center px-4 py-2 border border-white/80 text-white text-xs font-semibold rounded hover:bg-white/10 transition-colors" th:href="@{/about}">
+                    <a class="inline-flex items-center px-4 py-2 border border-white/80 text-white text-xs font-semibold rounded hover:bg-white/10 transition-colors" href="#">
                         <span>Khám phá ngành học</span>
                     </a>
                 </div>
@@ -801,21 +840,21 @@
                         <div class="font-headline font-bold text-white text-xs uppercase tracking-wider">Liên kết nhanh</div>
                         <ul class="space-y-1.5 text-[11px] text-slate-300/80">
                             <li><a class="hover:text-white transition-colors" th:href="@{/}">Trang chủ</a></li>
-                            <li><a class="hover:text-white transition-colors" th:href="@{/admission}">Tuyển sinh đại học</a></li>
-                            <li><a class="hover:text-white transition-colors" th:href="@{/about}">Đào tạo chính quy</a></li>
-                            <li><a class="hover:text-white transition-colors" th:href="@{/research}">Nghiên cứu khoa học</a></li>
-                            <li><a class="hover:text-white transition-colors" th:href="@{/explore}">Khám phá HCMUTE</a></li>
+                            <li><a class="hover:text-white transition-colors" href="#">Tuyển sinh đại học</a></li>
+                            <li><a class="hover:text-white transition-colors" href="#">Đào tạo chính quy</a></li>
+                            <li><a class="hover:text-white transition-colors" href="#">Nghiên cứu khoa học</a></li>
+                            <li><a class="hover:text-white transition-colors" href="#">Khám phá HCMUTE</a></li>
                         </ul>
                     </div>
 
                     <div class="space-y-2.5">
                         <div class="font-headline font-bold text-white text-xs uppercase tracking-wider">Đào tạo &amp; Tuyển sinh</div>
                         <ul class="space-y-1.5 text-[11px] text-slate-300/80">
-                            <li><a class="hover:text-white transition-colors" th:href="@{/about}">Chương trình đào tạo</a></li>
-                            <li><a class="hover:text-white transition-colors" th:href="@{/admission}">Thông tin tuyển sinh 2026</a></li>
-                            <li><a class="hover:text-white transition-colors" th:href="@{/admission}">Học phí &amp; Học bổng</a></li>
+                            <li><a class="hover:text-white transition-colors" href="#">Chương trình đào tạo</a></li>
+                            <li><a class="hover:text-white transition-colors" href="#">Thông tin tuyển sinh 2026</a></li>
+                            <li><a class="hover:text-white transition-colors" href="#">Học phí &amp; Học bổng</a></li>
                             <li><a class="hover:text-white transition-colors" th:href="@{/academic/sync}">Đồng bộ hồ sơ học vụ</a></li>
-                            <li><a class="hover:text-white transition-colors" th:href="@{/about}">Quy chế đào tạo tín chỉ</a></li>
+                            <li><a class="hover:text-white transition-colors" href="#">Quy chế đào tạo tín chỉ</a></li>
                         </ul>
                     </div>
 
@@ -1070,6 +1109,41 @@
             input.value = '';
             sendToAi(msg);
         }
+        
+        // Index Account Dropdown Toggle
+        (function() {
+            const toggle = document.getElementById('indexAccountToggle');
+            const dropdown = document.getElementById('indexDropdownMenu');
+            
+            if (!toggle || !dropdown) return;
+            
+            // Toggle dropdown
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isHidden = dropdown.classList.contains('hidden');
+                dropdown.classList.toggle('hidden');
+                toggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+            });
+            
+            // Close on click outside
+            document.addEventListener('click', function(e) {
+                if (!dropdown.classList.contains('hidden') && 
+                    !toggle.contains(e.target) && 
+                    !dropdown.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                    toggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+            
+            // Close on ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && !dropdown.classList.contains('hidden')) {
+                    dropdown.classList.add('hidden');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.focus();
+                }
+            });
+        })();
     </script>
 </body>
 </html>

@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Base64;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -52,8 +54,32 @@ public class ProfileService {
             user.setDepartment(department);
         }
 
+        // Lưu Portal credentials nếu được cung cấp
+        if (request.getPortalUsername() != null && !request.getPortalUsername().isBlank()) {
+            user.setPortalUsername(request.getPortalUsername().trim());
+        }
+        if (request.getPortalPassword() != null && !request.getPortalPassword().isBlank()) {
+            // Mã hoá Base64 — không dùng bcrypt vì cần giải mã để gọi API Portal
+            String encoded = Base64.getEncoder().encodeToString(
+                    request.getPortalPassword().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            user.setPortalPasswordEnc(encoded);
+            log.info("Đã lưu Portal credentials cho user {}", userId);
+        }
+
         User updated = userRepository.save(user);
         return UserProfileDto.fromEntity(updated);
+    }
+
+    /**
+     * Giải mã mật khẩu Portal để dùng khi đồng bộ học vụ.
+     */
+    @Transactional(readOnly = true)
+    public String decodePortalPassword(Long userId) {
+        return userRepository.findById(userId)
+                .map(User::getPortalPasswordEnc)
+                .filter(enc -> enc != null && !enc.isBlank())
+                .map(enc -> new String(Base64.getDecoder().decode(enc), java.nio.charset.StandardCharsets.UTF_8))
+                .orElse(null);
     }
 
     @Transactional

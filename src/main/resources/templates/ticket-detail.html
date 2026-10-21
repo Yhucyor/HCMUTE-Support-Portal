@@ -97,7 +97,6 @@
             <li><a th:href="@{/ai-chat}"><i class='bx bx-bot'></i><span>Trợ lý AI</span></a></li>
             <li><a th:href="@{/ticket}" class="active"><i class='bx bx-support'></i><span>Yêu cầu hỗ trợ</span></a></li>
             <li><a th:href="@{/feed}"><i class='bx bx-news'></i><span>Bảng tin chung</span></a></li>
-            <li><a th:href="@{/group}"><i class='bx bx-group'></i><span>Nhóm Khoa</span></a></li>
             <li><a th:href="@{/profile}"><i class='bx bx-user'></i><span>Hồ sơ cá nhân</span></a></li>
         </ul>
         <div class="sidebar-footer">
@@ -106,14 +105,8 @@
     </aside>
 
     <div class="main-wrapper">
-        <header class="topbar">
-            <!-- Simplified topbar -->
-            <div style="flex-grow: 1;"></div>
-            <div class="user-profile">
-                <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=A51C30&color=fff" alt="Avatar">
-                <div class="user-info"><span class="user-name">Nguyễn Văn A</span></div>
-            </div>
-        </header>
+        <!-- TOPBAR -->
+        <div th:replace="~{fragments/topbar :: topbar}"></div>
 
         <main class="page-content">
             <div class="breadcrumb">
@@ -198,5 +191,8 @@
             </div>
         </main>
     </div>
+
+<!-- User Account Menu Script -->
+<script th:src="@{/js/user-account-menu.js}"></script>
 </body>
 </html>

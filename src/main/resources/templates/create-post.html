@@ -195,27 +195,7 @@
     <div class="main-wrapper">
         
         <!-- TOPBAR -->
-        <header class="topbar">
-            <div class="search-bar">
-                <i class='bx bx-search' style="color: var(--text-gray);"></i>
-                <input type="text" placeholder="Tìm kiếm...">
-            </div>
-            
-            <div class="topbar-right">
-                <div class="topbar-icon">
-                    <i class='bx bx-bell'></i>
-                    <span class="badge">3</span>
-                </div>
-                
-                <div class="user-profile">
-                    <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=A51C30&color=fff" alt="Avatar">
-                    <div class="user-info">
-                        <span class="user-name">Nguyễn Văn A</span>
-                        <span class="user-role">Sinh viên K23</span>
-                    </div>
-                </div>
-            </div>
-        </header>
+        <div th:replace="~{fragments/topbar :: topbar}"></div>
 
         <!-- PAGE CONTENT -->
         <main class="page-content">
@@ -273,5 +253,7 @@
         
     </div>
 
+<!-- User Account Menu Script -->
+<script th:src="@{/js/user-account-menu.js}"></script>
 </body>
 </html>
