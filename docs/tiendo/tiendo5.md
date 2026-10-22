@@ -61,3 +61,10 @@
      - Thanh phân trang hiển thị `Đang hiển thị 1 - 10 trong tổng số 351 câu hỏi` cùng các nút trang 1, 2, 3... 36, Next.
      - Card SLA không xuất hiện đối với tài khoản Sinh viên / Khách vãng lai.
    - Nhấp vào câu hỏi: Câu trả lời mở ra mượt mà, mũi tên xoay 180 độ; nhấp lại đóng lại chính xác.
+
+---
+
+## 🎯 4. GIAI ĐOẠN 4 (23-10-2026): TỐI ƯU THANH TÌM KIẾM & PHÍM TẮT ENTER
+- **Loại bỏ viền xanh vuông góc bên trong:** Triệt tiêu hoàn toàn outline mặc định trên `<input id="faq-search-input">` (`border-0 outline-none focus:outline-none focus:ring-0 focus:border-0 shadow-none` và inline style `outline: none !important; border: none !important; box-shadow: none !important;`).
+- **Thay thế nút Tìm kiếm:** Thay đổi nút xanh lớn thành nút biểu tượng phím `↵ Enter` gọn nhẹ, hiện đại.
+- **Bắt phím Enter trên máy tính:** Lắng nghe sự kiện `keydown` phím `Enter` trên ô input, ngăn tải lại trang, kích hoạt tìm kiếm và tự động cuộn mượt xuống danh sách câu hỏi (`scrollToFaqList()`) với khoảng đệm trừ hao 90px chiều cao navbar.

@@ -249,8 +249,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function scrollToFaqList() {
-        if (faqList) {
-            faqList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const target = document.getElementById('faq-counter-badge') || faqList;
+        if (target) {
+            const topPos = target.getBoundingClientRect().top + window.pageYOffset - 90;
+            window.scrollTo({ top: Math.max(0, topPos), behavior: 'smooth' });
         }
     }
 
@@ -339,6 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             currentPage = 1;
             applyFilters();
+            scrollToFaqList();
         });
     }
 
@@ -350,6 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             currentPage = 1;
             applyFilters();
+            scrollToFaqList();
         });
     }
 
@@ -360,6 +364,17 @@ document.addEventListener('DOMContentLoaded', () => {
             currentPage = 1;
             if (searchClearBtn) searchClearBtn.classList.toggle('hidden', searchQuery.length === 0);
             applyFilters();
+        });
+
+        // Bắt phím Enter trên bàn phím máy tính để tìm kiếm và cuộn mượt xuống kết quả
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchQuery = searchInput.value.trim().toLowerCase();
+                currentPage = 1;
+                applyFilters();
+                scrollToFaqList();
+            }
         });
     }
 
