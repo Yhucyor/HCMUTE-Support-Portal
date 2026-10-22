@@ -73,7 +73,7 @@ public class SecurityConfig {
                         .permitAll()
                         
                         // AI Chat - YÊU CẦU ĐĂNG NHẬP để track user & apply rate limiting
-                        .requestMatchers("/ai/chat", "/ai/chat/**", "/api/ai/**").authenticated()
+                        .requestMatchers("/ai/chat", "/ai/chat/**", "/ai-chat", "/ai-chat/**", "/api/ai/**").authenticated()
 
                         // Admin & Staff boundaries
                         .requestMatchers("/admin/**", "/api/admin/**", "/api/v1/admin/**").hasRole("ADMIN")

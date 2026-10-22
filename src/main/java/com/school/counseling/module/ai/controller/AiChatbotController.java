@@ -7,10 +7,12 @@ import com.school.counseling.module.ai.entity.AiChatMessage;
 import com.school.counseling.module.ai.entity.Conversation;
 import com.school.counseling.module.ai.service.AiConversationService;
 import com.school.counseling.module.auth.entity.User;
+import com.school.counseling.common.util.SecurityUtils;
+import com.school.counseling.module.auth.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -24,23 +26,33 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/ai")
 @RequiredArgsConstructor
+@Slf4j
 public class AiChatbotController {
 
     private final AiConversationService conversationService;
+    private final UserRepository userRepository;
+
+    /**
+     * Lấy thực thể User đăng nhập từ SecurityContext (tránh lỗi null do UserPrincipal)
+     */
+    private User resolveCurrentUser() {
+        return SecurityUtils.getCurrentUserId()
+                .flatMap(userRepository::findById)
+                .orElse(null);
+    }
 
     /**
      * Endpoint chính gửi tin nhắn cho AI (có rate limiting & persistence)
      */
     @PostMapping("/chat")
     public ResponseEntity<ApiResponse<AiChatResponse>> chat(
-            @Valid @RequestBody AiChatRequest request,
-            @AuthenticationPrincipal User currentUser) {
+            @Valid @RequestBody AiChatRequest request) {
         
-        // DEBUG: Check if currentUser is injected properly
+        User currentUser = resolveCurrentUser();
         if (currentUser != null) {
-            System.out.println("✅ AI Chat - Authenticated User: " + currentUser.getUsername() + " (ID: " + currentUser.getId() + ")");
+            log.info("✅ AI Chat - Authenticated User: {} (ID: {})", currentUser.getUsername(), currentUser.getId());
         } else {
-            System.out.println("❌ AI Chat - currentUser is NULL (not authenticated)");
+            log.warn("ℹ️ AI Chat - Guest/Anonymous session (No logged in user)");
         }
         
         AiChatResponse response = conversationService.chat(request, currentUser);
@@ -52,9 +64,8 @@ public class AiChatbotController {
      */
     @PostMapping("/chat-stream")
     public SseEmitter chatStream(
-            @Valid @RequestBody AiChatRequest request,
-            @AuthenticationPrincipal User currentUser) {
-        
+            @Valid @RequestBody AiChatRequest request) {
+        User currentUser = resolveCurrentUser();
         return conversationService.chatStream(request, currentUser);
     }
 
@@ -62,9 +73,11 @@ public class AiChatbotController {
      * Lấy danh sách lịch sử hội thoại của user
      */
     @GetMapping("/conversations")
-    public ResponseEntity<ApiResponse<List<Conversation>>> getConversations(
-            @AuthenticationPrincipal User currentUser) {
-        
+    public ResponseEntity<ApiResponse<List<Conversation>>> getConversations() {
+        User currentUser = resolveCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.ok(ApiResponse.success(List.of()));
+        }
         List<Conversation> conversations = conversationService.getUserConversations(currentUser.getId());
         return ResponseEntity.ok(ApiResponse.success(conversations));
     }
@@ -96,9 +109,8 @@ public class AiChatbotController {
      */
     @DeleteMapping("/conversations/{sessionId}")
     public ResponseEntity<ApiResponse<Void>> deleteConversation(
-            @PathVariable String sessionId,
-            @AuthenticationPrincipal User currentUser) {
-        
+            @PathVariable String sessionId) {
+        User currentUser = resolveCurrentUser();
         conversationService.deleteConversation(sessionId, currentUser);
         return ResponseEntity.ok(ApiResponse.success(null, "Đã xóa cuộc hội thoại"));
     }
@@ -120,9 +132,11 @@ public class AiChatbotController {
      */
     @PostMapping("/feedback")
     public ResponseEntity<ApiResponse<Void>> submitFeedback(
-            @RequestBody FeedbackRequest request,
-            @AuthenticationPrincipal User currentUser) {
-        
+            @RequestBody FeedbackRequest request) {
+        User currentUser = resolveCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Vui lòng đăng nhập để gửi phản hồi"));
+        }
         conversationService.submitFeedback(request.getMessageId(), request.getFeedbackType(), currentUser);
         return ResponseEntity.ok(ApiResponse.success(null, "Đã ghi nhận phản hồi của bạn"));
     }
