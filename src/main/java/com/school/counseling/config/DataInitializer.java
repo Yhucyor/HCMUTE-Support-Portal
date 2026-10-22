@@ -158,6 +158,9 @@ public class DataInitializer implements CommandLineRunner {
             // 6. Khởi tạo / Nạp 4 bài viết thông báo tin tức chính thức tiêu điểm từ trang chủ vào Bảng tin
             seedOfficialAnnouncementsFromHomepage(deptTuyenSinh, deptCntt, deptDaoTao, staffTuyensinh, staffCntt, staffDaotao, staffAcademic);
 
+            // 7. Khởi tạo / Nạp 20 công văn quy chế học vụ trọng tâm chuẩn hóa vào Bảng tin
+            seed20OfficialRegulations();
+
             log.info("Khởi tạo dữ liệu mẫu Auth, FAQ, Diễn đàn & Bảng tin thông báo thành công!");
         } catch (Exception e) {
             log.error("Lỗi trong quá trình khởi tạo dữ liệu mẫu: ", e);
@@ -594,5 +597,74 @@ public class DataInitializer implements CommandLineRunner {
         );
 
         log.info("Khởi tạo thành công 4 bài viết thông báo chính thức tiêu điểm từ trang chủ!");
+    }
+
+    private void seed20OfficialRegulations() {
+        try {
+            File file = new File("docs/dataset/seed_20_official_regulations.json");
+            if (!file.exists()) {
+                log.info("Không tìm thấy tệp dataset 20 công văn tại {}, bỏ qua nạp công văn", file.getPath());
+                return;
+            }
+
+            List<Map<String, Object>> records = objectMapper.readValue(file, new TypeReference<>() {});
+            int addedCount = 0;
+
+            for (Map<String, Object> r : records) {
+                String title = (String) r.get("title");
+                if (title == null || title.isBlank() || postRepository.existsByTitle(title)) {
+                    continue;
+                }
+
+                Number deptIdNum = (Number) r.get("dept_id");
+                Number authorIdNum = (Number) r.get("author_id");
+                Number viewsNum = (Number) r.get("views");
+                Number likesNum = (Number) r.get("likes");
+                Number isPinnedNum = (Number) r.get("is_pinned");
+                Number fileSizeNum = (Number) r.get("file_size");
+
+                Department dept = deptIdNum != null ? departmentRepository.findById(deptIdNum.longValue()).orElse(null) : null;
+                User author = authorIdNum != null ? userRepository.findById(authorIdNum.longValue()).orElse(null) : null;
+
+                String content = (String) r.get("content");
+                String fileNameDisplay = (String) r.get("file_name_display");
+                String filePath = (String) r.get("file_path");
+
+                Post post = Post.builder()
+                        .title(title)
+                        .content(content)
+                        .postType("OFFICIAL_ANNOUNCEMENT")
+                        .status("APPROVED")
+                        .department(dept)
+                        .author(author)
+                        .approvedBy(author)
+                        .approvedAt(LocalDateTime.now())
+                        .viewCount(viewsNum != null ? viewsNum.intValue() : 1000)
+                        .likeCount(likesNum != null ? likesNum.intValue() : 50)
+                        .isPinned(isPinnedNum != null && isPinnedNum.intValue() == 1)
+                        .build();
+
+                Post saved = postRepository.save(post);
+
+                if (filePath != null && !filePath.isBlank()) {
+                    PostAttachment attachment = PostAttachment.builder()
+                            .post(saved)
+                            .fileName(fileNameDisplay != null ? fileNameDisplay : "cong_van.pdf")
+                            .fileUrl(filePath)
+                            .fileType("PDF")
+                            .fileSize(fileSizeNum != null ? fileSizeNum.longValue() : 500000L)
+                            .sourceType("LOCAL_PATH")
+                            .build();
+                    postAttachmentRepository.save(attachment);
+                }
+                addedCount++;
+            }
+
+            if (addedCount > 0) {
+                log.info("Nạp thành công {} công văn học vụ chính thức vào Bảng tin!", addedCount);
+            }
+        } catch (Exception e) {
+            log.error("Lỗi khi nạp 20 công văn chính thức từ dataset: ", e);
+        }
     }
 }

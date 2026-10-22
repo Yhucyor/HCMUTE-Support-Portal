@@ -305,41 +305,63 @@
                         <img th:src="${post.attachments[0].fileUrl}" 
                              th:alt="${post.title}" 
                              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
                         
                         <!-- Badges on Image -->
                         <div class="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
                             <span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#003882]/90 text-white backdrop-blur-sm shadow-sm" 
                                   th:text="${post.departmentName != null ? post.departmentName : 'HCMUTE'}">Phòng Ban</span>
-                            <span th:if="${post.isPinned}" 
-                                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#991b1e] text-white shadow-sm">
-                                <span class="material-symbols-outlined text-[13px]">keep</span>
-                                <span>Ghim</span>
-                            </span>
+                            <div class="flex items-center gap-1.5">
+                                <span th:if="${post.isPinned}" 
+                                      class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#991b1e] text-white shadow-sm">
+                                    <span class="material-symbols-outlined text-[13px]">keep</span>
+                                    <span>Ghim</span>
+                                </span>
+                                <!-- Admin Toggle Pin -->
+                                <form sec:authorize="hasRole('ADMIN')" th:action="@{/feed/official/toggle-pin/{id}(id=${post.id})}" method="post" class="inline">
+                                    <button type="submit" 
+                                            th:title="${post.isPinned ? 'Bỏ ghim bài viết này' : 'Ghim bài này lên đầu trang'}"
+                                            class="w-7 h-7 inline-flex items-center justify-center rounded-md bg-white/80 hover:bg-white text-slate-700 hover:text-[#991b1e] backdrop-blur-sm shadow-sm transition-colors">
+                                        <span class="material-symbols-outlined text-[18px]" th:classappend="${post.isPinned ? 'text-[#991b1e]' : ''}">keep</span>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Header Bar if No Image -->
+                    <!-- Top Media Thumbnail (Default Campus Banner when no image attachment) -->
                     <div th:unless="${post.attachments != null and !post.attachments.empty and post.attachments[0].fileType == 'IMAGE'}" 
-                         class="px-5 pt-5 pb-0 flex items-center justify-between gap-2">
-                        <span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-blue-50 text-[#003882] border border-blue-100" 
-                              th:text="${post.departmentName != null ? post.departmentName : 'HCMUTE'}">Phòng Ban</span>
+                         class="relative aspect-[16/10] bg-slate-100 overflow-hidden">
+                        <img th:src="@{/images/hero1.jpg}" 
+                             th:alt="${post.title}" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-95">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
                         
-                        <div class="flex items-center gap-1.5">
-                            <span th:if="${post.isPinned}" 
-                                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#991b1e] text-white">
-                                <span class="material-symbols-outlined text-[13px]">keep</span>
-                                <span>Được ghim</span>
-                            </span>
+                        <!-- Badges on Image -->
+                        <div class="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+                            <span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#003882]/95 text-white backdrop-blur-sm shadow-sm" 
+                                  th:text="${post.departmentName != null ? post.departmentName : 'HCMUTE'}">Phòng Ban</span>
+                            <div class="flex items-center gap-1.5">
+                                <span th:if="${post.isPinned}" 
+                                      class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#991b1e] text-white shadow-sm">
+                                    <span class="material-symbols-outlined text-[13px]">keep</span>
+                                    <span>Ghim</span>
+                                </span>
+                                <!-- Admin Toggle Pin -->
+                                <form sec:authorize="hasRole('ADMIN')" th:action="@{/feed/official/toggle-pin/{id}(id=${post.id})}" method="post" class="inline">
+                                    <button type="submit" 
+                                            th:title="${post.isPinned ? 'Bỏ ghim bài viết này' : 'Ghim bài này lên đầu trang'}"
+                                            class="w-7 h-7 inline-flex items-center justify-center rounded-md bg-white/80 hover:bg-white text-slate-700 hover:text-[#991b1e] backdrop-blur-sm shadow-sm transition-colors">
+                                        <span class="material-symbols-outlined text-[18px]" th:classappend="${post.isPinned ? 'text-[#991b1e]' : ''}">keep</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
 
-                            <!-- Admin Toggle Pin -->
-                            <form sec:authorize="hasRole('ADMIN')" th:action="@{/feed/official/toggle-pin/{id}(id=${post.id})}" method="post" class="inline">
-                                <button type="submit" 
-                                        th:title="${post.isPinned ? 'Bỏ ghim bài viết này' : 'Ghim bài này lên đầu trang'}"
-                                        class="w-7 h-7 inline-flex items-center justify-center rounded-md hover:bg-slate-100 text-slate-400 hover:text-[#991b1e] transition-colors">
-                                    <span class="material-symbols-outlined text-[18px]" th:classappend="${post.isPinned ? 'text-[#991b1e]' : ''}">keep</span>
-                                </button>
-                            </form>
+                        <!-- Document Watermark Icon overlay on bottom right of the image banner -->
+                        <div class="absolute bottom-2.5 right-3 text-white/90 flex items-center gap-1 text-[11px] font-semibold bg-black/40 px-2 py-0.5 rounded backdrop-blur-sm">
+                            <span class="material-symbols-outlined text-[14px] text-amber-300">description</span>
+                            <span>Văn bản chính thức</span>
                         </div>
                     </div>
 
@@ -370,7 +392,7 @@
 
                         <!-- Excerpt Content -->
                         <p class="text-xs sm:text-sm text-slate-600 line-clamp-3 leading-relaxed mb-4 flex-1" 
-                           th:text="${#strings.abbreviate(#strings.replace(#strings.replace(post.content, '<p>', ''), '</p>', ' '), 200)}">
+                           th:text="${post.content != null ? #strings.abbreviate(post.content.replaceAll('<[^>]*>', ' '), 200) : ''}">
                             Nội dung trích đoạn tóm tắt bài thông báo học vụ, quy chế hoặc tin tức sự kiện tuyển sinh...
                         </p>
 

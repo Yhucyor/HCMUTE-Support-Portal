@@ -63,8 +63,8 @@
 ## 🎨 III. QUY CHUẨN THIẾT KẾ BÀI ĐĂNG BẢNG TIN (FEED POST DESIGN SPECIFICATION)
 
 ### 1. Cấu trúc Tiêu đề (Post Title)
-- Định dạng: `[CÔNG VĂN QUY CHẾ] ` + `<TÊN VĂN BẢN TIẾNG VIỆT IN HOA>`
-- Ví dụ: `[CÔNG VĂN QUY CHẾ] THÔNG BÁO XÉT HỌC BỔNG HỖ TRỢ SINH VIÊN HOÀN CẢNH KHÓ KHĂN HỌC KỲ 2 (2025 - 2026)`
+- Định dạng: `<TÊN VĂN BẢN TIẾNG VIỆT IN HOA>` (Đã loại bỏ tiền tố `[CÔNG VĂN QUY CHẾ]` để giao diện người dùng thoáng đãng, trang trọng và không bị rối mắt)
+- Ví dụ: `THÔNG BÁO XÉT HỌC BỔNG HỖ TRỢ SINH VIÊN HOÀN CẢNH KHÓ KHĂN HỌC KỲ 2 (2025 - 2026)`
 - Không chứa mã số file lẻ, không chứa đuôi `.pdf` hoặc `.signed`.
 
 ### 2. Hình ảnh Banner Mặc Định (Default University Banner)
