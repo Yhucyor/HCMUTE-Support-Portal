@@ -2,6 +2,7 @@ package com.school.counseling.module.ai.service;
 
 import com.school.counseling.module.ai.dto.AiChatRequest;
 import com.school.counseling.module.ai.dto.AiChatResponse;
+import com.school.counseling.module.ai.dto.SourceDocument;
 import com.school.counseling.module.ai.service.SmartFaqMatcherService.FaqMatchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -252,7 +253,7 @@ public class AiChatbotService {
                     return body;
                 }
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.warn("⚠️ ai-service tại {} không phản hồi ({}), tự động fallback sang FAQ nội bộ.", chatbotApiUrl, e.getMessage());
         }
         return null;

@@ -223,9 +223,10 @@ public class AiConversationService {
         // Calculate confidence từ sources (nếu có)
         if (response.getConfidence() == null && response.getSources() != null && !response.getSources().isEmpty()) {
             double avgScore = response.getSources().stream()
+                .filter(s -> s != null && s.getScore() != null)
                 .mapToDouble(SourceDocument::getScore)
                 .average()
-                .orElse(0.0);
+                .orElse(0.85);
             response.setConfidence(avgScore);
         }
         

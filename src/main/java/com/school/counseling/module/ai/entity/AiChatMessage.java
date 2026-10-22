@@ -102,4 +102,31 @@ public class AiChatMessage extends BaseEntity {
             this.isFlagged = false;
         }
     }
+
+    /**
+     * Getter chuyển đổi chuỗi sourcesJson thành danh sách Map để Thymeleaf và frontend dễ dàng truy cập
+     */
+    @Transient
+    public java.util.List<java.util.Map<String, Object>> getSources() {
+        if (sourcesJson == null || sourcesJson.isBlank()) {
+            return java.util.Collections.emptyList();
+        }
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            java.util.List<java.util.Map<String, Object>> list = mapper.readValue(
+                sourcesJson, 
+                new com.fasterxml.jackson.core.type.TypeReference<java.util.List<java.util.Map<String, Object>>>() {}
+            );
+            if (list != null) {
+                for (java.util.Map<String, Object> map : list) {
+                    if (!map.containsKey("title") && map.containsKey("source")) {
+                        map.put("title", map.get("source"));
+                    }
+                }
+            }
+            return list != null ? list : java.util.Collections.emptyList();
+        } catch (Exception e) {
+            return java.util.Collections.emptyList();
+        }
+    }
 }
