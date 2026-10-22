@@ -300,6 +300,8 @@
                                 <span>Khoa: <strong class="text-on-surface font-semibold" th:text="${studentProfile != null ? studentProfile.faculty : 'Khoa CNTT'}">Khoa CNTT</strong></span>
                                 <span class="hidden sm:inline text-outline-variant">•</span>
                                 <span>Khóa: <strong class="text-on-surface font-semibold" th:text="${studentProfile != null ? studentProfile.academicYear : '2023 - 2027'}">2023 - 2027</strong></span>
+                                <span class="hidden sm:inline text-outline-variant">•</span>
+                                <span>Trình độ: <strong id="headerAcademicYearLevel" class="text-primary font-semibold" th:text="${summary != null && summary.academicYearLevel != null ? summary.academicYearLevel : 'Năm thứ nhất'}">Năm thứ nhất</strong></span>
                             </div>
                         </div>
                     </div>
@@ -381,8 +383,9 @@
                             </div>
                         </div>
                         <div class="mt-4 flex items-center justify-between pt-2">
-                            <span class="font-label-md text-label-md text-secondary">Tiến độ tốt nghiệp:</span>
-                            <span id="kpiCreditsPercent" class="font-label-md text-label-md font-bold text-primary px-2.5 py-0.5 rounded-full bg-surface-container">--%</span>
+                            <span class="font-label-md text-label-md text-secondary">Trình độ đào tạo:</span>
+                            <span id="kpiAcademicYearLevel" class="font-label-md text-label-md font-bold text-primary px-2.5 py-0.5 rounded-full bg-surface-container"
+                                  th:text="${summary != null && summary.academicYearLevel != null ? summary.academicYearLevel : 'Năm thứ nhất'}">Năm thứ nhất</span>
                         </div>
                         <div class="mt-2.5 w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
                             <div id="kpiCreditsBar" class="bg-primary h-full rounded-full transition-all" style="width:0%"></div>
@@ -404,6 +407,8 @@
                                     <span id="kpiFailedCount" class="font-title-md text-title-md font-bold text-rose-300 flex items-center gap-1">
                                         <span class="material-symbols-outlined text-base">cancel</span>
                                         <span th:text="${summary != null ? summary.failedCoursesCount : '0'}">0</span> Nợ
+                                        <span id="kpiDebtCreditsWrap" class="text-xs text-rose-200 font-normal"
+                                              th:text="${summary != null && summary.debtCredits != null && summary.debtCredits > 0 ? '(' + summary.debtCredits + ' TC)' : ''}"></span>
                                     </span>
                                 </div>
                             </div>
@@ -413,6 +418,33 @@
                             <div id="kpiPassedRatio" class="font-label-md text-label-md font-bold text-white">Tỷ lệ hoàn thành: --%</div>
                             <p class="font-body-sm text-body-sm text-white/80 truncate">Cập nhật tự động từ Cổng trường</p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Academic Warning Alert Banner (Quy chế HCMUTE 2025) -->
+                <div id="academicWarningBanner"
+                     th:classappend="${summary != null && summary.isAcademicWarning} ? '' : 'hidden'"
+                     class="p-4 sm:p-5 rounded-xl bg-rose-50 border-2 border-rose-300 text-rose-900 shadow-sm transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div class="flex items-start gap-3.5">
+                        <div class="w-10 h-10 rounded-xl bg-rose-200 text-rose-700 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-2xl">warning</span>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-headline text-headline-sm font-bold text-rose-800">CẢNH BÁO HỌC TẬP (HCMUTE 2025)</h3>
+                                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-600 text-white uppercase tracking-wider">Cần lưu ý</span>
+                            </div>
+                            <p id="academicWarningReason" class="font-body text-body-md text-rose-700 mt-1"
+                               th:text="${summary != null && summary.warningReason != null ? summary.warningReason : 'Sinh viên thuộc diện cảnh báo học tập theo quy chế đào tạo HCMUTE.'}">
+                               Sinh viên thuộc diện cảnh báo học tập theo quy chế đào tạo HCMUTE.
+                            </p>
+                            <p class="font-body-sm text-xs text-rose-600 mt-0.5">Vui lòng liên hệ Cố vấn học tập (CVHT) hoặc Phòng Đào tạo để được hướng dẫn cải thiện điểm số và trả nợ tín chỉ kịp thời.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0 self-stretch sm:self-auto justify-end">
+                        <a href="/tickets/create" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-label-md text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors">
+                            <span class="material-symbols-outlined text-sm">support_agent</span> Gửi Ticket tư vấn
+                        </a>
                     </div>
                 </div>
 
@@ -805,6 +837,12 @@
         if (sum.academicStanding) {
             document.getElementById('kpiStandingBadge').textContent = sum.academicStanding;
         }
+        if (sum.academicYearLevel) {
+            const el1 = document.getElementById('kpiAcademicYearLevel');
+            const el2 = document.getElementById('headerAcademicYearLevel');
+            if (el1) el1.textContent = sum.academicYearLevel;
+            if (el2) el2.textContent = sum.academicYearLevel;
+        }
         if (sum.gpa10 != null) {
             const g10 = sum.gpa10.toFixed(2);
             document.getElementById('kpiGpa10').textContent = g10;
@@ -826,6 +864,22 @@
             if (totalC > 0) {
                 const ratio = Math.round(((sum.passedCoursesCount || 0) / totalC) * 100);
                 document.getElementById('kpiPassedRatio').textContent = `Tỷ lệ hoàn thành: ${ratio}%`;
+            }
+        }
+        if (sum.debtCredits != null) {
+            const debtWrap = document.getElementById('kpiDebtCreditsWrap');
+            if (debtWrap) {
+                debtWrap.textContent = sum.debtCredits > 0 ? `(${sum.debtCredits} TC)` : '';
+            }
+        }
+        const warnBanner = document.getElementById('academicWarningBanner');
+        const warnReason = document.getElementById('academicWarningReason');
+        if (warnBanner) {
+            if (sum.isAcademicWarning) {
+                warnBanner.classList.remove('hidden');
+                if (warnReason && sum.warningReason) warnReason.textContent = sum.warningReason;
+            } else {
+                warnBanner.classList.add('hidden');
             }
         }
     }
@@ -890,7 +944,9 @@
                 }
             } else {
                 failed++;
-                debtCredits += credits;
+                if (!isCond) {
+                    debtCredits += credits;
+                }
             }
         });
 
@@ -905,13 +961,42 @@
         else if (gpa4 >= 1.0) standing = 'Yếu';
         else if (passed + failed === 0) standing = inProgress > 0 ? 'Đang học' : 'Chưa có dữ liệu';
 
+        // Trình độ năm đào tạo theo Quyết định 3116/QĐ-ĐHSPKT (2025)
+        let yearLevel = 'Năm thứ nhất';
+        if (totalPassedCredits > 149) yearLevel = 'Năm thứ năm';
+        else if (totalPassedCredits >= 108) yearLevel = 'Năm thứ tư';
+        else if (totalPassedCredits >= 72) yearLevel = 'Năm thứ ba';
+        else if (totalPassedCredits >= 36) yearLevel = 'Năm thứ hai';
+
+        // Đánh giá Cảnh báo học tập (Mục 4.2)
+        let isWarning = false;
+        let reasons = [];
+        if (debtCredits > 24) {
+            isWarning = true;
+            reasons.push(`Tổng tín chỉ nợ đọng vượt quá 24 TC (${debtCredits} TC nợ)`);
+        }
+        let threshold = 1.20;
+        let yearName = 'Năm 1';
+        if (totalPassedCredits >= 108) { threshold = 1.80; yearName = 'Năm 4 trở lên'; }
+        else if (totalPassedCredits >= 72) { threshold = 1.60; yearName = 'Năm 3'; }
+        else if (totalPassedCredits >= 36) { threshold = 1.40; yearName = 'Năm 2'; }
+
+        if (countCreditsWithScore > 0 && gpa4 < threshold) {
+            isWarning = true;
+            reasons.push(`ĐTB tích lũy (${gpa4.toFixed(2)}) dưới ngưỡng quy định ${yearName} (< ${threshold.toFixed(2)})`);
+        }
+
         renderKPIs({
             gpa4: gpa4,
             gpa10: gpa10,
             academicStanding: standing,
             totalCredits: totalPassedCredits,
             passedCoursesCount: passed,
-            failedCoursesCount: failed
+            failedCoursesCount: failed,
+            debtCredits: debtCredits,
+            academicYearLevel: yearLevel,
+            isAcademicWarning: isWarning,
+            warningReason: isWarning ? reasons.join('. ') : 'Bình thường - Không vi phạm quy chế cảnh báo'
         });
     }
 

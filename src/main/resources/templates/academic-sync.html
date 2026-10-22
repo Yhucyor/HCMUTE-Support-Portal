@@ -991,6 +991,31 @@
             <p class="font-body text-body-md text-on-surface-variant mt-1">Theo dõi tiến độ học tập, lịch học và các hoạt động sinh viên tại HCMUTE</p>
         </div>
 
+        <!-- Academic Warning Alert Banner (Quy chế HCMUTE 2025) -->
+        <div id="dash-warning-banner"
+             th:classappend="${summary != null && summary.isAcademicWarning} ? '' : 'hidden'"
+             class="p-4 rounded-xl bg-rose-50 border-2 border-rose-300 text-rose-900 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all">
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl bg-rose-200 text-rose-700 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-2xl">warning</span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="font-headline text-headline-sm font-bold text-rose-800 text-sm sm:text-base">CẢNH BÁO HỌC TẬP (HCMUTE 2025)</h3>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-600 text-white uppercase tracking-wider">Cần chú ý</span>
+                    </div>
+                    <p id="dash-warning-reason" class="text-xs text-rose-700 mt-1"
+                       th:text="${summary != null && summary.warningReason != null ? summary.warningReason : 'Sinh viên thuộc diện cảnh báo học tập theo quy chế đào tạo HCMUTE.'}">
+                       Sinh viên thuộc diện cảnh báo học tập theo quy chế đào tạo HCMUTE.
+                    </p>
+                    <p class="text-[11px] text-rose-600 mt-0.5">Sinh viên nên liên hệ Cố vấn học tập (CVHT) hoặc gửi Ticket để được hướng dẫn cải thiện điểm số và trả nợ tín chỉ kịp thời.</p>
+                </div>
+            </div>
+            <a href="/tickets/create" class="px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shrink-0 flex items-center gap-1.5 transition-colors self-stretch sm:self-auto justify-center">
+                <span class="material-symbols-outlined text-sm">support_agent</span> Gửi Ticket tư vấn
+            </a>
+        </div>
+
         <!-- 4 KPI Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
             <div class="bg-surface-container-lowest px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-3">
@@ -1020,7 +1045,11 @@
                             </div>
                         </div>
                     </div>
-                    <span id="dash-credits-pct" class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-caps text-label-caps shrink-0">--%</span>
+                    <div class="flex flex-col items-end gap-1 shrink-0">
+                        <span id="dash-credits-pct" class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-caps text-label-caps">--%</span>
+                        <span id="dash-year-level" class="text-[11px] text-primary font-semibold"
+                              th:text="${summary != null && summary.academicYearLevel != null ? summary.academicYearLevel : 'Năm 1'}">Năm 1</span>
+                    </div>
                 </div>
                 <div class="w-full bg-surface-container h-1.5 rounded-full mt-2 overflow-hidden">
                     <div id="dash-credits-bar" class="bg-primary h-full rounded-full transition-all duration-500" style="width:0%"></div>
@@ -1325,6 +1354,7 @@
                             <span><i class='bx bx-book-bookmark'></i> <strong id="p-major">Kỹ thuật Phần mềm</strong></span>
                             <span><i class='bx bx-buildings'></i> <span id="p-faculty">Khoa CNTT</span></span>
                             <span><i class='bx bx-group'></i> Lớp: <span id="p-class">21110CL1A</span></span>
+                            <span><i class='bx bx-time'></i> Trình độ: <strong id="p-yearLevel" style="color:var(--primary);">Năm thứ nhất</strong></span>
                         </div>
                     </div>
                 </div>
@@ -1354,7 +1384,7 @@
                     <div class="kpi-info">
                         <h3 id="stat-credits">--</h3>
                         <p>Tín chỉ tích lũy</p>
-                        <small>Tiến độ CTĐT</small>
+                        <small id="stat-yearLevel">Trình độ: Năm thứ nhất</small>
                     </div>
                 </div>
 
@@ -1374,7 +1404,7 @@
                     <div class="kpi-info">
                         <h3 id="stat-passedCount">--</h3>
                         <p>Môn học đã hoàn thành</p>
-                        <small>Nợ môn: <strong id="stat-failedCount" style="color:var(--rose);">0</strong></small>
+                        <small>Nợ môn: <strong id="stat-failedCount" style="color:var(--rose);">0</strong> (<span id="stat-debtCredits">0</span> TC nợ)</small>
                     </div>
                 </div>
             </div>
@@ -1755,6 +1785,16 @@
             document.getElementById('stat-passedCount').innerText = s.passedCoursesCount;
             document.getElementById('stat-failedCount').innerText = s.failedCoursesCount;
             document.getElementById('stat-syncMode').innerText = s.syncStatus === 'LIVE_PORTAL' ? 'Cổng online trực tiếp' : 'Bộ mô phỏng HCMUTE';
+            if (s.academicYearLevel) {
+                const yEl = document.getElementById('stat-yearLevel');
+                const pyEl = document.getElementById('p-yearLevel');
+                if (yEl) yEl.innerText = 'Trình độ: ' + s.academicYearLevel;
+                if (pyEl) pyEl.innerText = s.academicYearLevel;
+            }
+            if (s.debtCredits != null) {
+                const dEl = document.getElementById('stat-debtCredits');
+                if (dEl) dEl.innerText = s.debtCredits;
+            }
         }
 
         // Render Grades Table
@@ -1930,10 +1970,22 @@
                     const cr = document.getElementById('dash-credits');
                     const crPct = document.getElementById('dash-credits-pct');
                     const crBar = document.getElementById('dash-credits-bar');
+                    const yr = document.getElementById('dash-year-level');
+                    const warnBanner = document.getElementById('dash-warning-banner');
+                    const warnReason = document.getElementById('dash-warning-reason');
                     const donutPct = document.getElementById('dash-donut-pct');
                     const donutLabel = document.getElementById('dash-donut-label');
                     const donutCircle = document.getElementById('dash-donut-circle');
                     if (g4) g4.textContent = s.gpa4 != null ? s.gpa4.toFixed(2) : '--';
+                    if (yr && s.academicYearLevel) yr.textContent = s.academicYearLevel;
+                    if (warnBanner) {
+                        if (s.isAcademicWarning) {
+                            warnBanner.classList.remove('hidden');
+                            if (warnReason && s.warningReason) warnReason.textContent = s.warningReason;
+                        } else {
+                            warnBanner.classList.add('hidden');
+                        }
+                    }
                     if (s.totalCredits != null) {
                         const total = 120, pct = Math.round(s.totalCredits / total * 100);
                         if (cr) cr.textContent = s.totalCredits;
