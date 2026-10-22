@@ -134,6 +134,15 @@ public class AiConversationService {
     private Conversation getOrCreateConversation(String sessionId, User user, String firstQuery) {
         if (sessionId != null && !sessionId.isBlank()) {
             return conversationRepository.findBySessionId(sessionId)
+                .map(existing -> {
+                    // Nếu conversation trước đó chưa gắn user (ví dụ guest hoặc bị null), gán user hiện tại vào
+                    if (existing.getUser() == null && user != null) {
+                        existing.setUser(user);
+                        existing.setGuestEmail(null);
+                        return conversationRepository.save(existing);
+                    }
+                    return existing;
+                })
                 .orElseGet(() -> createNewConversation(sessionId, user, firstQuery));
         }
         
@@ -189,7 +198,9 @@ public class AiConversationService {
             .content(content)
             .build();
         
-        return messageRepository.save(message);
+        AiChatMessage saved = messageRepository.save(message);
+        conversation.addMessage(saved);
+        return saved;
     }
     
     /**
@@ -251,7 +262,9 @@ public class AiConversationService {
             .responseTimeMs(response.getResponseTimeMs())
             .build();
         
-        return messageRepository.save(message);
+        AiChatMessage saved = messageRepository.save(message);
+        conversation.addMessage(saved);
+        return saved;
     }
     
     /**
@@ -259,7 +272,8 @@ public class AiConversationService {
      */
     private void updateConversationMetadata(Conversation conversation) {
         conversation.setLastMessageAt(LocalDateTime.now());
-        conversation.setMessageCount(conversation.getMessages().size());
+        long count = messageRepository.countByConversationId(conversation.getId());
+        conversation.setMessageCount((int) count);
         
         // Sum total tokens
         if (conversation.getTotalTokensUsed() == null) {
@@ -336,6 +350,9 @@ public class AiConversationService {
      */
     @Transactional
     public void submitFeedback(Long messageId, String feedbackTypeStr, User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("Vui lòng đăng nhập để gửi phản hồi");
+        }
         AiChatMessage message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageId));
         

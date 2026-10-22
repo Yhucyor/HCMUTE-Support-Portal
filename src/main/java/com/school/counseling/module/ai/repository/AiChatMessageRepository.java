@@ -21,6 +21,11 @@ public interface AiChatMessageRepository extends JpaRepository<AiChatMessage, Lo
      * Lấy tất cả messages trong conversation (sắp xếp theo thời gian)
      */
     List<AiChatMessage> findByConversationIdOrderByCreatedAtAsc(Long conversationId);
+
+    /**
+     * Đếm số message trong conversation
+     */
+    long countByConversationId(Long conversationId);
     
     /**
      * Lấy N messages gần nhất của conversation (dùng cho context)
