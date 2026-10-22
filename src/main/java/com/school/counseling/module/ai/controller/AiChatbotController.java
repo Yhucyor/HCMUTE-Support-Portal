@@ -116,6 +116,25 @@ public class AiChatbotController {
     }
 
     /**
+     * Đổi tiêu đề cuộc hội thoại (Rename Conversation)
+     */
+    @org.springframework.web.bind.annotation.PatchMapping("/conversations/{sessionId}/title")
+    public ResponseEntity<ApiResponse<Conversation>> updateConversationTitle(
+            @PathVariable String sessionId,
+            @Valid @RequestBody UpdateTitleRequest request) {
+        User currentUser = resolveCurrentUser();
+        Conversation updated = conversationService.updateConversationTitle(sessionId, request.getTitle(), currentUser);
+        return ResponseEntity.ok(ApiResponse.success(updated, "Đã cập nhật tiêu đề cuộc hội thoại"));
+    }
+
+    @org.springframework.web.bind.annotation.PutMapping("/conversations/{sessionId}/title")
+    public ResponseEntity<ApiResponse<Conversation>> updateConversationTitlePut(
+            @PathVariable String sessionId,
+            @Valid @RequestBody UpdateTitleRequest request) {
+        return updateConversationTitle(sessionId, request);
+    }
+
+    /**
      * Chuyển conversation thành Ticket
      */
     @PostMapping("/conversations/{sessionId}/convert-to-ticket")
@@ -148,5 +167,17 @@ public class AiChatbotController {
     public static class FeedbackRequest {
         private Long messageId;
         private String feedbackType; // "POSITIVE" or "NEGATIVE"
+    }
+
+    /**
+     * Inner DTO cho Update Title Request
+     */
+    @lombok.Data
+    @lombok.NoArgsConstructor
+    @lombok.AllArgsConstructor
+    public static class UpdateTitleRequest {
+        @jakarta.validation.constraints.NotBlank(message = "Tiêu đề không được để trống")
+        @jakarta.validation.constraints.Size(min = 1, max = 255, message = "Tiêu đề tối đa 255 ký tự")
+        private String title;
     }
 }
