@@ -34,9 +34,9 @@ public interface AiChatMessageRepository extends JpaRepository<AiChatMessage, Lo
     List<AiChatMessage> findRecentMessagesByConversation(@Param("convId") Long conversationId, Pageable pageable);
     
     /**
-     * Đếm số message của user trong khoảng thời gian
+     * Đếm số câu hỏi của user trong khoảng thời gian (chỉ đếm role USER, không tính câu trả lời của AI)
      */
-    @Query("SELECT COUNT(m) FROM AiChatMessage m WHERE m.conversation.user.id = :userId AND m.createdAt > :since")
+    @Query("SELECT COUNT(m) FROM AiChatMessage m WHERE m.conversation.user.id = :userId AND m.role = com.school.counseling.module.ai.entity.MessageRole.USER AND m.createdAt > :since")
     Long countUserMessagesToday(@Param("userId") Long userId, @Param("since") LocalDateTime since);
     
     /**

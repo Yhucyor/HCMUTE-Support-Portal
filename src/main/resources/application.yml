@@ -112,7 +112,7 @@ app:
     default-engine: ${AI_DEFAULT_ENGINE:GEMINI}
     similarity-threshold: ${AI_SIMILARITY_THRESHOLD:0.70}
     # Phase 2 & 3 Configuration
-    max-messages-per-day: ${AI_MAX_MESSAGES_PER_DAY:100}
+    max-messages-per-day: ${AI_MAX_MESSAGES_PER_DAY:500}
     context-window-size: ${AI_CONTEXT_WINDOW_SIZE:5}
     microservice:
       auto-start: ${AI_MICROSERVICE_AUTO_START:true}

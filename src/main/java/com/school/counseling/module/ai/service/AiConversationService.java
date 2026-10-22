@@ -71,7 +71,7 @@ public class AiConversationService {
         
         // 1. Validate rate limit
         if (currentUser != null) {
-            validateRateLimit(currentUser.getId());
+            validateRateLimit(currentUser);
         }
         
         // 2. Load hoặc tạo Conversation
@@ -114,16 +114,29 @@ public class AiConversationService {
     }
     
     /**
-     * Validate rate limit (100 messages/user/day)
+     * Validate rate limit (câu hỏi/user/ngày)
+     * Miễn trừ cho Quản trị viên (Admin) và Cán bộ (Counselor/Staff)
      */
-    private void validateRateLimit(Long userId) {
+    private void validateRateLimit(User user) {
+        if (user == null) {
+            return;
+        }
+
+        // Miễn trừ hạn mức cho Admin và Cán bộ tư vấn
+        if (user.getRole() != null && user.getRole().getName() != null) {
+            String roleName = user.getRole().getName().toUpperCase();
+            if (roleName.contains("ADMIN") || roleName.contains("COUNSELOR") || roleName.contains("STAFF")) {
+                return;
+            }
+        }
+
         LocalDateTime todayStart = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS);
-        Long messageCount = messageRepository.countUserMessagesToday(userId, todayStart);
+        Long messageCount = messageRepository.countUserMessagesToday(user.getId(), todayStart);
         
         if (messageCount >= maxMessagesPerDay) {
-            log.warn("Rate limit exceeded for userId: {}, count: {}", userId, messageCount);
+            log.warn("Rate limit exceeded for userId: {}, count: {}", user.getId(), messageCount);
             throw new RateLimitExceededException(
-                String.format("Bạn đã vượt quá giới hạn %d tin nhắn/ngày. Vui lòng thử lại vào ngày mai.", maxMessagesPerDay)
+                String.format("Bạn đã đạt giới hạn %d câu hỏi AI trong ngày hôm nay. Vui lòng thử lại vào ngày mai hoặc tạo Ticket để được Cán bộ hỗ trợ.", maxMessagesPerDay)
             );
         }
     }
@@ -395,7 +408,7 @@ public class AiConversationService {
             try {
                 // 1. Validate rate limit
                 if (currentUser != null) {
-                    validateRateLimit(currentUser.getId());
+                    validateRateLimit(currentUser);
                 }
                 
                 // 2. Load/Create conversation

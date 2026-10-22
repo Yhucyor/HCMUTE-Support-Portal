@@ -12,7 +12,7 @@ public class AiConfig {
     public RestTemplate restTemplate() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(5000);  // 5s kết nối
-        factory.setReadTimeout(45000);    // 45s đợi LLM RAG sinh câu trả lời
+        factory.setReadTimeout(60000);    // 60s đợi LLM RAG sinh câu trả lời
         return new RestTemplate(factory);
     }
 }

@@ -45,14 +45,14 @@ def generate_answer(context: str, question: str, provider: str = None) -> str:
             response = client.chat(
                 model=selected_model,
                 messages=[
-                    {"role": "system", "content": prompt},
+                    {"role": "user", "content": prompt},
                 ],
                 options={
                     "temperature": MODEL_TEMPERATURE, # do sang tao
-                    "num_predict": MODEL_MAX_TOKENS # so luong token toi da tuc la do dai cau tra loi
+                    "num_predict": min(MODEL_MAX_TOKENS, 512) # gioi han token vua du de chay muot tren CPU
                 }
             )
-            answer = response['message']['content'].strip() # ollama co message chua content con openai co text
+            answer = response['message']['content'].strip()
         elif selected_provider == "gemini":
             api_key = os.getenv("GEMINI_API_KEY", GEMINI_API_KEY)
             if not api_key:
