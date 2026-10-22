@@ -5,16 +5,34 @@ from collections import Counter
 
 logger = logging.getLogger("embedding")
 
-def tokenize(text: str) -> list[str]: # Nhan ve 1 doan text thanh 1 list cac token cua keyword
+try:
+    from pyvi import ViTokenizer
+    HAS_PYVI = True
+except ImportError:
+    HAS_PYVI = False
+    logger.warning("Thư viện pyvi chưa được cài đặt. Tách từ bằng split thông thường.")
+
+def tokenize(text: str) -> list[str]:
+    """
+    Tách từ tiếng Việt chuyên biệt cho BM25 và SparseEmbedder.
+    Sử dụng PyVi ViTokenizer để nhận diện các từ ghép tiếng Việt (VD: "công_nghệ_thông_tin", "kỹ_thuật_ô_tô", "học_phí").
+    Giúp BM25 tính điểm chính xác theo cụm từ chuyên ngành, tránh sai lệch do trùng các âm tiết đơn lẻ.
+    """
     if not text:
-        logger.warning("Empty text received for tokenization in sparse_embedder.")
         return []
     
-    text = text.lower() # Chuyen thanh chu thuong de giam so luong token khac nhau. VD: "Apple" va "apple" se duoc xem la giong nhau
-    text = re.sub(r"[^\w\s]", " ", text) # Xoa ky tu dac biet. VD: "hello, world!" -> "hello world". 
-    # [^\w\s] la bieu thuc chinh quy de tim kiem ky tu khong phai chu cai hoac so hoac khoang trang
-    tokens = text.split()
-    return tokens
+    text = text.lower()
+    text = re.sub(r"[^\w\s]", " ", text)
+    
+    if HAS_PYVI:
+        try:
+            tokenized_text = ViTokenizer.tokenize(text)
+            tokens = tokenized_text.split()
+            return tokens
+        except Exception as e:
+            logger.debug(f"PyVi tokenize error: {e}, fallback to text.split()")
+            
+    return text.split()
 
 class SparseEmbedder:
     def __init__(self):
