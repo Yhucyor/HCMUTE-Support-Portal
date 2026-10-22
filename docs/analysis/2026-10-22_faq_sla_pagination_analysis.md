@@ -116,6 +116,26 @@ Người dùng đưa ra 4 yêu cầu cấp thiết về dữ liệu và trải n
   - **Sinh viên / Khách vãng lai:** Card SLA hoàn toàn không render trong DOM (bảo mật tuyệt đối, giao diện tinh gọn, tập trung tra cứu).
   - **Cán bộ / Trưởng phòng ban / Ban Giám Hiệu:** Vẫn nhìn thấy bảng cam kết SLA để đối chiếu KPI phục vụ.
 
+### 3.4. Cơ Chế Tìm Kiếm & Sắp Xếp Ưu Tiên Năm 2025 - 2026 (Chronological Priority)
+1. **Cơ chế tìm kiếm 2 tầng (Dual-layer Search Engine):**
+   - **Tầng 1 - Client-side Fast Filter (`faq-accordion.js`):** Khi người dùng gõ phím vào ô tìm kiếm, JavaScript tự động lọc DOM ngay lập tức theo từ khóa, danh mục (`data-cat`), đơn vị (`data-dept`) và tab hiển thị.
+   - **Tầng 2 - Server-side Smart Semantic Search (`SmartFaqMatcherService`):**
+     - Thuật toán kết hợp **Jaccard Similarity + N-gram (Bigrams) + Academic Synonyms Dictionary** (Từ điển chuẩn hóa thuật ngữ học vụ HCMUTE: AVĐR $\leftrightarrow$ chuẩn đầu ra ngoại ngữ, ĐKMH $\leftrightarrow$ đăng ký môn học...).
+     - Chấm điểm trọng số:
+       + Khớp nguyên cụm từ người dùng gõ (Full Phrase Match): +160 điểm (câu hỏi), +45 điểm (câu trả lời).
+       + Khớp từ đồng nghĩa học vụ: +90 điểm.
+       + Khớp từ ghép Bigrams: +50 điểm.
+       + Khớp từng từ khóa riêng lẻ: +20 điểm/từ.
+       + Điểm thưởng khi câu hỏi bao phủ kín từ khóa: +40 điểm.
+     - Sau khi tính điểm liên quan (`relevanceScore DESC`), kết quả được sắp xếp tiếp theo ngày cập nhật (`postDate DESC`).
+2. **Khắc phục lỗi ngày tháng bị xáo trộn:**
+   - **Ở tầng Database (Backend):** Bổ sung mệnh đề sắp xếp trong `FaqRepository.java`:
+     ```sql
+     ORDER BY COALESCE(f.postDate, f.createdAt) DESC, f.viewCount DESC, f.id DESC
+     ```
+     Đảm bảo toàn bộ câu hỏi năm 2026 (như tháng 10/2026, tháng 9/2026...) luôn được đưa lên đầu tiên, tiếp theo là 2025, và các năm cũ hơn xếp phía sau.
+   - **Ở tầng Giao diện (Client-side):** Gắn thuộc tính `data-timestamp` (mili-giây) vào từng `.faq-item`. Thuật toán JavaScript `applyFilters()` tự động sort `matchingItems` theo `timestamp` giảm dần trước khi phân trang, giúp các câu hỏi mới nhất của năm 2025-2026 hiển thị ngay trang 1.
+
 ---
 
 ## 📊 4. KẾT QUẢ KIỂM THỬ THỰC TẾ

@@ -43,6 +43,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return matchCat && matchDept && matchTab && matchSearch;
         });
 
+        // Sắp xếp: Mặc định ưu tiên năm 2026, 2025 (timestamp giảm dần) lên đầu
+        if (activeTab === 'popular') {
+            matchingItems.sort((a, b) => {
+                const viewsA = parseInt(a.getAttribute('data-views'), 10) || 0;
+                const viewsB = parseInt(b.getAttribute('data-views'), 10) || 0;
+                return viewsB - viewsA;
+            });
+        } else {
+            matchingItems.sort((a, b) => {
+                const tsA = parseInt(a.getAttribute('data-timestamp'), 10) || 0;
+                const tsB = parseInt(b.getAttribute('data-timestamp'), 10) || 0;
+                return tsB - tsA;
+            });
+        }
+
         const totalItems = matchingItems.length;
         const totalPages = Math.ceil(totalItems / pageSize) || 1;
 
@@ -57,9 +72,10 @@ document.addEventListener('DOMContentLoaded', () => {
             item.style.display = 'none';
         });
 
-        // Chỉ hiển thị các items thuộc trang hiện tại
+        // Chỉ hiển thị các items thuộc trang hiện tại theo đúng thứ tự đã sắp xếp
         matchingItems.forEach((item, index) => {
             if (index >= startIndex && index < endIndex) {
+                faqList.appendChild(item);
                 item.style.display = 'block';
             }
         });

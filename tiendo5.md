@@ -17,6 +17,7 @@
 | 2 | Nhấp vào câu hỏi nhưng không xổ câu trả lời | Xung đột sự kiện (Event Listener Collision): File template có cả script nội tuyến `initFAQApp` và script `faq-accordion.js` cùng bắt click `.faq-toggle`, khiến class `hidden` bị đảo ngược 2 lần ngay lập tức | Loại bỏ toàn bộ khối script nội tuyến thừa trong `faqs.html` và `faq/search.html`; chuyển toàn bộ quyền kiểm soát cho `faq-accordion.js` với kỹ thuật Event Delegation | ✅ Hoàn thành |
 | 3 | Cam kết thời hạn xử lý (SLA) hiển thị cho Sinh viên | Thẻ SLA Sidebar trong giao diện không có điều kiện lọc quyền Spring Security | Thêm thuộc tính `sec:authorize="hasAnyRole('STAFF', 'ADMIN', 'DEPARTMENT_HEAD')"` vào thẻ SLA Card ở cả 2 template `faqs.html` và `faq/search.html` | ✅ Hoàn thành |
 | 4 | Danh sách FAQ in liên tục 351 câu làm tràn trang | Không có cơ chế phân trang Client-side khi render danh sách FAQ từ Model Thymeleaf | Tích hợp thuật toán Phân trang động (10 câu/trang) trong `faq-accordion.js`, tự động tính số trang, sinh nút Previous/Next/Số trang, và smooth scroll | ✅ Hoàn thành |
+| 5 | Ngày tháng năm hỏi bị lẫn lộn giữa các năm | Truy vấn `findAllActiveWithDepartment` thiếu `ORDER BY`, Client-side chưa sort theo timestamp | Thêm `ORDER BY COALESCE(f.postDate, f.createdAt) DESC, f.viewCount DESC, f.id DESC` ở Repository & bổ sung `timestamp` vào `FaqItemDto`, tự động sort ưu tiên năm 2026, 2025 lên đầu trang | ✅ Hoàn thành |
 
 ---
 

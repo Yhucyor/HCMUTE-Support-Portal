@@ -65,7 +65,8 @@ public class FaqServiceImpl implements FaqService {
                         r.category(),
                         FaqItemDto.resolveCategorySlug(r.category()),
                         10,
-                        r.formattedDate() != null ? r.formattedDate() : "Mới cập nhật"
+                        r.formattedDate() != null ? r.formattedDate() : "Mới cập nhật",
+                        r.postDate() != null ? r.postDate().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli() : 0L
                 ))
                 .toList();
     }

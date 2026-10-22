@@ -17,9 +17,15 @@ public record FaqItemDto(
         String category,
         String categorySlug,
         Integer viewCount,
-        String formattedDate
+        String formattedDate,
+        Long timestamp
 ) {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    public FaqItemDto(Long id, String question, String answer, Long departmentId, String departmentName,
+                      String category, String categorySlug, Integer viewCount, String formattedDate) {
+        this(id, question, answer, departmentId, departmentName, category, categorySlug, viewCount, formattedDate, 0L);
+    }
 
     public static FaqItemDto fromEntity(Faq faq) {
         if (faq == null) return null;
@@ -31,6 +37,7 @@ public record FaqItemDto(
 
         LocalDateTime date = (faq.getPostDate() != null) ? faq.getPostDate() : faq.getCreatedAt();
         String dateStr = (date != null) ? date.format(FORMATTER) : "Mới cập nhật";
+        long timestamp = (date != null) ? date.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli() : 0L;
 
         return new FaqItemDto(
                 faq.getId(),
@@ -41,7 +48,8 @@ public record FaqItemDto(
                 rawCat,
                 slug,
                 faq.getViewCount() != null ? faq.getViewCount() : 0,
-                dateStr
+                dateStr,
+                timestamp
         );
     }
 
