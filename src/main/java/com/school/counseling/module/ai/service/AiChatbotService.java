@@ -24,6 +24,15 @@ public class AiChatbotService {
     @Value("${ai.chatbot.url:http://localhost:8000/api/chat}")
     private String chatbotApiUrl;
 
+    @Value("${app.dify.enabled:true}")
+    private boolean difyEnabled;
+
+    @Value("${app.dify.base-url:https://api.dify.ai/v1}")
+    private String difyBaseUrl;
+
+    @Value("${app.dify.api-key:app-Ku5Tbg0u2r7AD6ev5P6sQmlk}")
+    private String difyApiKey;
+
     private final RestTemplate restTemplate;
     private final SmartFaqMatcherService smartFaqMatcherService;
 
@@ -63,8 +72,17 @@ public class AiChatbotService {
             return greetingResp;
         }
 
+        // 1.5. Nếu người dùng chọn Dify AI Agent: Gọi trực tiếp Dify Cloud RAG API
+        if ("dify".equalsIgnoreCase(provider)) {
+            AiChatResponse difyResp = callDifyService(cleanQuery, sessionId);
+            if (difyResp != null) {
+                return difyResp;
+            }
+            log.info("Dify AI không khả dụng, tự động fallback sang FAQ học vụ nội bộ.");
+        }
+
         // 2. Nếu người dùng chọn provider AI thông minh (Gemini, Ollama...): Gọi ai-service (Python RAG)
-        if (provider != null && !provider.equalsIgnoreCase("default") && !provider.equalsIgnoreCase("qaute")) {
+        if (provider != null && !provider.equalsIgnoreCase("default") && !provider.equalsIgnoreCase("qaute") && !provider.equalsIgnoreCase("dify")) {
             AiChatResponse aiResp = callAiService(cleanQuery, sessionId, provider);
             if (aiResp != null && aiResp.getAnswer() != null && !aiResp.getAnswer().isBlank()
                     && !aiResp.getAnswer().contains("Xin lỗi, hệ thống AI hiện không thể")) {
@@ -277,5 +295,90 @@ public class AiChatbotService {
         if (q.length() > 30) return false;
         String clean = q.trim().toLowerCase().replaceAll("[!?.~,]+$", "").replaceAll("\\s+", " ");
         return clean.matches("^(xin chào|chao|chào|hello|hi|helo|alo|hey|yo|hi+\\w*|he+l+o+|chào bạn|xin chao|chao ban|bạn là ai|ban la ai|tro ly|trợ lý|help|giúp với|giup voi)$");
+    }
+
+    /**
+     * Gọi Dify Cloud REST API (POST /chat-messages)
+     */
+    private AiChatResponse callDifyService(String query, String sessionId) {
+        if (!difyEnabled) {
+            log.warn("Dify AI Engine đang bị vô hiệu hóa trong cấu hình.");
+            return null;
+        }
+
+        if (difyApiKey == null || difyApiKey.isBlank()) {
+            log.warn("Chưa cấu hình Dify API Key.");
+            AiChatResponse errorResp = new AiChatResponse();
+            errorResp.setAnswer("⚠️ **Dify AI Agent chưa được cấu hình API Key**.\n\nVui lòng cung cấp `DIFY_API_KEY` trong file cấu hình `application.yml` để kích hoạt kết nối tới Dify Cloud.");
+            errorResp.setSessionId(sessionId);
+            errorResp.setProvider("dify");
+            return errorResp;
+        }
+
+        try {
+            String url = difyBaseUrl.replaceAll("/+$", "") + "/chat-messages";
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(difyApiKey);
+
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("inputs", Collections.emptyMap());
+            payload.put("query", query);
+            payload.put("response_mode", "blocking");
+            payload.put("user", sessionId != null ? "user-" + sessionId.substring(0, Math.min(8, sessionId.length())) : "guest-user");
+
+            HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(payload, headers);
+            log.info("📡 Đang gửi yêu cầu tới Dify AI Agent tại {}...", url);
+
+            ResponseEntity<Map> responseEntity = restTemplate.postForEntity(url, requestEntity, Map.class);
+            if (responseEntity.getStatusCode().is2xxSuccessful() && responseEntity.getBody() != null) {
+                Map<String, Object> body = responseEntity.getBody();
+                String answer = (String) body.get("answer");
+                if (answer != null && !answer.isBlank()) {
+                    List<SourceDocument> sources = new ArrayList<>();
+
+                    // Trích xuất metadata retriever_resources từ Dify
+                    Object metadataObj = body.get("metadata");
+                    if (metadataObj instanceof Map<?, ?> metaMap) {
+                        Object resourcesObj = metaMap.get("retriever_resources");
+                        if (resourcesObj instanceof List<?> resList) {
+                            for (Object item : resList) {
+                                if (item instanceof Map<?, ?> resItem) {
+                                    String docName = (String) resItem.get("document_name");
+                                    String content = (String) resItem.get("content");
+                                    Number scoreNum = (Number) resItem.get("score");
+                                    Double score = scoreNum != null ? scoreNum.doubleValue() : 0.85;
+
+                                    sources.add(SourceDocument.builder()
+                                            .title(docName != null ? docName.replaceAll("\\.pdf$", "") : "Tài liệu Dify")
+                                            .source(docName != null ? docName : "Dify Knowledge Base")
+                                            .text(content)
+                                            .score(score)
+                                            .build());
+                                }
+                            }
+                        }
+                    }
+
+                    AiChatResponse difyResp = new AiChatResponse();
+                    difyResp.setAnswer(answer.trim());
+                    difyResp.setSessionId(sessionId);
+                    difyResp.setProvider("dify");
+                    difyResp.setSources(sources);
+                    log.info("✅ Dify AI Agent phản hồi thành công ({} nguồn tham khảo)", sources.size());
+                    return difyResp;
+                }
+            }
+        } catch (org.springframework.web.client.HttpClientErrorException.Unauthorized ex) {
+            log.error("❌ Dify API Key không hợp lệ hoặc đã hết hạn: {}", ex.getMessage());
+            AiChatResponse authErrorResp = new AiChatResponse();
+            authErrorResp.setAnswer("⚠️ **Dify AI Agent thông báo:** Mã API Key (`" + (difyApiKey.length() > 10 ? difyApiKey.substring(0, 8) + "..." : difyApiKey) + "`) trên hệ thống Dify Cloud chưa hợp lệ hoặc đã hết hạn (401 Unauthorized).\n\n👉 Bạn vui lòng kiểm tra lại Dify Workspace và cập nhật `DIFY_API_KEY` hợp lệ trong file cấu hình nhé!");
+            authErrorResp.setSessionId(sessionId);
+            authErrorResp.setProvider("dify");
+            return authErrorResp;
+        } catch (Exception e) {
+            log.error("❌ Lỗi khi kết nối tới Dify AI Agent: {}", e.getMessage());
+        }
+        return null;
     }
 }
