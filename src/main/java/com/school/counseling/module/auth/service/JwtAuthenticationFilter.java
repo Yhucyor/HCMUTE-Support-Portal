@@ -25,12 +25,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsServiceImpl userDetailsService;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        // Skip JWT filter for AI Chat endpoints - they use session authentication
+        return path.startsWith("/api/ai/") || path.startsWith("/ai/");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = getJwtFromRequest(request);
 
+            // Only process JWT if present - don't interfere with session auth
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 String username = tokenProvider.getUsernameFromJwt(jwt);
 
@@ -40,6 +48,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.debug("Set JWT authentication for user: {}", username);
+            } else {
+                // No JWT token - let session authentication work
+                log.debug("No JWT token found, relying on session authentication");
             }
         } catch (Exception ex) {
             log.error("Could not set user authentication in security context", ex);

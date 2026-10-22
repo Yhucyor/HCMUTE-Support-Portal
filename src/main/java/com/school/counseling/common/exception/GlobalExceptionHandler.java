@@ -99,6 +99,16 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Bắt lỗi vượt quá giới hạn truy vấn AI trong ngày (429 Too Many Requests)
+     */
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ApiResponse<Object>> handleRateLimitExceededException(RateLimitExceededException ex) {
+        log.warn("Rate limit exceeded: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    /**
      * Bắt lỗi hệ thống nội bộ (500 Internal Server Error)
      */
     @ExceptionHandler(Exception.class)

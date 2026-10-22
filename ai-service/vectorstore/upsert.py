@@ -12,13 +12,13 @@ logger = logging.getLogger("vector_database")
 QDRANT_CONFIG = settings["vector_database"]
 COLLECTION_NAME = QDRANT_CONFIG["collection_name"]
 
-def upsert_chunks(chunks: list[dict]):
+def upsert_chunks(chunks: list[dict], recreate: bool = False):
     if not chunks:
         logger.warning("No chunks provided to build Qdrant points.")
         return []
     
     client: QdrantClient = get_qdrant_client()
-    ensure_collection(client)
+    ensure_collection(client, recreate=recreate)
     
     # Fit sparse embedder with corpus
     logger.info("Fitting sparse embedder with corpus...")
@@ -35,5 +35,11 @@ def upsert_chunks(chunks: list[dict]):
         logger.warning("No points were built from the provided chunks.")
         return []
     
-    client.upsert(collection_name=COLLECTION_NAME, points=points)
-    logger.info(f"Upserted {len(points)} hybrid points into collection '{COLLECTION_NAME}'.")
+    # Batch upsert to prevent HTTP timeout or payload limits on Cloud
+    batch_size = 64
+    total_batches = (len(points) + batch_size - 1) // batch_size
+    for i in range(0, len(points), batch_size):
+        batch = points[i:i + batch_size]
+        client.upsert(collection_name=COLLECTION_NAME, points=batch)
+        logger.info(f"Upserted batch {i // batch_size + 1}/{total_batches} ({len(batch)} points) to '{COLLECTION_NAME}'.")
+    logger.info(f"Successfully upserted all {len(points)} hybrid points into collection '{COLLECTION_NAME}'.")
