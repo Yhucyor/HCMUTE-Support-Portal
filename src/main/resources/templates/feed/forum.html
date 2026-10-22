@@ -9,6 +9,8 @@
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <!-- Quill.js Snow Editor (Local Offline) -->
+    <link rel="stylesheet" th:href="@{/vendor/quill/quill.snow.css}">
     <style>
         /* Custom visible scrollbars for all panels and window */
         html {
@@ -457,35 +459,171 @@
                                      alt="Avatar">
                                 <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white"></span>
                             </div>
-                            <a th:href="@{/feed/forum/create}" class="flex-1 bg-surface-container-low hover:bg-surface-container rounded-full px-4 py-2.5 cursor-pointer transition-colors flex items-center justify-between group">
+                            <button type="button" onclick="openCreateModal()" class="flex-1 bg-surface-container-low hover:bg-surface-container rounded-full px-4 py-2.5 cursor-pointer transition-colors flex items-center justify-between group text-left">
                                 <span class="font-body-md text-body-md text-slate-500 text-xs sm:text-sm group-hover:text-slate-800 transition-colors">Bạn đang muốn chia sẻ hay đặt câu hỏi học tập điều gì?</span>
                                 <span class="material-symbols-outlined text-slate-400 group-hover:text-[#003882] text-lg transition-colors">edit_square</span>
-                            </a>
+                            </button>
                         </div>
                         <div class="flex items-center justify-between flex-wrap gap-2 pt-1 border-t border-slate-100">
                             <div class="flex items-center gap-1.5 flex-wrap">
-                                <a th:href="@{/feed/forum/create}" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors text-xs font-medium">
+                                <button type="button" onclick="openCreateModal()" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors text-xs font-medium cursor-pointer">
                                     <span class="material-symbols-outlined text-base text-emerald-600">photo_library</span>
-                                    <span>Ảnh / Video</span>
-                                </a>
-                                <a th:href="@{/feed/forum/create}" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors text-xs font-medium">
-                                    <span class="material-symbols-outlined text-base text-amber-600">attach_file</span>
-                                    <span>Tài liệu</span>
-                                </a>
-                                <a th:href="@{/feed/forum/create}" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors text-xs font-medium">
+                                    <span>Ảnh / Đính kèm</span>
+                                </button>
+                                <button type="button" onclick="openCreateModal()" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors text-xs font-medium cursor-pointer">
                                     <span class="material-symbols-outlined text-base text-indigo-600">help</span>
-                                    <span>Hỏi đáp</span>
-                                </a>
+                                    <span>Hỏi đáp học tập</span>
+                                </button>
                             </div>
                             <div class="flex items-center gap-2">
-                                <button onclick="openCreateModal()" class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-medium transition-all" type="button" title="Mở hộp thoại nhanh">
-                                    Mở nhanh
-                                </button>
-                                <a th:href="@{/feed/forum/create}" class="px-4 py-1.5 rounded-lg bg-[#003882] text-white text-xs font-semibold hover:bg-[#002456] shadow-sm transition-all flex items-center gap-1">
+                                <button onclick="openCreateModal()" class="px-4 py-1.5 rounded-lg bg-[#003882] text-white text-xs font-semibold hover:bg-[#002456] shadow-sm transition-all flex items-center gap-1 cursor-pointer" type="button">
                                     <span class="material-symbols-outlined text-sm">post_add</span>
-                                    <span>Đăng bài</span>
-                                </a>
+                                    <span>Đăng bài thảo luận</span>
+                                </button>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- SMART CREATE POST MODAL (Quill.js Snow + Live Preview at Bottom Left) -->
+                    <div id="createPostModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs items-center justify-center p-3 sm:p-4">
+                        <div class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in duration-200" onclick="event.stopPropagation()">
+                            
+                            <!-- Modal Header -->
+                            <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-[#003882]"></span>
+                                    <h3 class="font-bold text-sm sm:text-base text-slate-900">Tạo bài viết thảo luận sinh viên</h3>
+                                </div>
+                                <button type="button" class="trigger-close-create-modal w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer">
+                                    <span class="material-symbols-outlined text-lg">close</span>
+                                </button>
+                            </div>
+
+                            <!-- Form đăng bài -->
+                            <form th:action="@{/feed/forum/create}" method="post" enctype="multipart/form-data" id="createPostForm" class="flex flex-col flex-1 overflow-y-auto forum-scrollbar">
+                                <input type="hidden" name="content" id="hiddenPostContent">
+
+                                <!-- Modal Body: Editor Section -->
+                                <div id="modalEditorSection" class="p-5 space-y-4 flex-1">
+                                    <!-- Author & Department Selector -->
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                                        <div class="flex items-center gap-2.5">
+                                            <img class="w-9 h-9 rounded-full object-cover shadow-2xs border border-slate-200"
+                                                 th:src="${currentUserAvatar != null and !currentUserAvatar.isEmpty() ? currentUserAvatar : 'https://lh3.googleusercontent.com/aida-public/AB6AXuDvy6lk6rdWThe7VDawUThXqrZ6Oqhjv1kmn1kfYyMX3KLVmSW_JJ98dgHtt8vzVk3hRcq9k1jFjZcCo2WjcUrzuFQwfHV3HgDOtr6H-3q930mwuaw6uWBjF7c-5kG6xJfbpHJ64kIDyD9EDoYS-JiOogDWrE0ut8uCnFa6RlXIqJsyo20uO5GZxmqdsx3yyGTfoyZa1HkBhKcLNBMAVpJJysrNGlcm_swLJhttassJQLuVVKeWlpka'}"
+                                                 alt="Avatar">
+                                            <div>
+                                                <span class="text-xs font-bold text-slate-800 block" th:text="${currentUserFullName != null ? currentUserFullName : 'Sinh viên HCMUTE'}">Sinh viên</span>
+                                                <span class="text-[11px] text-slate-500" th:text="${currentUserDept != null ? currentUserDept : 'Đại học SPKT TP.HCM'}">Khoa CNTT</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Dropdown Khoa -->
+                                        <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1">
+                                            <span class="material-symbols-outlined text-sm text-[#003882]">domain</span>
+                                            <select name="departmentId" id="modalPostDept" class="bg-transparent text-xs text-slate-700 font-medium border-0 focus:ring-0 p-0 cursor-pointer">
+                                                <option value="">Toàn trường (Chung)</option>
+                                                <option th:each="dept : ${departments}" 
+                                                        th:value="${dept.id}" 
+                                                        th:text="${dept.name}"
+                                                        th:selected="${currentUser != null && currentUser.department != null && currentUser.department.id == dept.id}">Khoa CNTT</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tiêu đề bài viết -->
+                                    <div class="space-y-1">
+                                        <div class="flex items-center justify-between text-xs">
+                                            <label for="modalPostTitle" class="font-bold text-slate-800">Tiêu đề thảo luận <span class="text-rose-500">*</span></label>
+                                            <span id="modalTitleCounter" class="text-slate-400 font-medium">0/150</span>
+                                        </div>
+                                        <input type="text" id="modalPostTitle" name="title" required maxlength="150"
+                                               placeholder="Ví dụ: Kinh nghiệm ôn thi AVĐR tháng 11, review môn học..."
+                                               class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#003882] focus:bg-white transition-all">
+                                    </div>
+
+                                    <!-- Quill.js Editor Container -->
+                                    <div class="space-y-1">
+                                        <label class="block text-xs font-bold text-slate-800">Nội dung bài viết <span class="text-rose-500">*</span></label>
+                                        <div class="rounded-xl border border-slate-200 overflow-hidden bg-white">
+                                            <div id="quillEditor" class="min-h-[160px] text-sm"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Image Attachment Preview Box (Ẩn khi chưa chọn ảnh) -->
+                                    <div id="modalImagePreviewBox" class="hidden relative rounded-xl border border-slate-200 overflow-hidden max-h-48 bg-slate-100 group">
+                                        <img id="modalImagePreviewImg" src="" alt="Ảnh đính kèm" class="w-full h-48 object-cover">
+                                        <button type="button" id="modalRemoveImageBtn" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-slate-900/70 text-white flex items-center justify-center hover:bg-rose-600 transition-colors shadow-sm cursor-pointer" title="Xóa ảnh này">
+                                            <span class="material-symbols-outlined text-base">close</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Modal Body: LIVE PREVIEW SECTION (Ẩn khi đang soạn thảo, hiện khi bấm Xem trước) -->
+                                <div id="modalPreviewSection" class="hidden p-5 space-y-4 flex-1">
+                                    <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl flex items-center gap-2 text-xs text-[#003882]">
+                                        <span class="material-symbols-outlined text-base">info</span>
+                                        <span>Bản xem trước chính xác giao diện bài viết của bạn trên Bảng tin Diễn đàn.</span>
+                                    </div>
+
+                                    <!-- Card mô phỏng xem trước -->
+                                    <div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm border border-slate-200 flex flex-col gap-3">
+                                        <div class="flex items-center gap-3">
+                                            <img class="w-10 h-10 rounded-full object-cover shadow-xs border border-slate-200"
+                                                 th:src="${currentUserAvatar != null and !currentUserAvatar.isEmpty() ? currentUserAvatar : 'https://lh3.googleusercontent.com/aida-public/AB6AXuDvy6lk6rdWThe7VDawUThXqrZ6Oqhjv1kmn1kfYyMX3KLVmSW_JJ98dgHtt8vzVk3hRcq9k1jFjZcCo2WjcUrzuFQwfHV3HgDOtr6H-3q930mwuaw6uWBjF7c-5kG6xJfbpHJ64kIDyD9EDoYS-JiOogDWrE0ut8uCnFa6RlXIqJsyo20uO5GZxmqdsx3yyGTfoyZa1HkBhKcLNBMAVpJJysrNGlcm_swLJhttassJQLuVVKeWlpka'}"
+                                                 alt="Avatar">
+                                            <div class="flex flex-col">
+                                                <div class="flex items-center gap-1.5 flex-wrap">
+                                                    <span class="font-bold text-sm text-slate-900" th:text="${currentUserFullName != null ? currentUserFullName : 'Sinh viên'}">Họ tên</span>
+                                                    <span id="previewCardDept" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-medium">Khoa CNTT</span>
+                                                </div>
+                                                <div class="flex items-center gap-1.5 text-xs text-slate-500">
+                                                    <span>Vừa xong</span>
+                                                    <span>•</span>
+                                                    <span class="material-symbols-outlined text-xs">public</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <h3 id="previewCardTitle" class="font-bold text-base text-slate-900 leading-snug">Tiêu đề bài viết</h3>
+                                            <div id="previewCardContent" class="text-sm text-slate-700 leading-relaxed ql-snow"><div class="ql-editor p-0">Nội dung bài viết...</div></div>
+                                        </div>
+                                        <div id="previewCardImageBox" class="hidden rounded-xl overflow-hidden max-h-60 bg-slate-100 border border-slate-200">
+                                            <img id="previewCardImage" src="" alt="Ảnh xem trước" class="w-full h-full object-cover">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Modal Footer -->
+                                <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2">
+                                    <!-- Góc dưới bên trái: Nút Xem trước (Live Preview Toggle) & Nút Thêm ảnh -->
+                                    <div class="flex items-center gap-1.5">
+                                        <!-- NÚT XEM TRƯỚC ĐỊNH DẠNG BÀI VIẾT Ở GÓC DƯỚI BÊN TRÁI -->
+                                        <button type="button" id="btnTogglePreview" 
+                                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-[#003882] text-xs font-semibold shadow-2xs transition-all cursor-pointer">
+                                            <span id="previewBtnIcon" class="material-symbols-outlined text-base">visibility</span>
+                                            <span id="previewBtnText">Xem trước bài viết</span>
+                                        </button>
+
+                                        <!-- Nút đính kèm ảnh -->
+                                        <label for="modalPostImage" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-200/70 text-xs font-medium cursor-pointer transition-colors" title="Thêm ảnh đính kèm">
+                                            <span class="material-symbols-outlined text-base text-emerald-600">photo_camera</span>
+                                            <span class="hidden sm:inline">Thêm ảnh</span>
+                                        </label>
+                                        <input type="file" id="modalPostImage" name="image" accept="image/*" class="hidden">
+                                    </div>
+
+                                    <!-- Góc dưới bên phải: Nút Hủy và Nút Đăng bài -->
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" class="trigger-close-create-modal px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer">
+                                            Hủy
+                                        </button>
+                                        <button type="submit" class="px-4 py-1.5 rounded-lg bg-[#003882] hover:bg-[#002456] text-white text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer">
+                                            <span class="material-symbols-outlined text-sm">send</span>
+                                            <span>Đăng bài thảo luận</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                     </div>
 
@@ -526,7 +664,9 @@
                             <!-- Post Content -->
                             <div class="space-y-1.5">
                                 <h3 class="font-bold text-base text-slate-900 leading-snug" th:text="${post.title}">Tiêu đề bài viết</h3>
-                                <p class="text-sm text-slate-700 leading-relaxed whitespace-pre-line" th:text="${post.content}">Nội dung bài viết thảo luận...</p>
+                                <div class="text-sm text-slate-700 leading-relaxed ql-snow">
+                                    <div class="ql-editor p-0 whitespace-pre-line" th:utext="${post.content}">Nội dung bài viết thảo luận...</div>
+                                </div>
                             </div>
 
                             <!-- Post Image (if any) -->
@@ -537,30 +677,72 @@
                             <!-- Reaction Bar -->
                             <div class="flex items-center justify-between pt-2 border-t border-slate-100">
                                 <div class="flex items-center gap-4">
-                                    <form th:action="@{'/feed/forum/' + ${post.id} + '/like'}" method="post">
-                                        <button type="submit" class="flex items-center gap-1.5 text-xs font-semibold hover:text-[#003882] transition-colors"
-                                                th:classappend="${post.userLiked ? 'text-rose-600 font-bold' : 'text-slate-600'}">
-                                            <span class="material-symbols-outlined text-lg" th:style="${post.userLiked ? 'font-variation-settings: ''FILL'' 1;' : ''}">favorite</span>
-                                            <span th:text="${post.likeCount != null ? post.likeCount : 0} + ' Thích'">0 Thích</span>
-                                        </button>
-                                    </form>
-                                    <div class="flex items-center gap-1.5 text-xs font-medium text-slate-600">
-                                        <span class="material-symbols-outlined text-lg">chat_bubble</span>
-                                        <span th:text="${post.commentCount != null ? post.commentCount : 0} + ' Thảo luận'">0 Thảo luận</span>
-                                    </div>
+                                    <!-- Interactive Like Button (Zero Reload) -->
+                                    <button type="button" 
+                                            class="btn-like-post flex items-center gap-1.5 text-xs font-semibold hover:text-[#003882] transition-colors cursor-pointer"
+                                            th:data-post-id="${post.id}"
+                                            th:data-liked="${post.userLiked}"
+                                            th:data-like-count="${post.likeCount != null ? post.likeCount : 0}"
+                                            th:classappend="${post.userLiked ? 'text-rose-600 font-bold' : 'text-slate-600'}">
+                                        <span class="material-symbols-outlined text-lg like-heart-icon transition-transform duration-200" 
+                                              th:style="${post.userLiked ? 'font-variation-settings: ''FILL'' 1;' : ''}">favorite</span>
+                                        <span class="like-count-text" th:text="${post.likeCount != null ? post.likeCount : 0} + ' Thích'">0 Thích</span>
+                                    </button>
+
+                                    <!-- Toggle Comments Accordion Button -->
+                                    <button type="button" 
+                                            class="btn-toggle-comments flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-[#003882] transition-colors cursor-pointer"
+                                            th:data-post-id="${post.id}">
+                                        <span class="material-symbols-outlined text-lg text-blue-600">chat_bubble</span>
+                                        <span th:class="'comment-count-badge-' + ${post.id}" th:data-count="${post.commentCount != null ? post.commentCount : 0}"
+                                              th:text="${post.commentCount != null ? post.commentCount : 0} + ' Thảo luận'">0 Thảo luận</span>
+                                    </button>
                                 </div>
                             </div>
 
-                            <!-- Quick Comment Input -->
-                            <form th:action="@{'/feed/forum/' + ${post.id} + '/comment'}" method="post" class="flex items-center gap-2 pt-1">
-                                <div class="flex-1 relative">
-                                    <input type="text" name="content" required placeholder="Viết câu trả lời hoặc thảo luận..." 
-                                           class="w-full bg-slate-50 border border-slate-200 rounded-full pl-4 pr-10 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#003882] focus:bg-white transition-all">
-                                    <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-[#003882] hover:text-[#002456] p-1 flex items-center justify-center">
-                                        <span class="material-symbols-outlined text-base">send</span>
-                                    </button>
+                            <!-- Expandable Comments Accordion Drawer -->
+                            <div th:id="'comments-accordion-' + ${post.id}" class="hidden pt-3 border-t border-slate-100 space-y-3">
+                                <!-- Comments List -->
+                                <div th:id="'comments-list-' + ${post.id}" class="space-y-2 max-h-72 overflow-y-auto forum-scrollbar pr-1">
+                                    <!-- Comment Items from Database -->
+                                    <div th:if="${post.comments != null and !post.comments.empty}" th:each="cmt : ${post.comments}"
+                                         class="flex items-start gap-2.5 p-2 rounded-xl hover:bg-slate-50 transition-colors">
+                                        <img class="w-8 h-8 rounded-full object-cover shadow-2xs border border-slate-200 shrink-0" 
+                                             th:src="${cmt.authorAvatar != null and !cmt.authorAvatar.isEmpty() ? cmt.authorAvatar : 'https://ui-avatars.com/api/?name=' + cmt.authorName + '&background=003882&color=fff'}" 
+                                             alt="Avatar">
+                                        <div class="flex-1 bg-slate-100/70 rounded-2xl p-2.5 text-xs">
+                                            <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                                                <span class="font-bold text-slate-900" th:text="${cmt.authorName}">Họ tên</span>
+                                                <span th:if="${cmt.authorRole == 'STAFF' or cmt.authorRole == 'ADMIN' or cmt.authorRole == 'TEACHER'}" 
+                                                      class="px-2 py-0.2 rounded-full text-[10px] bg-blue-100 text-[#003882] font-bold" 
+                                                      th:text="${cmt.authorDepartment != null ? cmt.authorDepartment : 'Cán bộ HCMUTE'}">Cán bộ</span>
+                                                <span th:unless="${cmt.authorRole == 'STAFF' or cmt.authorRole == 'ADMIN' or cmt.authorRole == 'TEACHER'}" 
+                                                      class="px-2 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600 font-medium" 
+                                                      th:text="${cmt.authorDepartment != null ? cmt.authorDepartment : 'Sinh viên'}">Khoa CNTT</span>
+                                                <span class="text-[10px] text-slate-400" 
+                                                      th:text="${cmt.createdAt != null ? '• ' + #temporals.format(cmt.createdAt, 'dd/MM/yyyy HH:mm') : ''}">• Vừa xong</span>
+                                            </div>
+                                            <p class="text-slate-800 leading-relaxed whitespace-pre-line" th:text="${cmt.content}">Nội dung bình luận...</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Placeholder when empty -->
+                                    <div th:if="${post.comments == null or post.comments.empty}" class="no-comments-placeholder py-3 text-center text-xs text-slate-400 italic">
+                                        Chưa có bình luận nào. Hãy là người đầu tiên trao đổi ý kiến!
+                                    </div>
                                 </div>
-                            </form>
+
+                                <!-- Quick Comment Input Form inside Accordion -->
+                                <form class="form-comment-ajax flex items-center gap-2 pt-1" th:data-post-id="${post.id}">
+                                    <div class="flex-1 relative">
+                                        <input type="text" name="content" required placeholder="Viết câu trả lời hoặc thảo luận..." 
+                                               class="comment-input-field w-full bg-slate-50 border border-slate-200 rounded-full pl-4 pr-10 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#003882] focus:bg-white transition-all">
+                                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-[#003882] hover:text-[#002456] p-1 flex items-center justify-center cursor-pointer" title="Gửi bình luận">
+                                            <span class="material-symbols-outlined text-base">send</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </article>
 
                         <!-- Pagination -->
@@ -1134,5 +1316,10 @@
             if (drawer) drawer.classList.toggle('hidden');
         }
     </script>
+
+    <!-- Quill.js Snow Editor (Local Offline) -->
+    <script th:src="@{/vendor/quill/quill.min.js}"></script>
+    <!-- Forum Interactions Module (Live Preview, Ajax Like & Comments) -->
+    <script th:src="@{/js/modules/forum.js}"></script>
 </body>
 </html>

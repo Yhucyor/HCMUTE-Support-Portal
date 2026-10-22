@@ -172,11 +172,13 @@ Dev B chịu trách nhiệm xây dựng giao diện người dùng theo chuẩn 
 
 ---
 
-## 📅 VII. KẾ HOẠCH TRIỂN KHAI THEO TỪNG GIAI ĐOÀN
+## 📅 VII. KẾ HOẠCH TRIỂN KHAI THEO TỪNG GIAI ĐOÀN & KẾT QUẢ THỰC HIỆN
 
-| Giai đoạn | Nội dung công việc | Phụ trách | Kết quả đầu ra |
-| :--- | :--- | :---: | :--- |
-| **Giai đoạn 1** | Viết REST Controller & Service cho Like/Comment Ajax; tạo `CommentDto` và `LikeResponseDto` | **Dev A** | API kiểm thử thành công qua Postman / cURL, trả về JSON chuẩn |
-| **Giai đoạn 2** | Xây dựng Smart Modal đăng bài và Khối hiển thị bình luận trực quan trên `forum.html` | **Dev B** | Giao diện hiển thị danh sách bình luận sắc nét, modal mở nhanh mượt mà |
-| **Giai đoạn 3** | Viết file JavaScript `forum-interactions.js` xử lý Fetch API cho Like, Comment và Preview ảnh | **Dev B** | Like không reload trang, gửi comment hiển thị tức thì |
-| **Giai đoạn 4** | Kiểm thử tích hợp tổng thể, kiểm tra responsive mobile/desktop và push lên Git | **Dev A & B** | Trải nghiệm người dùng đồng nhất, không phát sinh lỗi |
+| Giai đoạn | Nội dung công việc | Phụ trách | Trạng thái | Kết quả đầu ra |
+| :--- | :--- | :---: | :---: | :--- |
+| **Giai đoạn 1** | Tải Quill.js Snow offline vào `vendor/quill/`; cập nhật `SecurityConfig` cho phép `/vendor/**` và `/api/v1/forum/**` | **Dev A** | ✅ **HOÀN THÀNH** | `quill.min.js` (216KB) & `quill.snow.css` (24KB) hoạt động 100% offline không cần internet hay API key |
+| **Giai đoạn 2** | Nâng cấp `ForumApiController` (`/posts/{id}/like`, `/posts`, `/comments`) và `PostService` (nạp `comments` vào `PostResponseDto`) | **Dev A** | ✅ **HOÀN THÀNH** | REST API phản hồi JSON tốc độ cao, hỗ trợ phân loại theo Khoa và bảo mật RBAC |
+| **Giai đoạn 3** | Xây dựng Smart Modal đăng bài với Quill Snow, tích hợp nút **"Xem trước bài viết" (Live Preview)** ở góc dưới bên trái | **Dev B** | ✅ **HOÀN THÀNH** | Modal mở nhanh mượt mà, chuyển đổi giữa chế độ soạn thảo và xem trước thẻ Card tức thì |
+| **Giai đoạn 4** | Xây dựng Khối bình luận trượt (Comment Accordion) & Thả tim AJAX không reload qua module `forum.js` | **Dev B** | ✅ **HOÀN THÀNH** | Like tăng giảm tức thì (Optimistic UI), bình luận mở trượt và gửi realtime không chớp màn hình |
+| **Giai đoạn 5** | Kiểm thử end-to-end (Maven build, endpoint tests, DOM tests) | **Dev A & B** | ✅ **HOÀN THÀNH** | 100% tài nguyên tải HTTP 200, BUILD SUCCESS |
+

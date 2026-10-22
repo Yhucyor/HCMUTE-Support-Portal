@@ -67,10 +67,10 @@ public class SecurityConfig {
                                 "/academic/**", "/api/academic/**",
                                 "/grades", "/timetable", "/curriculum",
                                 "/faqs", "/faq", "/api/v1/faqs/**",
-                                "/feed/official/**", "/feed/forum/**",
+                                "/feed/official/**", "/feed/forum/**", "/api/v1/forum/**",
                                 "/auth/**", "/api/v1/auth/**",
                                 "/error",
-                                "/css/**", "/js/**", "/images/**", "/uploads/**", "/webjars/**", "/favicon.ico")
+                                "/css/**", "/js/**", "/vendor/**", "/images/**", "/uploads/**", "/webjars/**", "/favicon.ico")
                         .permitAll()
 
                         // Admin & Staff boundaries

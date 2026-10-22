@@ -312,7 +312,12 @@ public class PostService {
      */
     @Transactional
     public PostResponseDto createForumPostDto(String title, String content, MultipartFile image, User author) {
-        Post savedPost = createForumPost(title, content, image, author);
+        return createForumPostDto(title, content, null, image, author);
+    }
+
+    @Transactional
+    public PostResponseDto createForumPostDto(String title, String content, Long departmentId, MultipartFile image, User author) {
+        Post savedPost = createForumPost(title, content, departmentId, image, author);
         return mapToDto(savedPost);
     }
 
@@ -546,6 +551,12 @@ public class PostService {
             List<PostAttachment> attachments = attachmentRepository.findByPostIdAndIsDeletedFalse(p.getId());
             PostResponseDto dto = mapToDto(p, attachments);
             dto.setUserLiked(likedIds.contains(p.getId()));
+            List<Comment> postComments = commentRepository.findByPostIdWithAuthor(p.getId());
+            if (postComments != null && !postComments.isEmpty()) {
+                dto.setComments(postComments.stream().map(this::mapCommentToDto).collect(Collectors.toList()));
+            } else {
+                dto.setComments(new ArrayList<>());
+            }
             return dto;
         });
     }
@@ -569,6 +580,12 @@ public class PostService {
             List<PostAttachment> attachments = attachmentRepository.findByPostIdAndIsDeletedFalse(p.getId());
             PostResponseDto dto = mapToDto(p, attachments);
             dto.setUserLiked(likedIds.contains(p.getId()));
+            List<Comment> postComments = commentRepository.findByPostIdWithAuthor(p.getId());
+            if (postComments != null && !postComments.isEmpty()) {
+                dto.setComments(postComments.stream().map(this::mapCommentToDto).collect(Collectors.toList()));
+            } else {
+                dto.setComments(new ArrayList<>());
+            }
             return dto;
         });
     }
