@@ -645,38 +645,55 @@
     })();
     function toggleMobileNav() { document.getElementById('mobileNavDrawer')?.classList.toggle('hidden'); }
 
-    // ── Thang điểm chuyển đổi chuẩn HCMUTE ─────────────────────────────────────
+    // ── Thang điểm chuyển đổi chuẩn HCMUTE (2025) ──────────────────────────────
     const GRADE_CONVERT = {
         'A+': { gpa4: 4.0, class: 'bg-emerald-100 text-emerald-800 border-emerald-300', label: 'Xuất sắc' },
-        'A':  { gpa4: 3.8, class: 'bg-emerald-50 text-emerald-700 border-emerald-200', label: 'Giỏi' },
+        'A':  { gpa4: 3.7, class: 'bg-emerald-50 text-emerald-700 border-emerald-200', label: 'Giỏi' },
         'B+': { gpa4: 3.5, class: 'bg-blue-100 text-blue-800 border-blue-300', label: 'Khá giỏi' },
         'B':  { gpa4: 3.0, class: 'bg-blue-50 text-blue-700 border-blue-200', label: 'Khá' },
         'C+': { gpa4: 2.5, class: 'bg-amber-100 text-amber-800 border-amber-300', label: 'TB Khá' },
         'C':  { gpa4: 2.0, class: 'bg-amber-50 text-amber-700 border-amber-200', label: 'Trung bình' },
         'D+': { gpa4: 1.5, class: 'bg-orange-100 text-orange-800 border-orange-300', label: 'TB Yếu' },
-        'D':  { gpa4: 1.0, class: 'bg-orange-50 text-orange-700 border-orange-200', label: 'Yếu' },
-        'F':  { gpa4: 0.0, class: 'bg-rose-100 text-rose-800 border-rose-300 font-bold', label: 'Kém (Nợ môn)' }
+        'D':  { gpa4: 1.0, class: 'bg-orange-50 text-orange-700 border-orange-200', label: 'Yếu (Không đạt)' },
+        'F':  { gpa4: 0.0, class: 'bg-rose-100 text-rose-800 border-rose-300 font-bold', label: 'Kém (Nợ môn)' },
+        'P':  { gpa4: null, class: 'bg-green-100 text-green-800 border-green-300', label: 'Đạt điều kiện' },
+        'R':  { gpa4: null, class: 'bg-purple-100 text-purple-800 border-purple-300', label: 'Miễn học' }
     };
+
+    function isConditionalSubject(g) {
+        if (!g) return false;
+        const code = (g.courseCode || '').toUpperCase();
+        const name = (g.courseName || '').toLowerCase();
+        return code.startsWith('PHED') || code.startsWith('MILT') || code.startsWith('GDTC') || code.startsWith('GDQP')
+            || name.includes('thể chất') || name.includes('thể dục') || name.includes('quốc phòng') || name.includes('an ninh');
+    }
+
+    function isLegacyPassSemester(semester) {
+        if (!semester) return false;
+        const s = semester.toLowerCase();
+        return s.includes('2021-2022') || (s.includes('2022-2023') && (s.includes('hk01') || s.includes('học kỳ 1') || s.includes('hk1')));
+    }
 
     // Kiểm tra xem môn học đã có điểm kết quả cuối cùng trên Portal chưa
     function hasGradeResult(g) {
         if (!g) return false;
         if (g.totalScore != null) return true;
         const letter = (g.gradeLetter || '').trim().toUpperCase();
-        return !!(letter && letter !== '--' && letter !== 'CHƯA CÓ' && ['A+','A','B+','B','C+','C','D+','D','F'].includes(letter));
+        return !!(letter && letter !== '--' && letter !== 'CHƯA CÓ' && ['A+','A','B+','B','C+','C','D+','D','F','P','R'].includes(letter));
     }
 
     function getGrade4(g) {
-        if (!hasGradeResult(g)) return null;
+        if (!hasGradeResult(g) || isConditionalSubject(g)) return null;
         const letter = (g.gradeLetter || '').trim().toUpperCase();
-        if (GRADE_CONVERT[letter]) return GRADE_CONVERT[letter].gpa4;
+        if (letter === 'P' || letter === 'R' || letter === 'I' || letter === 'X') return null;
+        if (GRADE_CONVERT[letter] && GRADE_CONVERT[letter].gpa4 != null) return GRADE_CONVERT[letter].gpa4;
         const total = g.totalScore != null ? g.totalScore : null;
         if (total == null) return null;
         if (total >= 9.0) return 4.0;
-        if (total >= 8.5) return 3.8;
+        if (total >= 8.5) return 3.7;
         if (total >= 8.0) return 3.5;
         if (total >= 7.0) return 3.0;
-        if (total >= 6.0) return 2.5;
+        if (total >= 6.5) return 2.5;
         if (total >= 5.5) return 2.0;
         if (total >= 5.0) return 1.5;
         if (total >= 4.0) return 1.0;
@@ -694,7 +711,7 @@
         if (total >= 8.5) return 'A';
         if (total >= 8.0) return 'B+';
         if (total >= 7.0) return 'B';
-        if (total >= 6.0) return 'C+';
+        if (total >= 6.5) return 'C+';
         if (total >= 5.5) return 'C';
         if (total >= 5.0) return 'D+';
         if (total >= 4.0) return 'D';
@@ -702,11 +719,13 @@
     }
 
     function isCoursePassed(g) {
-        if (!hasGradeResult(g)) return null; // Môn đang học hoặc chưa có điểm
+        if (!hasGradeResult(g)) return null;
         if (g.isPassed != null) return g.isPassed;
         const letter = getGradeLetter(g);
+        if (letter === 'P' || letter === 'R') return true;
         if (letter === 'F') return false;
-        return (g.totalScore != null ? g.totalScore >= 4.0 : true);
+        if (letter === 'D') return isLegacyPassSemester(g.semester);
+        return (g.totalScore != null ? (g.totalScore >= 5.0 || (g.totalScore >= 4.0 && isLegacyPassSemester(g.semester))) : true);
     }
 
     // ── Load Grades & Summary ─────────────────────────────────────────────────
@@ -813,46 +832,77 @@
 
     function recalculateKPIsFromGrades(grades) {
         if (!grades || grades.length === 0) return;
+
+        // Gom theo courseCode: Lấy lần học có điểm cao nhất chuẩn HCMUTE 2025
+        const bestMap = new Map();
+        let inProgress = 0;
+
+        grades.forEach(g => {
+            if (!hasGradeResult(g)) {
+                inProgress++;
+                return;
+            }
+            const code = (g.courseCode || '').trim();
+            if (!code) return;
+
+            const currPassed = isCoursePassed(g);
+            const currScore = g.totalScore != null ? g.totalScore : 0;
+
+            if (!bestMap.has(code)) {
+                bestMap.set(code, g);
+            } else {
+                const prev = bestMap.get(code);
+                const prevPassed = isCoursePassed(prev);
+                const prevScore = prev.totalScore != null ? prev.totalScore : 0;
+                if (currPassed && !prevPassed) {
+                    bestMap.set(code, g);
+                } else if (currPassed === prevPassed && currScore > prevScore) {
+                    bestMap.set(code, g);
+                }
+            }
+        });
+
         let totalPassedCredits = 0;
         let sumScore10 = 0;
         let sumScore4 = 0;
         let countCreditsWithScore = 0;
-        let passed = 0, failed = 0, inProgress = 0;
+        let passed = 0, failed = 0, debtCredits = 0;
 
-        grades.forEach(g => {
+        bestMap.forEach(g => {
             const credits = g.credits || 0;
-            // QUAN TRỌNG: Môn nào chưa có điểm kết quả cuối cùng trên Portal thì BỎ QUA không tính!
-            if (!hasGradeResult(g)) {
-                inProgress++;
-                return; // Không tính vào GPA và không tính vào nợ môn!
-            }
-
             const isPass = isCoursePassed(g);
+            const isCond = isConditionalSubject(g);
+
             if (isPass === true) {
                 passed++;
-                totalPassedCredits += credits;
-            } else if (isPass === false) {
+                if (!isCond) {
+                    totalPassedCredits += credits;
+                }
+                const g4 = getGrade4(g);
+                if (!isCond && credits > 0) {
+                    if (g.totalScore != null) {
+                        sumScore10 += g.totalScore * credits;
+                    }
+                    if (g4 != null) {
+                        sumScore4 += g4 * credits;
+                    }
+                    countCreditsWithScore += credits;
+                }
+            } else {
                 failed++;
-            }
-
-            const g4 = getGrade4(g);
-            if (g.totalScore != null && credits > 0) {
-                sumScore10 += g.totalScore * credits;
-                countCreditsWithScore += credits;
-            }
-            if (g4 != null && credits > 0) {
-                sumScore4 += g4 * credits;
+                debtCredits += credits;
             }
         });
 
         const gpa10 = countCreditsWithScore > 0 ? (sumScore10 / countCreditsWithScore) : 0;
         const gpa4 = countCreditsWithScore > 0 ? (sumScore4 / countCreditsWithScore) : 0;
 
-        let standing = 'Trung bình';
+        let standing = 'Kém';
         if (gpa4 >= 3.6) standing = 'Xuất sắc';
         else if (gpa4 >= 3.2) standing = 'Giỏi';
         else if (gpa4 >= 2.5) standing = 'Khá';
-        else if (gpa4 < 2.0 && (passed + failed > 0)) standing = 'Cảnh báo học vụ';
+        else if (gpa4 >= 2.0) standing = 'Trung bình';
+        else if (gpa4 >= 1.0) standing = 'Yếu';
         else if (passed + failed === 0) standing = inProgress > 0 ? 'Đang học' : 'Chưa có dữ liệu';
 
         renderKPIs({

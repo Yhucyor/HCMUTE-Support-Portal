@@ -530,18 +530,21 @@ public class HcmuteCrawlerService {
         else if (m.hasNonNull("DiemCK")) finalScore = m.get("DiemCK").asDouble();
         else if (m.hasNonNull("DiemThi_10")) finalScore = m.get("DiemThi_10").asDouble();
 
+        String sem = (semesterName != null && !semesterName.isBlank()) ? semesterName
+                : (m.hasNonNull("HocKy") ? m.get("HocKy").asText() : "Học kỳ");
+
         // Chỉ đánh giá kết quả đạt/rớt khi môn học đã có điểm kết quả cuối cùng trên Portal
         boolean hasFinalResult = (totalScore != null) || (!gradeLetter.isBlank() && !"--".equals(gradeLetter));
 
         Boolean isPassed = null;
         if (hasFinalResult) {
-            isPassed = (m.hasNonNull("IsPass") && "1".equals(m.get("IsPass").asText()))
-                    || (totalScore != null && totalScore >= 4.0 && !"F".equalsIgnoreCase(gradeLetter))
-                    || (!gradeLetter.isBlank() && !"F".equalsIgnoreCase(gradeLetter) && !"--".equals(gradeLetter));
+            HcmuteGradingEngine.GradeConversion conv = HcmuteGradingEngine.convertGrade(
+                    totalScore, gradeLetter, sem, courseCode, courseName);
+            isPassed = conv.isPassed();
+            if (gradeLetter.isBlank() && conv.getLetter() != null && !"--".equals(conv.getLetter())) {
+                gradeLetter = conv.getLetter();
+            }
         }
-
-        String sem = (semesterName != null && !semesterName.isBlank()) ? semesterName
-                : (m.hasNonNull("HocKy") ? m.get("HocKy").asText() : "Học kỳ");
 
         return StudentGrade.builder()
                 .studentId(studentId)
@@ -775,49 +778,115 @@ public class HcmuteCrawlerService {
                     .gpa4(0.0)
                     .passedCoursesCount(0)
                     .failedCoursesCount(0)
+                    .debtCredits(0)
+                    .academicYearLevel("Năm thứ nhất")
                     .academicStanding("Chưa có dữ liệu")
+                    .isAcademicWarning(false)
+                    .warningReason("Chưa có dữ liệu học vụ")
                     .syncStatus(histories.isEmpty() ? "NOT_SYNCED" : histories.get(0).getStatus())
                     .lastSyncedAt(histories.isEmpty() ? null : histories.get(0).getSyncedAt())
                     .build();
         }
 
-        int totalPassedCredits = 0;
+        // Gom nhóm theo CourseCode để xử lý môn học lại / học cải thiện
+        // Với ĐTB tích lũy (CPA) và Tín chỉ tích lũy (accumulatedCredits), HCMUTE 2025 quy định:
+        // - Lấy điểm cao nhất trong các lần học
+        // - Mỗi môn học chỉ được tính số tín chỉ 1 lần duy nhất
+        Map<String, StudentGrade> bestCourseMap = new HashMap<>();
+
+        // Tìm học kỳ mới nhất có điểm để xét tỷ lệ rớt trong học kỳ (tiêu chí cảnh báo học vụ)
+        String latestSemester = null;
+        for (StudentGrade g : grades) {
+            boolean hasFinalResult = (g.getTotalScore() != null)
+                    || (g.getGradeLetter() != null && !g.getGradeLetter().isBlank() && !"--".equals(g.getGradeLetter().trim()));
+            if (hasFinalResult && g.getSemester() != null && !g.getSemester().isBlank()) {
+                latestSemester = g.getSemester();
+                break;
+            }
+        }
+
+        int latestSemRegisteredCredits = 0;
+        int latestSemFailedCredits = 0;
+
+        for (StudentGrade g : grades) {
+            String code = g.getCourseCode() != null ? g.getCourseCode().trim() : "";
+            if (code.isBlank()) continue;
+
+            // Tìm lần học có kết quả tốt nhất của môn này
+            if (!bestCourseMap.containsKey(code)) {
+                bestCourseMap.put(code, g);
+            } else {
+                StudentGrade prev = bestCourseMap.get(code);
+                Double prevScore = prev.getTotalScore() != null ? prev.getTotalScore() : 0.0;
+                Double currScore = g.getTotalScore() != null ? g.getTotalScore() : 0.0;
+                boolean prevPassed = Boolean.TRUE.equals(prev.getIsPassed());
+                boolean currPassed = Boolean.TRUE.equals(g.getIsPassed());
+
+                if (currPassed && !prevPassed) {
+                    bestCourseMap.put(code, g);
+                } else if (currPassed == prevPassed && currScore > prevScore) {
+                    bestCourseMap.put(code, g);
+                }
+            }
+
+            // Tính tỷ lệ rớt trong học kỳ mới nhất
+            if (latestSemester != null && latestSemester.equalsIgnoreCase(g.getSemester())) {
+                int cr = g.getCredits() != null ? g.getCredits() : 0;
+                boolean hasFinalResult = (g.getTotalScore() != null)
+                        || (g.getGradeLetter() != null && !g.getGradeLetter().isBlank() && !"--".equals(g.getGradeLetter().trim()));
+                if (hasFinalResult && cr > 0) {
+                    HcmuteGradingEngine.GradeConversion conv = HcmuteGradingEngine.convertGrade(
+                            g.getTotalScore(), g.getGradeLetter(), g.getSemester(), g.getCourseCode(), g.getCourseName());
+                    latestSemRegisteredCredits += cr;
+                    if (!conv.isPassed()) {
+                        latestSemFailedCredits += cr;
+                    }
+                }
+            }
+        }
+
+        int totalAccumulatedCredits = 0;
         int totalCreditsForGpa = 0;
         double weightedScore10Sum = 0.0;
         double weightedScore4Sum = 0.0;
-        int passedCount = 0;
-        int failedCount = 0;
+        int passedCoursesCount = 0;
+        int failedCoursesCount = 0;
+        int debtCredits = 0;
 
-        for (StudentGrade g : grades) {
+        // Duyệt qua tập môn học tốt nhất (mỗi môn tính 1 lần duy nhất)
+        for (Map.Entry<String, StudentGrade> entry : bestCourseMap.entrySet()) {
+            StudentGrade g = entry.getValue();
             int credits = g.getCredits() != null ? g.getCredits() : 0;
             Double score10 = g.getTotalScore();
-            String letter = g.getGradeLetter() != null ? g.getGradeLetter().trim().toUpperCase() : "";
+            String letter = g.getGradeLetter() != null ? g.getGradeLetter().trim() : "";
 
-            // QUAN TRỌNG: Môn nào chưa có điểm tổng kết cuối cùng trên Portal thì bỏ qua, KHÔNG tính vào GPA / Nợ môn
             boolean hasFinalResult = (score10 != null) || (!letter.isBlank() && !"--".equals(letter));
             if (!hasFinalResult) {
-                continue;
+                continue; // Môn đang học chưa có điểm kết thúc học phần
             }
 
-            boolean isPassed = Boolean.TRUE.equals(g.getIsPassed())
-                    || (score10 != null && score10 >= 4.0 && !"F".equals(letter))
-                    || (!letter.isBlank() && !"F".equals(letter));
+            HcmuteGradingEngine.GradeConversion conv = HcmuteGradingEngine.convertGrade(
+                    score10, letter, g.getSemester(), g.getCourseCode(), g.getCourseName());
 
-            if (isPassed) {
-                passedCount++;
-                totalPassedCredits += credits;
+            if (conv.isPassed()) {
+                passedCoursesCount++;
+                if (conv.isCountedInAccumulatedCredits()) {
+                    totalAccumulatedCredits += credits;
+                }
+                // Chỉ các môn ĐẠT mới được đưa vào ĐTB tích lũy (CPA)
+                if (conv.isCountedInGpa() && credits > 0) {
+                    totalCreditsForGpa += credits;
+                    if (score10 != null) {
+                        weightedScore10Sum += score10 * credits;
+                    }
+                    if (conv.getGpa4() != null) {
+                        weightedScore4Sum += conv.getGpa4() * credits;
+                    }
+                }
             } else {
-                failedCount++;
-            }
-
-            if (score10 != null && credits > 0) {
-                totalCreditsForGpa += credits;
-                weightedScore10Sum += score10 * credits;
-                weightedScore4Sum += convertScale10To4(score10, letter) * credits;
-            } else if (!letter.isBlank() && credits > 0) {
-                double score4 = convertScale10To4(null, letter);
-                totalCreditsForGpa += credits;
-                weightedScore4Sum += score4 * credits;
+                // Môn chưa đạt (và chưa được trả nợ thành công ở các lần học khác)
+                failedCoursesCount++;
+                debtCredits += credits;
             }
         }
 
@@ -828,30 +897,31 @@ public class HcmuteCrawlerService {
                 ? BigDecimal.valueOf(weightedScore4Sum / totalCreditsForGpa).setScale(2, RoundingMode.HALF_UP).doubleValue()
                 : 0.0;
 
-        String standing;
-        if (gpa4 >= 3.6) {
-            standing = "Xuất sắc";
-        } else if (gpa4 >= 3.2) {
-            standing = "Giỏi";
-        } else if (gpa4 >= 2.5) {
-            standing = "Khá";
-        } else if (gpa4 >= 2.0) {
-            standing = "Trung bình";
-        } else {
-            standing = "Cảnh báo học vụ / Yếu";
-        }
+        String standing = HcmuteGradingEngine.resolveAcademicStanding(gpa4);
+        String yearLevel = HcmuteGradingEngine.resolveAcademicYearLevel(totalAccumulatedCredits);
+
+        Double latestSemesterFailRatio = latestSemRegisteredCredits > 0
+                ? (double) latestSemFailedCredits / latestSemRegisteredCredits
+                : null;
+
+        HcmuteGradingEngine.AcademicWarningResult warningResult = HcmuteGradingEngine.evaluateAcademicWarning(
+                debtCredits, latestSemesterFailRatio, gpa4, totalAccumulatedCredits);
 
         SyncHistory latestHistory = histories.isEmpty() ? null : histories.get(0);
 
         return AcademicSummaryResponse.builder()
                 .studentId(studentId)
                 .studentName(studentName)
-                .totalCredits(totalPassedCredits)
+                .totalCredits(totalAccumulatedCredits)
                 .gpa10(gpa10)
                 .gpa4(gpa4)
-                .passedCoursesCount(passedCount)
-                .failedCoursesCount(failedCount)
+                .passedCoursesCount(passedCoursesCount)
+                .failedCoursesCount(failedCoursesCount)
+                .debtCredits(debtCredits)
+                .academicYearLevel(yearLevel)
                 .academicStanding(standing)
+                .isAcademicWarning(warningResult.isWarning())
+                .warningReason(warningResult.getWarningReason())
                 .syncStatus(latestHistory != null ? latestHistory.getStatus() : "LIVE_PORTAL")
                 .lastSyncedAt(latestHistory != null ? latestHistory.getSyncedAt() : LocalDateTime.now())
                 .build();
@@ -1003,27 +1073,8 @@ public class HcmuteCrawlerService {
     }
 
     private double convertScale10To4(Double score10, String letter) {
-        if (letter != null && !letter.isBlank()) {
-            return switch (letter.trim().toUpperCase()) {
-                case "A+", "A" -> 4.0;
-                case "B+" -> 3.5;
-                case "B" -> 3.0;
-                case "C+" -> 2.5;
-                case "C" -> 2.0;
-                case "D+" -> 1.5;
-                case "D" -> 1.0;
-                default -> 0.0;
-            };
-        }
-        if (score10 == null) return 0.0;
-        if (score10 >= 8.5) return 4.0;
-        if (score10 >= 8.0) return 3.5;
-        if (score10 >= 7.0) return 3.0;
-        if (score10 >= 6.5) return 2.5;
-        if (score10 >= 5.5) return 2.0;
-        if (score10 >= 5.0) return 1.5;
-        if (score10 >= 4.0) return 1.0;
-        return 0.0;
+        HcmuteGradingEngine.GradeConversion conv = HcmuteGradingEngine.convertGrade(score10, letter, null, null, null);
+        return conv.getGpa4() != null ? conv.getGpa4() : 0.0;
     }
 
     private boolean isDemoMode(String studentId, String password) {
@@ -1147,16 +1198,18 @@ public class HcmuteCrawlerService {
         List<StudentGrade> list = new ArrayList<>();
 
         // HK01 (2023-2024)
-        list.add(createGrade(studentId, "MATH141601", "Toán cao cấp 1", 3, 8.5, 8.0, 8.2, "B+", "Học kỳ 1 (2023-2024)", true));
+        list.add(createGrade(studentId, "MATH141601", "Toán cao cấp 1", 3, 5.0, 4.0, 4.5, "D", "Học kỳ 1 (2023-2024)", false)); // Rớt lần 1
         list.add(createGrade(studentId, "INPR130285", "Nhập môn lập trình", 3, 9.5, 9.0, 9.2, "A+", "Học kỳ 1 (2023-2024)", true));
         list.add(createGrade(studentId, "PHYS130402", "Vật lý đại cương 1", 3, 7.5, 7.0, 7.2, "B", "Học kỳ 1 (2023-2024)", true));
         list.add(createGrade(studentId, "ENGL130137", "Anh văn 1", 3, 8.0, 8.5, 8.3, "B+", "Học kỳ 1 (2023-2024)", true));
+        list.add(createGrade(studentId, "PHED110515", "Giáo dục thể chất 1", 1, null, null, null, "P", "Học kỳ 1 (2023-2024)", true)); // Môn điều kiện
 
         // HK02 (2023-2024)
-        list.add(createGrade(studentId, "MATH141801", "Đại số tuyến tính", 3, 8.5, 9.0, 8.8, "A", "Học kỳ 2 (2023-2024)", true));
-        list.add(createGrade(studentId, "CPRG230264", "Kỹ thuật lập trình", 3, 9.0, 9.0, 9.0, "A", "Học kỳ 2 (2023-2024)", true));
+        list.add(createGrade(studentId, "MATH141601", "Toán cao cấp 1", 3, 8.5, 8.0, 8.2, "B+", "Học kỳ 2 (2023-2024)", true)); // Học lại & Đạt thành công (hết nợ)
+        list.add(createGrade(studentId, "MATH141801", "Đại số tuyến tính", 3, 8.5, 9.0, 8.8, "A", "Học kỳ 2 (2023-2024)", true)); // A quy đổi 3.7
+        list.add(createGrade(studentId, "CPRG230264", "Kỹ thuật lập trình", 3, 9.0, 9.0, 9.0, "A", "Học kỳ 2 (2023-2024)", true)); // A quy đổi 3.7
         list.add(createGrade(studentId, "EEEN234162", "Kỹ thuật điện - điện tử", 3, 7.0, 7.5, 7.3, "B", "Học kỳ 2 (2023-2024)", true));
-        list.add(createGrade(studentId, "ENGL230237", "Anh văn 2", 3, 8.5, 8.0, 8.2, "B+", "Học kỳ 2 (2023-2024)", true));
+        list.add(createGrade(studentId, "MILT110115", "Giáo dục quốc phòng - An ninh 1", 2, null, null, null, "P", "Học kỳ 2 (2023-2024)", true)); // Môn điều kiện
 
         // HK01 (2024-2025)
         list.add(createGrade(studentId, "DSAA330164", "Cấu trúc dữ liệu và giải thuật", 3, 9.0, 8.5, 8.7, "A", "Học kỳ 1 (2024-2025)", true));
