@@ -600,7 +600,7 @@
                                     <form th:action="@{'/feed/forum/' + ${post.id} + '/like'}" method="post">
                                         <button type="submit" class="flex items-center gap-1.5 text-xs font-semibold hover:text-[#003882] transition-colors"
                                                 th:classappend="${post.userLiked ? 'text-rose-600 font-bold' : 'text-slate-600'}">
-                                            <span class="material-symbols-outlined text-lg" th:style="${post.userLiked ? 'font-variation-settings: \'FILL\' 1;' : ''}">favorite</span>
+                                            <span class="material-symbols-outlined text-lg" th:style="${post.userLiked ? 'font-variation-settings: ''FILL'' 1;' : ''}">favorite</span>
                                             <span th:text="${post.likeCount != null ? post.likeCount : 0} + ' Thích'">0 Thích</span>
                                         </button>
                                     </form>
