@@ -39,9 +39,11 @@ public class ForumController {
     }
 
     /**
-     * Diễn đàn thảo luận sinh viên (Hỗ trợ Bộ lọc Khoa, Tìm kiếm và Tab "Bài viết của tôi")
+     * Diễn đàn thảo luận sinh viên (Hỗ trợ B ộ lọc Khoa, Tìm kiếm và Tab "Bài viết của tôi")
      */
-    @GetMapping
+    @GetMapping // bat phuong thuc http get  
+    // @RequestParam nhận url query  tab hiển thị  , deparmentid : loc bai viet theo khoa , q : từ khóa tìm kiếm  , page số trang hiện tại 
+    // xem danh sách diễn đàn 
     public String viewStudentForum(
             @RequestParam(value = "tab", defaultValue = "all") String tab,
             @RequestParam(value = "departmentId", required = false) Long departmentId,
@@ -49,11 +51,12 @@ public class ForumController {
             @RequestParam(value = "page", defaultValue = "0") int page,
             HttpServletRequest request,
             Model model) {
-
         request.getSession(true);
+        // tạo đối tượng phân trang 10 bài viết mỗi trang 
         Pageable pageable = PageRequest.of(Math.max(0, page), 10);
         Long currentUserId = SecurityUtils.getCurrentUserId().orElse(null);
 
+        // nếu chọn tab my post sẽ láy bài viết của tôi  ngược lại gọi tìm kiếm và lọc các bài viết phê duyẹt 
         Page<com.school.counseling.module.feed.dto.PostResponseDto> posts;
         if ("my_posts".equalsIgnoreCase(tab) && currentUserId != null) {
             posts = postService.getMyPostsDto(currentUserId, pageable);
@@ -61,9 +64,10 @@ public class ForumController {
             posts = postService.searchApprovedForumPostsDto(query, departmentId, currentUserId, pageable);
             tab = "all";
         }
-
+// ds khoa phòng đang hoạt động 
         List<Department> departments = departmentRepository.findByIsActiveTrue();
 
+    // giao dien avatar thong tin 
         if (currentUserId != null) {
             userRepository.findByIdWithRoleAndDepartment(currentUserId).ifPresent(user -> {
                 model.addAttribute("currentUser", user);
@@ -74,6 +78,7 @@ public class ForumController {
             });
         }
 
+        // đẩy ds bài viết vf trạng thái bộ loc vào model 
         model.addAttribute("posts", posts);
         model.addAttribute("currentPage", page);
         model.addAttribute("currentTab", tab);
@@ -82,7 +87,7 @@ public class ForumController {
         model.addAttribute("departments", departments);
         model.addAttribute("currentUserId", currentUserId);
 
-        return "feed/forum";
+        return "feed/forum";  // trả về render ra trình duyệt 
     }
 
     /**
@@ -94,7 +99,7 @@ public class ForumController {
             @PathVariable("id") Long id,
             @RequestParam(value = "redirectTab", defaultValue = "all") String redirectTab,
             RedirectAttributes redirectAttributes) {
-
+// kt quyèn tác giả hoặc admin ms có quyền xóa 
         Long currentUserId = SecurityUtils.getCurrentUserId().orElseThrow();
         boolean isStaffOrAdmin = SecurityUtils.hasAnyRole("STAFF", "ADMIN");
 
@@ -145,7 +150,7 @@ public class ForumController {
             @RequestParam(value = "tags", required = false) String tags,
             @RequestParam(value = "image", required = false) MultipartFile image,
             RedirectAttributes redirectAttributes) {
-
+        // validate manual validation = tay thủ công code thuần
         if (title == null || title.isBlank() || content == null || content.isBlank()) {
             redirectAttributes.addFlashAttribute("errorMessage", "Tiêu đề và nội dung bài viết không được để trống.");
             return "redirect:/feed/forum/create";
@@ -198,7 +203,7 @@ public class ForumController {
             @PathVariable("id") Long id,
             @RequestParam("content") String content,
             RedirectAttributes redirectAttributes) {
-
+// validate nội dung bình luận 
         if (content == null || content.trim().isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", "Nội dung bình luận không được để trống.");
             return "redirect:/feed/forum#post_" + id;

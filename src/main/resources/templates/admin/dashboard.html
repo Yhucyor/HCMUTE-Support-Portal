@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Dashboard Quản Trị SLA Toàn Trường - QAUTE Portal</title>
+</head>
+<body>
+<div th:fragment="content">
+    <!-- Portal Workspace Header -->
+    <div th:replace="~{layout/portal-header :: portal-header('admin-dashboard')}"></div>
+
+    <!-- Toast Container góc phải -->
+    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090;"></div>
+
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-danger px-2.5 py-1 text-uppercase fw-semibold" style="letter-spacing: 0.5px;">ADMIN WORKSPACE</span>
+                <span class="text-muted small">| SLA Engine Analytics</span>
+            </div>
+            <h3 class="fw-bold text-dark mb-0">Thống Kê Cam Kết SLA Toàn Trường</h3>
+            <p class="text-muted small mb-0 mt-1">Giám sát tiến độ tiếp nhận, xử lý yêu cầu và đo lường mức độ tuân thủ hạn chót SLA của tất cả Khoa / Phòng ban</p>
+        </div>
+
+        <!-- Quick Access Buttons & Filter -->
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <button type="button" class="btn btn-outline-danger btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#adminInternalMessageModal" onclick="loadAdminInternalMessages()">
+                <i class="bi bi-chat-left-text me-1"></i>Trao Đổi Với Cán Bộ & Khoa
+            </button>
+            <a th:href="@{/admin/users}" class="btn btn-outline-primary btn-sm fw-semibold">
+                <i class="bi bi-people me-1"></i>Quản Trị Người Dùng
+            </a>
+            <a th:href="@{/admin/departments}" class="btn btn-outline-secondary btn-sm fw-semibold">
+                <i class="bi bi-buildings me-1"></i>Danh Mục Khoa/Phòng
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="card bg-white p-3 mb-4 shadow-sm border-0">
+        <form th:action="@{/admin/dashboard}" method="get" class="row g-2 align-items-center">
+            <div class="col-md-5 col-lg-4">
+                <label class="form-label small fw-semibold text-secondary mb-1">Đơn vị / Khoa chuyên môn</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light"><i class="bi bi-building"></i></span>
+                    <select name="departmentId" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="" th:selected="${selectedDepartmentId == null}">-- Toàn trường (Tất cả Khoa/Phòng) --</option>
+                        <option th:each="dept : ${departments}" 
+                                th:value="${dept.id}" 
+                                th:text="${dept.name}" 
+                                th:selected="${selectedDepartmentId != null and selectedDepartmentId == dept.id}"></option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-lg-3">
+                <label class="form-label small fw-semibold text-secondary mb-1">Khoảng thời gian báo cáo</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light"><i class="bi bi-calendar3"></i></span>
+                    <select name="timeRange" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="ALL" th:selected="${selectedTimeRange == 'ALL'}">Toàn bộ thời gian</option>
+                        <option value="7_DAYS" th:selected="${selectedTimeRange == '7_DAYS'}">7 ngày gần nhất</option>
+                        <option value="30_DAYS" th:selected="${selectedTimeRange == '30_DAYS'}">30 ngày gần nhất</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-lg-2 mt-auto">
+                <a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Đặt lại bộ lọc
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Core SLA Metrics KPI Cards -->
+    <div class="row g-3 mb-4">
+        <!-- 1. Total Tickets -->
+        <div class="col-sm-6 col-lg-3">
+            <div class="card h-100 p-3 border-0 shadow-sm border-start border-4 border-primary bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="text-uppercase text-muted fw-semibold small" style="font-size: 11px;">Tổng Yêu Cầu</span>
+                    <span class="badge bg-primary-subtle text-primary"><i class="bi bi-ticket-detailed"></i></span>
+                </div>
+                <h2 class="fw-bold text-dark mb-1" th:text="${stats.totalTickets}">0</h2>
+                <div class="small text-muted">
+                    <span th:text="${stats.selectedDepartmentName != null ? stats.selectedDepartmentName : 'Toàn trường'}">Phạm vi</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. SLA Compliance Rate -->
+        <div class="col-sm-6 col-lg-3">
+            <div class="card h-100 p-3 border-0 shadow-sm border-start border-4 border-success bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="text-uppercase text-muted fw-semibold small" style="font-size: 11px;">Tỷ Lệ Tuân Thủ SLA</span>
+                    <span class="badge bg-success-subtle text-success"><i class="bi bi-shield-check"></i></span>
+                </div>
+                <h2 class="fw-bold text-success mb-1" th:text="${stats.slaComplianceRate + '%'}">100%</h2>
+                <div class="progress mb-1" style="height: 6px;">
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         th:style="'width: ' + ${stats.slaComplianceRate} + '%;'" 
+                         th:aria-valuenow="${stats.slaComplianceRate}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <div class="small text-muted d-flex justify-content-between">
+                    <span>Đúng hạn: <strong th:text="${stats.totalOnTime}">0</strong></span>
+                    <span>Đã giải quyết: <strong th:text="${stats.totalResolved}">0</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Overdue SLA Violations -->
+        <div class="col-sm-6 col-lg-3">
+            <div class="card h-100 p-3 border-0 shadow-sm border-start border-4 border-danger bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="text-uppercase text-muted fw-semibold small" style="font-size: 11px;">Cảnh Báo Quá Hạn (SLA)</span>
+                    <span class="badge bg-danger-subtle text-danger"><i class="bi bi-exclamation-triangle-fill"></i></span>
+                </div>
+                <h2 class="fw-bold text-danger mb-1" th:text="${stats.overdueTickets}">0</h2>
+                <div class="small text-muted">
+                    <span th:if="${stats.overdueTickets > 0}" class="text-danger fw-semibold">
+                        <i class="bi bi-bell-fill me-1"></i>Cần đôn đốc xử lý khẩn!
+                    </span>
+                    <span th:if="${stats.overdueTickets == 0}" class="text-success">
+                        <i class="bi bi-check2-circle me-1"></i>Không có yêu cầu trễ hạn
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Average Satisfaction CSAT -->
+        <div class="col-sm-6 col-lg-3">
+            <div class="card h-100 p-3 border-0 shadow-sm border-start border-4 border-warning bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="text-uppercase text-muted fw-semibold small" style="font-size: 11px;">Đánh Giá Hài Lòng (CSAT)</span>
+                    <span class="badge bg-warning-subtle text-warning"><i class="bi bi-star-fill"></i></span>
+                </div>
+                <h2 class="fw-bold text-dark mb-1">
+                    <span th:text="${stats.averageRating != null ? stats.averageRating : '5.0'}">5.0</span>
+                    <small class="text-warning fs-5">★</small>
+                    <span class="text-muted fs-6 fw-normal">/ 5.0</span>
+                </h2>
+                <div class="small text-muted">
+                    <span>Dựa trên đánh giá của sinh viên & khách</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Row: Status Distribution & Priority Matrix -->
+    <div class="row g-3 mb-4">
+        <!-- Status Breakdown Mini Cards -->
+        <div class="col-md-3">
+            <div class="card p-3 border-0 shadow-sm bg-white text-center">
+                <div class="small text-muted fw-semibold">CHỜ TIẾP NHẬN</div>
+                <h3 class="fw-bold text-warning mb-0" th:text="${stats.openTickets}">0</h3>
+                <span class="badge bg-warning-subtle text-dark mt-1">OPEN</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 border-0 shadow-sm bg-white text-center">
+                <div class="small text-muted fw-semibold">ĐANG XỬ LÝ</div>
+                <h3 class="fw-bold text-info mb-0" th:text="${stats.inProgressTickets}">0</h3>
+                <span class="badge bg-info-subtle text-dark mt-1">IN_PROGRESS</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 border-0 shadow-sm bg-white text-center">
+                <div class="small text-muted fw-semibold">ĐÃ GIẢI QUYẾT</div>
+                <h3 class="fw-bold text-success mb-0" th:text="${stats.resolvedTickets}">0</h3>
+                <span class="badge bg-success-subtle text-success mt-1">RESOLVED</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 border-0 shadow-sm bg-white text-center">
+                <div class="small text-muted fw-semibold">ĐÃ ĐÓNG HOÀN TẤT</div>
+                <h3 class="fw-bold text-secondary mb-0" th:text="${stats.closedTickets}">0</h3>
+                <span class="badge bg-secondary-subtle text-secondary mt-1">CLOSED (72H)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Priority Breakdown Row -->
+    <div class="card border-0 shadow-sm bg-white p-3 mb-4">
+        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-clock-history me-2 text-primary"></i>Phân Bố Mức Độ Ưu Tiên & Cam Kết Thời Hạn (SLA Tiers)</h6>
+        <div class="row g-3 text-center">
+            <div class="col-6 col-md-3">
+                <div class="p-2 border rounded bg-light">
+                    <span class="badge bg-danger mb-1">URGENT (24h)</span>
+                    <div class="small text-muted">Khẩn cấp học phí/hoãn thi</div>
+                    <div class="fs-4 fw-bold text-danger" th:text="${stats.priorityStats.get('URGENT')}">0</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-2 border rounded bg-light">
+                    <span class="badge bg-warning text-dark mb-1">HIGH (48h)</span>
+                    <div class="small text-muted">Ưu tiên cao</div>
+                    <div class="fs-4 fw-bold text-dark" th:text="${stats.priorityStats.get('HIGH')}">0</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-2 border rounded bg-light">
+                    <span class="badge bg-info text-dark mb-1">MEDIUM (72h)</span>
+                    <div class="small text-muted">Học vụ thường lệ</div>
+                    <div class="fs-4 fw-bold text-primary" th:text="${stats.priorityStats.get('MEDIUM')}">0</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-2 border rounded bg-light">
+                    <span class="badge bg-secondary mb-1">LOW (7 ngày)</span>
+                    <div class="small text-muted">Hỏi thăm dò thông tin</div>
+                    <div class="fs-4 fw-bold text-secondary" th:text="${stats.priorityStats.get('LOW')}">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Department SLA Performance Matrix Table -->
+    <div class="card border-0 shadow-sm bg-white mb-4">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold text-dark mb-0"><i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Bảng Ma Trận Hiệu Suất SLA Từng Khoa / Phòng Ban</h5>
+                <small class="text-muted">Đo lường tiến độ giải quyết và tuân thủ thời hạn cam kết theo từng đơn vị</small>
+            </div>
+            <span class="badge bg-light text-dark border px-2.5 py-1.5" th:text="${stats.departmentStats.size()} + ' Đơn vị'">5 Đơn vị</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-secondary small">
+                    <tr>
+                        <th class="ps-3">Tên Khoa / Phòng Ban</th>
+                        <th class="text-center">Cán Bộ Trực</th>
+                        <th class="text-center">Tổng Vé</th>
+                        <th class="text-center">Chờ Nhận</th>
+                        <th class="text-center">Đang Xử Lý</th>
+                        <th class="text-center">Đã Xong</th>
+                        <th class="text-center">Quá Hạn</th>
+                        <th style="min-width: 160px;">Tỷ Lệ Đạt Chuẩn SLA</th>
+                        <th class="text-center">Đánh Giá CSAT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(stats.departmentStats)}">
+                        <td colspan="9" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-3 d-block mb-1"></i>Chưa có dữ liệu thống kê đơn vị.
+                        </td>
+                    </tr>
+                    <tr th:each="dept : ${stats.departmentStats}">
+                        <td class="ps-3">
+                            <div class="fw-semibold text-dark" th:text="${dept.departmentName}">Tên Khoa</div>
+                            <code class="small text-muted" th:text="${dept.departmentCode}">CODE</code>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-light text-dark border" th:text="${dept.staffCount} + ' CB'">0 CB</span>
+                        </td>
+                        <td class="text-center fw-bold" th:text="${dept.totalTickets}">0</td>
+                        <td class="text-center text-warning fw-semibold" th:text="${dept.openTickets}">0</td>
+                        <td class="text-center text-info fw-semibold" th:text="${dept.inProgressTickets}">0</td>
+                        <td class="text-center text-success fw-semibold" th:text="${dept.resolvedTickets}">0</td>
+                        <td class="text-center">
+                            <span th:if="${dept.overdueTickets > 0}" class="badge bg-danger" th:text="${dept.overdueTickets}">0</span>
+                            <span th:if="${dept.overdueTickets == 0}" class="text-muted small">0</span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress flex-grow-1" style="height: 6px;">
+                                    <div class="progress-bar" role="progressbar"
+                                         th:classappend="${dept.slaComplianceRate >= 90 ? 'bg-success' : (dept.slaComplianceRate >= 75 ? 'bg-warning' : 'bg-danger')}"
+                                         th:style="'width: ' + ${dept.slaComplianceRate} + '%;'"
+                                         th:aria-valuenow="${dept.slaComplianceRate}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <span class="small fw-bold" 
+                                      th:classappend="${dept.slaComplianceRate >= 90 ? 'text-success' : (dept.slaComplianceRate >= 75 ? 'text-warning' : 'text-danger')}"
+                                      th:text="${dept.slaComplianceRate + '%'}">100%</span>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span th:if="${dept.averageRating != null}" class="badge bg-warning-subtle text-dark border border-warning">
+                                <i class="bi bi-star-fill text-warning me-1"></i><span th:text="${dept.averageRating}">5.0</span>
+                            </span>
+                            <span th:if="${dept.averageRating == null}" class="text-muted small">Chưa có</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Critical Overdue Tickets Section -->
+    <div class="card border-0 shadow-sm bg-white mb-4">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold text-danger mb-0"><i class="bi bi-exclamation-octagon-fill text-danger me-2"></i>Danh Sách Yêu Cầu Cần Đôn Đốc Khẩn Cấp (SLA Overdue)</h5>
+                <small class="text-muted">Các Ticket đã vượt quá hạn chót giải quyết theo quy định, cần chỉ đạo cán bộ phụ trách xử lý ngay</small>
+            </div>
+            <span class="badge bg-danger" th:text="${stats.overdueTicketsList != null ? stats.overdueTicketsList.size() : 0} + ' Yêu Cầu'">0</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-secondary small">
+                    <tr>
+                        <th class="ps-3">Mã Ticket</th>
+                        <th>Khoa / Phòng Ban</th>
+                        <th>Tiêu Đề Yêu Cầu</th>
+                        <th>Mức Ưu Tiên</th>
+                        <th>Cán Bộ Xử Lý</th>
+                        <th>Hạn Chót Cam Kết</th>
+                        <th class="text-end pe-3">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${stats.overdueTicketsList == null or #lists.isEmpty(stats.overdueTicketsList)}">
+                        <td colspan="7" class="text-center py-4 text-success">
+                            <i class="bi bi-check-circle fs-3 d-block mb-1"></i>Tuyệt vời! Hiện không có Ticket nào bị quá hạn xử lý.
+                        </td>
+                    </tr>
+                    <tr th:each="t : ${stats.overdueTicketsList}">
+                        <td class="ps-3"><code class="fw-bold text-danger" th:text="${t.ticketCode}">TK-XXXX</code></td>
+                        <td>
+                            <span class="badge bg-light text-dark border" th:text="${t.departmentName}">Khoa CNTT</span>
+                        </td>
+                        <td>
+                            <a th:href="@{'/tickets/detail/' + ${t.id}}" class="fw-bold text-decoration-none text-dark d-block" th:text="${t.title}">Tiêu đề</a>
+                            <small class="text-muted" th:text="'Người gửi: ' + ${t.creatorOrGuestName}">Người gửi</small>
+                        </td>
+                        <td>
+                            <span th:if="${t.priority == 'URGENT'}" class="badge bg-danger">Khẩn cấp (24h)</span>
+                            <span th:if="${t.priority == 'HIGH'}" class="badge bg-warning text-dark">Cao (48h)</span>
+                            <span th:if="${t.priority == 'MEDIUM'}" class="badge bg-secondary">Bình thường (72h)</span>
+                            <span th:if="${t.priority == 'LOW'}" class="badge bg-light text-dark border">Thấp (7d)</span>
+                        </td>
+                        <td>
+                            <span th:text="${t.assignedStaffName != null ? t.assignedStaffName : 'Chưa tiếp nhận'}" 
+                                  th:classappend="${t.assignedStaffName == null ? 'text-danger fst-italic' : 'text-dark fw-semibold'}">
+                                Cán bộ
+                            </span>
+                        </td>
+                        <td>
+                            <div class="text-danger fw-semibold small">
+                                <i class="bi bi-clock-history me-1"></i>
+                                <span th:text="${t.dueDate != null ? #temporals.format(t.dueDate, 'HH:mm dd/MM/yyyy') : 'N/A'}">Hạn</span>
+                            </div>
+                        </td>
+                        <td class="text-end pe-3">
+                            <a th:href="@{'/tickets/detail/' + ${t.id}}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-arrow-right-short fs-6"></i>Kiểm Tra
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal: Kênh Trao Đổi & Chỉ Đạo Cán Bộ / Khoa Của Ban Quản Trị -->
+    <div class="modal fade" id="adminInternalMessageModal" tabindex="-1" aria-labelledby="adminInternalMessageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom py-3">
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark" id="adminInternalMessageModalLabel">
+                            <i class="bi bi-megaphone me-2 text-danger"></i>Kênh Trao Đổi & Chỉ Đạo Nội Bộ Ban Quản Trị
+                        </h5>
+                        <p class="small text-muted mb-0">Gửi nhắc nhở tiến độ SLA, cảnh báo vi phạm, hoặc giải đáp chỉ đạo cho Cán bộ từng Khoa / Phòng ban</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Danh sách trao đổi -->
+                    <div class="border rounded p-3 mb-3 bg-light" style="max-height: 280px; overflow-y: auto;" id="adminInternalMessagesContainer">
+                        <div class="text-center text-muted py-3">
+                            <span class="spinner-border spinner-border-sm me-1" role="status"></span> Đang tải dữ liệu trao đổi...
+                        </div>
+                    </div>
+
+                    <!-- Form gửi thông điệp chỉ đạo -->
+                    <form id="adminSendMessageForm" onsubmit="handleAdminSendInternalMessage(event)">
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Gửi tới Đơn vị / Khoa</label>
+                                <select class="form-select form-select-sm" id="adminTargetDeptId">
+                                    <option value="">-- Toàn thể Cán bộ các Khoa --</option>
+                                    <option th:each="d : ${departments}" th:value="${d.id}" th:text="${d.name}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Tính chất thông điệp</label>
+                                <select class="form-select form-select-sm" id="adminMsgType" required>
+                                    <option value="REMINDER" selected>Nhắc nhở / Đôn đốc hạn chót SLA</option>
+                                    <option value="COMPLAINT">Cảnh báo / Phàn nàn chậm trễ</option>
+                                    <option value="INQUIRY">Chỉ đạo nghiệp vụ học vụ</option>
+                                    <option value="DIRECT_CHAT">Thông báo chung</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Tiêu đề</label>
+                                <input type="text" class="form-control form-control-sm" id="adminMsgSubject" placeholder="VD: Nhắc nhở xử lý Ticket quá hạn" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary mb-1">Nội dung chỉ đạo / trao đổi</label>
+                            <textarea class="form-control" id="adminMsgContent" rows="3" placeholder="Nhập nội dung nhắc nhở, chỉ đạo cán bộ phụ trách..." required></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+                            <button type="submit" class="btn btn-danger btn-sm fw-semibold px-3" id="btnAdminSendMsg">
+                                Gửi Thông Điệp
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script xử lý trao đổi nội bộ Admin -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        async function loadAdminInternalMessages() {
+            const container = document.getElementById('adminInternalMessagesContainer');
+            try {
+                const res = await fetch('/api/v1/internal-messages');
+                const result = await res.json();
+
+                if (result.success && result.data && result.data.length > 0) {
+                    container.innerHTML = result.data.map(m => {
+                        const badgeType = m.messageType === 'COMPLAINT' ? 'badge bg-danger-subtle text-danger border border-danger' : 
+                                         (m.messageType === 'REMINDER' ? 'badge bg-warning-subtle text-dark border border-warning' : 'badge bg-primary-subtle text-primary border border-primary');
+                        const typeText = m.messageType === 'COMPLAINT' ? 'Cảnh báo / Phàn nàn' : 
+                                        (m.messageType === 'REMINDER' ? 'Đôn đốc SLA' : 'Chỉ đạo / Hỗ trợ');
+                        
+                        const timeStr = m.createdAt ? new Date(m.createdAt).toLocaleString('vi-VN') : '';
+
+                        return `
+                            <div class="p-2.5 mb-2 rounded border bg-white shadow-xs">
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <div>
+                                        <strong class="small text-dark">${m.senderName || 'Người dùng'}</strong>
+                                        <small class="text-muted">(${m.senderRole || 'Nội bộ'} - ${m.departmentName || 'Hệ thống'})</small>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <span class="${badgeType}" style="font-size: 0.7rem;">${typeText}</span>
+                                        <small class="text-muted" style="font-size: 0.75rem;">${timeStr}</small>
+                                    </div>
+                                </div>
+                                <div class="fw-semibold small text-dark mb-1">${m.subject || ''}</div>
+                                <div class="small text-secondary" style="white-space: pre-wrap;">${m.content}</div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    container.innerHTML = `<div class="text-center text-muted py-4 small">Chưa có tin nhắn trao đổi nào.</div>`;
+                }
+            } catch (err) {
+                container.innerHTML = `<div class="text-center text-danger py-3 small">Không thể tải danh sách tin nhắn: ${err.message}</div>`;
+            }
+        }
+
+        async function handleAdminSendInternalMessage(event) {
+            event.preventDefault();
+            const btn = document.getElementById('btnAdminSendMsg');
+            btn.disabled = true;
+            btn.textContent = 'Đang gửi...';
+
+            const deptVal = document.getElementById('adminTargetDeptId').value;
+            const payload = {
+                subject: document.getElementById('adminMsgSubject').value,
+                content: document.getElementById('adminMsgContent').value,
+                messageType: document.getElementById('adminMsgType').value,
+                departmentId: deptVal ? parseInt(deptVal) : null
+            };
+
+            try {
+                const res = await fetch('/api/v1/internal-messages/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    document.getElementById('adminMsgSubject').value = '';
+                    document.getElementById('adminMsgContent').value = '';
+                    loadAdminInternalMessages();
+                } else {
+                    alert('Lỗi: ' + (result.message || 'Không thể gửi tin nhắn'));
+                }
+            } catch (err) {
+                alert('Lỗi kết nối máy chủ: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Gửi Thông Điệp';
+            }
+        }
+        /*]]>*/
+    </script>
+
+</div>
+</body>
+</html>

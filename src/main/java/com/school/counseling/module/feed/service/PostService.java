@@ -78,6 +78,7 @@ public class PostService {
 
     /**
      * Cán bộ đăng thông báo chính thức (qua REST API JSON)
+     * tạo bài đăng qua posttype = bảng tin chính thức cho staff 
      */
     @Transactional
     public PostResponseDto createOfficialPost(CreatePostRequest request, User author) {

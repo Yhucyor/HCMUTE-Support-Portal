@@ -19,8 +19,10 @@ import java.util.List;
  * THỰC THỂ BÀI VIẾT (POST)
  * 
  * Đại diện cho 2 phân hệ:
- * 1. Bảng tin thông báo chính thức (post_type = 'OFFICIAL_ANNOUNCEMENT') từ các Khoa/Phòng.
- * 2. Diễn đàn thảo luận sinh viên (post_type = 'STUDENT_FORUM') cần kiểm duyệt trước khi hiển thị (status = 'PENDING_APPROVAL').
+ * 1. Bảng tin thông báo chính thức (post_type = 'OFFICIAL_ANNOUNCEMENT') từ các
+ * Khoa/Phòng.
+ * 2. Diễn đàn thảo luận sinh viên (post_type = 'STUDENT_FORUM') cần kiểm duyệt
+ * trước khi hiển thị (status = 'PENDING_APPROVAL').
  */
 @Getter
 @Setter
@@ -29,9 +31,40 @@ import java.util.List;
 @SuperBuilder
 @Entity
 @Table(name = "posts")
+// SQLDelete và SQLRestriction thường được sử dụng cùng nhau
+// để triển khai cơ chế xóa mềm (soft delete)
+// ghi đề câu lệnh delete mặc định của hibernate
+// vd gọi postRepository.delete(post) or deleteByID(id)
+// sẽ không thực sự xóa bản ghi trong database, thay vào đó chỉ cập nhật lại cột
+// is_deleted = true
+// SQLRestriction("is_deleted = false")
+// giới hạn truy vấn dữ liệu
+// trong các truy vấn của jpa repository sẽ tự động thêm điều kiện is_deleted =
+// false
+// vd: postRepository.findAll() sẽ truy vấn là select * from posts where
+// is_deleted = false
+// giúp khôi phục dữ liệu dễ dàng nếu cần thiết
 @SQLDelete(sql = "UPDATE posts SET is_deleted = true WHERE id = ?")
 @SQLRestriction("is_deleted = false")
 public class Post extends BaseEntity {
+
+    // đọc qua cơ chế reflection nên đảo thứ tự ko sao
+    // reflection là 1 kỹ thuật của java cho phép inspect (kiểm tra) và mutate (thay
+    // đổi)
+    // một lớp/biến/method tại thời điểm runtime (thời gian chạy)
+    // vd: @ lombok.Data, @Builder,... sử dụng reflection để tự động sinh ra code
+    //
+
+    // bean validation @notblank , @size @ email , nhiệm vụ kt hợp lệ ở tầng appli
+    // java
+    // chặn ngay trong ram trc khi viết sql
+    // lõoi return methodArgumentNotValiExceptin
+    // or contrainviolationException http 400 bad request rõ ràng ,thân thiện
+
+    // jpa / hibernate @column , @entity @table ánh xạ đối tượng ORM Mapping và định
+    // nghĩa tccasu truc duoi db DDL
+    // return DataIntergrityViolateionExcep / SQLException http 500 internal server
+    // error nặng nề
 
     @NotBlank(message = "Tiêu đề không được để trống")
     @Size(max = 255, message = "Tiêu đề tối đa 255 ký tự")

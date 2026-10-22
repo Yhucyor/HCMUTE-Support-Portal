@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Quản Lý Khoa & Phòng Ban - QAUTE Portal</title>
+</head>
+<body>
+<div th:fragment="content">
+    <!-- Portal Workspace Header -->
+    <div th:replace="~{layout/portal-header :: portal-header('admin-depts')}"></div>
+
+    <!-- CSRF Metadata for Secure AJAX Requests -->
+    <input type="hidden" id="csrfToken" th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}" th:value="${_csrf != null ? _csrf.token : ''}" />
+    <input type="hidden" id="csrfHeader" th:value="${_csrf != null ? _csrf.headerName : 'X-CSRF-TOKEN'}" />
+
+    <!-- Toast Container góc phải -->
+    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090;"></div>
+
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-2">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-danger px-2.5 py-1 text-uppercase fw-semibold" style="letter-spacing: 0.5px;">ADMIN WORKSPACE</span>
+                <span class="text-muted small">| Cơ Cấu Tổ Chức & Phân Luồng Ticket</span>
+            </div>
+            <h3 class="fw-bold text-dark mb-0">Quản Lý Danh Mục Khoa & Phòng Ban</h3>
+            <p class="text-muted small mb-0 mt-1">Cấu hình các đơn vị tiếp nhận Ticket học vụ, thông tin liên hệ và phạm vi phân quyền của cán bộ tư vấn</p>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary btn-sm fw-semibold">
+                <i class="bi bi-speedometer2 me-1"></i>Xem SLA Dashboard
+            </a>
+            <a th:href="@{/admin/users}" class="btn btn-outline-primary btn-sm fw-semibold">
+                <i class="bi bi-people me-1"></i>Quản Trị Người Dùng
+            </a>
+            <button type="button" class="btn btn-primary btn-sm fw-semibold" onclick="openCreateDeptModal()">
+                <i class="bi bi-plus-lg me-1"></i>Thêm Đơn Vị Mới
+            </button>
+        </div>
+    </div>
+
+    <!-- Departments Table Card -->
+    <div class="card border-0 shadow-sm bg-white overflow-hidden mb-4">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold text-dark mb-0"><i class="bi bi-buildings-fill text-primary me-2"></i>Danh Sách Đơn Vị Đang Hoạt Động</h5>
+                <small class="text-muted" th:text="'Tổng cộng ' + ${departments.size()} + ' đơn vị trên hệ thống'">Tổng cộng 0 đơn vị</small>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="departmentsTable">
+                <thead class="table-light text-secondary small">
+                    <tr>
+                        <th class="ps-3">Tên Khoa / Phòng Ban</th>
+                        <th>Mã Code</th>
+                        <th>Văn Phòng Làm Việc</th>
+                        <th>Thông Tin Liên Hệ</th>
+                        <th class="text-center">Nhân Sự Trực</th>
+                        <th class="text-center">Tổng Ticket</th>
+                        <th>Trạng Thái</th>
+                        <th class="text-end pe-3">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(departments)}">
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-3 d-block mb-1"></i>Chưa có đơn vị nào trong cơ sở dữ liệu.
+                        </td>
+                    </tr>
+                    <tr th:each="d : ${departments}" th:id="'dept-row-' + ${d.id}">
+                        <td class="ps-3">
+                            <div class="fw-bold text-dark dept-name-label" th:text="${d.name}">Tên đơn vị</div>
+                            <small class="text-muted dept-desc-label" th:text="${d.description != null ? d.description : 'Chưa có mô tả'}">Mô tả</small>
+                        </td>
+                        <td>
+                            <code class="fw-bold text-primary dept-code-label" th:text="${d.code}">CODE</code>
+                        </td>
+                        <td>
+                            <span class="small text-secondary dept-location-label">
+                                <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                                <span th:text="${d.officeLocation != null ? d.officeLocation : 'Chưa rõ'}">A1-101</span>
+                            </span>
+                        </td>
+                        <td>
+                            <div><small class="text-dark dept-email-label"><i class="bi bi-envelope me-1 text-muted"></i><span th:text="${d.contactEmail}">email</span></small></div>
+                            <div><small class="text-muted dept-phone-label"><i class="bi bi-telephone me-1 text-muted"></i><span th:text="${d.contactPhone != null ? d.contactPhone : 'N/A'}">SĐT</span></small></div>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-light text-dark border" th:text="${d.staffCount} + ' Cán bộ'">0 Cán bộ</span>
+                        </td>
+                        <td class="text-center fw-bold text-primary" th:text="${d.totalTickets}">0</td>
+                        <td>
+                            <div class="dept-status-container">
+                                <span th:if="${d.isActive}" class="badge bg-success dept-status-badge">
+                                    <i class="bi bi-check-circle me-1"></i>Hoạt động
+                                </span>
+                                <span th:if="${!d.isActive}" class="badge bg-secondary dept-status-badge">
+                                    <i class="bi bi-pause-circle me-1"></i>Tạm dừng
+                                </span>
+                            </div>
+                        </td>
+                        <td class="text-end pe-3">
+                            <div class="btn-group btn-group-sm">
+                                <!-- Nút Bật / Tắt hoạt động AJAX -->
+                                <button type="button" 
+                                        class="btn btn-sm btn-toggle-active"
+                                        th:classappend="${d.isActive ? 'btn-outline-warning' : 'btn-outline-success'}"
+                                        th:data-dept-id="${d.id}"
+                                        th:data-is-active="${d.isActive}"
+                                        onclick="handleToggleDeptActive(this)">
+                                    <i th:class="${d.isActive ? 'bi bi-pause-fill me-1' : 'bi bi-play-fill me-1'}"></i>
+                                    <span th:text="${d.isActive ? 'Tạm Dừng' : 'Kích Hoạt'}">Tạm dừng</span>
+                                </button>
+
+                                <!-- Nút Chỉnh sửa thông tin -->
+                                <button type="button" 
+                                        class="btn btn-outline-primary btn-sm btn-edit-dept"
+                                        th:data-dept-id="${d.id}"
+                                        onclick="openEditDeptModal(this.getAttribute('data-dept-id'))">
+                                    <i class="bi bi-pencil-square me-1"></i>Sửa
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Create / Edit Department Modal -->
+    <div class="modal fade" id="deptModal" tabindex="-1" aria-labelledby="deptModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold text-dark" id="deptModalLabel">
+                        <i class="bi bi-building-gear text-primary me-2"></i>Thông Tin Khoa / Phòng Ban
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="deptForm">
+                        <input type="hidden" id="deptId">
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Tên Đơn vị / Khoa <span class="text-danger">*</span></label>
+                            <input type="text" id="deptName" class="form-control form-control-sm" placeholder="VD: Phòng Đào tạo & CTSV" required>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-secondary">Mã Đơn vị (Code) <span class="text-danger">*</span></label>
+                                <input type="text" id="deptCode" class="form-control form-control-sm" placeholder="VD: DAO_TAO" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-secondary">Vị trí văn phòng</label>
+                                <input type="text" id="deptLocation" class="form-control form-control-sm" placeholder="VD: Phòng A1-201">
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-7">
+                                <label class="form-label small fw-semibold text-secondary">Email liên hệ</label>
+                                <input type="email" id="deptEmail" class="form-control form-control-sm" placeholder="daotao@hcmute.edu.vn">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label small fw-semibold text-secondary">Số điện thoại</label>
+                                <input type="text" id="deptPhone" class="form-control form-control-sm" placeholder="028.3896.8641">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Mô tả chức năng / Phạm vi hỗ trợ</label>
+                            <textarea id="deptDescription" class="form-control form-control-sm" rows="3" placeholder="Đăng ký môn học, điểm thi, chứng chỉ ngoại ngữ..."></textarea>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="deptIsActive" checked>
+                            <label class="form-check-label small fw-semibold" for="deptIsActive">Đang hoạt động tiếp nhận Ticket</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="button" class="btn btn-primary btn-sm fw-semibold" id="btnSaveDept" onclick="submitDeptForm()">
+                        <span id="btnSaveDeptSpinner" class="spinner-border spinner-border-sm me-1 d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-check2-circle me-1" id="btnSaveDeptIcon"></i>Lưu Thông Tin
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Interactive Logic (AJAX Fetch API + Toast) -->
+    <script>
+        // --------------------------------------------------------------------------
+        // 1. Toast Notification Utility
+        // --------------------------------------------------------------------------
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toastId = 'toast-' + Date.now();
+            const icon = type === 'success' 
+                ? '<i class="bi bi-check-circle-fill text-success fs-5 me-2"></i>'
+                : '<i class="bi bi-exclamation-triangle-fill text-danger fs-5 me-2"></i>';
+
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center border-0 shadow-lg mb-2 show bg-white" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex p-3 align-items-center">
+                        ${icon}
+                        <div class="toast-body text-dark fw-semibold small flex-grow-1 p-0 pe-2">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close ms-auto me-1" onclick="this.closest('.toast').remove()" aria-label="Close"></button>
+                    </div>
+                    <div class="progress" style="height: 3px;">
+                        <div class="progress-bar ${type === 'success' ? 'bg-success' : 'bg-danger'}" style="width: 100%; transition: width 3s linear;"></div>
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', toastHtml);
+            const toastEl = document.getElementById(toastId);
+            const bar = toastEl.querySelector('.progress-bar');
+            requestAnimationFrame(() => {
+                if (bar) bar.style.width = '0%';
+            });
+
+            setTimeout(() => {
+                if (toastEl && toastEl.parentNode) {
+                    toastEl.classList.remove('show');
+                    setTimeout(() => toastEl.remove(), 250);
+                }
+            }, 3000);
+        }
+
+        let deptModalInstance = null;
+
+        // --------------------------------------------------------------------------
+        // 2. Open Create Department Modal
+        // --------------------------------------------------------------------------
+        function openCreateDeptModal() {
+            document.getElementById('deptId').value = '';
+            document.getElementById('deptName').value = '';
+            document.getElementById('deptCode').value = '';
+            document.getElementById('deptLocation').value = '';
+            document.getElementById('deptEmail').value = '';
+            document.getElementById('deptPhone').value = '';
+            document.getElementById('deptDescription').value = '';
+            document.getElementById('deptIsActive').checked = true;
+            document.getElementById('deptModalLabel').innerHTML = '<i class="bi bi-plus-circle text-primary me-2"></i>Thêm Mới Khoa / Phòng Ban';
+
+            const modalEl = document.getElementById('deptModal');
+            deptModalInstance = new bootstrap.Modal(modalEl);
+            deptModalInstance.show();
+        }
+
+        // --------------------------------------------------------------------------
+        // 3. Open Edit Department Modal & Fetch Data
+        // --------------------------------------------------------------------------
+        async function openEditDeptModal(deptId) {
+            try {
+                const response = await fetch(`/api/admin/departments/${deptId}`);
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    const d = result.data;
+                    document.getElementById('deptId').value = d.id;
+                    document.getElementById('deptName').value = d.name || '';
+                    document.getElementById('deptCode').value = d.code || '';
+                    document.getElementById('deptLocation').value = d.officeLocation || '';
+                    document.getElementById('deptEmail').value = d.contactEmail || '';
+                    document.getElementById('deptPhone').value = d.contactPhone || '';
+                    document.getElementById('deptDescription').value = d.description || '';
+                    document.getElementById('deptIsActive').checked = d.isActive === true;
+                    document.getElementById('deptModalLabel').innerHTML = '<i class="bi bi-pencil-square text-primary me-2"></i>Chỉnh Sửa Khoa / Phòng Ban';
+
+                    const modalEl = document.getElementById('deptModal');
+                    deptModalInstance = new bootstrap.Modal(modalEl);
+                    deptModalInstance.show();
+                } else {
+                    showToast(result.message || 'Không thể tải thông tin đơn vị!', 'danger');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi kết nối khi tải dữ liệu đơn vị!', 'danger');
+            }
+        }
+
+        // --------------------------------------------------------------------------
+        // 4. Submit Department Form via AJAX (Zero Full-Page Refresh)
+        // --------------------------------------------------------------------------
+        async function submitDeptForm() {
+            const id = document.getElementById('deptId').value;
+            const name = document.getElementById('deptName').value.trim();
+            const code = document.getElementById('deptCode').value.trim();
+            const location = document.getElementById('deptLocation').value.trim();
+            const email = document.getElementById('deptEmail').value.trim();
+            const phone = document.getElementById('deptPhone').value.trim();
+            const desc = document.getElementById('deptDescription').value.trim();
+            const isActive = document.getElementById('deptIsActive').checked;
+
+            if (!name) {
+                showToast('Tên đơn vị không được để trống!', 'danger');
+                return;
+            }
+            if (!code) {
+                showToast('Mã đơn vị không được để trống!', 'danger');
+                return;
+            }
+
+            const token = document.getElementById('csrfToken')?.value || '';
+            const header = document.getElementById('csrfHeader')?.value || 'X-CSRF-TOKEN';
+
+            const btnSave = document.getElementById('btnSaveDept');
+            const spinner = document.getElementById('btnSaveDeptSpinner');
+            const icon = document.getElementById('btnSaveDeptIcon');
+
+            btnSave.disabled = true;
+            spinner.classList.remove('d-none');
+            icon.classList.add('d-none');
+
+            const payload = {
+                id: id ? parseInt(id) : null,
+                name: name,
+                code: code,
+                officeLocation: location,
+                contactEmail: email,
+                contactPhone: phone,
+                description: desc,
+                isActive: isActive
+            };
+
+            try {
+                const response = await fetch('/api/admin/departments/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [header]: token
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    const saved = result.data;
+                    const row = document.getElementById('dept-row-' + saved.id);
+
+                    if (row) {
+                        // Cập nhật dòng hiện có
+                        row.querySelector('.dept-name-label').textContent = saved.name;
+                        row.querySelector('.dept-code-label').textContent = saved.code;
+                        row.querySelector('.dept-desc-label').textContent = saved.description || 'Chưa có mô tả';
+                        const locEl = row.querySelector('.dept-location-label span');
+                        if (locEl) locEl.textContent = saved.officeLocation || 'Chưa rõ';
+                        const mailEl = row.querySelector('.dept-email-label span');
+                        if (mailEl) mailEl.textContent = saved.contactEmail || '';
+                        const phoneEl = row.querySelector('.dept-phone-label span');
+                        if (phoneEl) phoneEl.textContent = saved.contactPhone || 'N/A';
+
+                        const statusContainer = row.querySelector('.dept-status-container');
+                        const toggleBtn = row.querySelector('.btn-toggle-active');
+                        if (saved.isActive) {
+                            statusContainer.innerHTML = '<span class="badge bg-success dept-status-badge"><i class="bi bi-check-circle me-1"></i>Hoạt động</span>';
+                            if (toggleBtn) {
+                                toggleBtn.className = 'btn btn-sm btn-toggle-active btn-outline-warning';
+                                toggleBtn.setAttribute('data-is-active', 'true');
+                                toggleBtn.innerHTML = '<i class="bi bi-pause-fill me-1"></i><span>Tạm Dừng</span>';
+                            }
+                        } else {
+                            statusContainer.innerHTML = '<span class="badge bg-secondary dept-status-badge"><i class="bi bi-pause-circle me-1"></i>Tạm dừng</span>';
+                            if (toggleBtn) {
+                                toggleBtn.className = 'btn btn-sm btn-toggle-active btn-outline-success';
+                                toggleBtn.setAttribute('data-is-active', 'false');
+                                toggleBtn.innerHTML = '<i class="bi bi-play-fill me-1"></i><span>Kích Hoạt</span>';
+                            }
+                        }
+                    } else {
+                        // Trường hợp thêm mới: reload lại để cập nhật thứ tự chuẩn
+                        window.location.reload();
+                        return;
+                    }
+
+                    if (deptModalInstance) {
+                        deptModalInstance.hide();
+                    }
+                    showToast(result.message || 'Lưu thành công!', 'success');
+                } else {
+                    showToast(result.message || 'Lưu thông tin thất bại!', 'danger');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi kết nối máy chủ!', 'danger');
+            } finally {
+                btnSave.disabled = false;
+                spinner.classList.add('d-none');
+                icon.classList.remove('d-none');
+            }
+        }
+
+        // --------------------------------------------------------------------------
+        // 5. Toggle Department Active Status via AJAX
+        // --------------------------------------------------------------------------
+        async function handleToggleDeptActive(button) {
+            const deptId = button.getAttribute('data-dept-id');
+            const token = document.getElementById('csrfToken')?.value || '';
+            const header = document.getElementById('csrfHeader')?.value || 'X-CSRF-TOKEN';
+
+            button.disabled = true;
+            const originalHtml = button.innerHTML;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+            try {
+                const response = await fetch(`/api/admin/departments/${deptId}/toggle-active`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [header]: token
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    const updated = result.data;
+                    const row = document.getElementById('dept-row-' + deptId);
+                    const statusContainer = row.querySelector('.dept-status-container');
+
+                    if (updated.isActive) {
+                        button.className = 'btn btn-sm btn-toggle-active btn-outline-warning';
+                        button.setAttribute('data-is-active', 'true');
+                        button.innerHTML = '<i class="bi bi-pause-fill me-1"></i><span>Tạm Dừng</span>';
+
+                        if (statusContainer) {
+                            statusContainer.innerHTML = '<span class="badge bg-success dept-status-badge"><i class="bi bi-check-circle me-1"></i>Hoạt động</span>';
+                        }
+                    } else {
+                        button.className = 'btn btn-sm btn-toggle-active btn-outline-success';
+                        button.setAttribute('data-is-active', 'false');
+                        button.innerHTML = '<i class="bi bi-play-fill me-1"></i><span>Kích Hoạt</span>';
+
+                        if (statusContainer) {
+                            statusContainer.innerHTML = '<span class="badge bg-secondary dept-status-badge"><i class="bi bi-pause-circle me-1"></i>Tạm dừng</span>';
+                        }
+                    }
+
+                    showToast(result.message || 'Cập nhật trạng thái thành công!', 'success');
+                } else {
+                    button.innerHTML = originalHtml;
+                    showToast(result.message || 'Không thể đổi trạng thái!', 'danger');
+                }
+            } catch (err) {
+                console.error(err);
+                button.innerHTML = originalHtml;
+                showToast('Lỗi kết nối máy chủ!', 'danger');
+            } finally {
+                button.disabled = false;
+            }
+        }
+    </script>
+</div>
+</body>
+</html>
