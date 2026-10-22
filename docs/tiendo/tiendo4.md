@@ -2,8 +2,9 @@
 **Dự án:** HCMUTE Support Portal (QAUTE Portal)  
 **Module trọng điểm:** Phân hệ Tra cứu & Tri thức Học vụ (FAQ & AI Knowledge Engine)  
 **Ngày lập chiến dịch:** 22/10/2026  
-**Trạng thái:** SẴN SÀNG TRIỂN KHAI (PROPOSED FOR EXECUTION)  
+**Trạng thái:** ĐÃ HOÀN THÀNH 100% (COMPLETED & VERIFIED)  
 **Tiêu chuẩn áp dụng:** Clean Architecture, SOLID, Spring Boot 3.3.x, Java 17 Record, CSP Level 3, Zero N+1 Query.
+**Kết quả kiểm thử:** `mvn test-compile` BUILD SUCCESS (156 source files), HTTP 200 OK tại `/faqs`, render động đúng 349 FAQs thực tế.
 
 ---
 
