@@ -29,12 +29,10 @@ public class FaqWebController {
             @RequestParam(value = "departmentId", required = false) Long departmentId,
             Model model) {
 
-        boolean isSearchMode = query != null && !query.trim().isEmpty();
-        List<FaqItemDto> faqs = isSearchMode 
-                ? faqService.searchFaqsSmart(query, departmentId) 
-                : faqService.getAllActiveFaqs();
-
-        FaqCategoryCountDto counts = faqService.calculateCategoryCounts(faqs);
+        // Luôn nạp trọn vẹn 351 câu hỏi ra View để Client-side Filter và Pagination
+        // hoạt động mượt mà, không bao giờ bị cắt cụt còn 25 câu khi có param tìm kiếm
+        List<FaqItemDto> allFaqs = faqService.getAllActiveFaqs();
+        FaqCategoryCountDto counts = faqService.calculateCategoryCounts(allFaqs);
 
         SecurityUtils.getCurrentUser().ifPresent(currentUser -> {
             model.addAttribute("currentUser", currentUser);
@@ -44,14 +42,14 @@ public class FaqWebController {
             model.addAttribute("currentUserRole", role);
         });
 
-        model.addAttribute("isSearchMode", isSearchMode);
-        model.addAttribute("faqs", faqs);
-        model.addAttribute("topFaqs", faqs);
+        model.addAttribute("isSearchMode", query != null && !query.trim().isEmpty());
+        model.addAttribute("faqs", allFaqs);
+        model.addAttribute("topFaqs", allFaqs);
         model.addAttribute("counts", counts);
         model.addAttribute("departments", faqService.getActiveDepartments());
         model.addAttribute("selectedDept", departmentId);
-        model.addAttribute("query", query);
-        model.addAttribute("totalCount", counts.totalCount());
+        model.addAttribute("query", query != null ? query : "");
+        model.addAttribute("totalCount", allFaqs.size());
 
         return "faqs";
     }
