@@ -232,19 +232,19 @@
                         <!-- Search Conversations Input -->
                         <div class="relative flex items-center">
                             <span class="material-symbols-outlined absolute left-2.5 text-text-muted text-base pointer-events-none">search</span>
-                            <input class="w-full pl-8 pr-2.5 py-1.5 rounded-lg bg-surface-subtle border border-border-ui text-text-primary placeholder-text-muted text-xs focus:outline-none focus:border-primary focus:bg-white transition-all" 
+                            <input id="searchConversationsInput" class="w-full pl-8 pr-2.5 py-1.5 rounded-lg bg-surface-subtle border border-border-ui text-text-primary placeholder-text-muted text-xs focus:outline-none focus:border-primary focus:bg-white transition-all" 
                                    placeholder="Tìm kiếm hội thoại..." type="text"/>
                         </div>
                     </div>
                     
                     <!-- Scrollable Grouped History (CÓ SCROLL RIÊNG) -->
-                    <div class="flex-1 px-2 py-3 space-y-4 scrollbar-thin" style="overflow-y: auto; overflow-x: hidden; flex: 1 1 0%; min-height: 0;">
+                    <div id="conversationHistoryList" class="flex-1 px-2 py-3 space-y-4 scrollbar-thin" style="overflow-y: auto; overflow-x: hidden; flex: 1 1 0%; min-height: 0;">
                         <div th:if="${recentConversations != null and !recentConversations.isEmpty()}">
-                            <!-- Group: HÔM NAY -->
+                            <!-- Group: Gần đây -->
                             <div class="space-y-1">
                                 <div class="px-2.5 py-1 text-[11px] font-semibold text-text-muted uppercase tracking-wider flex items-center justify-between">
                                     <span class="flex items-center gap-1.5">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>Hôm nay
+                                        <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>Gần đây
                                     </span>
                                     <span class="text-[10px] text-text-muted font-mono" th:text="${recentConversations.size()}">0</span>
                                 </div>
@@ -260,7 +260,7 @@
                                             chat
                                         </span>
                                         <div class="flex flex-col min-w-0">
-                                            <span class="text-xs font-semibold truncate" th:text="${conv.title}">Conversation Title</span>
+                                            <span class="text-xs font-semibold truncate conv-title-text" th:text="${conv.title}" th:title="${conv.title}">Conversation Title</span>
                                             <span class="text-[10px] text-text-secondary truncate" 
                                                   th:text="${#temporals.format(conv.updatedAt, 'HH:mm') + ' • ' + conv.messageCount + ' tin nhắn'}">
                                                 Vừa xong • 5 tin nhắn
@@ -268,13 +268,20 @@
                                         </div>
                                     </div>
                                     
-                                    <!-- 3-dot menu -->
-                                    <div class="relative">
-                                        <button class="opacity-0 group-hover:opacity-100 p-1 text-text-secondary hover:text-text-primary hover:bg-white/80 rounded transition-opacity delete-conv" 
+                                    <!-- Action buttons (Rename & Delete) -->
+                                    <div class="relative flex items-center gap-0.5">
+                                        <button class="opacity-0 group-hover:opacity-100 p-1 text-text-secondary hover:text-primary hover:bg-white/80 rounded transition-opacity rename-conv" 
+                                                th:data-session-id="${conv.sessionId}"
+                                                th:data-title="${conv.title}"
+                                                onclick="event.stopPropagation(); window.openRenameModal(this.dataset.sessionId, this.dataset.title)" 
+                                                title="Đổi tên" type="button">
+                                            <span class="material-symbols-outlined text-[15px] leading-none">edit</span>
+                                        </button>
+                                        <button class="opacity-0 group-hover:opacity-100 p-1 text-text-secondary hover:text-error hover:bg-white/80 rounded transition-opacity delete-conv" 
                                                 th:data-session-id="${conv.sessionId}"
                                                 onclick="event.stopPropagation(); deleteConversation(this.dataset.sessionId)" 
                                                 title="Xóa" type="button">
-                                            <span class="material-symbols-outlined text-base leading-none">delete</span>
+                                            <span class="material-symbols-outlined text-[15px] leading-none">delete</span>
                                         </button>
                                     </div>
                                 </div>
@@ -302,7 +309,19 @@
                             </div>
                             <div class="flex flex-col min-w-0">
                                 <div class="flex items-center gap-2">
-                                    <h2 class="font-heading font-bold text-sm text-text-primary truncate">Trợ lý AI học vụ</h2>
+                                    <h2 id="currentConversationTitle" class="font-heading font-bold text-sm text-text-primary truncate"
+                                        th:text="${conversation != null and conversation.title != null ? conversation.title : 'Trợ lý AI học vụ'}">
+                                        Trợ lý AI học vụ
+                                    </h2>
+                                    <button th:if="${conversation != null}" 
+                                            id="headerRenameBtn"
+                                            th:data-session-id="${conversation.sessionId}"
+                                            th:data-title="${conversation.title}"
+                                            onclick="window.openRenameModal(this.dataset.sessionId, this.dataset.title)"
+                                            class="p-0.5 text-text-muted hover:text-primary transition-colors rounded" 
+                                            title="Đổi tên cuộc trò chuyện" type="button">
+                                        <span class="material-symbols-outlined text-[16px] leading-none">edit</span>
+                                    </button>
                                     <span class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#ecfdf5] text-[#047857] border border-[#a7f3d0]">
                                         <span class="w-1.5 h-1.5 rounded-full bg-success"></span>Đang hoạt động
                                     </span>
@@ -350,10 +369,11 @@
                                         <div class="flex-1 flex flex-col space-y-4 min-w-0">
                                             <div class="flex items-center gap-2">
                                                 <span class="font-heading font-bold text-xs text-primary">Trợ lý AI học vụ HCMUTE</span>
-                                                <span class="px-2 py-0.2 rounded-full text-[10px] font-medium bg-primary-subtle text-primary border border-primary/20">Gemini 1.5 Pro</span>
+                                                <span class="px-2 py-0.2 rounded-full text-[10px] font-medium bg-primary-subtle text-primary border border-primary/20" 
+                                                      th:text="${msg.provider != null ? (msg.provider == 'gemini' ? 'Gemini 1.5 Pro' : (msg.provider == 'ollama' ? 'Llama 3.2' : (msg.provider == 'dify' ? 'Dify AI' : 'QAUTE AI'))) : 'Gemini 1.5 Pro'}">Gemini 1.5 Pro</span>
                                                 <span class="text-[11px] text-text-muted" th:text="'• ' + ${#temporals.format(msg.createdAt, 'HH:mm')}">• 10:24</span>
                                             </div>
-                                            <div class="text-sm text-text-primary leading-relaxed prose prose-sm max-w-none" th:utext="${msg.content}">
+                                            <div class="text-sm text-text-primary leading-relaxed prose prose-sm max-w-none ai-markdown-content" th:text="${msg.content}">
                                                 AI response content
                                             </div>
                                             
@@ -366,8 +386,8 @@
                                                 <div class="space-y-1.5">
                                                     <div th:each="src : ${msg.sources}" class="text-xs text-text-secondary hover:text-primary cursor-pointer">
                                                         <span class="material-symbols-outlined text-[14px] align-middle mr-1">article</span>
-                                                        <span th:text="${src.title}">Document title</span>
-                                                        <span class="text-[10px] text-text-muted" th:if="${src.score != null}" th:text="' (' + ${#numbers.formatDecimal(src.score * 100, 0, 0)} + '% độ chính xác)'"> (95%)</span>
+                                                        <span th:text="${src['title'] != null ? src['title'] : (src['source'] != null ? src['source'] : 'Tài liệu tham khảo')}">Document title</span>
+                                                        <span class="text-[10px] text-text-muted" th:if="${src['score'] != null}" th:text="' (' + ${#numbers.formatDecimal(src['score'] * 100, 0, 0)} + '% độ chính xác)'"> (95%)</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -414,7 +434,7 @@
                             </div>
                             
                             <!-- Welcome Screen (if no messages) -->
-                            <div th:if="${messages == null or messages.isEmpty()}" class="text-center mt-20">
+                            <div th:if="${messages == null or messages.isEmpty()}" id="welcomeScreen" class="text-center mt-20">
                                 <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-6 shadow-lg">
                                     <span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
                                 </div>
@@ -423,17 +443,17 @@
                                 
                                 <!-- Suggestion Cards -->
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
-                                    <div class="bg-white rounded-xl p-4 border border-border-ui hover:border-blue-300 hover:shadow-md transition-all cursor-pointer">
+                                    <div class="suggestion-card bg-white rounded-xl p-4 border border-border-ui hover:border-blue-300 hover:shadow-md transition-all cursor-pointer" data-prompt="Hỏi về môn học và điều kiện tốt nghiệp">
                                         <span class="material-symbols-outlined text-3xl text-blue-600 mb-2">school</span>
                                         <p class="text-sm font-semibold text-text-primary mb-1">Chương trình đào tạo</p>
                                         <p class="text-xs text-text-secondary">Hỏi về môn học, điều kiện tốt nghiệp</p>
                                     </div>
-                                    <div class="bg-white rounded-xl p-4 border border-border-ui hover:border-green-300 hover:shadow-md transition-all cursor-pointer">
+                                    <div class="suggestion-card bg-white rounded-xl p-4 border border-border-ui hover:border-green-300 hover:shadow-md transition-all cursor-pointer" data-prompt="Xem lịch học, lịch thi, thời khóa biểu">
                                         <span class="material-symbols-outlined text-3xl text-green-600 mb-2">calendar_month</span>
                                         <p class="text-sm font-semibold text-text-primary mb-1">Lịch học & thi</p>
                                         <p class="text-xs text-text-secondary">Xem lịch học, lịch thi, thời khóa biểu</p>
                                     </div>
-                                    <div class="bg-white rounded-xl p-4 border border-border-ui hover:border-amber-300 hover:shadow-md transition-all cursor-pointer">
+                                    <div class="suggestion-card bg-white rounded-xl p-4 border border-border-ui hover:border-amber-300 hover:shadow-md transition-all cursor-pointer" data-prompt="Hỏi về giấy tờ, đơn từ, quy trình sinh viên">
                                         <span class="material-symbols-outlined text-3xl text-amber-600 mb-2">description</span>
                                         <p class="text-sm font-semibold text-text-primary mb-1">Thủ tục hành chính</p>
                                         <p class="text-xs text-text-secondary">Hỏi về giấy tờ, đơn từ, quy trình</p>
@@ -461,9 +481,71 @@
                                             <span class="material-symbols-outlined text-lg">attach_file</span>
                                         </button>
                                         <div class="h-4 w-px bg-border-ui mx-1"></div>
-                                        <span class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-surface-subtle text-text-secondary flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-xs text-primary">auto_awesome</span> Gemini 1.5 Pro
-                                        </span>
+                                        <!-- Model Selector Dropdown -->
+                                        <div class="relative inline-block text-left" id="modelSelectorDropdown">
+                                            <button type="button" id="modelSelectorBtn"
+                                                    class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-surface-subtle hover:bg-slate-100 text-text-secondary flex items-center gap-1 transition-all border border-border-ui/50 focus:outline-none cursor-pointer"
+                                                    aria-expanded="false" title="Chọn mô hình AI">
+                                                <span class="material-symbols-outlined text-xs text-primary" id="selectedModelIcon">auto_awesome</span>
+                                                <span id="selectedModelText">Gemini 1.5 Pro</span>
+                                                <span class="material-symbols-outlined text-[13px] text-text-muted">expand_more</span>
+                                            </button>
+                                            
+                                            <!-- Dropdown Menu -->
+                                            <div id="modelDropdownMenu" class="hidden absolute left-0 bottom-full mb-1.5 w-60 rounded-xl bg-white shadow-xl border border-border-ui py-1.5 z-50 text-xs transition-all">
+                                                <div class="px-3 py-1 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+                                                    Chọn mô hình AI
+                                                </div>
+                                                
+                                                <button type="button" class="model-option w-full px-3 py-2 flex items-center justify-between text-left hover:bg-surface-subtle transition-colors cursor-pointer"
+                                                        data-provider="gemini" data-name="Gemini 1.5 Pro" data-icon="auto_awesome">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="material-symbols-outlined text-sm text-primary">auto_awesome</span>
+                                                        <div>
+                                                            <div class="font-medium text-text-primary">Gemini 1.5 Pro</div>
+                                                            <div class="text-[10px] text-text-muted">Google Cloud AI (Khuyên dùng)</div>
+                                                        </div>
+                                                    </div>
+                                                    <span class="material-symbols-outlined text-xs text-primary check-icon">check</span>
+                                                </button>
+                                                
+                                                <button type="button" class="model-option w-full px-3 py-2 flex items-center justify-between text-left hover:bg-surface-subtle transition-colors cursor-pointer"
+                                                        data-provider="ollama" data-name="Llama 3.2 (Ollama)" data-icon="neurology">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="material-symbols-outlined text-sm text-indigo-600">neurology</span>
+                                                        <div>
+                                                            <div class="font-medium text-text-primary">Llama 3.2 (Ollama)</div>
+                                                            <div class="text-[10px] text-text-muted">Local Model mã nguồn mở</div>
+                                                        </div>
+                                                    </div>
+                                                    <span class="material-symbols-outlined text-xs text-primary check-icon hidden">check</span>
+                                                </button>
+                                                
+                                                <button type="button" class="model-option w-full px-3 py-2 flex items-center justify-between text-left hover:bg-surface-subtle transition-colors cursor-pointer"
+                                                        data-provider="dify" data-name="Dify AI Agent" data-icon="hub">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="material-symbols-outlined text-sm text-emerald-600">hub</span>
+                                                        <div>
+                                                            <div class="font-medium text-text-primary">Dify AI Agent</div>
+                                                            <div class="text-[10px] text-text-muted">Workflow RAG Cloud</div>
+                                                        </div>
+                                                    </div>
+                                                    <span class="material-symbols-outlined text-xs text-primary check-icon hidden">check</span>
+                                                </button>
+                                                
+                                                <button type="button" class="model-option w-full px-3 py-2 flex items-center justify-between text-left hover:bg-surface-subtle transition-colors cursor-pointer"
+                                                        data-provider="default" data-name="QAUTE FAQ Hybrid" data-icon="school">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="material-symbols-outlined text-sm text-amber-600">school</span>
+                                                        <div>
+                                                            <div class="font-medium text-text-primary">QAUTE FAQ Hybrid</div>
+                                                            <div class="text-[10px] text-text-muted">Kho tri thức học vụ HCMUTE</div>
+                                                        </div>
+                                                    </div>
+                                                    <span class="material-symbols-outlined text-xs text-primary check-icon hidden">check</span>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                     <button type="submit" id="sendBtn"
                                             class="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center shadow-xs hover:bg-primary-hover active:scale-95 transition-all flex-shrink-0" 
@@ -486,15 +568,61 @@
     </main>
 </div>
 
+<!-- Modal Đổi tên Cuộc trò chuyện -->
+<div id="renameModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs transition-opacity">
+    <div class="bg-white rounded-2xl shadow-2xl border border-border-ui w-full max-w-sm p-5 mx-4 transform transition-all">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-primary-subtle text-primary flex items-center justify-center">
+                    <span class="material-symbols-outlined text-lg">edit</span>
+                </div>
+                <h3 class="font-heading font-semibold text-sm text-text-primary">Đổi tên cuộc trò chuyện</h3>
+            </div>
+            <button onclick="window.closeRenameModal()" type="button" class="text-text-muted hover:text-text-primary p-1 rounded-md hover:bg-surface-subtle transition-colors">
+                <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+        </div>
+        <div class="space-y-3">
+            <label for="renameTitleInput" class="block text-xs font-medium text-text-secondary">Tiêu đề cuộc trò chuyện</label>
+            <input type="text" id="renameTitleInput" maxlength="255"
+                   class="w-full px-3 py-2 rounded-xl bg-surface-subtle border border-border-ui text-text-primary text-xs focus:outline-none focus:border-primary focus:bg-white transition-all"
+                   placeholder="Nhập tiêu đề mới..."/>
+            <div id="renameErrorMsg" class="hidden text-xs text-red-500">Tiêu đề không được để trống</div>
+        </div>
+        <div class="flex items-center justify-end gap-2 mt-5">
+            <button onclick="window.closeRenameModal()" type="button" 
+                    class="px-3 py-1.5 rounded-lg border border-border-ui text-text-secondary hover:bg-surface-subtle text-xs font-medium transition-colors">
+                Hủy
+            </button>
+            <button id="saveRenameBtn" onclick="window.submitRenameModal()" type="button" 
+                    class="px-4 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-white text-xs font-medium shadow-xs transition-all flex items-center gap-1.5">
+                <span>Lưu thay đổi</span>
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+    if (typeof marked !== 'undefined') {
+        marked.setOptions({ breaks: true, gfm: true });
+        document.querySelectorAll('.ai-markdown-content').forEach(function(el) {
+            var raw = el.textContent || '';
+            if (raw.trim()) {
+                el.innerHTML = marked.parse(raw);
+                el.dataset.parsed = 'true';
+            }
+        });
+    }
+</script>
 <script th:inline="javascript">
     /*<![CDATA[*/
     const currentSessionId = /*[[${conversation?.sessionId}]]*/ null;
     const isAuthenticated = /*[[${currentUser != null}]]*/ false;
     /*]]>*/
 </script>
-<script th:src="@{/js/ai-chat.js(v=2)}"></script>
+<script th:src="@{/js/ai-chat.js(v=7)}"></script>
 
 <!-- Header Dropdown & Mobile Interactions -->
 <script>
@@ -545,14 +673,114 @@
         });
     }
     
-    // "Cuộc trò chuyện mới" button → redirect to /ai/chat (new conversation)
-    const newChatBtn = document.getElementById('newChatBtn');
-    if (newChatBtn) {
-        newChatBtn.addEventListener('click', () => {
-            window.location.href = '/ai/chat';
+    // Search conversations filter
+    const searchConvInput = document.getElementById('searchConversationsInput');
+    if (searchConvInput) {
+        searchConvInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(query) ? '' : 'none';
+            });
         });
     }
     
+    // Modal rename functions
+    let targetRenameSessionId = null;
+
+    window.openRenameModal = function(sid, currentTitle) {
+        targetRenameSessionId = sid;
+        const modal = document.getElementById('renameModal');
+        const input = document.getElementById('renameTitleInput');
+        const errorMsg = document.getElementById('renameErrorMsg');
+        if (!modal || !input) {
+            const fallback = prompt('Nhập tiêu đề mới cho cuộc trò chuyện:', currentTitle || '');
+            if (fallback && fallback.trim() && fallback.trim() !== currentTitle) {
+                doRenameConversation(sid, fallback.trim());
+            }
+            return;
+        }
+        input.value = currentTitle || '';
+        if (errorMsg) errorMsg.classList.add('hidden');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            input.focus();
+            input.select();
+        }, 50);
+    };
+
+    window.closeRenameModal = function() {
+        const modal = document.getElementById('renameModal');
+        if (modal) modal.classList.add('hidden');
+        targetRenameSessionId = null;
+    };
+
+    window.submitRenameModal = async function() {
+        const input = document.getElementById('renameTitleInput');
+        const errorMsg = document.getElementById('renameErrorMsg');
+        const saveBtn = document.getElementById('saveRenameBtn');
+        if (!input || !targetRenameSessionId) return;
+
+        const newTitle = input.value.trim();
+        if (!newTitle) {
+            if (errorMsg) errorMsg.classList.remove('hidden');
+            return;
+        }
+
+        if (saveBtn) saveBtn.disabled = true;
+        await doRenameConversation(targetRenameSessionId, newTitle);
+        if (saveBtn) saveBtn.disabled = false;
+        window.closeRenameModal();
+    };
+
+    async function doRenameConversation(sid, newTitle) {
+        try {
+            const res = await fetch(`/api/ai/conversations/${sid}/title`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ title: newTitle })
+            });
+
+            if (res.ok) {
+                // Update active header if it's the current session
+                const headerTitle = document.getElementById('currentConversationTitle');
+                const headerBtn = document.getElementById('headerRenameBtn');
+                if (headerTitle && (headerBtn && headerBtn.dataset.sessionId === sid || currentSessionId === sid)) {
+                    headerTitle.textContent = newTitle;
+                    if (headerBtn) headerBtn.dataset.title = newTitle;
+                }
+                // Update sidebar title in DOM directly
+                const items = document.querySelectorAll(`.conversation-item[data-session-id="${sid}"]`);
+                items.forEach(item => {
+                    const titleEl = item.querySelector('.conv-title-text');
+                    if (titleEl) {
+                        titleEl.textContent = newTitle;
+                        titleEl.title = newTitle;
+                    }
+                    const renameBtn = item.querySelector('.rename-conv');
+                    if (renameBtn) renameBtn.dataset.title = newTitle;
+                });
+                showToast('Đã đổi tên cuộc trò chuyện! ✏️');
+            } else {
+                alert('Không thể đổi tên cuộc trò chuyện. Vui lòng thử lại.');
+            }
+        } catch (err) {
+            console.error('Rename error:', err);
+            alert('Lỗi kết nối khi đổi tên cuộc trò chuyện.');
+        }
+    }
+
+    // Modal keyboard shortcuts (Enter to save, Esc to close)
+    document.getElementById('renameTitleInput')?.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            window.submitRenameModal();
+        } else if (e.key === 'Escape') {
+            window.closeRenameModal();
+        }
+    });
+
     // Delete conversation confirmation
     window.deleteConversation = function(sessionId) {
         if (confirm('Bạn có chắc chắn muốn xóa hội thoại này?')) {
