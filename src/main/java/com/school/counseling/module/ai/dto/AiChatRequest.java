@@ -41,4 +41,7 @@ public class AiChatRequest {
     @JsonProperty("max_history_messages")
     @Builder.Default
     private Integer maxHistoryMessages = 5; // Số tin nhắn context
+
+    @JsonProperty("history")
+    private java.util.List<java.util.Map<String, String>> history; // Ngữ cảnh hội thoại gần nhất [{'role':'user'/'assistant', 'content':'...'}]
 }

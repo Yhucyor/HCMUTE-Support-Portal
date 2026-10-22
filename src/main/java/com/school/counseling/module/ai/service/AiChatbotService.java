@@ -42,10 +42,14 @@ public class AiChatbotService {
     }
 
     public AiChatResponse getChatResponse(String query, String sessionId) {
-        return getChatResponse(query, sessionId, "gemini");
+        return getChatResponse(query, sessionId, "gemini", Collections.emptyList());
     }
 
     public AiChatResponse getChatResponse(String query, String sessionId, String provider) {
+        return getChatResponse(query, sessionId, provider, Collections.emptyList());
+    }
+
+    public AiChatResponse getChatResponse(String query, String sessionId, String provider, List<Map<String, String>> history) {
         if (query == null || query.trim().isEmpty()) {
             AiChatResponse emptyResp = new AiChatResponse();
             emptyResp.setAnswer("Xin chào! Bạn có thể đặt câu hỏi về tuyển sinh, học vụ, học phí hoặc quy trình của HCMUTE để mình giải đáp nhé.");
@@ -81,9 +85,9 @@ public class AiChatbotService {
             log.info("Dify AI không khả dụng, tự động fallback sang FAQ học vụ nội bộ.");
         }
 
-        // 2. Nếu người dùng chọn provider AI thông minh (Gemini, Ollama...): Gọi ai-service (Python RAG)
+        // 2. Nếu người dùng chọn provider AI thông minh (Gemini, Ollama...): Gọi ai-service (Python RAG) với history ngữ cảnh
         if (provider != null && !provider.equalsIgnoreCase("default") && !provider.equalsIgnoreCase("qaute") && !provider.equalsIgnoreCase("dify")) {
-            AiChatResponse aiResp = callAiService(cleanQuery, sessionId, provider);
+            AiChatResponse aiResp = callAiService(cleanQuery, sessionId, provider, history);
             if (aiResp != null && aiResp.getAnswer() != null && !aiResp.getAnswer().isBlank()
                     && !aiResp.getAnswer().contains("Xin lỗi, hệ thống AI hiện không thể")) {
                 return aiResp;
@@ -228,9 +232,9 @@ public class AiChatbotService {
     }
 
     /**
-     * Gọi sang Python AI Microservice (FastAPI cổng 8000) với mô hình được chọn (Gemini / Ollama)
+     * Gọi sang Python AI Microservice (FastAPI cổng 8000) với mô hình được chọn (Gemini / Ollama) và lịch sử ngữ cảnh
      */
-    private AiChatResponse callAiService(String query, String sessionId, String provider) {
+    private AiChatResponse callAiService(String query, String sessionId, String provider, List<Map<String, String>> history) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -239,10 +243,12 @@ public class AiChatbotService {
                 .query(query)
                 .sessionId(sessionId)
                 .provider(provider != null ? provider : "gemini")
+                .history(history)
                 .build();
             HttpEntity<AiChatRequest> requestEntity = new HttpEntity<>(requestPayload, headers);
 
-            log.info("📡 Đang gửi yêu cầu tới ai-service tại {} (Model: {})...", chatbotApiUrl, provider);
+            log.info("📡 Đang gửi yêu cầu tới ai-service tại {} (Model: {}, History: {} turns)...", 
+                    chatbotApiUrl, provider, history != null ? history.size() : 0);
             ResponseEntity<AiChatResponse> responseEntity = restTemplate.postForEntity(
                     chatbotApiUrl,
                     requestEntity,

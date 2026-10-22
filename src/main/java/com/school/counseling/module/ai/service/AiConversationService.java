@@ -81,17 +81,18 @@ public class AiConversationService {
             request.getQuery()
         );
         
-        // 3. Lưu User message
+        // 3. Lấy context window (các lượt hội thoại trước đó TRƯỚC KHI lưu tin nhắn mới)
+        List<java.util.Map<String, String>> historyList = buildHistoryList(conversation.getId());
+
+        // 4. Lưu User message
         AiChatMessage userMessage = saveUserMessage(conversation, request.getQuery());
         
-        // 4. Build context window (5 messages gần nhất)
-        List<AiChatMessage> recentMessages = getRecentMessages(conversation.getId(), contextWindowSize);
-        
-        // 5. Gọi AI Engine (delegate sang AiChatbotService)
+        // 5. Gọi AI Engine (delegate sang AiChatbotService với history)
         AiChatResponse aiResponse = aiChatbotService.getChatResponse(
             request.getQuery(),
             conversation.getSessionId(),
-            request.getProvider()
+            request.getProvider(),
+            historyList
         );
         
         // 6. Enrich response với metadata
@@ -224,6 +225,26 @@ public class AiConversationService {
             conversationId, 
             PageRequest.of(0, limit)
         );
+    }
+
+    /**
+     * Trích xuất N tin nhắn gần nhất làm context window và chuyển sang thứ tự thời gian (ASC)
+     */
+    private List<java.util.Map<String, String>> buildHistoryList(Long conversationId) {
+        List<AiChatMessage> recent = getRecentMessages(conversationId, contextWindowSize);
+        List<java.util.Map<String, String>> history = new ArrayList<>();
+        if (recent != null && !recent.isEmpty()) {
+            for (int i = recent.size() - 1; i >= 0; i--) {
+                AiChatMessage msg = recent.get(i);
+                if (msg != null && msg.getContent() != null && !msg.getContent().isBlank()) {
+                    java.util.Map<String, String> item = new java.util.HashMap<>();
+                    item.put("role", msg.getRole() != null ? msg.getRole().name().toLowerCase() : "user");
+                    item.put("content", msg.getContent());
+                    history.add(item);
+                }
+            }
+        }
+        return history;
     }
     
     /**
@@ -445,10 +466,13 @@ public class AiConversationService {
                     request.getQuery()
                 );
                 
-                // 3. Save user message
+                // 3. Lấy context window trước khi lưu tin nhắn mới
+                List<java.util.Map<String, String>> historyList = buildHistoryList(conversation.getId());
+
+                // 4. Save user message
                 saveUserMessage(conversation, request.getQuery());
                 
-                // 4. Gửi event "thinking" để hiển thị loading indicator
+                // 5. Gửi event "thinking" để hiển thị loading indicator
                 emitter.send(SseEmitter.event()
                     .name("thinking")
                     .data("{\"status\":\"processing\",\"message\":\"Đang suy nghĩ...\"}")
@@ -456,11 +480,12 @@ public class AiConversationService {
                 
                 long startTime = System.currentTimeMillis();
                 
-                // 5. Gọi AI Engine (blocking call - sẽ cải thiện sau nếu AI service hỗ trợ streaming)
+                // 6. Gọi AI Engine (blocking call với history context)
                 AiChatResponse aiResponse = aiChatbotService.getChatResponse(
                     request.getQuery(),
                     conversation.getSessionId(),
-                    request.getProvider()
+                    request.getProvider(),
+                    historyList
                 );
                 
                 // 6. Stream response theo chunks (simulate typing effect)

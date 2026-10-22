@@ -19,16 +19,29 @@ KHI KHÔNG CÓ THÔNG TIN:
 Trả lời: "Mình không tìm thấy thông tin chi tiết về vấn đề này trong dữ liệu hiện tại nè. Bạn có thể liên hệ trực tiếp Phòng Đào tạo hoặc gửi phiếu hỗ trợ (Ticket) trên Portal để được Thầy/Cô giải đáp chính xác nhất nhé! 😊"
 """
 
-def build_prompt(context: str, question: str) -> str:
+def build_prompt(context: str, question: str, history: list = None) -> str:
+    history_section = ""
+    if history and len(history) > 0:
+        history_lines = []
+        for item in history[-6:]: # Tối đa 3 lượt đối thoại gần nhất
+            role = "Sinh viên" if item.get("role", "").lower() == "user" else "Trợ lý"
+            content = item.get("content", "").strip()
+            if role == "Trợ lý" and len(content) > 200:
+                content = content[:200] + "..."
+            if content:
+                history_lines.append(f"{role}: {content}")
+        if history_lines:
+            history_section = "LỊCH SỬ TRAO ĐỔI TRƯỚC ĐÓ:\n" + "\n".join(history_lines) + "\n\n"
+
     return f"""
 {SYSTEM_PROMPT}
 
-CONTEXT (Thông tin từ cơ sở dữ liệu):
+{history_section}CONTEXT (Thông tin từ cơ sở dữ liệu quy chế HCMUTE):
 {context}
 
 QUESTION: {question}
 
-Hãy trả lời câu hỏi bằng tiếng Việt, phong cách thân thiện GenZ, CHỈ dùng thông tin từ CONTEXT.
+Hãy trả lời câu hỏi bằng tiếng Việt, phong cách thân thiện GenZ, dựa trên CONTEXT và giữ sự liền mạch tự nhiên với lịch sử trao đổi.
 
 ANSWER:
 """.strip()

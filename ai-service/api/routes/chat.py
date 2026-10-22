@@ -50,6 +50,7 @@ class ChatRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=MAX_QUERY_LENGTH, description="User's question")
     session_id: Optional[str] = Field(None, description="Session ID for conversation tracking")
     provider: Optional[str] = Field("ollama", description="LLM provider: 'ollama' or 'gemini'")
+    history: Optional[list] = Field(default_factory=list, description="Recent conversation history")
 
 class ChatResponse(BaseModel):
     """Chat response model"""
@@ -116,9 +117,24 @@ async def chat_endpoint(request: ChatRequest, req: Request):
                 detail="Hệ thống chưa sẵn sàng. Vui lòng thử lại sau."
             )
         
-        # Step 1: Hybrid retrieval (Dense + BM25)
-        logger.info(f"Session {session_id}: Running hybrid retrieval...")
-        documents = hybrid_retrieve(question, bm25)
+        history = request.history or []
+        search_query = question
+
+        # Step 0: Multi-turn Contextual Query Rewriting (Query Condensation)
+        if history and len(history) > 0:
+            try:
+                from retrieval.query_rewriter import rewrite_query
+                rewritten = rewrite_query(question, history)
+                if rewritten and rewritten.strip():
+                    search_query = rewritten.strip()
+                    logger.info(f"Session {session_id}: Rewrote query from '{question}' -> '{search_query}'")
+            except Exception as e:
+                logger.warning(f"Session {session_id}: Query rewriting failed ({e}), keeping original question.")
+                search_query = question
+
+        # Step 1: Hybrid retrieval (Dense + BM25) với search_query độc lập
+        logger.info(f"Session {session_id}: Running hybrid retrieval with search query: '{search_query}'...")
+        documents = hybrid_retrieve(search_query, bm25)
         
         if not documents:
             logger.warning(f"Session {session_id}: No documents retrieved")
@@ -131,23 +147,23 @@ async def chat_endpoint(request: ChatRequest, req: Request):
         
         logger.info(f"Session {session_id}: Retrieved {len(documents)} documents from hybrid search")
         
-        # Step 2: Reranking (if available)
+        # Step 2: Reranking (if available) với search_query độc lập
         if reranker is not None:
-            logger.info(f"Session {session_id}: Reranking documents...")
-            documents = reranker.rerank(question, documents, top_k=RERRANKING_TOP_K)
+            logger.info(f"Session {session_id}: Reranking documents with query: '{search_query}'...")
+            documents = reranker.rerank(search_query, documents, top_k=RERRANKING_TOP_K)
             logger.info(f"Session {session_id}: After reranking: {len(documents)} documents")
         else:
             logger.warning(f"Session {session_id}: Reranker not available, using hybrid scores only")
             documents = documents[:RERRANKING_TOP_K]  # Cut to top K
         
-        # Step 3: Build context and generate answer
+        # Step 3: Build context and generate answer (kèm history cho câu trả lời tự nhiên, liền mạch)
         context = "\n\n".join(
             f"[{i+1}] {doc.text}\n(Nguồn: {doc.metadata})" 
             for i, doc in enumerate(documents)
         )
         logger.info(f"Session {session_id}: Retrieved {len(documents)} documents")
         
-        answer = generate_answer(context, question, provider=provider)
+        answer = generate_answer(context, question, provider=provider, history=history)
         logger.info(f"Session {session_id}: Generated answer successfully via {provider}")
 
         def clean_source_title(meta: dict) -> str:

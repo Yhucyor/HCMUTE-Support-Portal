@@ -21,7 +21,7 @@ MODEL_TEMPERATURE = LLM_CONFIG.get("temperature", 0.2)
 MODEL_MAX_TOKENS = LLM_CONFIG.get("max_tokens", 1024)
 MODEL_TIMEOUT = LLM_CONFIG.get("timeout", 60)
 
-def generate_answer(context: str, question: str, provider: str = None) -> str:
+def generate_answer(context: str, question: str, provider: str = None, history: list = None) -> str:
     if not context or not context.strip(): # Kiểm tra context rỗng
         logger.warning("Received empty context for answer generation.")
         return "Dữ liệu ngữ cảnh không được để trống."
@@ -33,7 +33,7 @@ def generate_answer(context: str, question: str, provider: str = None) -> str:
     selected_provider = (provider or MODEL_PROVIDER or "ollama").lower()
     selected_model = "gemini-2.5-flash" if selected_provider == "gemini" else (MODEL_NAME if selected_provider == "ollama" else MODEL_NAME)
 
-    prompt = build_prompt(context, question) # Tạo prompt từ context và question
+    prompt = build_prompt(context, question, history=history) # Tạo prompt từ context, question và history
     start = time.time() # Bắt đầu đo thời gian
     
     logger.info(f"Generating answer using provider: {selected_provider}, model: {selected_model}")
