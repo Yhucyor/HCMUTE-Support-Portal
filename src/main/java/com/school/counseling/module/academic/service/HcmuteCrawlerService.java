@@ -444,6 +444,8 @@ public class HcmuteCrawlerService {
 
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 200 && response.body() != null && !response.body().isBlank()) {
+                log.info("HCMUTE marks response sample (first 1000 chars): {}",
+                        response.body().substring(0, Math.min(response.body().length(), 1000)));
                 JsonNode root = objectMapper.readTree(response.body());
                 parseMarksRecursively(root, studentId, "", list);
             }
@@ -463,19 +465,22 @@ public class HcmuteCrawlerService {
         }
 
         if (node.hasNonNull("DanhSachDiem") && node.get("DanhSachDiem").isArray()) {
-            String year = node.hasNonNull("NamHoc") ? node.get("NamHoc").asText() : "";
+            String year = node.hasNonNull("NamHoc") ? node.get("NamHoc").asText().trim() : "";
             for (JsonNode semNode : node.get("DanhSachDiem")) {
-                String semName = semNode.hasNonNull("HocKy") ? semNode.get("HocKy").asText() : "Học kỳ";
-                if (!year.isBlank()) {
-                    semName = semName + " (" + year + ")";
-                }
+                String rawHk = semNode.hasNonNull("HocKy") ? semNode.get("HocKy").asText().trim() : "";
+                String semName = formatSemesterLabel(rawHk, year);
                 parseMarksRecursively(semNode, studentId, semName, list);
             }
             return;
         }
 
         if (node.hasNonNull("DanhSachDiemHK") && node.get("DanhSachDiemHK").isArray()) {
-            String semName = node.hasNonNull("HocKy") ? node.get("HocKy").asText() : semesterContext;
+            String semName = (semesterContext != null && !semesterContext.isBlank())
+                    ? semesterContext
+                    : formatSemesterLabel(
+                            node.hasNonNull("HocKy") ? node.get("HocKy").asText().trim() : "",
+                            node.hasNonNull("NamHoc") ? node.get("NamHoc").asText().trim() : ""
+                    );
             for (JsonNode courseNode : node.get("DanhSachDiemHK")) {
                 StudentGrade g = parseSingleGrade(courseNode, studentId, semName);
                 if (g != null) list.add(g);
@@ -487,6 +492,31 @@ public class HcmuteCrawlerService {
             StudentGrade g = parseSingleGrade(node, studentId, semesterContext);
             if (g != null) list.add(g);
         }
+    }
+
+    public static String formatSemesterLabel(String hocKy, String namHoc) {
+        String sem = "Học kỳ";
+        if (hocKy != null && !hocKy.isBlank()) {
+            String hk = hocKy.trim().toUpperCase(Locale.ROOT);
+            if (hk.contains("HK01") || hk.contains("HK1") || hk.equals("1")) {
+                sem = "Học kỳ 1";
+            } else if (hk.contains("HK02") || hk.contains("HK2") || hk.equals("2")) {
+                sem = "Học kỳ 2";
+            } else if (hk.contains("HK03") || hk.contains("HK3") || hk.equals("3") || hk.contains("HE") || hk.contains("HÈ")) {
+                sem = "Học kỳ 3 (Hè)";
+            } else {
+                sem = hocKy.trim();
+            }
+        }
+
+        String year = (namHoc != null) ? namHoc.trim() : "";
+        if (!year.isBlank()) {
+            return sem + " (" + year + ")";
+        }
+        if ("Học kỳ".equals(sem) || sem.isBlank()) {
+            return "Toàn khóa / Đầu vào";
+        }
+        return sem;
     }
 
     private StudentGrade parseSingleGrade(JsonNode m, String studentId, String semesterName) {
@@ -531,7 +561,10 @@ public class HcmuteCrawlerService {
         else if (m.hasNonNull("DiemThi_10")) finalScore = m.get("DiemThi_10").asDouble();
 
         String sem = (semesterName != null && !semesterName.isBlank()) ? semesterName
-                : (m.hasNonNull("HocKy") ? m.get("HocKy").asText() : "Học kỳ");
+                : formatSemesterLabel(
+                        m.hasNonNull("HocKy") ? m.get("HocKy").asText().trim() : "",
+                        m.hasNonNull("NamHoc") ? m.get("NamHoc").asText().trim() : ""
+                );
 
         // Chỉ đánh giá kết quả đạt/rớt khi môn học đã có điểm kết quả cuối cùng trên Portal
         boolean hasFinalResult = (totalScore != null) || (!gradeLetter.isBlank() && !"--".equals(gradeLetter));
@@ -632,7 +665,7 @@ public class HcmuteCrawlerService {
                                 .endTime(endTime)
                                 .room(room)
                                 .lecturer(lecturer)
-                                .semester(currentTerm + " (" + currentYear + ")")
+                                .semester(formatSemesterLabel(currentTerm, currentYear))
                                 .groupCode(groupCode)
                                 .credits(credits)
                                 .build());

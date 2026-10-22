@@ -315,4 +315,56 @@ public class HcmuteGradingEngine {
                 .totalDebtCredits(totalDebtCredits)
                 .build();
     }
+
+    /**
+     * So sánh 2 học kỳ theo thứ tự thời gian giảm dần (học kỳ mới nhất đứng trước).
+     * Ví dụ: Học kỳ 1 (2025-2026) > Học kỳ 1 (2024-2025) > Học kỳ 2 (2023-2024) > Học kỳ 1 (2023-2024)
+     */
+    public static int compareSemestersDesc(String semA, String semB) {
+        if (semA == null && semB == null) return 0;
+        if (semA == null) return 1;
+        if (semB == null) return -1;
+        if (semA.equalsIgnoreCase(semB)) return 0;
+
+        int yearA = extractYearStart(semA);
+        int yearB = extractYearStart(semB);
+        if (yearB != yearA) {
+            return Integer.compare(yearB, yearA);
+        }
+
+        int termA = extractTermNumber(semA);
+        int termB = extractTermNumber(semB);
+        if (termB != termA) {
+            return Integer.compare(termB, termA);
+        }
+
+        return semB.compareToIgnoreCase(semA);
+    }
+
+    public static int extractYearStart(String semester) {
+        if (semester == null) return 0;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(20\\d{2})").matcher(semester);
+        if (m.find()) {
+            try {
+                return Integer.parseInt(m.group(1));
+            } catch (Exception ignored) {}
+        }
+        return 0;
+    }
+
+    public static int extractTermNumber(String semester) {
+        if (semester == null) return 0;
+        String s = semester.toLowerCase(Locale.ROOT);
+        if (s.contains("hè") || s.contains("he") || s.contains("hk3") || s.contains("hk03") || s.contains("học kỳ 3") || s.contains("hoc ky 3")) {
+            return 3;
+        }
+        if (s.contains("hk2") || s.contains("hk02") || s.contains("học kỳ 2") || s.contains("hoc ky 2")) {
+            return 2;
+        }
+        if (s.contains("hk1") || s.contains("hk01") || s.contains("học kỳ 1") || s.contains("hoc ky 1")) {
+            return 1;
+        }
+        return 0;
+    }
 }
+

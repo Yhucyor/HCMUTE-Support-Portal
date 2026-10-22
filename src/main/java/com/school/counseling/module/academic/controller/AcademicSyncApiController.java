@@ -23,7 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import com.school.counseling.module.academic.service.HcmuteGradingEngine;
 
 @RestController
 @RequestMapping("/api/academic")
@@ -134,6 +136,17 @@ public class AcademicSyncApiController {
             }
         }
 
+        if (list != null && list.size() > 1) {
+            list = new ArrayList<>(list);
+            list.sort((g1, g2) -> {
+                int cmp = HcmuteGradingEngine.compareSemestersDesc(g1.getSemester(), g2.getSemester());
+                if (cmp != 0) return cmp;
+                String name1 = g1.getCourseName() != null ? g1.getCourseName() : "";
+                String name2 = g2.getCourseName() != null ? g2.getCourseName() : "";
+                return name1.compareToIgnoreCase(name2);
+            });
+        }
+
         return ResponseEntity.ok(list);
     }
 
@@ -141,13 +154,14 @@ public class AcademicSyncApiController {
     public ResponseEntity<List<String>> getGradeSemesters(
             @RequestParam(required = false) String studentId) {
         String resolvedId = resolveStudentId(studentId);
-        List<String> semesters = gradeRepository.findDistinctSemestersByStudentId(resolvedId);
+        List<String> semesters = new ArrayList<>(gradeRepository.findDistinctSemestersByStudentId(resolvedId));
         if (semesters.isEmpty()) {
             String loginUser = SecurityUtils.getCurrentUsername().orElse("");
             if (!loginUser.isBlank() && !loginUser.equalsIgnoreCase(resolvedId)) {
-                semesters = gradeRepository.findDistinctSemestersByStudentId(loginUser);
+                semesters = new ArrayList<>(gradeRepository.findDistinctSemestersByStudentId(loginUser));
             }
         }
+        semesters.sort(HcmuteGradingEngine::compareSemestersDesc);
         return ResponseEntity.ok(semesters);
     }
 

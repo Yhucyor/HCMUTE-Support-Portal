@@ -479,11 +479,6 @@
                             <select id="filterYear" onchange="applyFilters()"
                                     class="w-full bg-transparent text-[14px] text-slate-800 font-medium outline-none cursor-pointer py-1 border-0 focus:ring-0">
                                 <option value="" selected>Tất cả năm học</option>
-                                <option value="2026-2027">2026-2027</option>
-                                <option value="2025-2026">2025-2026</option>
-                                <option value="2024-2025">2024-2025</option>
-                                <option value="2023-2024">2023-2024</option>
-                                <option value="2022-2023">2022-2023</option>
                             </select>
                         </fieldset>
 
@@ -493,7 +488,6 @@
                             <select id="filterSemester" onchange="applyFilters()"
                                     class="w-full bg-transparent text-[14px] text-slate-800 font-medium outline-none cursor-pointer py-1 border-0 focus:ring-0">
                                 <option value="" selected>Tất cả học kỳ</option>
-                                <!-- JS tự động điền danh sách học kỳ có dữ liệu -->
                             </select>
                         </fieldset>
 
@@ -803,26 +797,125 @@
         applyFilters();
     }
 
-    // ── Populate Semester Filter Dropdown ─────────────────────────────────────
-    function populateSemesterFilter() {
-        const sel = document.getElementById('filterSemester');
-        if (!sel) return;
-        const currentVal = sel.value;
+    // ── Phân tích thông tin Năm học & Học kỳ từ chuỗi ───────────────────────
+    function parseSemesterInfo(semStr) {
+        if (!semStr || typeof semStr !== 'string') {
+            return { yearStart: 0, yearEnd: 0, yearStr: '', termNum: 0, termName: 'Chưa phân loại', raw: '' };
+        }
+        const raw = semStr.trim();
 
-        // Trích xuất các học kỳ duy nhất từ dữ liệu
-        const semSet = new Set();
+        // 1. Trích xuất năm học: dạng 2024-2025 hoặc 2024
+        let yearStart = 0;
+        let yearEnd = 0;
+        let yearStr = '';
+        const yearMatch = raw.match(/(\d{4})\s*[-_/\\]\s*(\d{4})/);
+        if (yearMatch) {
+            yearStart = parseInt(yearMatch[1], 10);
+            yearEnd = parseInt(yearMatch[2], 10);
+            yearStr = `${yearStart}-${yearEnd}`;
+        } else {
+            const singleYearMatch = raw.match(/\b(20\d{2})\b/);
+            if (singleYearMatch) {
+                yearStart = parseInt(singleYearMatch[1], 10);
+                yearEnd = yearStart + 1;
+                yearStr = `${yearStart}-${yearEnd}`;
+            }
+        }
+
+        // 2. Trích xuất số học kỳ (1, 2, 3/Hè, hoặc 0 cho Chuẩn đầu vào / Toàn khóa)
+        let termNum = 0;
+        let termName = 'Học kỳ khác';
+        const lower = raw.toLowerCase();
+
+        if (lower.includes('hè') || lower.includes('he') || lower.includes('hk3') || lower.includes('hk03') || lower.includes('học kỳ 3') || lower.includes('hoc ky 3')) {
+            termNum = 3;
+            termName = 'Học kỳ 3 (Hè)';
+        } else if (lower.includes('hk2') || lower.includes('hk02') || lower.includes('học kỳ 2') || lower.includes('hoc ky 2')) {
+            termNum = 2;
+            termName = 'Học kỳ 2';
+        } else if (lower.includes('hk1') || lower.includes('hk01') || lower.includes('học kỳ 1') || lower.includes('hoc ky 1')) {
+            termNum = 1;
+            termName = 'Học kỳ 1';
+        } else if (lower.includes('đầu vào') || lower.includes('dau vao') || lower.includes('toàn khóa') || lower.includes('toan khoa')) {
+            termNum = 0;
+            termName = 'Toàn khóa / Đầu vào';
+        }
+
+        return { yearStart, yearEnd, yearStr, termNum, termName, raw };
+    }
+
+    // ── So sánh 2 học kỳ theo thứ tự thời gian giảm dần (Mới nhất trước) ────
+    function compareSemestersDesc(semA, semB) {
+        if (!semA && !semB) return 0;
+        if (!semA) return 1;
+        if (!semB) return -1;
+
+        const pA = parseSemesterInfo(semA);
+        const pB = parseSemesterInfo(semB);
+
+        // 1. So sánh năm học giảm dần (2025-2026 > 2024-2025 > 2023-2024)
+        if (pB.yearStart !== pA.yearStart) {
+            return pB.yearStart - pA.yearStart;
+        }
+
+        // 2. Cùng năm học: So sánh học kỳ giảm dần (HK3/Hè > HK2 > HK1 > Đầu vào)
+        if (pB.termNum !== pA.termNum) {
+            return pB.termNum - pA.termNum;
+        }
+
+        return (semB || '').localeCompare(semA || '', undefined, { numeric: true });
+    }
+
+    // ── Populate Year & Semester Filter Dropdowns ─────────────────────────────
+    function populateSemesterFilter() {
+        const yearSel = document.getElementById('filterYear');
+        const semSel = document.getElementById('filterSemester');
+        if (!yearSel || !semSel) return;
+
+        const currentYear = yearSel.value;
+        const currentSem = semSel.value;
+
+        // Trích xuất các năm học duy nhất từ allGrades
+        const yearSet = new Set();
+        let hasTerm0 = false;
+        let hasTerm1 = false;
+        let hasTerm2 = false;
+        let hasTerm3 = false;
+
         allGrades.forEach(g => {
-            if (g.semester && g.semester.trim()) semSet.add(g.semester.trim());
+            const info = parseSemesterInfo(g.semester);
+            if (info.yearStr) yearSet.add(info.yearStr);
+            if (info.termNum === 1) hasTerm1 = true;
+            if (info.termNum === 2) hasTerm2 = true;
+            if (info.termNum === 3) hasTerm3 = true;
+            if (info.termNum === 0) hasTerm0 = true;
         });
 
-        // Sắp xếp học kỳ mới nhất trước
-        const sortedSems = Array.from(semSet).sort((a,b) => b.localeCompare(a, undefined, { numeric: true }));
+        // Sắp xếp năm học giảm dần (mới nhất trước)
+        const sortedYears = Array.from(yearSet).sort((a, b) => {
+            const yA = parseInt(a.split('-')[0], 10) || 0;
+            const yB = parseInt(b.split('-')[0], 10) || 0;
+            return yB - yA;
+        });
 
-        sel.innerHTML = '<option value="" selected>Tất cả học kỳ</option>' +
-            sortedSems.map(s => `<option value="${s}">${s}</option>`).join('');
+        let yearHtml = '<option value="">Tất cả năm học</option>';
+        sortedYears.forEach(y => {
+            yearHtml += `<option value="${y}">${y}</option>`;
+        });
+        yearSel.innerHTML = yearHtml;
+        if (currentYear && yearSet.has(currentYear)) {
+            yearSel.value = currentYear;
+        }
 
-        if (currentVal && semSet.has(currentVal)) {
-            sel.value = currentVal;
+        let semHtml = '<option value="">Tất cả học kỳ</option>';
+        if (hasTerm1 || !allGrades.length) semHtml += '<option value="1">Học kỳ 1</option>';
+        if (hasTerm2 || !allGrades.length) semHtml += '<option value="2">Học kỳ 2</option>';
+        if (hasTerm3 || !allGrades.length) semHtml += '<option value="3">Học kỳ 3 (Hè)</option>';
+        if (hasTerm0) semHtml += '<option value="0">Chuẩn đầu vào / Khác</option>';
+
+        semSel.innerHTML = semHtml;
+        if (currentSem) {
+            semSel.value = currentSem;
         }
     }
 
@@ -1008,15 +1101,26 @@
         const searchVal = document.getElementById('searchInput').value.trim().toLowerCase();
 
         const filtered = allGrades.filter(g => {
+            const semInfo = parseSemesterInfo(g.semester);
+
             // Lọc theo năm học
             if (yearVal) {
-                const semStr = g.semester || '';
-                if (!semStr.includes(yearVal)) return false;
+                if (semInfo.yearStr !== yearVal && !(g.semester || '').includes(yearVal)) {
+                    return false;
+                }
             }
-            // Lọc theo học kỳ
+
+            // Lọc theo học kỳ (Hỗ trợ cả mã số kỳ 1, 2, 3 và chuỗi chi tiết)
             if (semVal) {
-                if ((g.semester || '').trim() !== semVal) return false;
+                if (['0', '1', '2', '3'].includes(semVal)) {
+                    if (String(semInfo.termNum) !== semVal) return false;
+                } else {
+                    if ((g.semester || '').trim() !== semVal && !(g.semester || '').includes(semVal)) {
+                        return false;
+                    }
+                }
             }
+
             // Lọc theo trạng thái kết quả
             if (statusVal === 'PASSED' && isCoursePassed(g) !== true) return false;
             if (statusVal === 'FAILED' && isCoursePassed(g) !== false) return false;
@@ -1032,6 +1136,13 @@
                 }
             }
             return true;
+        });
+
+        // Sắp xếp các môn trong mảng đã lọc theo thứ tự học kỳ giảm dần
+        filtered.sort((a, b) => {
+            const semCmp = compareSemestersDesc(a.semester, b.semester);
+            if (semCmp !== 0) return semCmp;
+            return (a.courseName || '').localeCompare(b.courseName || '', 'vi');
         });
 
         // Cập nhật nhãn thống kê
@@ -1050,10 +1161,14 @@
     }
 
     function resetFilters() {
-        document.getElementById('filterYear').value = '';
-        document.getElementById('filterSemester').value = '';
-        document.getElementById('filterStatus').value = 'ALL';
-        document.getElementById('searchInput').value = '';
+        const yearSel = document.getElementById('filterYear');
+        const semSel = document.getElementById('filterSemester');
+        const statusSel = document.getElementById('filterStatus');
+        const searchInp = document.getElementById('searchInput');
+        if (yearSel) yearSel.value = '';
+        if (semSel) semSel.value = '';
+        if (statusSel) statusSel.value = 'ALL';
+        if (searchInp) searchInp.value = '';
         applyFilters();
     }
 
@@ -1103,12 +1218,13 @@
             groups[sem].push(g);
         });
 
-        // Sắp xếp các học kỳ mới nhất trước
-        const sortedSemKeys = Object.keys(groups).sort((a,b) => b.localeCompare(a, undefined, { numeric: true }));
+        // Sắp xếp các học kỳ mới nhất trước theo thứ tự thời gian chuẩn
+        const sortedSemKeys = Object.keys(groups).sort(compareSemestersDesc);
 
         let html = '';
         sortedSemKeys.forEach((semName, groupIndex) => {
             const semGrades = groups[semName];
+            semGrades.sort((a, b) => (a.courseCode || '').localeCompare(b.courseCode || ''));
 
             // Tính thống kê học kỳ: chỉ tính môn đã có điểm tổng kết cuối cùng
             let semCredits = 0;
@@ -1349,7 +1465,7 @@
             semGroups[sem].push(g);
         });
 
-        const sortedSems = Object.keys(semGroups).sort((a,b) => b.localeCompare(a, undefined, { numeric: true }));
+        const sortedSems = Object.keys(semGroups).sort(compareSemestersDesc);
         const progBody = document.getElementById('semesterProgressBody');
         if (progBody) {
             progBody.innerHTML = sortedSems.map(s => {
