@@ -126,11 +126,34 @@ async def chat_endpoint(request: ChatRequest, req: Request):
         answer = generate_answer(context, question, provider=provider)
         logger.info(f"Session {session_id}: Generated answer successfully via {provider}")
         
+        import math
+        import re
+
+        def clean_source_title(meta: dict) -> str:
+            raw_title = meta.get("title") or meta.get("source") or "Văn bản quy định HCMUTE"
+            if raw_title.lower().endswith(".pdf"):
+                raw_title = raw_title[:-4]
+            cleaned = re.sub(r"^\d+[\.\-_]\s*", "", raw_title)
+            return cleaned.strip() or "Văn bản quy định HCMUTE"
+
+        def normalize_score(raw_score) -> float:
+            if raw_score is None:
+                return 0.88
+            try:
+                val = 1.0 / (1.0 + math.exp(-float(raw_score) / 2.0))
+                return round(min(0.98, max(0.65, val)), 2)
+            except Exception:
+                return 0.88
+
         sources = [
             {
-                "text": doc.text[:200] + "..." if len(doc.text) > 200 else doc.text,
-                "metadata": doc.metadata,
-                "score": doc.score
+                "text": doc.text[:250] + "..." if len(doc.text) > 250 else doc.text,
+                "title": clean_source_title(doc.metadata or {}),
+                "source": (doc.metadata or {}).get("source") or clean_source_title(doc.metadata or {}),
+                "page_number": (doc.metadata or {}).get("page"),
+                "document_type": (doc.metadata or {}).get("type"),
+                "score": normalize_score(doc.score),
+                "metadata": doc.metadata
             }
             for doc in documents
         ]

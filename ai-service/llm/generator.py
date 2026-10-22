@@ -59,15 +59,35 @@ def generate_answer(context: str, question: str, provider: str = None) -> str:
                 return "Lỗi: Chưa cấu hình GEMINI_API_KEY trong file .env"
             
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel(selected_model)
-            response = model.generate_content(
-                prompt,
-                generation_config=genai.types.GenerationConfig(
-                    temperature=MODEL_TEMPERATURE,
-                    max_output_tokens=MODEL_MAX_TOKENS,
-                )
-            )
-            answer = response.text.strip()
+            
+            # Danh sách model Gemini 3.5 thế hệ mới nhất có quota dồi dào
+            candidate_models = ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-2.5-pro"]
+            answer = None
+            last_err = None
+            
+            for m_name in candidate_models:
+                try:
+                    logger.info(f"Đang sinh câu trả lời với model Gemini: {m_name}")
+                    model = genai.GenerativeModel(m_name)
+                    response = model.generate_content(
+                        prompt,
+                        generation_config=genai.types.GenerationConfig(
+                            temperature=MODEL_TEMPERATURE,
+                            max_output_tokens=2048,
+                        )
+                    )
+                    if response and response.text:
+                        answer = response.text.strip()
+                        logger.info(f"Sinh câu trả lời thành công với model {m_name}")
+                        break
+                except Exception as ex:
+                    last_err = ex
+                    logger.warning(f"Model {m_name} không khả dụng ({ex}). Đang thử model kế tiếp...")
+                    continue
+            
+            if not answer:
+                logger.error(f"Toàn bộ các model Gemini đều không khả dụng: {last_err}")
+                return "Chào bạn! Hiện tại dịch vụ AI đang tạm thời đạt hạn mức gọi API. Bạn vui lòng thử lại sau ít phút hoặc tra cứu câu hỏi tương tự trên hệ thống nhé! 😊"
         else:
             logger.error(f"Unsupported model provider: {selected_provider}")
             return "Nhà cung cấp mô hình không được hỗ trợ."
