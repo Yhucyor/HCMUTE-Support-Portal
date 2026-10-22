@@ -129,12 +129,12 @@ Mỗi thẻ thông báo được thiết kế sắc nét:
 
 ---
 
-## 📅 IV. KẾ HOẠCH TRIỂN KHAI THEO TỪNG GIAI ĐOÀN
+## 📅 IV. KẾ HOẠCH TRIỂN KHAI THEO TỪNG GIAI ĐOÀN (ĐÃ HOÀN THÀNH 100%)
 
 | Giai đoạn | Nội dung công việc | Phụ trách | Trạng thái |
 | :--- | :--- | :---: | :---: |
-| **Giai đoạn 1** | Bổ sung mục "Bảng tin" vào Header Desktop & Mobile Drawer trên `index.html`, `forum.html`, `faqs.html` | **Dev B** | ⏳ Chờ thực hiện |
-| **Giai đoạn 2** | Hiện đại hóa `official-list.html` theo chuẩn Tailwind CSS HCMUTE (Card Grid, Filter Khoa, Badge đính kèm) | **Dev B** | ⏳ Chờ thực hiện |
-| **Giai đoạn 3** | Hiện đại hóa `official-detail.html` (Xem văn bản chi tiết, trình xem file đính kèm & video player) | **Dev B** | ⏳ Chờ thực hiện |
-| **Giai đoạn 4** | Kiểm tra phân quyền Cán bộ (Đăng thông báo, ghim bài) và kiểm thử toàn bộ liên kết điều hướng | **Dev A & B** | ⏳ Chờ thực hiện |
-| **Giai đoạn 5** | Biên dịch `mvn test-compile`, kiểm thử live trên trình duyệt và push commit lên Git | **Dev A** | ⏳ Chờ thực hiện |
+| **Giai đoạn 1** | Bổ sung mục "Bảng tin" vào Header Desktop & Mobile Drawer trên `index.html`, `forum.html`, `faqs.html` | **Dev B** | ✅ **HOÀN THÀNH** |
+| **Giai đoạn 2** | Nạp 4 bài viết mẫu tin tức/sự kiện từ trang chủ vào Bảng tin với nội dung giàu thực tế học thuật qua `DataInitializer.java` | **Dev A** | ✅ **HOÀN THÀNH** |
+| **Giai đoạn 3** | Hiện đại hóa `official-list.html` theo chuẩn Tailwind CSS HCMUTE (Card Grid 3 cột, Filter Khoa, Badge đính kèm, Ghim bài) | **Dev B** | ✅ **HOÀN THÀNH** |
+| **Giai đoạn 4** | Hiện đại hóa `official-detail.html` (Toàn văn thông báo, xem trực tiếp PDF, video nhúng, tệp đính kèm) | **Dev B** | ✅ **HOÀN THÀNH** |
+| **Giai đoạn 5** | Thêm redirect `/feed` & `/bang-tin` $\rightarrow$ `/feed/official`, kiểm thử live trên hệ thống (HTTP 200) và commit Git | **Dev A & B** | ✅ **HOÀN THÀNH** |

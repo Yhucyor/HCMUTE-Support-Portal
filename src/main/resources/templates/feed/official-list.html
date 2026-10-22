@@ -1,162 +1,526 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <title>Bảng Tin Thông Báo Chính Thức - QAUTE Portal</title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Bảng Tin Thông Báo Chính Thức | HCMUTE Support Portal</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <!-- Tailwind CSS with HCMUTE Identity Tokens -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "brand-red": "#991b1e",
+                        "brand-red-hover": "#831518",
+                        "brand-blue": "#003882",
+                        "brand-blue-dark": "#002456",
+                        "brand-gold": "#d97706"
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        headline: ["Outfit", "Inter", "sans-serif"]
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+        ::-webkit-scrollbar {
+            width: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
 </head>
-<body>
-<div th:fragment="content">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
 
-    <!-- Tabs Navigation Bar (Bảng Tin vs Diễn Đàn) -->
-    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-        <ul class="nav nav-pills">
-            <li class="nav-item">
-                <a class="nav-link active fw-semibold py-1 px-3" th:href="@{/feed/official}">
-                    <i class="bi bi-megaphone-fill me-1"></i>Bảng Tin Nhà Trường
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-muted fw-semibold py-1 px-3" th:href="@{/feed/forum}">
-                    <i class="bi bi-chat-square-quote me-1"></i>Diễn Đàn Sinh Viên
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <!-- Header Section with Smart Role-Based Actions -->
-    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 pb-2 border-bottom">
-        <div>
-            <h4 class="fw-bold text-dark mb-1 d-flex align-items-center">
-                <i class="bi bi-megaphone-fill text-primary me-2"></i>Bảng Tin Thông Báo Chính Thức
-            </h4>
-            <p class="small text-muted mb-0">Các văn bản, thông tư, quy chế học vụ và thông báo chính thức từ Nhà trường & các Khoa/Phòng</p>
-        </div>
-
-        <div class="mt-3 mt-md-0 d-flex gap-2">
-            <!-- 1. Cán bộ / Admin: Nút Đăng Thông Báo Mới to rõ -->
-            <div sec:authorize="hasAnyRole('STAFF', 'ADMIN')">
-                <a th:href="@{/feed/official/create}" class="btn btn-primary btn-sm px-3 shadow-sm fw-semibold">
-                    <i class="bi bi-plus-circle me-1"></i>Đăng Thông Báo Mới
-                </a>
-            </div>
-
-            <!-- 2. Sinh viên: Nút hướng dẫn sang Diễn đàn đăng bài thảo luận -->
-            <div sec:authorize="hasRole('STUDENT')">
-                <a th:href="@{/feed/forum}" class="btn btn-outline-primary btn-sm px-3 shadow-xs fw-semibold" title="Thông báo chính thức do Cán bộ ban hành. Sinh viên đăng bài tại Diễn đàn">
-                    <i class="bi bi-pencil-square me-1"></i>Đăng Bài Tại Diễn Đàn
-                </a>
-            </div>
-
-            <!-- 3. Khách vãng lai: Hướng dẫn đăng nhập -->
-            <div sec:authorize="isAnonymous()">
-                <a th:href="@{/auth/login}" class="btn btn-outline-secondary btn-sm px-3 fw-semibold">
-                    <i class="bi bi-box-arrow-in-right me-1"></i>Đăng Nhập Để Đăng Bài
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filter & Search Section -->
-    <div class="card border p-3 mb-4 shadow-sm rounded-3 bg-white">
-        <form th:action="@{/feed/official}" method="get" class="row g-2 align-items-center">
-            <div class="col-md-5">
-                <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                    <input type="text" name="q" th:value="${query}" class="form-control bg-light border-start-0 ps-1" placeholder="Tìm theo tiêu đề thông báo...">
+    <!-- 1. TOP HEADER NAVIGATION (HCMUTE HORIZON) -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 transition-all">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[74px] flex items-center justify-between gap-4">
+            <!-- Brand Logo & University Title -->
+            <a class="flex items-center gap-3.5 group flex-shrink-0" th:href="@{/}">
+                <img alt="HCMUTE Logo" class="h-12 w-auto object-contain transition-transform group-hover:scale-105" 
+                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKSHNb9YZP8QFQKzZ-_B_glnPE615kLoTh0DIZM9-id7Eb1Z7EZXRKcjBeCckK7VOaTPGdnMs7Cl7qdtjr1Mry3Y7d1U0S8maxw8fAHipOBnT-HFyaVBuqc6xe0fMZJf4fPlHw6UIkL0vHJV2kfl-tnjJgobCtm7Cy-KazrUCaEZefkxCcT9HC_-zWiT9twVqKg6xymALE7_hrVpAjI-XYdTFsbm3wyDRY8PxAR-vjOB00BqpW9wX9dVryQuIfZgdSA">
+                <div class="flex flex-col text-[#003882]">
+                    <span class="font-bold text-sm sm:text-base tracking-tight leading-tight text-[#003882]">Trường Đại học Sư phạm Kỹ thuật Tp. Hồ Chí Minh</span>
+                    <span class="font-normal text-[11px] sm:text-xs text-[#003882] tracking-normal leading-normal">HCMC University of Technology and Education</span>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <select name="departmentId" class="form-select bg-light">
-                    <option value="">Tất cả Đơn vị / Khoa / Phòng</option>
-                    <option th:each="dept : ${departments}" 
-                            th:value="${dept.id}" 
-                            th:text="${dept.name}" 
-                            th:selected="${selectedDept == dept.id}">Đơn vị</option>
-                </select>
-            </div>
-            <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary flex-fill fw-semibold"><i class="bi bi-funnel me-1"></i>Lọc Tin</button>
-                <a th:href="@{/feed/official}" class="btn btn-outline-secondary" title="Đặt lại"><i class="bi bi-arrow-counterclockwise"></i></a>
-            </div>
-        </form>
-    </div>
+            </a>
 
-    <!-- Announcements List Container -->
-    <div th:if="${posts.empty}" class="card p-5 text-center text-muted border shadow-sm rounded-3">
-        <i class="bi bi-newspaper fs-1 text-muted mb-3"></i>
-        <h5 class="fw-bold text-dark mb-1">Chưa có thông báo nào</h5>
-        <p class="small text-muted mb-0">Hiện chưa có thông báo chính thức nào phù hợp với bộ lọc bạn chọn.</p>
-    </div>
+            <!-- Nav Items (Desktop) -->
+            <nav class="hidden xl:flex items-center space-x-7">
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/}">Trang chủ</a>
+                <a class="font-semibold text-[14px] text-[#991b1e] border-b-2 border-[#991b1e] pb-1" th:href="@{/feed/official}">Bảng tin</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/feed/forum}">Diễn đàn</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/faqs}">Tra cứu FAQ</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
+            </nav>
 
-    <div class="row g-3" th:unless="${posts.empty}">
-        <div class="col-md-6 col-lg-4" th:each="post : ${posts.content}">
-            <div class="card h-100 border shadow-sm rounded-3 overflow-hidden d-flex flex-column hover-shadow">
-                
-                <!-- Pinned & Dept Header -->
-                <div class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
-                    <span class="badge bg-primary bg-opacity-10 text-primary px-2 py-1" th:text="${post.departmentName != null ? post.departmentName : 'Nhà trường'}">Phòng Ban</span>
-                    <div class="d-flex align-items-center gap-1">
-                        <span th:if="${post.isPinned}" class="badge bg-danger text-white"><i class="bi bi-pin-fill me-1"></i>Được ghim</span>
-                        <!-- Admin Toggle Pin Button -->
-                        <form sec:authorize="hasRole('ADMIN')" th:action="@{/feed/official/toggle-pin/{id}(id=${post.id})}" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-sm py-0 px-1 border-0" 
-                                    th:classappend="${post.isPinned ? 'text-danger' : 'text-muted'}"
-                                    th:title="${post.isPinned ? 'Bấm để Bỏ ghim bài viết này' : 'Bấm để Ghim bài viết này lên đầu'}">
-                                <i class="bi fs-6" th:classappend="${post.isPinned ? 'bi-pin-fill' : 'bi-pin'}"></i>
-                            </button>
-                        </form>
+            <!-- Header Actions -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="hidden sm:flex items-center text-xs font-semibold text-slate-600 px-2 py-1 rounded cursor-pointer hover:bg-slate-100">
+                    <span>VI</span>
+                    <span class="material-symbols-outlined text-[16px]">expand_more</span>
+                </div>
+
+                <!-- Authenticated: Account Dropdown Menu -->
+                <div sec:authorize="isAuthenticated()" class="relative">
+                    <button id="officialAccountToggle" 
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95" 
+                            aria-haspopup="true"
+                            aria-expanded="false">
+                        <span class="material-symbols-outlined text-[16px]">account_circle</span>
+                        <span class="hidden sm:inline truncate max-w-[150px]" th:text="${currentUser != null ? currentUser.fullName : #authentication.name}">Họ Tên</span>
+                        <span class="material-symbols-outlined text-[14px]">expand_more</span>
+                    </button>
+
+                    <div id="officialAccountDropdown" 
+                         class="hidden absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 transition-all">
+                        <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+                            <p class="text-xs text-slate-500 font-medium">Đang đăng nhập với vai trò</p>
+                            <p class="text-sm font-bold text-slate-800 truncate" th:text="${currentUser != null ? currentUser.fullName : #authentication.name}">Nguyễn Văn A</p>
+                            <span class="inline-block mt-1 px-2 py-0.5 text-[10px] font-semibold bg-blue-100 text-[#003882] rounded">
+                                <span sec:authorize="hasRole('ADMIN')">Quản trị viên</span>
+                                <span sec:authorize="hasRole('STAFF')">Cán bộ tư vấn</span>
+                                <span sec:authorize="hasRole('STUDENT')">Sinh viên HCMUTE</span>
+                            </span>
+                        </div>
+                        <a th:href="@{/academic/sync}" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50/60 hover:text-[#003882] transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">school</span>
+                            <span>Tổng quan học tập</span>
+                        </a>
+                        <a th:href="@{/profile}" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50/60 hover:text-[#003882] transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">person</span>
+                            <span>Thông tin cá nhân</span>
+                        </a>
+                        <a th:href="@{/tickets/my-tickets}" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50/60 hover:text-[#003882] transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">confirmation_number</span>
+                            <span>Hồ sơ yêu cầu của tôi</span>
+                        </a>
+                        <div class="my-1 border-t border-slate-100"></div>
+                        <a th:href="@{/auth/logout}" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">logout</span>
+                            <span>Đăng xuất</span>
+                        </a>
                     </div>
                 </div>
 
-                <!-- Card Body -->
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title fw-bold text-dark mb-2 fs-6">
-                        <a th:href="@{/feed/official/{id}(id=${post.id})}" class="text-decoration-none text-dark hover-primary" th:text="${post.title}">Tiêu đề thông báo</a>
-                    </h5>
-                    <p class="card-text text-muted small flex-fill mb-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6;" th:text="${post.content}">
-                        Nội dung tóm tắt thông báo học vụ...
+                <!-- Unauthenticated: Login Button -->
+                <div sec:authorize="!isAuthenticated()">
+                    <a class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#991b1e] hover:bg-[#831518] rounded-md shadow-sm transition-all active:scale-95" th:href="@{/auth/login}">
+                        <span class="material-symbols-outlined text-[16px]">person</span>
+                        <span>Đăng nhập</span>
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button aria-label="Mở menu" onclick="toggleMobileNav()" class="xl:hidden w-9 h-9 rounded-md flex items-center justify-center text-slate-700 hover:bg-slate-100">
+                    <span class="material-symbols-outlined text-[24px]">menu</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Drawer Menu -->
+        <div id="mobileNavDrawer" class="hidden xl:hidden bg-white border-b border-slate-200 px-4 pt-3 pb-5 space-y-2.5 shadow-lg">
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/}">Trang chủ</a>
+            <a class="block py-2 text-sm font-semibold text-[#991b1e]" th:href="@{/feed/official}">Bảng tin</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/feed/forum}">Diễn đàn</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/faqs}">Tra cứu FAQ</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
+            <div sec:authorize="isAuthenticated()" class="pt-2 border-t border-slate-200">
+                <a class="flex items-center gap-2 py-2 text-sm font-semibold text-[#003882]" th:href="@{/academic/sync}">
+                    <span class="material-symbols-outlined text-[18px]">home</span>
+                    <span>Tổng quan học tập</span>
+                </a>
+                <a class="flex items-center gap-2 py-2 text-sm font-medium text-slate-700" th:href="@{/profile}">
+                    <span class="material-symbols-outlined text-[18px]">person</span>
+                    <span th:text="${currentUser != null ? currentUser.fullName : #authentication.name}">Họ Tên</span>
+                </a>
+                <a class="block py-1.5 text-sm font-medium text-[#991b1e]" th:href="@{/auth/logout}">Đăng xuất</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. MAIN FEED WORKSPACE -->
+    <main class="w-full pt-[74px] flex-1">
+
+        <!-- HERO BANNER SECTION -->
+        <section class="bg-gradient-to-r from-[#002456] via-[#003882] to-[#004bb5] text-white py-10 px-4 sm:px-6 lg:px-8 border-b border-blue-900 shadow-sm relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none select-none">
+                <span class="material-symbols-outlined text-[280px]">campaign</span>
+            </div>
+            <div class="max-w-7xl mx-auto relative z-10">
+                <!-- Breadcrumb -->
+                <div class="flex items-center gap-2 text-xs text-blue-200 mb-3 font-medium">
+                    <a th:href="@{/}" class="hover:text-white transition-colors">Trang chủ</a>
+                    <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                    <span class="text-white font-semibold">Bảng tin chính thức</span>
+                </div>
+
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-xs font-semibold backdrop-blur-sm mb-3">
+                            <span class="material-symbols-outlined text-[16px] text-amber-300">verified</span>
+                            <span>Kênh thông báo & Văn bản điều hành chính thức</span>
+                        </div>
+                        <h1 class="font-headline font-bold text-2xl sm:text-3xl lg:text-4xl tracking-tight text-white mb-2">
+                            Bảng Tin Thông Báo Nhà Trường
+                        </h1>
+                        <p class="text-blue-100 text-xs sm:text-sm max-w-2xl leading-relaxed">
+                            Cập nhật liên tục các văn bản chỉ đạo, thông tư, quy chế học vụ, tin tức tuyển sinh và sự kiện học thuật từ Ban Giám hiệu cùng các Khoa / Phòng ban chuyên môn HCMUTE.
+                        </p>
+                    </div>
+
+                    <!-- Role-Based Action Buttons -->
+                    <div class="flex items-center gap-3 flex-shrink-0">
+                        <div sec:authorize="hasAnyRole('STAFF', 'ADMIN')">
+                            <a th:href="@{/feed/official/create}" 
+                               class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#991b1e] hover:bg-[#831518] text-white text-xs sm:text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all active:scale-95">
+                                <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                                <span>Đăng thông báo mới</span>
+                            </a>
+                        </div>
+                        <div sec:authorize="hasRole('STUDENT')">
+                            <a th:href="@{/feed/forum}" 
+                               class="inline-flex items-center gap-2 px-4 py-2.5 bg-white/15 hover:bg-white/25 text-white text-xs sm:text-sm font-semibold rounded-lg border border-white/20 backdrop-blur-sm transition-all">
+                                <span class="material-symbols-outlined text-[18px]">forum</span>
+                                <span>Sang Diễn đàn thảo luận</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTENT BODY WRAPPER -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+            <!-- Sub Nav Tabs: Bảng Tin vs Diễn Đàn -->
+            <div class="flex items-center justify-between gap-4 mb-6 pb-2 border-b border-slate-200">
+                <div class="inline-flex p-1 bg-slate-200/80 rounded-xl space-x-1">
+                    <a th:href="@{/feed/official}" 
+                       class="inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-bold bg-[#003882] text-white rounded-lg shadow-sm">
+                        <span class="material-symbols-outlined text-[18px]">campaign</span>
+                        <span>Bảng tin chính thức</span>
+                    </a>
+                    <a th:href="@{/feed/forum}" 
+                       class="inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-[#003882] rounded-lg transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">chat</span>
+                        <span>Diễn đàn sinh viên</span>
+                    </a>
+                </div>
+
+                <div class="hidden sm:flex items-center text-xs text-slate-500 font-medium">
+                    <span>Tổng cộng: <strong class="text-slate-800" th:text="${posts.totalElements}">0</strong> thông báo</span>
+                </div>
+            </div>
+
+            <!-- SEARCH & FILTER TOOLBAR -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 mb-8">
+                <form th:action="@{/feed/official}" method="get" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                    <!-- Search input -->
+                    <div class="md:col-span-5 relative">
+                        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+                        <input type="text" name="q" th:value="${query}" 
+                               placeholder="Tìm theo tiêu đề hoặc nội dung thông báo..." 
+                               class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#003882]/20 focus:border-[#003882] transition-all">
+                    </div>
+
+                    <!-- Department dropdown -->
+                    <div class="md:col-span-4 relative">
+                        <select name="departmentId" 
+                                class="w-full py-2.5 px-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#003882]/20 focus:border-[#003882] transition-all">
+                            <option value="">-- Tất cả Khoa / Phòng ban --</option>
+                            <option th:each="dept : ${departments}" 
+                                    th:value="${dept.id}" 
+                                    th:text="${dept.name}" 
+                                    th:selected="${selectedDept == dept.id}">Phòng Tuyển sinh</option>
+                        </select>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="md:col-span-3 flex items-center gap-2">
+                        <button type="submit" 
+                                class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-4 bg-[#003882] hover:bg-[#002456] text-white text-xs sm:text-sm font-semibold rounded-xl shadow-sm transition-all active:scale-95">
+                            <span class="material-symbols-outlined text-[18px]">filter_alt</span>
+                            <span>Lọc tin</span>
+                        </button>
+                        <a th:href="@{/feed/official}" 
+                           title="Đặt lại bộ lọc"
+                           class="w-10 h-10 inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">restart_alt</span>
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- EMPTY STATE -->
+            <div th:if="${posts.empty}" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center my-6">
+                <div class="w-16 h-16 rounded-full bg-blue-50 text-[#003882] inline-flex items-center justify-center mb-4">
+                    <span class="material-symbols-outlined text-[36px]">newspaper</span>
+                </div>
+                <h3 class="font-headline font-bold text-lg text-slate-800 mb-1">Chưa có thông báo nào</h3>
+                <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto mb-5">
+                    Không tìm thấy thông báo chính thức nào phù hợp với từ khóa hoặc đơn vị bạn đã lọc. Vui lòng thử lại với từ khóa khác.
+                </p>
+                <a th:href="@{/feed/official}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#003882] hover:underline">
+                    <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                    <span>Xem toàn bộ thông báo</span>
+                </a>
+            </div>
+
+            <!-- OFFICIAL ANNOUNCEMENTS GRID -->
+            <div th:unless="${posts.empty}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <article th:each="post : ${posts.content}" 
+                         class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex flex-col overflow-hidden group">
+                    
+                    <!-- Top Media Thumbnail (If image attachment exists) -->
+                    <div th:if="${post.attachments != null and !post.attachments.empty and post.attachments[0].fileType == 'IMAGE'}" 
+                         class="relative aspect-[16/10] bg-slate-100 overflow-hidden">
+                        <img th:src="${post.attachments[0].fileUrl}" 
+                             th:alt="${post.title}" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                        
+                        <!-- Badges on Image -->
+                        <div class="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+                            <span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#003882]/90 text-white backdrop-blur-sm shadow-sm" 
+                                  th:text="${post.departmentName != null ? post.departmentName : 'HCMUTE'}">Phòng Ban</span>
+                            <span th:if="${post.isPinned}" 
+                                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#991b1e] text-white shadow-sm">
+                                <span class="material-symbols-outlined text-[13px]">keep</span>
+                                <span>Ghim</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Header Bar if No Image -->
+                    <div th:unless="${post.attachments != null and !post.attachments.empty and post.attachments[0].fileType == 'IMAGE'}" 
+                         class="px-5 pt-5 pb-0 flex items-center justify-between gap-2">
+                        <span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-blue-50 text-[#003882] border border-blue-100" 
+                              th:text="${post.departmentName != null ? post.departmentName : 'HCMUTE'}">Phòng Ban</span>
+                        
+                        <div class="flex items-center gap-1.5">
+                            <span th:if="${post.isPinned}" 
+                                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#991b1e] text-white">
+                                <span class="material-symbols-outlined text-[13px]">keep</span>
+                                <span>Được ghim</span>
+                            </span>
+
+                            <!-- Admin Toggle Pin -->
+                            <form sec:authorize="hasRole('ADMIN')" th:action="@{/feed/official/toggle-pin/{id}(id=${post.id})}" method="post" class="inline">
+                                <button type="submit" 
+                                        th:title="${post.isPinned ? 'Bỏ ghim bài viết này' : 'Ghim bài này lên đầu trang'}"
+                                        class="w-7 h-7 inline-flex items-center justify-center rounded-md hover:bg-slate-100 text-slate-400 hover:text-[#991b1e] transition-colors">
+                                    <span class="material-symbols-outlined text-[18px]" th:classappend="${post.isPinned ? 'text-[#991b1e]' : ''}">keep</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="p-5 flex-1 flex flex-col">
+                        <!-- Date & View meta -->
+                        <div class="flex items-center gap-3 text-[11px] text-slate-400 mb-2">
+                            <span class="inline-flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                                <span th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy')}">26/09/2026</span>
+                            </span>
+                            <span class="inline-flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]">visibility</span>
+                                <span th:text="${post.viewCount != null ? post.viewCount : 0}">1,200</span>
+                            </span>
+                            <span th:if="${post.likeCount != null and post.likeCount > 0}" class="inline-flex items-center gap-1 text-rose-500">
+                                <span class="material-symbols-outlined text-[14px]">favorite</span>
+                                <span th:text="${post.likeCount}">45</span>
+                            </span>
+                        </div>
+
+                        <!-- Title -->
+                        <h2 class="font-headline font-bold text-base sm:text-lg text-slate-900 group-hover:text-[#003882] transition-colors mb-2.5 line-clamp-2 leading-snug">
+                            <a th:href="@{/feed/official/{id}(id=${post.id})}" th:text="${post.title}">
+                                Tiêu đề thông báo chính thức của trường
+                            </a>
+                        </h2>
+
+                        <!-- Excerpt Content -->
+                        <p class="text-xs sm:text-sm text-slate-600 line-clamp-3 leading-relaxed mb-4 flex-1" 
+                           th:text="${#strings.abbreviate(#strings.replace(#strings.replace(post.content, '<p>', ''), '</p>', ' '), 200)}">
+                            Nội dung trích đoạn tóm tắt bài thông báo học vụ, quy chế hoặc tin tức sự kiện tuyển sinh...
+                        </p>
+
+                        <!-- Attachments Badges -->
+                        <div class="flex flex-wrap items-center gap-1.5 mb-4" th:if="${post.attachments != null and !post.attachments.empty}">
+                            <span th:each="att : ${post.attachments}" 
+                                  th:if="${att.fileType != 'IMAGE'}"
+                                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                                <span class="material-symbols-outlined text-[13px] text-red-500" th:if="${att.fileType == 'PDF'}">picture_as_pdf</span>
+                                <span class="material-symbols-outlined text-[13px] text-blue-500" th:if="${att.fileType == 'DOCX'}">description</span>
+                                <span class="material-symbols-outlined text-[13px] text-emerald-600" th:if="${att.fileType == 'XLSX'}">table_chart</span>
+                                <span th:text="${att.fileType}">PDF</span>
+                            </span>
+                            <span th:if="${post.videoStatus == 'COMPLETED' or (post.videoUrl != null and !#strings.isEmpty(post.videoUrl))}" 
+                                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                                <span class="material-symbols-outlined text-[13px]">play_circle</span>
+                                <span>Video</span>
+                            </span>
+                        </div>
+
+                        <!-- Card Footer -->
+                        <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold">
+                            <span class="text-slate-400 font-normal truncate max-w-[150px]" th:text="${post.authorName != null ? post.authorName : 'Ban Quản Trị'}">Người đăng</span>
+                            <a th:href="@{/feed/official/{id}(id=${post.id})}" 
+                               class="inline-flex items-center gap-1 text-[#003882] hover:text-[#991b1e] transition-colors group/btn">
+                                <span>Xem chi tiết</span>
+                                <span class="material-symbols-outlined text-[16px] group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+                            </a>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- PAGINATION BAR -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-10 pt-6 border-t border-slate-200" th:if="${posts.totalPages > 1}">
+                <div class="text-xs sm:text-sm text-slate-500 font-medium">
+                    Hiển thị trang <strong class="text-slate-900" th:text="${posts.number + 1}">1</strong> trên tổng số <strong class="text-slate-900" th:text="${posts.totalPages}">5</strong> trang
+                </div>
+
+                <div class="inline-flex items-center gap-1.5">
+                    <!-- Nút Trước -->
+                    <a th:if="${!posts.first}" 
+                       th:href="@{/feed/official(page=${posts.number - 1}, departmentId=${selectedDept}, q=${query})}" 
+                       class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
+                        <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+                        <span>Trước</span>
+                    </a>
+                    <span th:if="${posts.first}" 
+                          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-100 text-xs font-semibold text-slate-400 cursor-not-allowed">
+                        <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+                        <span>Trước</span>
+                    </span>
+
+                    <!-- Danh sách trang -->
+                    <div class="flex items-center gap-1">
+                        <a th:each="i : ${#numbers.sequence(0, posts.totalPages - 1)}" 
+                           th:href="@{/feed/official(page=${i}, departmentId=${selectedDept}, q=${query})}" 
+                           th:text="${i + 1}"
+                           th:classappend="${i == posts.number ? 'bg-[#003882] text-white shadow-sm' : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'}"
+                           class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-xs font-bold transition-all">
+                            1
+                        </a>
+                    </div>
+
+                    <!-- Nút Sau -->
+                    <a th:if="${!posts.last}" 
+                       th:href="@{/feed/official(page=${posts.number + 1}, departmentId=${selectedDept}, q=${query})}" 
+                       class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
+                        <span>Sau</span>
+                        <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                    </a>
+                    <span th:if="${posts.last}" 
+                          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-100 text-xs font-semibold text-slate-400 cursor-not-allowed">
+                        <span>Sau</span>
+                        <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                    </span>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 3. FOOTER -->
+    <footer class="bg-slate-900 text-white border-t border-slate-800 py-10 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div class="md:col-span-2">
+                    <div class="flex items-center gap-3 mb-3">
+                        <img alt="HCMUTE Logo White" class="h-10 w-auto brightness-0 invert" 
+                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKSHNb9YZP8QFQKzZ-_B_glnPE615kLoTh0DIZM9-id7Eb1Z7EZXRKcjBeCckK7VOaTPGdnMs7Cl7qdtjr1Mry3Y7d1U0S8maxw8fAHipOBnT-HFyaVBuqc6xe0fMZJf4fPlHw6UIkL0vHJV2kfl-tnjJgobCtm7Cy-KazrUCaEZefkxCcT9HC_-zWiT9twVqKg6xymALE7_hrVpAjI-XYdTFsbm3wyDRY8PxAR-vjOB00BqpW9wX9dVryQuIfZgdSA">
+                        <span class="font-headline font-bold text-base text-white">HCMUTE Support Portal</span>
+                    </div>
+                    <p class="text-xs text-slate-400 max-w-md leading-relaxed mb-4">
+                        Cổng dịch vụ hành chính công và tư vấn sinh viên tích hợp Trí tuệ Nhân tạo - Trường Đại học Sư phạm Kỹ thuật TP. Hồ Chí Minh.
                     </p>
-
-                    <!-- Attachment Badges -->
-                    <div class="d-flex flex-wrap gap-1 mb-3" th:if="${post.attachments != null and !post.attachments.empty}">
-                        <span th:each="att : ${post.attachments}" class="badge bg-light text-secondary border px-2 py-1 small d-inline-flex align-items-center">
-                            <i th:if="${att.fileType == 'PDF'}" class="bi bi-file-earmark-pdf-fill text-danger me-1"></i>
-                            <i th:if="${att.fileType == 'DOCX'}" class="bi bi-file-earmark-word-fill text-primary me-1"></i>
-                            <i th:if="${att.fileType == 'XLSX'}" class="bi bi-file-earmark-excel-fill text-success me-1"></i>
-                            <i th:if="${att.fileType == 'MP4'}" class="bi bi-film text-warning me-1"></i>
-                            <span th:text="${att.fileType}">PDF</span>
-                        </span>
-                        <span th:if="${post.videoStatus == 'COMPLETED'}" class="badge bg-warning bg-opacity-25 text-dark border border-warning px-2 py-1">
-                            <i class="bi bi-play-circle-fill text-danger me-1"></i>Video 40s
-                        </span>
-                    </div>
-
-                    <!-- Post Footer -->
-                    <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center text-muted" style="font-size: 12px;">
-                        <span><i class="bi bi-calendar3 me-1"></i><span th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy')}">01/09/2026</span></span>
-                        <a th:href="@{/feed/official/{id}(id=${post.id})}" class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 12px;">Chi tiết <i class="bi bi-arrow-right"></i></a>
-                    </div>
+                    <p class="text-xs text-slate-400">
+                        <strong>Địa chỉ:</strong> Số 01 Võ Văn Ngân, Phường Linh Chiểu, TP. Thủ Đức, TP. Hồ Chí Minh<br>
+                        <strong>Điện thoại:</strong> (028) 3896 8641 - <strong>Email:</strong> daotao@hcmute.edu.vn
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-headline font-bold text-sm text-white mb-3">Kênh truy cập nhanh</h4>
+                    <ul class="space-y-2 text-xs text-slate-400">
+                        <li><a th:href="@{/feed/official}" class="hover:text-white transition-colors">Bảng tin chính thức</a></li>
+                        <li><a th:href="@{/feed/forum}" class="hover:text-white transition-colors">Diễn đàn sinh viên</a></li>
+                        <li><a th:href="@{/faqs}" class="hover:text-white transition-colors">Tra cứu câu hỏi FAQ</a></li>
+                        <li><a th:href="@{/ai-chat}" class="hover:text-white transition-colors">Trợ lý ảo AI Chatbot</a></li>
+                        <li><a th:href="@{/tickets/my-tickets}" class="hover:text-white transition-colors">Gửi Ticket yêu cầu hỗ trợ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-headline font-bold text-sm text-white mb-3">Liên kết nội bộ</h4>
+                    <ul class="space-y-2 text-xs text-slate-400">
+                        <li><a href="https://hcmute.edu.vn" target="_blank" class="hover:text-white transition-colors">Website chính thức Nhà trường</a></li>
+                        <li><a href="https://online.hcmute.edu.vn" target="_blank" class="hover:text-white transition-colors">Cổng đào tạo trực tuyến</a></li>
+                        <li><a href="https://dkmh.hcmute.edu.vn" target="_blank" class="hover:text-white transition-colors">Trang đăng ký môn học</a></li>
+                    </ul>
                 </div>
             </div>
+            <div class="border-t border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
+                <p>&copy; 2026 Trường ĐH Sư phạm Kỹ thuật TP.HCM (HCMUTE). Mọi quyền được bảo lưu.</p>
+                <p>Thiết kế bởi Đội ngũ Công nghệ thông tin HCMUTE Support Portal</p>
+            </div>
         </div>
-    </div>
+    </footer>
 
-    <!-- Pagination -->
-    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top" th:if="${posts.totalPages > 1}">
-        <div class="small text-muted">
-            Trang <strong th:text="${posts.number + 1}">1</strong> / <span th:text="${posts.totalPages}">5</span>
-        </div>
-        <ul class="pagination pagination-sm mb-0">
-            <li class="page-item" th:classappend="${posts.first ? 'disabled' : ''}">
-                <a class="page-link" th:href="@{/feed/official(page=${posts.number - 1}, departmentId=${selectedDept}, q=${query})}">Trước</a>
-            </li>
-            <li class="page-item" th:each="i : ${#numbers.sequence(0, posts.totalPages - 1)}" th:classappend="${i == posts.number ? 'active' : ''}">
-                <a class="page-link" th:href="@{/feed/official(page=${i}, departmentId=${selectedDept}, q=${query})}" th:text="${i + 1}">1</a>
-            </li>
-            <li class="page-item" th:classappend="${posts.last ? 'disabled' : ''}">
-                <a class="page-link" th:href="@{/feed/official(page=${posts.number + 1}, departmentId=${selectedDept}, q=${query})}">Sau</a>
-            </li>
-        </ul>
-    </div>
-</div>
+    <!-- Interactive script for Account Dropdown & Mobile Nav -->
+    <script>
+        function toggleMobileNav() {
+            const drawer = document.getElementById('mobileNavDrawer');
+            if (drawer) {
+                drawer.classList.toggle('hidden');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('officialAccountToggle');
+            const menu = document.getElementById('officialAccountDropdown');
+            if (toggle && menu) {
+                toggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    menu.classList.toggle('hidden');
+                });
+                document.addEventListener('click', function(e) {
+                    if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+                        menu.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

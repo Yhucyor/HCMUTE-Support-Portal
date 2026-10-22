@@ -155,7 +155,10 @@ public class DataInitializer implements CommandLineRunner {
                     staffAcademic, staffDaotao, staffNn, staffDoan,
                     minhQuan, vanDuc, camTu, hoangNam, tuanAnh, phuongAnh, quocBao, thanhTung, bichNgan, minhTri, giaHuy, vanHau);
 
-            log.info("Khởi tạo dữ liệu mẫu Auth, FAQ & Diễn đàn sinh viên thành công!");
+            // 6. Khởi tạo / Nạp 4 bài viết thông báo tin tức chính thức tiêu điểm từ trang chủ vào Bảng tin
+            seedOfficialAnnouncementsFromHomepage(deptTuyenSinh, deptCntt, deptDaoTao, staffTuyensinh, staffCntt, staffDaotao, staffAcademic);
+
+            log.info("Khởi tạo dữ liệu mẫu Auth, FAQ, Diễn đàn & Bảng tin thông báo thành công!");
         } catch (Exception e) {
             log.error("Lỗi trong quá trình khởi tạo dữ liệu mẫu: ", e);
         }
@@ -485,5 +488,111 @@ public class DataInitializer implements CommandLineRunner {
         );
 
         log.info("Khởi tạo thành công 12 bài viết và các bình luận thực tế cho Diễn đàn sinh viên HCMUTE!");
+    }
+
+    private Post initOfficialAnnouncement(String title, String content, Department department, User author, int viewCount, int likeCount, boolean isPinned, String imageUrl) {
+        if (postRepository.existsByTitle(title)) {
+            return postRepository.findFirstByTitleContainingAndIsDeletedFalse(title).orElse(null);
+        }
+
+        Post post = Post.builder()
+                .title(title)
+                .content(content)
+                .postType("OFFICIAL_ANNOUNCEMENT")
+                .status("APPROVED")
+                .department(department)
+                .author(author)
+                .approvedBy(author)
+                .approvedAt(LocalDateTime.now())
+                .viewCount(viewCount)
+                .likeCount(likeCount)
+                .isPinned(isPinned)
+                .build();
+
+        Post saved = postRepository.save(post);
+
+        if (imageUrl != null && !imageUrl.isBlank()) {
+            PostAttachment attachment = PostAttachment.builder()
+                    .post(saved)
+                    .fileName("banner_tintuc.jpg")
+                    .fileUrl(imageUrl)
+                    .fileType("IMAGE")
+                    .fileSize(350000L)
+                    .sourceType("DIRECT_UPLOAD")
+                    .build();
+            postAttachmentRepository.save(attachment);
+        }
+        return saved;
+    }
+
+    private void seedOfficialAnnouncementsFromHomepage(Department deptTuyenSinh, Department deptCntt, Department deptDaoTao,
+                                                       User staffTuyensinh, User staffCntt, User staffDaotao, User staffAcademic) {
+        log.info("Bắt đầu nạp 4 bài viết tin tức / thông báo chính thức tiêu điểm từ trang chủ vào Bảng tin...");
+
+        // 1. Tuyển sinh 2026 (Ghim)
+        initOfficialAnnouncement(
+                "HCMUTE công bố phương án tuyển sinh đại học chính quy năm 2026",
+                "<p>Hội đồng Tuyển sinh Trường Đại học Sư phạm Kỹ thuật TP.HCM (HCMUTE) trân trọng thông báo phương án tuyển sinh đại học hệ chính quy năm 2026 với tổng chỉ tiêu dự kiến hơn 6.500 sinh viên cho 45 ngành đào tạo kỹ thuật, công nghệ, kinh tế và thiết kế mỹ thuật ứng dụng.</p>" +
+                "<h4>1. Các phương thức xét tuyển chủ đạo:</h4>" +
+                "<ul>" +
+                "<li><strong>Phương thức 1:</strong> Xét tuyển thẳng và ưu tiên xét tuyển theo quy chế của Bộ Giáo dục và Đào tạo.</li>" +
+                "<li><strong>Phương thức 2:</strong> Xét tuyển dựa trên kết quả kỳ thi Đánh giá năng lực của ĐHQG TP.HCM năm 2026 (chiếm 25 - 30% chỉ tiêu).</li>" +
+                "<li><strong>Phương thức 3:</strong> Xét tuyển học bạ THPT kết hợp chứng chỉ ngoại ngữ quốc tế (IELTS từ 5.5 trở lên hoặc TOEIC từ 650 điểm).</li>" +
+                "<li><strong>Phương thức 4:</strong> Xét tuyển dựa trên điểm thi Tốt nghiệp THPT năm 2026 theo các tổ hợp môn quy định.</li>" +
+                "</ul>" +
+                "<h4>2. Các ngành học và chuyên ngành mới đón đầu xu hướng:</h4>" +
+                "<p>Năm 2026, Nhà trường mở mới và đẩy mạnh đào tạo các ngành đón đầu cuộc cách mạng công nghiệp 4.0 và bán dẫn: <em>Kỹ thuật Vi mạch Bán dẫn, Kỹ thuật Trí tuệ Nhân tạo & Khoa học Dữ liệu, Công nghệ Năng lượng Tái tạo</em>. Toàn bộ chương trình được kiểm định theo chuẩn quốc tế ABET và AUN-QA.</p>" +
+                "<h4>3. Chính sách học bổng và hỗ trợ tài chính:</h4>" +
+                "<p>HCMUTE dành quỹ học bổng trị giá hơn 40 tỷ đồng cho tân sinh viên có điểm xét tuyển thủ khoa, á khoa các ngành và học bổng khuyến khích tài năng kỹ thuật. Mọi thông tin chi tiết thí sinh có thể theo dõi tại cổng thông tin tuyển sinh hoặc liên hệ trực tiếp Bộ phận Tư vấn Tuyển sinh tại Phòng A1-101.</p>",
+                deptTuyenSinh, staffTuyensinh, 3420, 418, true,
+                "https://lh3.googleusercontent.com/aida-public/AB6AXuD1Ds92ZUE1RuZXEH1z8Yrll-VXSeiXEnLJNIeCH0bQc647wKq-iS9BEX3UIsGT6LwL2yUoMo4fdvWH6QD-0XtmoVP9sKk4cOAgjtbNwbRX1mI3QdMEt9owTtNPlQcfobKUYKiP3xlL-UG8Qfano_p-O46pdXvKNeje3P5-FbXxYfco5obx9m81-1S3hw8pFIl4AisJo4KxuObjk_SJ-VgL-QEa--fNN79giqmieQZasDJX6QIblw8G"
+        );
+
+        // 2. Nghiên cứu sáng tạo kỹ thuật
+        initOfficialAnnouncement(
+                "Sinh viên HCMUTE đạt giải cao tại Cuộc thi Sáng tạo Kỹ thuật toàn quốc 2026",
+                "<p>Vừa qua, tại Vòng Chung kết Cuộc thi Sáng tạo Khoa học Kỹ thuật Toàn quốc (VIFOTEC) lần thứ 32 tổ chức tại Hà Nội, đoàn cán bộ và sinh viên Trường Đại học Sư phạm Kỹ thuật TP.HCM đã xuất sắc giành 01 Giải Nhất và 02 Giải Nhì ở các bảng đấu Công nghệ Thông tin và Cơ điện tử thông minh.</p>" +
+                "<h4>Dấu ấn công nghệ đột phá:</h4>" +
+                "<p>Đề tài xuất sắc đạt Giải Nhất thuộc về nhóm sinh viên liên ngành CNTT & CKM với công trình: <em>'Hệ thống phân loại phế phẩm quang học tốc độ cao ứng dụng thị giác máy tính và cánh tay Robot SCARA Delta'</em> do TS. Trần Khoa CNTT hướng dẫn. Đề tài được Hội đồng giám khảo đánh giá rất cao về tính ứng dụng thực tiễn, khả năng chuyển giao công nghệ cho các nhà máy tự động hóa trong nước với chi phí chỉ bằng 1/3 thiết bị nhập ngoại.</p>" +
+                "<h4>Chính sách khen thưởng từ Nhà trường:</h4>" +
+                "<p>Hiệu trưởng Nhà trường đã ký quyết định tặng Giấy khen và tiền thưởng biểu dương tinh thần sáng tạo, dám nghĩ dám làm của các đội thi. Sự kiện này một lần nữa khẳng định triết lý đào tạo thực hành - khai phóng và chất lượng nghiên cứu ứng dụng hàng đầu của sinh viên HCMUTE.</p>",
+                deptCntt, staffCntt, 1875, 289, false,
+                "https://lh3.googleusercontent.com/aida-public/AB6AXuC07M2Qnaq-8FmJ3hQS9WLRrG_K_Gc8Zyo8JoiuebrgOBYjC1LSEfAH_zKlf87wGVtSFz8LTe93SqYct6cU8MU5ZmshwfF7HYwu9pEsRG6s2d8tWkcBW02cbu_YBHz3pbR55nxVcq9LsmvwK0S0hMjzpJSfB2Y9JxhbHbQqfd1M7I9yZjCGNXZeH65gBtrSk6CjrEzC3fZAtzk69gLyThnSjqBLsmMiZ8bNehexvxThIZcESPPiJ3hV"
+        );
+
+        // 3. Ngày hội việc làm kết nối 150 doanh nghiệp
+        initOfficialAnnouncement(
+                "HCMUTE tổ chức Ngày hội việc làm năm 2026 kết nối hơn 150 doanh nghiệp",
+                "<p>Nhằm tạo cầu nối vững chắc giữa sinh viên chuẩn bị tốt nghiệp với thị trường lao động chất lượng cao, Trường Đại học Sư phạm Kỹ thuật TP.HCM phối hợp cùng hơn 150 tập đoàn công nghệ, doanh nghiệp đa quốc gia tổ chức <strong>Ngày hội Việc làm & Kết nối Doanh nghiệp HCMUTE Job Fair 2026</strong>.</p>" +
+                "<h4>Quy mô ngày hội:</h4>" +
+                "<ul>" +
+                "<li>Hơn <strong>5.000 vị trí tuyển dụng</strong> kỹ sư kỹ thuật, lập trình viên phần mềm, chuyên viên kinh tế, logistics và thiết kế đồ họa.</li>" +
+                "<li>Sự tham gia của các đối tác chiến lược hàng đầu: Samsung, Bosch, Intel Products Vietnam, FPT Software, TMA Solutions, Thaco Group, VinFast...</li>" +
+                "<li>Chuỗi workshop phỏng vấn thử (Mock Interview), sửa CV trực tiếp 1:1 cùng các Giám đốc Nhân sự (HRD) kỳ cựu.</li>" +
+                "</ul>" +
+                "<h4>Thời gian và địa điểm:</h4>" +
+                "<p><strong>Thời gian:</strong> 07h30 - 16h30, Thứ Bảy ngày 18/10/2026.<br>" +
+                "<strong>Địa điểm:</strong> Sân bóng đá trung tâm và Hội trường lớn Khu A, Trường ĐH Sư phạm Kỹ thuật TP.HCM (Số 01 Võ Văn Ngân, TP. Thủ Đức).<br>" +
+                "Sinh viên mang theo thẻ sinh viên và bản in CV để tham gia ứng tuyển trực tiếp.</p>",
+                deptDaoTao, staffDaotao, 2650, 340, false,
+                "https://lh3.googleusercontent.com/aida-public/AB6AXuB2mzpwjo8xW1O7waS4y5vuF5KXT2KKPIzpsW2YgE_Lnkb8wRYEjMIutZeiyWVqOJOAtWfgnmy-DPzl6bar-TzqzWkT-oozFwse_o0ohjTDWMPWsv-XH30jSvpTohcbZlVrLkb6-beZ0TNRDEWvk5wIbpB6JtC6vSoytWIaEGNkavGmdiBcFdlbg10-mnHu-wsq0K3NwLxyZMWA84SOk2SW2NChnc5_lR4fN02bM9JuapNr_p98dZzp"
+        );
+
+        // 4. Hợp tác quốc tế
+        initOfficialAnnouncement(
+                "Ký kết hợp tác chiến lược đào tạo & nghiên cứu với các trường đại học quốc tế",
+                "<p>Sáng ngày 15/09/2026, tại Tòa nhà Trung tâm Trường Đại học Sư phạm Kỹ thuật TP.HCM đã long trọng diễn ra Lễ ký kết Thỏa thuận Hợp tác Chiến lược (MoU) về Đào tạo song bằng và Nghiên cứu khoa học chuyển giao công nghệ giữa HCMUTE và Liên minh các Trường Đại học Kỹ thuật Công nghệ Quốc tế (Hàn Quốc, Nhật Bản, Đài Loan).</p>" +
+                "<h4>Nội dung hợp tác trọng điểm:</h4>" +
+                "<ul>" +
+                "<li><strong>Chương trình trao đổi sinh viên (Student Exchange):</strong> Mỗi năm cấp 30 suất học bổng toàn phần du học ngắn hạn (1 - 2 học kỳ) cho sinh viên xuất sắc các ngành Cơ điện tử, CNTT và Kỹ thuật Hóa học.</li>" +
+                "<li><strong>Chương trình liên kết đào tạo 2+2 và 3+1:</strong> Sinh viên hoàn thành giai đoạn đầu tại HCMUTE và chuyển tiếp nhận bằng Cử nhân/Kỹ sư quốc tế.</li>" +
+                "<li><strong>Thành lập Phòng Thí nghiệm Chung (Joint Lab):</strong> Nghiên cứu công nghệ Trí tuệ Nhân tạo thế hệ mới và chuyển đổi số công nghiệp sản xuất thông minh.</li>" +
+                "</ul>" +
+                "<p>Buổi lễ ký kết là bước tiến quan trọng trong chiến lược quốc tế hóa giáo dục đại học của HCMUTE, mang lại môi trường học tập đẳng cấp quốc tế ngay tại Việt Nam.</p>",
+                deptDaoTao, staffAcademic, 1420, 215, false,
+                "https://lh3.googleusercontent.com/aida-public/AB6AXuDYwKvDUq7Prg4KyChK5ZlVy31N8K2tMYtVLbNctJdAdvsXL0xyc6RSP_8GCPfwVsufPBlBa6yBdQ6KZ-DpUoCjMB6xozC-57VFg46mwNPuf3YqEgNVc4ystcWvQMJHzILxNOLuAFYw_MdrM2VkU9ISRurtRtcecwE84Xpn44yLvM1Uf9-Wfq9fhFkcPfOf6d5yE8M7jUuvn36rO5I_and6BLW2478qO_IFIr3isl7-RyoBHzpkhqif"
+        );
+
+        log.info("Khởi tạo thành công 4 bài viết thông báo chính thức tiêu điểm từ trang chủ!");
     }
 }

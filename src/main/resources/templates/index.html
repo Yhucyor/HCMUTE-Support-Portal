@@ -63,6 +63,7 @@
             <!-- Nav Items (Desktop) -->
             <nav class="hidden xl:flex items-center space-x-7">
                 <a class="font-semibold text-[14px] text-[#991b1e] border-b-2 border-[#991b1e] pb-1" th:href="@{/}">Trang chủ</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/feed/official}">Bảng tin</a>
                 <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/feed/forum}">Diễn đàn</a>
                 <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/ai-chat}">Hỗ trợ AI</a>
                 <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/faqs}">Tra cứu FAQ</a>
@@ -153,6 +154,7 @@
         <!-- Mobile Drawer Menu -->
         <div id="mobileNavDrawer" class="hidden xl:hidden bg-white border-b border-slate-200 px-4 pt-3 pb-5 space-y-2.5 shadow-lg">
             <a class="block py-2 text-sm font-semibold text-[#991b1e]" th:href="@{/}">Trang chủ</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/feed/official}">Bảng tin</a>
             <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/feed/forum}">Diễn đàn</a>
             <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/ai-chat}">Hỗ trợ AI</a>
             <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/faqs}">Tra cứu FAQ</a>
@@ -420,7 +422,7 @@
                         Cập nhật những hoạt động, thành tựu mới nhất từ HCMUTE.
                     </h2>
                 </div>
-                <a class="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#003882] hover:text-[#991b1e] transition-colors whitespace-nowrap" th:href="@{/feed}">
+                <a class="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#003882] hover:text-[#991b1e] transition-colors whitespace-nowrap" th:href="@{/feed/official}">
                     <span>Xem tất cả tin tức</span>
                     <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
                 </a>
@@ -445,7 +447,7 @@
                         <p class="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
                             Trường Đại học Sư phạm Kỹ thuật TP.HCM chính thức công bố phương án tuyển sinh năm 2026 với nhiều điểm mới hấp dẫn, tiếp tục gia tăng cơ hội trúng tuyển cho học sinh toàn quốc...
                         </p>
-                        <a class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#991b1e] hover:underline" href="#">
+                        <a class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#991b1e] hover:underline" th:href="@{/feed/official(q='tuyển sinh')}">
                             <span>Đọc tiếp</span>
                             <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
                         </a>
@@ -470,7 +472,7 @@
                                     Sinh viên HCMUTE đạt giải cao tại Cuộc thi Sáng tạo Kỹ thuật toàn quốc 2026
                                 </h4>
                             </div>
-                            <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline mt-2" href="#">
+                            <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline mt-2" th:href="@{/feed/official(q='Sáng tạo Kỹ thuật')}">
                                 <span>Đọc tiếp</span>
                                 <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
                             </a>
@@ -493,7 +495,7 @@
                                     HCMUTE tổ chức Ngày hội việc làm năm 2026 kết nối hơn 150 doanh nghiệp
                                 </h4>
                             </div>
-                            <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline mt-2" th:href="@{/feed}">
+                            <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline mt-2" th:href="@{/feed/official(q='Ngày hội việc làm')}">
                                 <span>Đọc tiếp</span>
                                 <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
                             </a>
@@ -516,7 +518,7 @@
                                     Ký kết hợp tác chiến lược đào tạo &amp; nghiên cứu với các trường đại học quốc tế
                                 </h4>
                             </div>
-                            <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline mt-2" href="#">
+                            <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline mt-2" th:href="@{/feed/official(q='hợp tác quốc tế')}">
                                 <span>Đọc tiếp</span>
                                 <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
                             </a>

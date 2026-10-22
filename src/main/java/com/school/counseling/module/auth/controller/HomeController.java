@@ -97,5 +97,10 @@ public class HomeController {
     public String redirectCurriculum() {
         return "redirect:/academic/curriculum";
     }
+
+    @GetMapping({"/feed", "/bang-tin"})
+    public String redirectFeed() {
+        return "redirect:/feed/official";
+    }
 }
 
