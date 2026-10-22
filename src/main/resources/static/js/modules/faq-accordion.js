@@ -1,6 +1,6 @@
 /**
  * Module quản lý bộ lọc, phân trang và Accordion FAQ - Tuân thủ CSP Level 3.
- * Áp dụng Event Delegation toàn diện và Phân trang Client-side mượt mà.
+ * Áp dụng Event Delegation toàn diện, Phân trang Client-side và Tìm kiếm Real-time linh động.
  */
 document.addEventListener('DOMContentLoaded', () => {
     let activeCategory = 'all';
@@ -11,23 +11,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const pageSize = 10; // Mỗi trang hiển thị 10 câu hỏi để tránh tràn màn hình
 
     const faqList = document.getElementById('faq-list');
+    const searchForm = document.getElementById('faq-search-form');
     const searchInput = document.getElementById('faq-search-input');
     const searchClearBtn = document.getElementById('search-clear-btn');
+    const searchSubmitBtn = document.getElementById('search-submit-btn');
     const counterBadge = document.getElementById('faq-counter-badge');
     const emptyState = document.getElementById('faq-empty-state');
     const deptFilter = document.getElementById('dept-filter');
     const faqTabs = document.querySelectorAll('#faq-tabs .faq-tab');
     const searchChips = document.querySelectorAll('.search-chip');
+    const categoryContainer = document.getElementById('category-grid');
     const paginationContainer = document.getElementById('faq-pagination-container');
     const paginationControls = document.getElementById('pagination-controls');
     const paginationInfo = document.getElementById('pagination-info');
     const paginationTotal = document.getElementById('pagination-total');
+
+    // Đọc query từ URL hoặc input có sẵn nếu có
+    if (searchInput && searchInput.value.trim().length > 0) {
+        searchQuery = searchInput.value.trim().toLowerCase();
+        if (searchClearBtn) searchClearBtn.classList.remove('hidden');
+    }
 
     // 1. Áp dụng bộ lọc và phân trang
     function applyFilters() {
         if (!faqList) return;
         const faqItems = Array.from(faqList.querySelectorAll('.faq-item'));
         
+        // Cập nhật số đếm động trên các pills danh mục dựa trên từ khóa & phòng ban hiện tại
+        updateCategoryPillCounts(faqItems);
+
         // Lọc các item thỏa điều kiện
         const matchingItems = faqItems.filter(item => {
             const itemCat = item.getAttribute('data-cat') || '';
@@ -82,7 +94,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Cập nhật số đếm trên Toolbar
         if (counterBadge) {
-            counterBadge.textContent = `${totalItems} CÂU HỎI`;
+            if (searchQuery) {
+                counterBadge.textContent = `${totalItems} KẾT QUẢ`;
+            } else {
+                counterBadge.textContent = `${totalItems} CÂU HỎI`;
+            }
         }
 
         // Toggle Empty state
@@ -92,6 +108,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Render Pagination Controls
         renderPagination(totalItems, totalPages, startIndex, endIndex);
+    }
+
+    // Cập nhật linh động số lượng hiển thị trên từng badge danh mục theo thời gian thực
+    function updateCategoryPillCounts(faqItems) {
+        const counts = {
+            'all': 0,
+            'hoc-vu': 0,
+            'hoc-phi': 0,
+            'quy-che': 0,
+            'ngoai-ngu': 0
+        };
+
+        faqItems.forEach(item => {
+            const itemDept = item.getAttribute('data-dept') || '';
+            const textContent = item.textContent.toLowerCase();
+
+            const matchDept = (activeDept === 'all' || itemDept === activeDept);
+            const matchSearch = (!searchQuery || textContent.includes(searchQuery));
+
+            if (matchDept && matchSearch) {
+                counts['all']++;
+                const cat = item.getAttribute('data-cat') || '';
+                if (counts[cat] !== undefined) {
+                    counts[cat]++;
+                }
+            }
+        });
+
+        for (const [k, v] of Object.entries(counts)) {
+            const badge = document.getElementById('count-' + k);
+            if (badge) {
+                badge.textContent = String(v);
+            }
+        }
     }
 
     // 2. Render thanh điều hướng phân trang
@@ -204,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 4. Event Delegation cho Accordion Toggle & Helpful Rating (Đã fix lỗi click không mở)
+    // 4. Event Delegation cho Accordion Toggle & Helpful Rating
     if (faqList) {
         faqList.addEventListener('click', (e) => {
             // Xử lý Accordion Toggle
@@ -243,7 +293,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 5. Event Delegation cho Category Filter Pills
-    const categoryContainer = document.getElementById('category-grid');
     if (categoryContainer) {
         categoryContainer.addEventListener('click', (e) => {
             const pill = e.target.closest('.category-pill');
@@ -281,8 +330,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // 7. Tìm kiếm từ khóa Live
+    // 7. Chặn submit reload trang & Tìm kiếm từ khóa Live linh động
+    if (searchForm) {
+        searchForm.addEventListener('submit', (e) => {
+            e.preventDefault(); // Tuyệt đối không reload trang!
+            if (searchInput) {
+                searchQuery = searchInput.value.trim().toLowerCase();
+            }
+            currentPage = 1;
+            applyFilters();
+        });
+    }
+
+    if (searchSubmitBtn) {
+        searchSubmitBtn.addEventListener('click', (e) => {
+            e.preventDefault(); // Tuyệt đối không reload trang!
+            if (searchInput) {
+                searchQuery = searchInput.value.trim().toLowerCase();
+            }
+            currentPage = 1;
+            applyFilters();
+        });
+    }
+
     if (searchInput) {
+        // Gõ phím tới đâu, danh sách chạy theo thời gian thực tới đó
         searchInput.addEventListener('input', (e) => {
             searchQuery = e.target.value.trim().toLowerCase();
             currentPage = 1;
@@ -293,12 +365,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (searchClearBtn) {
         searchClearBtn.addEventListener('click', () => {
-            searchInput.value = '';
+            if (searchInput) {
+                searchInput.value = '';
+                searchInput.focus();
+            }
             searchQuery = '';
             currentPage = 1;
             searchClearBtn.classList.add('hidden');
             applyFilters();
-            searchInput.focus();
         });
     }
 

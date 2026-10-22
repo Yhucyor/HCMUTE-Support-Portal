@@ -18,6 +18,9 @@
 | 3 | Cam kết thời hạn xử lý (SLA) hiển thị cho Sinh viên | Thẻ SLA Sidebar trong giao diện không có điều kiện lọc quyền Spring Security | Thêm thuộc tính `sec:authorize="hasAnyRole('STAFF', 'ADMIN', 'DEPARTMENT_HEAD')"` vào thẻ SLA Card ở cả 2 template `faqs.html` và `faq/search.html` | ✅ Hoàn thành |
 | 4 | Danh sách FAQ in liên tục 351 câu làm tràn trang | Không có cơ chế phân trang Client-side khi render danh sách FAQ từ Model Thymeleaf | Tích hợp thuật toán Phân trang động (10 câu/trang) trong `faq-accordion.js`, tự động tính số trang, sinh nút Previous/Next/Số trang, và smooth scroll | ✅ Hoàn thành |
 | 5 | Ngày tháng năm hỏi bị lẫn lộn giữa các năm | Truy vấn `findAllActiveWithDepartment` thiếu `ORDER BY`, Client-side chưa sort theo timestamp | Thêm `ORDER BY COALESCE(f.postDate, f.createdAt) DESC, f.viewCount DESC, f.id DESC` ở Repository & bổ sung `timestamp` vào `FaqItemDto`, tự động sort ưu tiên năm 2026, 2025 lên đầu trang | ✅ Hoàn thành |
+| 6 | Phòng ban / khoa trong bộ lọc filter bị lặp lại 2 lần | Template vừa có vòng lặp động `${departments}` vừa có các thẻ `<option>` tĩnh hardcoded | Xóa bỏ toàn bộ các thẻ tĩnh thừa, chỉ giữ lại vòng lặp động chuẩn từ database MySQL | ✅ Hoàn thành |
+| 7 | Bấm tìm kiếm bị reload toàn bộ trang web | Nút bấm mang `type="submit"` và form submit mặc định kích hoạt full-page refresh | Chuyển nút bấm sang `type="button"`, chặn submit form với `e.preventDefault()`, lọc Single-Page tức thời | ✅ Hoàn thành |
+| 8 | Tìm kiếm chưa linh động & 2 danh mục có 0 câu hỏi | Input chưa đồng bộ số đếm các category pills; mục "Tài khoản" và "Dịch vụ" có 0 câu | Loại bỏ 2 danh mục rác; cập nhật hàm `updateCategoryPillCounts` trong `faq-accordion.js` để badge danh mục nhảy số real-time khi gõ phím | ✅ Hoàn thành |
 
 ---
 

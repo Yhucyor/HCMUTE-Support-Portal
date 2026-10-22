@@ -321,7 +321,7 @@
                         </button>
                         <button class="ml-1 inline-flex items-center gap-1.5 px-6 py-2.5 rounded-lg bg-[#0037b0] text-white text-xs font-semibold hover:bg-[#2151da] shadow-sm transition-all cursor-pointer" 
                                 id="search-submit-btn" 
-                                type="submit">
+                                type="button">
                             <span>Tìm kiếm</span>
                         </button>
                     </div>
@@ -392,22 +392,6 @@
                         <span>Ngoại ngữ &amp; chuẩn đầu ra</span>
                         <span class="pill-count px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-[#eff4ff] text-[#0037b0]" id="count-ngoai-ngu" th:text="${counts != null ? counts.countNgoaiNgu : 0}">0</span>
                     </button>
-
-                    <button class="category-card category-pill px-4 py-2 rounded-full text-xs font-medium bg-white text-[#434655] hover:text-[#0037b0] hover:bg-[#eff4ff] border border-[#c4c5d7]/60 hover:border-[#0037b0]/40 shadow-sm flex items-center gap-1.5 transition-all cursor-pointer" 
-                            data-category="tai-khoan" 
-                            type="button">
-                        <span class="material-symbols-outlined text-[16px]">manage_accounts</span>
-                        <span>Tài khoản &amp; hệ thống</span>
-                        <span class="pill-count px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-[#eff4ff] text-[#0037b0]" id="count-tai-khoan" th:text="${counts != null ? counts.countTaiKhoan : 0}">0</span>
-                    </button>
-
-                    <button class="category-card category-pill px-4 py-2 rounded-full text-xs font-medium bg-white text-[#434655] hover:text-[#0037b0] hover:bg-[#eff4ff] border border-[#c4c5d7]/60 hover:border-[#0037b0]/40 shadow-sm flex items-center gap-1.5 transition-all cursor-pointer" 
-                            data-category="dich-vu" 
-                            type="button">
-                        <span class="material-symbols-outlined text-[16px]">room_service</span>
-                        <span>Dịch vụ sinh viên</span>
-                        <span class="pill-count px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-[#eff4ff] text-[#0037b0]" id="count-dich-vu" th:text="${counts != null ? counts.countDichVu : 0}">0</span>
-                    </button>
                 </div>
             </div>
 
@@ -437,12 +421,6 @@
                                 <select class="h-8 pl-3 pr-8 rounded-lg bg-[#eff4ff] border border-[#dce1ff] text-xs text-[#0b1c30] appearance-none focus:outline-none focus:bg-white focus:border-[#0037b0] cursor-pointer" id="dept-filter">
                                     <option value="all">Tất cả đơn vị</option>
                                     <option th:each="dept : ${departments}" th:value="${'dept-' + dept.id}" th:text="${dept.name}">Phòng Đào tạo</option>
-                                    <option value="p-daotao">Phòng Đào tạo</option>
-                                    <option value="p-ctsv">Phòng CTSV &amp; Tuyển sinh</option>
-                                    <option value="p-taichinh">Phòng Kế hoạch - Tài chính</option>
-                                    <option value="k-cntt">Khoa Công nghệ Thông tin</option>
-                                    <option value="k-nn">Khoa Ngoại ngữ</option>
-                                    <option value="tt-cntt">Trung tâm CNTT</option>
                                 </select>
                                 <span class="material-symbols-outlined absolute right-2.5 top-2 text-[#565e74] pointer-events-none text-[18px]">expand_more</span>
                             </div>
