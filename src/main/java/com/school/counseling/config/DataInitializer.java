@@ -22,6 +22,7 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Tự động khởi tạo dữ liệu mẫu (Roles, Departments, Sample Users, FAQ Dataset) khi ứng dụng
