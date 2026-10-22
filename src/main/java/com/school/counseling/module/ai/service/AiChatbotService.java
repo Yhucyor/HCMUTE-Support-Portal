@@ -48,7 +48,22 @@ public class AiChatbotService {
         String cleanQuery = query.trim();
         String lowerQuery = cleanQuery.toLowerCase();
 
-        // 1. Nếu người dùng chọn provider AI thông minh (Gemini, Ollama...): Ưu tiên gọi ai-service (Python RAG)
+        // 1. Phản hồi nhanh cho câu chào hỏi thân thiện (không gắn nguồn tham khảo)
+        if (isGreeting(lowerQuery)) {
+            AiChatResponse greetingResp = new AiChatResponse();
+            greetingResp.setAnswer("Hi bạn nè! ✨ Tôi là Trợ lý ảo AI của HCMUTE Student Portal.\n\n"
+                    + "Tôi có thể hỗ trợ bạn nhanh chóng về:\n"
+                    + "• 🎓 Thông tin tuyển sinh, xét tuyển học bạ, điểm thi ĐGNL\n"
+                    + "• 📚 Học phí các ngành, đăng ký môn học, chuẩn đầu ra ngoại ngữ\n"
+                    + "• 💻 Hướng dẫn đồng bộ dữ liệu học vụ & xem điểm Portal\n"
+                    + "• 🎫 Hướng dẫn tạo Ticket gửi yêu cầu tới các Khoa/Phòng/Ban\n\n"
+                    + "Bạn cần mình hỗ trợ giải đáp vấn đề gì hôm nay? 😊");
+            greetingResp.setSessionId(sessionId);
+            greetingResp.setProvider(provider != null ? provider : "qaute-assistant");
+            return greetingResp;
+        }
+
+        // 2. Nếu người dùng chọn provider AI thông minh (Gemini, Ollama...): Gọi ai-service (Python RAG)
         if (provider != null && !provider.equalsIgnoreCase("default") && !provider.equalsIgnoreCase("qaute")) {
             AiChatResponse aiResp = callAiService(cleanQuery, sessionId, provider);
             if (aiResp != null && aiResp.getAnswer() != null && !aiResp.getAnswer().isBlank()
@@ -56,21 +71,6 @@ public class AiChatbotService {
                 return aiResp;
             }
             log.info("ai-service không khả dụng hoặc trả lời rỗng, tự động kích hoạt bộ tri thức học vụ nội bộ.");
-        }
-
-        // 2. Phản hồi nhanh cho câu chào hỏi thân thiện
-        if (isGreeting(lowerQuery)) {
-            AiChatResponse greetingResp = new AiChatResponse();
-            greetingResp.setAnswer("Xin chào bạn! 👋 Tôi là Trợ lý ảo AI QAUTE của Trường Đại học Sư phạm Kỹ thuật TP.HCM (HCMUTE).\n\n"
-                    + "Tôi có thể hỗ trợ bạn nhanh chóng về:\n"
-                    + "• 🎓 Thông tin tuyển sinh, xét tuyển học bạ, điểm thi ĐGNL 2026\n"
-                    + "• 📚 Đăng ký môn học, học phí, chuẩn đầu ra Tiếng Anh (AVDV, AVDR)\n"
-                    + "• 💻 Hướng dẫn đồng bộ dữ liệu học vụ & xem điểm Portal\n"
-                    + "• 🎫 Hướng dẫn tạo Ticket gửi yêu cầu tới các Phòng/Ban với cam kết SLA\n\n"
-                    + "Bạn cần mình giải đáp hoặc tra cứu vấn đề gì hôm nay?");
-            greetingResp.setSessionId(sessionId);
-            greetingResp.setProvider("qaute-assistant");
-            return greetingResp;
         }
 
         // 3. Nhận diện các nghiệp vụ trọng tâm của Portal & Nhà trường
@@ -234,9 +234,12 @@ public class AiChatbotService {
                 AiChatResponse body = responseEntity.getBody();
                 if (body.getAnswer() != null && !body.getAnswer().isBlank()
                         && !body.getAnswer().contains("Xin lỗi, hệ thống AI hiện không thể")) {
-                    // Chuẩn hóa tiêu đề nguồn và điểm độ chính xác cho giao diện người dùng
+                    // Chuẩn hóa tiêu đề nguồn, khử trùng lặp và lọc theo ngưỡng tin cậy
                     if (body.getSources() != null) {
+                        List<SourceDocument> deduplicated = new ArrayList<>();
+                        Set<String> seen = new HashSet<>();
                         for (SourceDocument src : body.getSources()) {
+                            if (src == null) continue;
                             if ((src.getTitle() == null || src.getTitle().isBlank()) && src.getSource() != null) {
                                 String clean = src.getSource().replaceAll("\\.pdf$", "").replaceAll("^\\d+[\\.\\-_]\\s*", "");
                                 src.setTitle(clean);
@@ -245,7 +248,18 @@ public class AiChatbotService {
                                 double norm = 1.0 / (1.0 + Math.exp(-src.getScore() / 2.0));
                                 src.setScore(Math.round(norm * 100.0) / 100.0);
                             }
+                            // Bỏ các nguồn có độ liên quan dưới 68%
+                            if (src.getScore() != null && src.getScore() < 0.68) {
+                                continue;
+                            }
+                            String key = src.getTitle() != null ? src.getTitle().trim().toLowerCase() : "";
+                            if (!key.isEmpty() && seen.contains(key)) {
+                                continue; // Bỏ qua nguồn trùng tên tài liệu
+                            }
+                            seen.add(key);
+                            deduplicated.add(src);
                         }
+                        body.setSources(deduplicated);
                     }
                     body.setSessionId(sessionId);
                     body.setProvider(provider != null ? provider : "gemini");
@@ -260,7 +274,8 @@ public class AiChatbotService {
     }
 
     private boolean isGreeting(String q) {
-        if (q.length() > 25) return false;
-        return q.matches("^(xin chào|chao|chào|hello|hi|alo|helo|chào bạn|xin chao|chao ban|bạn là ai|ban la ai|tro ly|trợ lý|help|giúp với|giup voi) *[!?.~]*$");
+        if (q.length() > 30) return false;
+        String clean = q.trim().toLowerCase().replaceAll("[!?.~,]+$", "").replaceAll("\\s+", " ");
+        return clean.matches("^(xin chào|chao|chào|hello|hi|helo|alo|hey|yo|hi+\\w*|he+l+o+|chào bạn|xin chao|chao ban|bạn là ai|ban la ai|tro ly|trợ lý|help|giúp với|giup voi)$");
     }
 }

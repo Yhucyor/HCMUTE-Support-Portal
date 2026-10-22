@@ -81,6 +81,30 @@ async def chat_endpoint(request: ChatRequest, req: Request):
     logger.info(f"Session {session_id}: Received question: {question} (Provider: {provider})")
     
     try:
+        import math
+        import re
+
+        # Nhận diện câu chào hỏi, cảm ơn, xã giao cơ bản
+        def is_casual(q: str) -> bool:
+            clean = re.sub(r"[^\w\s]", "", q.lower()).strip()
+            patterns = [
+                r"^(h+i+|h+e+l+o+|h+e+l+l+o+|a+l+o+|h+e+y+|y+o+)$",
+                r"^(xin chào|chào|chào bạn|chao|chao ban|hi bạn|hi ban)$",
+                r"^(bạn là ai|ban la ai|who are you|bạn tên gì|ban ten gi)$",
+                r"^(cảm ơn|cảm ơn bạn|cam on|thanks|thank you|tks)$",
+                r"^(tạm biệt|tam biet|bye|bye bye|gbye)$",
+                r"^(ok|oke|okie|ừ|uh|dạ|da|vâng|vang)$"
+            ]
+            return any(re.match(p, clean) for p in patterns)
+
+        if is_casual(question):
+            return ChatResponse(
+                answer="Hi bạn nè! ✨ Mình là Trợ lý AI học vụ của HCMUTE Student Portal. Mình có thể hỗ trợ bạn giải đáp mọi thông tin về học phí, quy chế học vụ, đăng ký môn học và các thủ tục tại trường. Bạn cần mình giải đáp vấn đề gì hôm nay? 😊",
+                sources=[],
+                session_id=session_id,
+                provider=provider
+            )
+
         # Get BM25 and Reranker from startup
         bm25 = get_bm25()
         reranker = get_reranker()
@@ -125,9 +149,6 @@ async def chat_endpoint(request: ChatRequest, req: Request):
         
         answer = generate_answer(context, question, provider=provider)
         logger.info(f"Session {session_id}: Generated answer successfully via {provider}")
-        
-        import math
-        import re
 
         def clean_source_title(meta: dict) -> str:
             raw_title = meta.get("title") or meta.get("source") or "Văn bản quy định HCMUTE"
@@ -138,25 +159,36 @@ async def chat_endpoint(request: ChatRequest, req: Request):
 
         def normalize_score(raw_score) -> float:
             if raw_score is None:
-                return 0.88
+                return 0.85
             try:
                 val = 1.0 / (1.0 + math.exp(-float(raw_score) / 2.0))
-                return round(min(0.98, max(0.65, val)), 2)
+                return round(min(0.98, max(0.40, val)), 2)
             except Exception:
-                return 0.88
+                return 0.85
 
-        sources = [
-            {
+        # Khử trùng lặp nguồn (Deduplication) và lọc theo ngưỡng chất lượng (Relevance Threshold)
+        seen_titles = set()
+        sources = []
+        for doc in documents:
+            title = clean_source_title(doc.metadata or {})
+            if not title or title.lower() in seen_titles:
+                continue
+
+            score = normalize_score(doc.score)
+            # Chỉ hiển thị nguồn có liên quan thực sự (trên 68%)
+            if score < 0.68:
+                continue
+
+            seen_titles.add(title.lower())
+            sources.append({
                 "text": doc.text[:250] + "..." if len(doc.text) > 250 else doc.text,
-                "title": clean_source_title(doc.metadata or {}),
-                "source": (doc.metadata or {}).get("source") or clean_source_title(doc.metadata or {}),
+                "title": title,
+                "source": (doc.metadata or {}).get("source") or title,
                 "page_number": (doc.metadata or {}).get("page"),
                 "document_type": (doc.metadata or {}).get("type"),
-                "score": normalize_score(doc.score),
+                "score": score,
                 "metadata": doc.metadata
-            }
-            for doc in documents
-        ]
+            })
         
         if session_id not in sessions:
             sessions[session_id] = []
