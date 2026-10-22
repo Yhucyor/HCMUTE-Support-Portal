@@ -67,7 +67,7 @@ def generate_answer(context: str, question: str, provider: str = None) -> str:
             
             for m_name in candidate_models:
                 try:
-                    logger.info(f"Đang sinh câu trả lời với model Gemini: {m_name}")
+                    logger.info(f"Generating answer with Gemini model: {m_name}")
                     model = genai.GenerativeModel(m_name)
                     response = model.generate_content(
                         prompt,
@@ -78,11 +78,11 @@ def generate_answer(context: str, question: str, provider: str = None) -> str:
                     )
                     if response and response.text:
                         answer = response.text.strip()
-                        logger.info(f"Sinh câu trả lời thành công với model {m_name}")
+                        logger.info(f"Generated answer successfully with model: {m_name}")
                         break
                 except Exception as ex:
                     last_err = ex
-                    logger.warning(f"Model {m_name} không khả dụng ({ex}). Đang thử model kế tiếp...")
+                    logger.warning(f"Model {m_name} failed: {ex}. Trying next model...")
                     continue
             
             if not answer:
