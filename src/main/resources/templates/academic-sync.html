@@ -1319,8 +1319,8 @@
                         <div class="form-input-wrapper">
                             <i class='bx bx-key'></i>
                             <input type="password" id="password" class="form-control"
-                                   th:placeholder="${portalLinked} ? '••••••• (đã lưu sẵn)' : 'Mật khẩu tài khoản sinh viên'"
-                                   th:required="${!portalLinked}">
+                                   th:placeholder="${portalLinked == true} ? '••••••• (đã lưu sẵn)' : 'Mật khẩu tài khoản sinh viên'"
+                                   th:required="${portalLinked != true}">
                         </div>
                     </div>
 

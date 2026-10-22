@@ -122,6 +122,7 @@ public class AcademicWebController {
      * Template dùng để tự động điền form và trigger auto-sync.
      */
     private void populatePortalCredentials(Model model) {
+        model.addAttribute("portalLinked", false);
         try {
             SecurityUtils.getCurrentUserId().ifPresent(userId -> {
                 String portalUsername = profileService.getProfile(userId).getPortalUsername();
