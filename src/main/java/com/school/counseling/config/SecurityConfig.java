@@ -56,6 +56,8 @@ public class SecurityConfig {
     // bộ lọc chính bảo vê ngóc ngách hệ thôgns
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.sameOrigin()))
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/api/**", "/ws/**"))
                 // cho phép mọi người truy cập
