@@ -47,7 +47,17 @@ public class AiChatbotService {
         String cleanQuery = query.trim();
         String lowerQuery = cleanQuery.toLowerCase();
 
-        // 1. Phản hồi nhanh cho câu chào hỏi thân thiện
+        // 1. Nếu người dùng chọn provider AI thông minh (Gemini, Ollama...): Ưu tiên gọi ai-service (Python RAG)
+        if (provider != null && !provider.equalsIgnoreCase("default") && !provider.equalsIgnoreCase("qaute")) {
+            AiChatResponse aiResp = callAiService(cleanQuery, sessionId, provider);
+            if (aiResp != null && aiResp.getAnswer() != null && !aiResp.getAnswer().isBlank()
+                    && !aiResp.getAnswer().contains("Xin lỗi, hệ thống AI hiện không thể")) {
+                return aiResp;
+            }
+            log.info("ai-service không khả dụng hoặc trả lời rỗng, tự động kích hoạt bộ tri thức học vụ nội bộ.");
+        }
+
+        // 2. Phản hồi nhanh cho câu chào hỏi thân thiện
         if (isGreeting(lowerQuery)) {
             AiChatResponse greetingResp = new AiChatResponse();
             greetingResp.setAnswer("Xin chào bạn! 👋 Tôi là Trợ lý ảo AI QAUTE của Trường Đại học Sư phạm Kỹ thuật TP.HCM (HCMUTE).\n\n"
@@ -62,7 +72,7 @@ public class AiChatbotService {
             return greetingResp;
         }
 
-        // 2. Nhận diện các nghiệp vụ trọng tâm của Portal & Nhà trường
+        // 3. Nhận diện các nghiệp vụ trọng tâm của Portal & Nhà trường
         if (lowerQuery.contains("ticket") || (lowerQuery.contains("gửi") && lowerQuery.contains("yêu cầu")) || lowerQuery.contains("sla")) {
             AiChatResponse ticketResp = new AiChatResponse();
             ticketResp.setAnswer("🎫 **Quy trình gửi yêu cầu hỗ trợ (Ticket SLA) trên HCMUTE Portal:**\n\n"
@@ -125,7 +135,7 @@ public class AiChatbotService {
             return feeResp;
         }
 
-        // 3. Tra cứu cơ sở tri thức FAQ HCMUTE (349 câu hỏi học vụ chính thức)
+        // 4. Tra cứu cơ sở tri thức FAQ HCMUTE (349 câu hỏi học vụ chính thức)
         List<FaqMatchResult> faqMatches = Collections.emptyList();
         try {
             faqMatches = smartFaqMatcherService.matchQuestion(cleanQuery, null);
@@ -165,46 +175,11 @@ public class AiChatbotService {
             faqResp.setAnswer(sb.toString());
             faqResp.setSessionId(sessionId);
             faqResp.setProvider("hcmute-faq-knowledge");
-            List<Object> sources = new ArrayList<>();
-            sources.add(Map.of(
-                    "title", top.question(),
-                    "department", top.departmentName(),
-                    "category", top.category() != null ? top.category() : "Học vụ",
-                    "score", top.confidenceScore()
-            ));
-            faqResp.setSources(new ArrayList<>()); // Empty list thay vì null
+            faqResp.setSources(new ArrayList<>());
             return faqResp;
         }
 
-        // 3. Nếu chưa khớp FAQ rõ ràng, thử gọi sang Python Microservice RAG (nếu đang bật)
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            AiChatRequest requestPayload = AiChatRequest.builder()
-                .query(cleanQuery)
-                .sessionId(sessionId)
-                .provider(provider != null ? provider : "gemini")
-                .build();
-            HttpEntity<AiChatRequest> requestEntity = new HttpEntity<>(requestPayload, headers);
-
-            ResponseEntity<AiChatResponse> responseEntity = restTemplate.postForEntity(
-                    chatbotApiUrl,
-                    requestEntity,
-                    AiChatResponse.class);
-
-            if (responseEntity.getStatusCode().is2xxSuccessful() && responseEntity.getBody() != null) {
-                AiChatResponse body = responseEntity.getBody();
-                if (body.getAnswer() != null && !body.getAnswer().isBlank()
-                        && !body.getAnswer().contains("Xin lỗi, hệ thống AI hiện không thể")) {
-                    return body;
-                }
-            }
-        } catch (Exception e) {
-            log.debug("Python AI microservice tại {} không phản hồi ({}), dùng bộ hỗ trợ học vụ.", chatbotApiUrl, e.getMessage());
-        }
-
-        // 4. Fallback thông minh: Nếu có FAQ kết quả gần nhất dù điểm thấp hơn, dùng kết quả đó
+        // 5. Fallback thông minh: Nếu có FAQ kết quả gần nhất dù điểm thấp hơn, dùng kết quả đó
         if (!faqMatches.isEmpty()) {
             FaqMatchResult top = faqMatches.get(0);
             StringBuilder sb = new StringBuilder();
@@ -219,7 +194,7 @@ public class AiChatbotService {
             return fallbackFaq;
         }
 
-        // 5. Fallback hướng dẫn quy trình học vụ & Ticket SLA
+        // 6. Fallback hướng dẫn quy trình học vụ & Ticket SLA
         AiChatResponse guideResp = new AiChatResponse();
         guideResp.setAnswer("Trợ lý QAUTE đã ghi nhận câu hỏi của bạn: *\"" + cleanQuery + "\"*.\n\n"
                 + "Hiện tại câu hỏi này cần kiểm tra hồ sơ sinh viên cụ thể hoặc nghiệp vụ chuyên sâu. Bạn có thể:\n\n"
@@ -231,6 +206,56 @@ public class AiChatbotService {
         guideResp.setSessionId(sessionId);
         guideResp.setProvider("hcmute-counseling-guide");
         return guideResp;
+    }
+
+    /**
+     * Gọi sang Python AI Microservice (FastAPI cổng 8000) với mô hình được chọn (Gemini / Ollama)
+     */
+    private AiChatResponse callAiService(String query, String sessionId, String provider) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            AiChatRequest requestPayload = AiChatRequest.builder()
+                .query(query)
+                .sessionId(sessionId)
+                .provider(provider != null ? provider : "gemini")
+                .build();
+            HttpEntity<AiChatRequest> requestEntity = new HttpEntity<>(requestPayload, headers);
+
+            log.info("📡 Đang gửi yêu cầu tới ai-service tại {} (Model: {})...", chatbotApiUrl, provider);
+            ResponseEntity<AiChatResponse> responseEntity = restTemplate.postForEntity(
+                    chatbotApiUrl,
+                    requestEntity,
+                    AiChatResponse.class);
+
+            if (responseEntity.getStatusCode().is2xxSuccessful() && responseEntity.getBody() != null) {
+                AiChatResponse body = responseEntity.getBody();
+                if (body.getAnswer() != null && !body.getAnswer().isBlank()
+                        && !body.getAnswer().contains("Xin lỗi, hệ thống AI hiện không thể")) {
+                    // Chuẩn hóa tiêu đề nguồn và điểm độ chính xác cho giao diện người dùng
+                    if (body.getSources() != null) {
+                        for (SourceDocument src : body.getSources()) {
+                            if ((src.getTitle() == null || src.getTitle().isBlank()) && src.getSource() != null) {
+                                String clean = src.getSource().replaceAll("\\.pdf$", "").replaceAll("^\\d+[\\.\\-_]\\s*", "");
+                                src.setTitle(clean);
+                            }
+                            if (src.getScore() != null && src.getScore() > 1.0) {
+                                double norm = 1.0 / (1.0 + Math.exp(-src.getScore() / 2.0));
+                                src.setScore(Math.round(norm * 100.0) / 100.0);
+                            }
+                        }
+                    }
+                    body.setSessionId(sessionId);
+                    body.setProvider(provider != null ? provider : "gemini");
+                    log.info("✅ Nhận phản hồi thành công từ ai-service ({})", provider);
+                    return body;
+                }
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ ai-service tại {} không phản hồi ({}), tự động fallback sang FAQ nội bộ.", chatbotApiUrl, e.getMessage());
+        }
+        return null;
     }
 
     private boolean isGreeting(String q) {

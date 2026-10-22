@@ -1,5 +1,6 @@
 package com.school.counseling.module.ai.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,9 +15,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SourceDocument {
     
     private String text; // Đoạn văn bản trích dẫn (200-500 chars)
+    
+    private String title; // Tiêu đề văn bản / bài viết
     
     private String source; // Tên văn bản gốc (VD: "Quyết định 123/QĐ-ĐHSPKT")
     

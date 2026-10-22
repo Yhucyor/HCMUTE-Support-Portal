@@ -114,3 +114,12 @@ app:
     # Phase 2 & 3 Configuration
     max-messages-per-day: ${AI_MAX_MESSAGES_PER_DAY:100}
     context-window-size: ${AI_CONTEXT_WINDOW_SIZE:5}
+    microservice:
+      auto-start: ${AI_MICROSERVICE_AUTO_START:true}
+      host: ${AI_MICROSERVICE_HOST:127.0.0.1}
+      port: ${AI_MICROSERVICE_PORT:8000}
+
+# ─── AI Chatbot URL (Spring Boot -> Python FastAPI) ──────────────────────────
+ai:
+  chatbot:
+    url: ${AI_CHATBOT_URL:http://127.0.0.1:8000/api/chat}

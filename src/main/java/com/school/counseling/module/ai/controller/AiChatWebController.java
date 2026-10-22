@@ -92,7 +92,13 @@ public class AiChatWebController {
         User currentUser = resolveCurrentUser();
         populateCommonModel(model, currentUser);
         
-        Conversation conversation = conversationService.getConversationBySessionId(sessionId);
+        Conversation conversation;
+        try {
+            conversation = conversationService.getConversationBySessionId(sessionId);
+        } catch (Exception e) {
+            log.warn("Conversation not found for sessionId {}: {}", sessionId, e.getMessage());
+            return "redirect:/ai/chat";
+        }
         
         if (currentUser != null) {
             List<Conversation> recentConversations = conversationService.getUserConversations(currentUser.getId());
@@ -104,7 +110,7 @@ public class AiChatWebController {
         
         model.addAttribute("conversation", conversation);
         model.addAttribute("messages", messages);
-        model.addAttribute("pageTitle", conversation.getTitle());
+        model.addAttribute("pageTitle", conversation.getTitle() != null ? conversation.getTitle() : "Cuộc trò chuyện");
         
         return "ai-chat";
     }

@@ -50,6 +50,7 @@ public class Conversation extends BaseEntity {
     /**
      * User sở hữu conversation (NULL nếu Guest)
      */
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
@@ -94,6 +95,7 @@ public class Conversation extends BaseEntity {
     /**
      * Danh sách messages trong conversation
      */
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
     @lombok.Builder.Default
     private List<AiChatMessage> messages = new ArrayList<>();
