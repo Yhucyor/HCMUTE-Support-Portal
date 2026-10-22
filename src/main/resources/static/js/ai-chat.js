@@ -801,13 +801,11 @@ function renderSidebarConversations(conversations) {
                                 <button class="opacity-0 group-hover:opacity-100 p-1 text-text-secondary hover:text-primary hover:bg-white/80 rounded transition-opacity rename-conv" 
                                         data-session-id="${escapeHtml(conv.sessionId)}"
                                         data-title="${escapeHtml(conv.title || 'Hội thoại mới')}"
-                                        onclick="event.stopPropagation(); window.openRenameModal(this.dataset.sessionId, this.dataset.title)" 
                                         title="Đổi tên" type="button">
                                     <span class="material-symbols-outlined text-[15px] leading-none">edit</span>
                                 </button>
                                 <button class="opacity-0 group-hover:opacity-100 p-1 text-text-secondary hover:text-error hover:bg-white/80 rounded transition-opacity delete-conv" 
                                         data-session-id="${escapeHtml(conv.sessionId)}"
-                                        onclick="event.stopPropagation(); deleteConversation(this.dataset.sessionId)" 
                                         title="Xóa" type="button">
                                     <span class="material-symbols-outlined text-[15px] leading-none">delete</span>
                                 </button>
@@ -823,39 +821,47 @@ function renderSidebarConversations(conversations) {
 }
 
 /**
- * Bind click and delete events for conversation items
+ * Bind click, rename and delete events for conversation items using event delegation (prevents double triggers)
  */
 function bindConversationItemEvents() {
-    document.querySelectorAll('.conversation-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-            if (!e.target.closest('.delete-conv') && !e.target.closest('.rename-conv')) {
-                const sid = item.dataset.sessionId;
-                if (sid) {
-                    window.location.href = `/ai/chat/${sid}`;
-                }
-            }
-        });
-    });
-    
-    document.querySelectorAll('.delete-conv').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+    const list = document.getElementById('conversationHistoryList');
+    if (!list || list.dataset.eventsBound === 'true') return;
+    list.dataset.eventsBound = 'true';
+
+    list.addEventListener('click', (e) => {
+        // 1. Delete conversation button
+        const deleteBtn = e.target.closest('.delete-conv');
+        if (deleteBtn) {
             e.stopPropagation();
-            const sid = btn.dataset.sessionId;
+            e.preventDefault();
+            const sid = deleteBtn.dataset.sessionId;
             if (sid) {
                 deleteConversation(sid);
             }
-        });
-    });
+            return;
+        }
 
-    document.querySelectorAll('.rename-conv').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        // 2. Rename conversation button
+        const renameBtn = e.target.closest('.rename-conv');
+        if (renameBtn) {
             e.stopPropagation();
-            const sid = btn.dataset.sessionId;
-            const title = btn.dataset.title || '';
+            e.preventDefault();
+            const sid = renameBtn.dataset.sessionId;
+            const title = renameBtn.dataset.title || '';
             if (sid && window.openRenameModal) {
                 window.openRenameModal(sid, title);
             }
-        });
+            return;
+        }
+
+        // 3. Conversation item click to load conversation
+        const item = e.target.closest('.conversation-item');
+        if (item) {
+            const sid = item.dataset.sessionId;
+            if (sid) {
+                window.location.href = `/ai/chat/${sid}`;
+            }
+        }
     });
 }
 
@@ -863,7 +869,7 @@ function bindConversationItemEvents() {
  * Delete conversation
  */
 async function deleteConversation(sessionIdToDelete) {
-    if (!confirm('Bạn có chắc muốn xóa hội thoại này?')) return;
+    if (!confirm('Bạn có chắc chắn muốn xóa hội thoại này?')) return;
     
     try {
         const response = await fetch(`/api/ai/conversations/${sessionIdToDelete}`, {
@@ -873,18 +879,26 @@ async function deleteConversation(sessionIdToDelete) {
         
         if (response.ok) {
             if (sessionId === sessionIdToDelete) {
-                startNewChat();
+                if (window.location.pathname.startsWith('/ai/chat/') || window.location.pathname.startsWith('/ai-chat/')) {
+                    window.location.href = '/ai/chat';
+                } else {
+                    startNewChat();
+                }
             } else {
                 refreshSidebarConversations();
+            }
+            if (typeof showToast === 'function') {
+                showToast('Đã xóa cuộc trò chuyện! 🗑️');
             }
         } else {
             alert('Không thể xóa hội thoại');
         }
     } catch (error) {
         console.error('Delete error:', error);
-        alert('Có lỗi xảy ra');
+        alert('Có lỗi xảy ra khi xóa hội thoại');
     }
 }
+window.deleteConversation = deleteConversation;
 
 /**
  * Generate UUID for session ID

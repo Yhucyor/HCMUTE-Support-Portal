@@ -273,13 +273,11 @@
                                         <button class="opacity-0 group-hover:opacity-100 p-1 text-text-secondary hover:text-primary hover:bg-white/80 rounded transition-opacity rename-conv" 
                                                 th:data-session-id="${conv.sessionId}"
                                                 th:data-title="${conv.title}"
-                                                onclick="event.stopPropagation(); window.openRenameModal(this.dataset.sessionId, this.dataset.title)" 
                                                 title="Đổi tên" type="button">
                                             <span class="material-symbols-outlined text-[15px] leading-none">edit</span>
                                         </button>
                                         <button class="opacity-0 group-hover:opacity-100 p-1 text-text-secondary hover:text-error hover:bg-white/80 rounded transition-opacity delete-conv" 
                                                 th:data-session-id="${conv.sessionId}"
-                                                onclick="event.stopPropagation(); deleteConversation(this.dataset.sessionId)" 
                                                 title="Xóa" type="button">
                                             <span class="material-symbols-outlined text-[15px] leading-none">delete</span>
                                         </button>
@@ -622,7 +620,7 @@
     const isAuthenticated = /*[[${currentUser != null}]]*/ false;
     /*]]>*/
 </script>
-<script th:src="@{/js/ai-chat.js(v=7)}"></script>
+<script th:src="@{/js/ai-chat.js(v=8)}"></script>
 
 <!-- Header Dropdown & Mobile Interactions -->
 <script>
@@ -780,29 +778,6 @@
             window.closeRenameModal();
         }
     });
-
-    // Delete conversation confirmation
-    window.deleteConversation = function(sessionId) {
-        if (confirm('Bạn có chắc chắn muốn xóa hội thoại này?')) {
-            fetch(`/api/ai/conversations/${sessionId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    window.location.href = '/ai/chat';
-                } else {
-                    alert('Không thể xóa hội thoại. Vui lòng thử lại.');
-                }
-            })
-            .catch(err => {
-                console.error('Delete error:', err);
-                alert('Lỗi kết nối. Vui lòng thử lại.');
-            });
-        }
-    };
     
     // Submit feedback (Thumbs Up/Down)
     window.submitFeedback = function(button) {
