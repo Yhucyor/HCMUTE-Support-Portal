@@ -43,7 +43,6 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class PostService {
 
     private final PostRepository postRepository;
@@ -55,6 +54,27 @@ public class PostService {
     private final LikeRepository likeRepository;
     private final IStorageService storageService;
     private final BannedWordsFilterService bannedWordsFilterService;
+
+    public PostService(
+            PostRepository postRepository,
+            PostAttachmentRepository attachmentRepository,
+            DepartmentRepository departmentRepository,
+            CommentRepository commentRepository,
+            PostReportRepository postReportRepository,
+            UserRepository userRepository,
+            LikeRepository likeRepository,
+            IStorageService storageService,
+            BannedWordsFilterService bannedWordsFilterService) {
+        this.postRepository = postRepository;
+        this.attachmentRepository = attachmentRepository;
+        this.departmentRepository = departmentRepository;
+        this.commentRepository = commentRepository;
+        this.postReportRepository = postReportRepository;
+        this.userRepository = userRepository;
+        this.likeRepository = likeRepository;
+        this.storageService = storageService;
+        this.bannedWordsFilterService = bannedWordsFilterService;
+    }
 
     /**
      * Cán bộ đăng thông báo chính thức (qua REST API JSON)
@@ -223,6 +243,14 @@ public class PostService {
      */
     @Transactional
     public Post createForumPost(String title, String content, MultipartFile image, User author) {
+        return createForumPost(title, content, null, image, author);
+    }
+
+    /**
+     * Sinh viên đăng bài thảo luận trên Diễn đàn kèm chỉ định Khoa/Phòng
+     */
+    @Transactional
+    public Post createForumPost(String title, String content, Long departmentId, MultipartFile image, User author) {
         // Tự động kiểm tra từ cấm qua BannedWordsFilterService
         bannedWordsFilterService.validateContent(title + " " + content);
 
@@ -230,13 +258,21 @@ public class PostService {
                 ("ROLE_STAFF".equalsIgnoreCase(author.getRole().getName()) || "ROLE_ADMIN".equalsIgnoreCase(author.getRole().getName()));
         String initialStatus = isStaffOrAdmin ? "APPROVED" : "PENDING_APPROVAL";
 
+        Department dept = null;
+        if (departmentId != null) {
+            dept = departmentRepository.findById(departmentId).orElse(null);
+        }
+        if (dept == null && author != null) {
+            dept = author.getDepartment();
+        }
+
         Post.PostBuilder postBuilder = Post.builder()
                 .title(title)
                 .content(content)
                 .postType("STUDENT_FORUM")
                 .status(initialStatus)
                 .author(author)
-                .department(author != null ? author.getDepartment() : null);
+                .department(dept);
 
         if (isStaffOrAdmin) {
             postBuilder.approvedBy(author).approvedAt(LocalDateTime.now());
@@ -245,7 +281,12 @@ public class PostService {
         Post savedPost = postRepository.save(postBuilder.build());
 
         if (image != null && !image.isEmpty()) {
-            IStorageService.StorageResult uploadResult = storageService.uploadFile(image, "images");
+            String folder = "images";
+            String contentType = image.getContentType();
+            if (contentType != null && (contentType.contains("pdf") || contentType.contains("word") || contentType.contains("officedocument") || contentType.contains("zip"))) {
+                folder = "documents";
+            }
+            IStorageService.StorageResult uploadResult = storageService.uploadFile(image, folder);
             if (uploadResult.isSuccess()) {
                 PostAttachment imageAtt = PostAttachment.builder()
                         .post(savedPost)
@@ -260,9 +301,10 @@ public class PostService {
             }
         }
 
-        log.info("Sinh viên {} đã gửi bài thảo luận ID: {} (Trạng thái: {})", author.getUsername(), savedPost.getId(), initialStatus);
+        log.info("Sinh viên {} đã gửi bài thảo luận ID: {} (Trạng thái: {})", author != null ? author.getUsername() : "anonymous", savedPost.getId(), initialStatus);
         return savedPost;
     }
+
 
     /**
      * Sinh viên đăng bài thảo luận trả về DTO cho AJAX Fetch API

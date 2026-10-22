@@ -1,688 +1,1173 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HCMUTE - Trợ lý AI</title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Trợ lý AI học vụ - QAUTE PORTAL | HCMUTE</title>
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Boxicons -->
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <!-- Portal CSS -->
-    <link rel="stylesheet" th:href="@{/css/portal.css}">
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
     <style>
-        .main-wrapper {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-            background: white;
-        }
-
-        /* Topbar needs to be absolute or hidden, let's keep it but simplified */
-        .ai-topbar {
-            height: 60px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            font-weight: 600;
-            color: var(--text-dark);
-            background: white;
-            z-index: 10;
-        }
-
-        /* Chat Layout */
-        .chat-container {
-            display: flex;
-            flex-grow: 1;
-            height: calc(100vh - 60px);
-        }
-
-        /* History Sidebar */
-        .chat-history {
-            width: 260px;
-            background: #f9f9f9;
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .new-chat-btn {
-            margin: 15px;
-            padding: 10px;
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .new-chat-btn:hover { border-color: var(--crimson); color: var(--crimson); }
-
-        .history-list {
-            list-style: none;
-            padding: 0 15px;
-            margin: 0;
-            overflow-y: auto;
-            flex-grow: 1;
-        }
-
-        .history-list li {
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 5px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            color: var(--text-dark);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .history-list li:hover { background: #eee; }
-        .history-list li.active { background: #e0e0e0; font-weight: 500; }
-
-        /* Main Chat Area */
-        .chat-main {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
+        html, body {
             height: 100%;
-            background: #f8fafc;
-            position: relative;
+            max-height: 100vh;
             overflow: hidden;
+            margin: 0;
+            padding: 0;
         }
 
-        /* Cuộn hội thoại: chỉ phần tin nhắn được cuộn */
-        .chat-messages {
-            flex: 1 1 0;
+        /* Sidebar dedicated scrollbar - always clean, visible and smooth */
+        .sidebar-scroll {
             overflow-y: auto;
-            overflow-x: hidden;
-            padding: 24px 32px 30px;
-            scroll-behavior: smooth;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            background: #f8fafc;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f8fafc;
         }
-
-        .chat-messages::-webkit-scrollbar {
+        .sidebar-scroll::-webkit-scrollbar {
             width: 6px;
         }
-        .chat-messages::-webkit-scrollbar-track {
-            background: transparent;
+        .sidebar-scroll::-webkit-scrollbar-track {
+            background: #f8fafc;
         }
-        .chat-messages::-webkit-scrollbar-thumb {
+        .sidebar-scroll::-webkit-scrollbar-thumb {
             background: #cbd5e1;
-            border-radius: 4px;
+            border-radius: 9999px;
         }
-        .chat-messages::-webkit-scrollbar-thumb:hover {
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
 
-        /* Khung tin nhắn chung */
-        .message-row {
-            display: flex;
-            width: 100%;
-            box-sizing: border-box;
-            animation: fadeInMsg 0.2s ease-out;
+        /* Chat arena scrollbar */
+        .chat-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
         }
-
-        @keyframes fadeInMsg {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
+        .chat-scrollbar::-webkit-scrollbar {
+            width: 6px;
         }
-
-        /* 1. TIN NHẮN NGƯỜI DÙNG: CĂN PHẢI, BONG BÓNG XANH GỌN GÀNG */
-        .message-row.user {
-            justify-content: flex-end;
-        }
-
-        .message-row.user .message-content {
-            display: flex;
-            flex-direction: row-reverse;
-            align-items: flex-start;
-            max-width: 72%;
-            gap: 10px;
-        }
-
-        .message-row.user .message-bubble {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            color: #ffffff;
-            padding: 12px 18px;
-            border-radius: 18px 18px 4px 18px;
-            box-shadow: 0 3px 12px rgba(37, 99, 235, 0.2);
-            font-size: 0.95rem;
-            line-height: 1.6;
-            word-break: break-word;
-        }
-
-        .message-row.user .message-bubble p {
-            margin: 0;
-            color: #ffffff;
-        }
-
-        .message-row.user .message-meta {
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.8);
-            text-align: right;
-            margin-top: 4px;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* 2. TIN NHẮN AI: CĂN TRÁI, NỀN TRẮNG, VIỀN XANH NHẠT RỘNG RÃI */
-        .message-row.ai {
-            justify-content: flex-start;
-        }
-
-        .message-row.ai .message-content {
-            display: flex;
-            flex-direction: row;
-            align-items: flex-start;
-            max-width: 82%;
-            gap: 12px;
-        }
-
-        .message-row.ai .message-bubble {
-            background: #ffffff;
-            border: 1.5px solid #bfdbfe; /* Viền xanh nhạt chuẩn yêu cầu */
-            border-radius: 4px 18px 18px 18px;
-            box-shadow: 0 3px 14px rgba(37, 99, 235, 0.05);
-            padding: 16px 22px;
-            color: #1e293b;
-            font-size: 0.96rem;
-            line-height: 1.7;
-            word-break: break-word;
-            width: 100%;
-        }
-
-        .message-row.ai .message-bubble p {
-            margin: 0 0 8px 0;
-        }
-        .message-row.ai .message-bubble p:last-child {
-            margin-bottom: 0;
-        }
-        .message-row.ai .message-bubble ol,
-        .message-row.ai .message-bubble ul {
-            padding-left: 20px;
-            margin: 6px 0 10px;
-        }
-        .message-row.ai .message-bubble li {
-            margin-bottom: 4px;
-        }
-
-        /* Thanh action dưới tin nhắn AI: time + copy/like button */
-        .message-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-            padding-top: 8px;
-            border-top: 1px solid #f1f5f9;
-            font-size: 0.75rem;
-            color: #94a3b8;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 6px;
-        }
-
-        .action-btn {
-            background: transparent;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            font-size: 0.95rem;
-            padding: 3px 6px;
-            border-radius: 4px;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-        }
-
-        .action-btn:hover {
-            color: #2563eb;
-            background: #eff6ff;
-        }
-
-        .avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-            margin-top: 2px;
-        }
-
-        .avatar-ai { 
-            background: linear-gradient(135deg, #2563eb, #1d4ed8); 
-            color: white; 
-            font-size: 1.25rem; 
-        }
-        .avatar-user { 
-            background: #0ea5e9; 
-            color: white; 
-            overflow: hidden; 
-            font-size: 1.1rem;
-        }
-
-        /* Thanh nhập câu hỏi: luôn nằm dưới cùng, cố định, không bị nhảy khi AI trả lời dài */
-        .chat-input-wrapper {
-            flex-shrink: 0;
-            background: #ffffff;
-            border-top: 1px solid #e2e8f0;
-            padding: 14px 24px 10px;
-            display: flex;
-            justify-content: center;
-            box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.03);
-            z-index: 20;
-        }
-
-        /* Thanh nhập câu hỏi: bo tròn, có bóng đổ nhẹ */
-        .chat-input-box {
-            max-width: 820px;
-            width: 100%;
-            background: #ffffff;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 32px;
-            padding: 5px 8px 5px 20px;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-            transition: all 0.25s ease;
-        }
-
-        .chat-input-box:focus-within {
-            border-color: #2563eb;
-            box-shadow: 0 4px 18px rgba(37, 99, 235, 0.15);
-        }
-
-        .chat-input-box input {
-            flex-grow: 1;
-            border: none;
-            outline: none;
-            font-size: 0.98rem;
-            padding: 8px 10px;
-            font-family: 'Inter', sans-serif;
-            color: #1e293b;
+        .chat-scrollbar::-webkit-scrollbar-track {
             background: transparent;
         }
-
-        .chat-input-box input::placeholder {
-            color: #94a3b8;
+        .chat-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        .chat-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
-        /* Nút gửi: xanh dương nổi bật */
-        .chat-input-box button {
-            background: #2563eb;
-            border: none;
-            color: white;
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
-            flex-shrink: 0;
-        }
-
-        .chat-input-box button:hover {
-            background: #1d4ed8;
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.45);
-        }
-
-        .chat-input-box button:active {
-            transform: scale(0.96);
-        }
-
-        .disclaimer {
-            text-align: center;
-            font-size: 0.75rem;
-            color: #94a3b8;
-            margin-top: 8px;
-        }
-
-        /* Typing Indicator */
-        .typing-indicator {
-            display: none;
-            gap: 5px;
-            padding-top: 8px;
-        }
-        .typing-indicator span {
-            width: 8px;
-            height: 8px;
-            background: #2563eb;
-            border-radius: 50%;
-            animation: bounce 1.4s infinite ease-in-out both;
-        }
-        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
-
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
+        /* Print styles for PDF export */
+        @media print {
+            header, aside, .floating-composer, #modelSelectBtn, .action-buttons, #ticketModal, #citationDrawer {
+                display: none !important;
+            }
+            main, .chat-arena, #chatStream {
+                height: auto !important;
+                overflow: visible !important;
+                padding: 0 !important;
+                background: white !important;
+            }
         }
     </style>
+    <!-- Tailwind CSS with Academic Horizon & HCMUTE Tokens -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "brand-red": "#991b1e",
+                        "brand-red-hover": "#831518",
+                        "brand-blue": "#003882",
+                        "brand-blue-dark": "#002456",
+                        "navy-dark": "#0f172a",
+                        "primary": "#1d4ed8",
+                        "primary-hover": "#1e40af",
+                        "primary-subtle": "#eff6ff",
+                        "surface": "#ffffff",
+                        "surface-subtle": "#f1f5f9",
+                        "border-ui": "#e2e8f0",
+                        "text-primary": "#0f172a",
+                        "text-secondary": "#64748b",
+                        "text-muted": "#94a3b8",
+                        "success": "#10b981",
+                        "warning": "#f59e0b",
+                        "error": "#ba1a1a"
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        heading: ["Outfit", "sans-serif"]
+                    }
+                }
+            }
+        };
+    </script>
 </head>
-<body>
+<body class="bg-[#f8fafc] font-sans text-sm text-[#0f172a] antialiased h-screen overflow-hidden flex flex-col selection:bg-[#991b1e] selection:text-white">
 
-    <!-- MAIN SIDEBAR (From Portal Layout) -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <i class='bx bx-menu menu-icon'></i>
-            <span class="logo-text">Portal</span>
-        </div>
-        <ul class="sidebar-menu">
-            <li><a th:href="@{/dashboard}"><i class='bx bxs-dashboard'></i><span>Tổng quan</span></a></li>
-            <li><a th:href="@{/ai-chat}" class="active"><i class='bx bx-bot'></i><span>Trợ lý AI</span></a></li>
-            <li><a href="#"><i class='bx bx-support'></i><span>Yêu cầu hỗ trợ</span></a></li>
-            <li><a th:href="@{/feed}"><i class='bx bx-news'></i><span>Bảng tin chung</span></a></li>
-            <li><a th:href="@{/group}"><i class='bx bx-group'></i><span>Nhóm Khoa</span></a></li>
-            <li><a th:href="@{/profile}"><i class='bx bx-user'></i><span>Hồ sơ cá nhân</span></a></li>
-        </ul>
-        <div class="sidebar-footer">
-            <a th:href="@{/}"><i class='bx bx-log-out'></i><span>Đăng xuất</span></a>
-        </div>
-    </aside>
+    <!-- 1. TOP GLOBAL HEADER -->
+    <header class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all h-[74px]">
+        <div class="w-full px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+            <!-- Logo HCMUTE -->
+            <a class="flex items-center gap-3 group py-1.5" th:href="@{/}">
+                <img alt="HCMUTE Logo" class="h-12 w-auto object-contain transition-transform group-hover:scale-105" 
+                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKSHNb9YZP8QFQKzZ-_B_glnPE615kLoTh0DIZM9-id7Eb1Z7EZXRKcjBeCckK7VOaTPGdnMs7Cl7qdtjr1Mry3Y7d1U0S8maxw8fAHipOBnT-HFyaVBuqc6xe0fMZJf4fPlHw6UIkL0vHJV2kfl-tnjJgobCtm7Cy-KazrUCaEZefkxCcT9HC_-zWiT9twVqKg6xymALE7_hrVpAjI-XYdTFsbm3wyDRY8PxAR-vjOB00BqpW9wX9dVryQuIfZgdSA">
+                <div class="flex flex-col text-[#003882]">
+                    <span class="font-bold text-sm sm:text-base tracking-tight leading-tight text-[#003882]">Trường Đại học Sư phạm Kỹ thuật Tp. Hồ Chí Minh</span>
+                    <span class="font-normal text-[11px] sm:text-xs text-[#003882] tracking-normal leading-normal">HCMC University of Technology and Education</span>
+                </div>
+            </a>
 
-    <!-- MAIN CONTENT WRAPPER -->
-    <div class="main-wrapper" style="flex-direction: column;">
-        
-        <div class="ai-topbar" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 24px;">
-            <div style="font-weight: 600; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
-                <i class='bx bx-bot' style="color: var(--crimson, #a51c30); font-size: 1.4rem;"></i>
-                <span>Trợ lý Thông minh HCMUTE</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <label for="ai-model-select" style="font-size: 0.88rem; font-weight: 500; color: #495057;">
-                    <i class='bx bx-chip'></i> Mô hình trả lời:
-                </label>
-                <select id="ai-model-select" style="padding: 7px 14px; border-radius: 8px; border: 1.5px solid #d0d7de; font-size: 0.88rem; background: #fff; cursor: pointer; font-weight: 600; outline: none; color: #24292f; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                    <option value="gemini" selected>⚡ Google Gemini (Phản hồi nhanh)</option>
-                    <option value="ollama">🦙 Ollama Llama 3.2 (Local RAG)</option>
-                </select>
-            </div>
-        </div>
+            <!-- Nav Items (Desktop) -->
+            <nav class="hidden xl:flex items-center space-x-7">
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/}">Trang chủ</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/feed/forum}">Diễn đàn</a>
+                <a class="font-semibold text-[14px] text-[#991b1e] border-b-2 border-[#991b1e] pb-1" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/faqs}">Tra cứu FAQ</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
+            </nav>
 
-        <div class="chat-container">
-            <!-- Chat History -->
-            <div class="chat-history">
-                <button class="new-chat-btn">
-                    <i class='bx bx-plus'></i> Cuộc trò chuyện mới
+            <!-- Header Actions -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Toggle Sidebar Mobile Button -->
+                <button onclick="toggleMobileSidebar()" class="md:hidden w-9 h-9 rounded-lg flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors" title="Lịch sử hội thoại">
+                    <span class="material-symbols-outlined text-xl">history</span>
                 </button>
-                <div style="padding: 10px 15px; font-size: 0.8rem; font-weight: 600; color: #888;">GẦN ĐÂY</div>
-                <ul class="history-list">
-                    <li class="active"><i class='bx bx-message-rounded'></i> Quy chế học vụ 2026</li>
-                    <li><i class='bx bx-message-rounded'></i> Hỏi về học phí kỳ I</li>
-                    <li><i class='bx bx-message-rounded'></i> Thủ tục đăng ký ký túc xá</li>
-                    <li><i class='bx bx-message-rounded'></i> Địa chỉ phòng khám trường</li>
-                </ul>
+
+                <div class="hidden sm:flex items-center text-xs font-semibold text-slate-600 px-2 py-1 rounded cursor-pointer hover:bg-slate-100">
+                    <span>VI</span>
+                    <span class="material-symbols-outlined text-[16px]">expand_more</span>
+                </div>
+
+                <!-- Đã đăng nhập: Student Account Dropdown Menu -->
+                <div sec:authorize="isAuthenticated()" class="relative">
+                    <button id="headerAccountToggle" 
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95" 
+                            th:title="${currentUser != null ? currentUser.fullName : (currentUserFullName != null ? currentUserFullName : #authentication.name)}"
+                            aria-haspopup="true"
+                            aria-expanded="false">
+                        <span class="material-symbols-outlined text-[16px]">account_circle</span>
+                        <span class="hidden sm:inline truncate max-w-[150px]" th:text="${currentUser != null ? currentUser.fullName : (currentUserFullName != null ? currentUserFullName : (principal != null ? principal.fullName : #authentication.name))}">Họ Tên</span>
+                        <span class="material-symbols-outlined text-[14px]">expand_more</span>
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="headerDropdownMenu" 
+                         class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50"
+                         role="menu">
+                        <a href="/profile" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">person</span>
+                            <span>Thông tin cá nhân</span>
+                        </a>
+                        <a href="/academic/sync" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">home</span>
+                            <span>Tổng quan</span>
+                        </a>
+                        <a href="/academic/grades" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">description</span>
+                            <span>Bảng điểm</span>
+                        </a>
+                        <a href="/academic/timetable" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                            <span>Thời khóa biểu</span>
+                        </a>
+                        <a href="/academic/curriculum" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">book</span>
+                            <span>Chương trình đào tạo</span>
+                        </a>
+                        <a href="/tickets/my-tickets" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">confirmation_number</span>
+                            <span>Ticket hỗ trợ</span>
+                        </a>
+                        <div class="border-t border-slate-200 my-1"></div>
+                        <a th:href="@{/auth/logout}" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">logout</span>
+                            <span>Đăng xuất</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Chưa đăng nhập: Nút Đăng nhập -->
+                <div sec:authorize="!isAuthenticated()">
+                    <a class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#991b1e] hover:bg-[#831518] rounded-md shadow-sm transition-all active:scale-95" th:href="@{/auth/login}">
+                        <span class="material-symbols-outlined text-[16px]">person</span>
+                        <span>Đăng nhập</span>
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button aria-label="Mở menu" onclick="toggleMobileNav()" class="xl:hidden w-9 h-9 rounded-md flex items-center justify-center text-slate-700 hover:bg-slate-100">
+                    <span class="material-symbols-outlined text-[24px]">menu</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Drawer Menu -->
+        <div id="mobileNavDrawer" class="hidden xl:hidden bg-white border-b border-slate-200 px-4 pt-3 pb-5 space-y-2.5 shadow-lg">
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/}">Trang chủ</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/feed/forum}">Diễn đàn</a>
+            <a class="block py-2 text-sm font-semibold text-[#991b1e]" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/faqs}">Tra cứu FAQ</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
+            <div sec:authorize="isAuthenticated()" class="pt-2 border-t border-slate-200">
+                <a class="flex items-center gap-2 py-2 text-sm font-semibold text-[#003882]" href="/academic/sync">
+                    <span class="material-symbols-outlined text-[18px]">home</span>
+                    <span>Tổng quan học tập</span>
+                </a>
+                <a class="flex items-center gap-2 py-2 text-sm font-medium text-slate-700" href="/profile">
+                    <span class="material-symbols-outlined text-[18px]">person</span>
+                    <span th:text="${currentUser != null ? currentUser.fullName : (currentUserFullName != null ? currentUserFullName : #authentication.name)}">Họ Tên</span>
+                </a>
+                <a class="block py-1.5 text-sm font-medium text-[#991b1e]" th:href="@{/auth/logout}">Đăng xuất</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. MAIN APP WORKSPACE (Fixed from Header to Bottom) -->
+    <div class="fixed top-[74px] bottom-0 left-0 right-0 flex overflow-hidden bg-[#f8fafc]">
+        <main class="flex-1 w-full h-full flex overflow-hidden">
+            <!-- Dual-Panel Chat Workspace Container -->
+            <div class="flex-1 h-full flex overflow-hidden bg-white shadow-sm border-t border-[#e2e8f0]">
+
+                <!-- ================= LEFT PANEL: CONVERSATION HISTORY (~280px CỐ ĐỊNH, CÓ THANH TRƯỢT) ================= -->
+                <aside id="historySidebar" class="w-[280px] shrink-0 h-full flex flex-col bg-[#f8fafc] border-r border-[#e2e8f0] hidden md:flex transition-all duration-200 z-30 max-md:fixed max-md:top-[74px] max-md:bottom-0 max-md:left-0 max-md:shadow-2xl">
+                    <!-- Sidebar Header & Action (Cố định phía trên) -->
+                    <div class="p-3.5 shrink-0 flex flex-col gap-2.5 bg-white border-b border-[#e2e8f0]">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-lg bg-[#eff6ff] flex items-center justify-center text-[#1d4ed8]">
+                                    <span class="material-symbols-outlined text-lg">forum</span>
+                                </div>
+                                <span class="font-heading font-semibold text-xs tracking-tight text-[#0f172a]">Hội thoại của bạn</span>
+                            </div>
+                            <button class="p-1 text-[#94a3b8] hover:text-[#0f172a] hover:bg-[#f1f5f9] rounded-md transition-colors md:hidden" onclick="toggleMobileSidebar()" title="Đóng danh sách">
+                                <span class="material-symbols-outlined text-base">close</span>
+                            </button>
+                        </div>
+
+                        <!-- "+ Cuộc trò chuyện mới" button -->
+                        <button onclick="startNewChat()" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-[#1d4ed8] text-white font-semibold text-xs shadow-xs hover:bg-[#1e40af] transition-all active:scale-[0.99] cursor-pointer" type="button">
+                            <span class="material-symbols-outlined text-base">add_circle</span>
+                            <span>+ Cuộc trò chuyện mới</span>
+                        </button>
+
+                        <!-- Search Conversations Input -->
+                        <div class="relative flex items-center">
+                            <span class="material-symbols-outlined absolute left-2.5 text-[#94a3b8] text-base pointer-events-none">search</span>
+                            <input id="historySearchInput" oninput="filterHistoryList(this.value)" class="w-full pl-8 pr-2.5 py-1.5 rounded-lg bg-[#f1f5f9] border border-[#e2e8f0] text-[#0f172a] placeholder-[#94a3b8] text-xs focus:outline-none focus:border-[#1d4ed8] focus:bg-white transition-all" placeholder="Tìm kiếm hội thoại..." type="text"/>
+                        </div>
+                    </div>
+
+                    <!-- Scrollable Grouped History (Thanh trượt riêng biệt) -->
+                    <div class="flex-1 min-h-0 overflow-y-auto px-2 py-3 space-y-4 sidebar-scroll" id="historyGroupContainer">
+                        <!-- Group: HÔM NAY -->
+                        <div class="space-y-1" id="group-today">
+                            <div class="px-2.5 py-1 text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wider flex items-center justify-between">
+                                <span class="flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#1d4ed8]"></span>Hôm nay
+                                </span>
+                                <span class="text-[10px] text-[#94a3b8] font-mono" id="todayCount">1</span>
+                            </div>
+                            <div class="history-item-list space-y-1" id="list-today">
+                                <!-- Populated dynamically by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Group: 7 NGÀY GẦN ĐÂY -->
+                        <div class="space-y-1" id="group-recent">
+                            <div class="px-2.5 py-1 text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wider flex items-center justify-between">
+                                <span>7 ngày gần đây</span>
+                                <span class="text-[10px] text-[#94a3b8] font-mono" id="recentCount">0</span>
+                            </div>
+                            <div class="history-item-list space-y-1" id="list-recent">
+                                <!-- Populated dynamically by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Group: TRƯỚC ĐÓ -->
+                        <div class="space-y-1" id="group-older">
+                            <div class="px-2.5 py-1 text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wider flex items-center justify-between">
+                                <span>Trước đó</span>
+                                <span class="text-[10px] text-[#94a3b8] font-mono" id="olderCount">0</span>
+                            </div>
+                            <div class="history-item-list space-y-1" id="list-older">
+                                <!-- Populated dynamically by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom User Status (Cố định phía dưới) -->
+                    <div class="p-3 shrink-0 bg-white border-t border-[#e2e8f0] flex items-center justify-between text-xs text-[#64748b]">
+                        <div class="flex items-center gap-2 truncate">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span class="truncate" th:text="${currentUserFullName != null ? currentUserFullName : 'Khách vãng lai'}">Nguyễn Văn An</span>
+                        </div>
+                        <span class="text-[10px] font-mono text-[#94a3b8]">v2.5 RAG</span>
+                    </div>
+                </aside>
+
+                <!-- ================= RIGHT PANEL: CHAT ARENA ================= -->
+                <section class="chat-arena flex-1 flex flex-col h-full bg-white overflow-hidden relative">
+                    <!-- Chat Header -->
+                    <header class="h-14 px-4 md:px-6 shrink-0 flex items-center justify-between bg-white border-b border-[#e2e8f0] z-20">
+                        <!-- Assistant Identity -->
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="relative w-9 h-9 rounded-full bg-[#eff6ff] flex items-center justify-center p-0.5 border border-[#1d4ed8]/20 shrink-0 shadow-xs">
+                                <img alt="HCMUTE AI Mascot" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg"/>
+                                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#10b981] rounded-full ring-2 ring-white animate-pulse"></span>
+                            </div>
+                            <div class="flex flex-col min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <h2 class="font-heading font-bold text-sm text-[#0f172a] truncate">Trợ lý AI học vụ</h2>
+                                    <span class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#ecfdf5] text-[#047857] border border-[#a7f3d0]">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-[#10b981]"></span>Đang hoạt động
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-[#64748b] truncate">Tra cứu quy chế đào tạo, học bổng &amp; thủ tục sinh viên</p>
+                            </div>
+                        </div>
+
+                        <!-- Model Selector & Header Actions -->
+                        <div class="flex items-center gap-2">
+                            <!-- Refined Model Selector Dropdown -->
+                            <div class="relative">
+                                <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#f8fafc] border border-[#e2e8f0] text-[#0f172a] text-xs font-medium hover:bg-[#f1f5f9] transition-colors cursor-pointer" id="modelSelectBtn" type="button" onclick="toggleModelDropdown(event)">
+                                    <span class="w-2 h-2 rounded-full bg-[#10b981]"></span>
+                                    <span id="currentModelLabel">Gemini 1.5 Pro</span>
+                                    <span class="material-symbols-outlined text-base text-[#94a3b8]">expand_more</span>
+                                </button>
+                                <div class="hidden absolute right-0 mt-1.5 w-72 p-1.5 rounded-xl bg-white shadow-xl border border-[#e2e8f0] z-30" id="modelDropdown">
+                                    <div class="p-1 space-y-1.5">
+                                        <button class="w-full flex flex-col p-2.5 rounded-lg bg-[#eff6ff] text-left border border-[#bfdbfe] transition-colors group cursor-pointer" onclick="selectModel('gemini', 'Gemini 1.5 Pro (Cloud)')" type="button">
+                                            <div class="flex items-center justify-between text-xs font-semibold text-[#1d4ed8]">
+                                                <span class="flex items-center gap-1.5">
+                                                    <span class="material-symbols-outlined text-sm">cloud_done</span> Gemini Cloud (1.5 Pro)
+                                                </span>
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] bg-[#ecfdf5] text-[#047857] font-semibold border border-[#a7f3d0]">Khuyên dùng</span>
+                                            </div>
+                                            <span class="text-[11px] text-[#64748b] mt-0.5">Phản hồi nhanh, suy luận sâu rộng quy chế toàn trường</span>
+                                        </button>
+                                        <button class="w-full flex flex-col p-2.5 rounded-lg hover:bg-[#f8fafc] text-left border border-transparent hover:border-[#e2e8f0] transition-colors group cursor-pointer" onclick="selectModel('ollama', 'Ollama Local (Qwen 2.5)')" type="button">
+                                            <div class="flex items-center justify-between text-xs font-semibold text-[#0f172a]">
+                                                <span class="flex items-center gap-1.5">
+                                                    <span class="material-symbols-outlined text-sm text-[#475569]">dns</span> Ollama Local (Qwen 2.5)
+                                                </span>
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] bg-[#eff6ff] text-[#1d4ed8] font-semibold border border-[#bfdbfe]">On-Premise</span>
+                                            </div>
+                                            <span class="text-[11px] text-[#64748b] mt-0.5">Bảo mật dữ liệu, vận hành trên máy chủ nội bộ trường</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="h-4 w-px bg-[#e2e8f0] mx-0.5 hidden sm:block"></div>
+
+                            <!-- 3-dots Overflow Menu -->
+                            <div class="relative">
+                                <button class="p-1.5 text-[#64748b] hover:text-[#0f172a] hover:bg-[#f1f5f9] rounded-lg transition-colors cursor-pointer" onclick="toggleHeaderOverflow(event)" title="Tùy chọn khác" type="button">
+                                    <span class="material-symbols-outlined text-lg">more_vert</span>
+                                </button>
+                                <div class="hidden absolute right-0 mt-1.5 w-48 bg-white rounded-xl shadow-xl border border-[#e2e8f0] p-1.5 z-30 text-xs text-[#0f172a]" id="headerOverflow">
+                                    <button class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer" onclick="window.print()" type="button">
+                                        <span class="material-symbols-outlined text-base text-[#64748b]">picture_as_pdf</span> Xuất PDF hội thoại
+                                    </button>
+                                    <button class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer" onclick="shareCurrentChat()" type="button">
+                                        <span class="material-symbols-outlined text-base text-[#64748b]">share</span> Chia sẻ liên kết
+                                    </button>
+                                    <button class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer" onclick="openTicketModal()" type="button">
+                                        <span class="material-symbols-outlined text-base text-[#1d4ed8]">confirmation_number</span> Tạo Ticket từ phiên chat
+                                    </button>
+                                    <div class="my-1 border-t border-[#e2e8f0]"></div>
+                                    <button class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-red-50 text-red-600 flex items-center gap-2 cursor-pointer" onclick="clearCurrentConversation()" type="button">
+                                        <span class="material-symbols-outlined text-base text-red-500">delete_sweep</span> Xóa lịch sử đoạn chat
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    <!-- Main Conversation Stream (Scrollable, Clean ChatGPT/Claude whitespace) -->
+                    <div id="chatStream" class="flex-1 min-h-0 overflow-y-auto px-4 md:px-8 lg:px-12 py-6 space-y-6 scroll-smooth chat-scrollbar">
+                        <div class="max-w-[860px] mx-auto space-y-6 pb-48" id="messageContainer">
+                            
+                            <!-- Initial Welcome Assistant Message -->
+                            <div class="flex items-start gap-3.5 pr-2" id="welcomeMessage">
+                                <div class="w-8 h-8 rounded-full bg-[#eff6ff] p-0.5 border border-[#1d4ed8]/20 flex items-center justify-center shrink-0 shadow-xs mt-1">
+                                    <img alt="HCMUTE AI Mascot" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg"/>
+                                </div>
+                                <div class="flex-1 flex flex-col space-y-3 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-heading font-bold text-xs text-[#1d4ed8]">Trợ lý AI học vụ HCMUTE</span>
+                                        <span class="px-2 py-0.2 rounded-full text-[10px] font-medium bg-[#eff6ff] text-[#1d4ed8] border border-[#bfdbfe]">QAUTE Bot</span>
+                                        <span class="text-[11px] text-[#94a3b8]">• Trực tuyến</span>
+                                    </div>
+                                    <div class="text-sm text-[#0f172a] leading-relaxed space-y-3 bg-white p-4 rounded-2xl rounded-tl-xs border border-slate-200/80 shadow-xs">
+                                        <p>Xin chào <strong th:text="${currentUserFullName != null ? currentUserFullName : 'bạn'}">bạn</strong>! 👋 Tôi là trợ lý ảo chính thức của Trường Đại học Sư phạm Kỹ thuật TP.HCM.</p>
+                                        <p>Tôi được huấn luyện trên toàn bộ cơ sở dữ liệu quy chế đào tạo, sổ tay học vụ và quy định học bổng của Nhà trường. Bạn có thể hỏi tôi bất kỳ điều gì hoặc chọn các gợi ý bên dưới:</p>
+                                        
+                                        <!-- Quick Suggestion Buttons Grid -->
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                                            <button onclick="fillAndSend('Điều kiện xét học bổng khuyến khích học tập (KKHT) của trường là gì?')" class="text-left p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#eff6ff] border border-slate-200 hover:border-[#1d4ed8]/40 transition-colors text-xs font-medium text-slate-800 flex items-center justify-between group cursor-pointer">
+                                                <span>🎓 Tiêu chuẩn học bổng KKHT</span>
+                                                <span class="material-symbols-outlined text-sm text-slate-400 group-hover:text-[#1d4ed8]">arrow_forward</span>
+                                            </button>
+                                            <button onclick="fillAndSend('Cách tính điểm trung bình tích lũy GPA và điểm rèn luyện ĐRL')" class="text-left p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#eff6ff] border border-slate-200 hover:border-[#1d4ed8]/40 transition-colors text-xs font-medium text-slate-800 flex items-center justify-between group cursor-pointer">
+                                                <span>📊 Quy chế tính điểm GPA &amp; ĐRL</span>
+                                                <span class="material-symbols-outlined text-sm text-slate-400 group-hover:text-[#1d4ed8]">arrow_forward</span>
+                                            </button>
+                                            <button onclick="fillAndSend('Thủ tục xin hoãn thi kết thúc học phần khi gặp sự cố đột xuất')" class="text-left p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#eff6ff] border border-slate-200 hover:border-[#1d4ed8]/40 transition-colors text-xs font-medium text-slate-800 flex items-center justify-between group cursor-pointer">
+                                                <span>📝 Hướng dẫn hoãn thi học kỳ</span>
+                                                <span class="material-symbols-outlined text-sm text-slate-400 group-hover:text-[#1d4ed8]">arrow_forward</span>
+                                            </button>
+                                            <button onclick="fillAndSend('Quy trình gửi Ticket yêu cầu hỗ trợ tới các Khoa/Phòng')" class="text-left p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#eff6ff] border border-slate-200 hover:border-[#1d4ed8]/40 transition-colors text-xs font-medium text-slate-800 flex items-center justify-between group cursor-pointer">
+                                                <span>🎫 Quy trình gửi Ticket SLA</span>
+                                                <span class="material-symbols-outlined text-sm text-slate-400 group-hover:text-[#1d4ed8]">arrow_forward</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- ================= FLOATING MESSAGE COMPOSER ================= -->
+                    <div class="floating-composer absolute bottom-0 left-0 right-0 p-4 md:px-8 bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-xs z-20">
+                        <div class="max-w-[860px] mx-auto space-y-2.5">
+                            
+                            <!-- Suggested Quick Prompts Bar (Scrollable horizontally) -->
+                            <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
+                                <button onclick="fillPrompt('Điều kiện để nhận học bổng loại Xuất sắc?')" class="shrink-0 px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-[#1d4ed8] hover:text-[#1d4ed8] text-slate-600 shadow-2xs transition-colors cursor-pointer">
+                                    💡 Học bổng Xuất sắc
+                                </button>
+                                <button onclick="fillPrompt('Khi nào bị cảnh báo học vụ mức 1 và mức 2?')" class="shrink-0 px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-[#1d4ed8] hover:text-[#1d4ed8] text-slate-600 shadow-2xs transition-colors cursor-pointer">
+                                    ⚠️ Cảnh báo học vụ
+                                </button>
+                                <button onclick="fillPrompt('Chuẩn đầu ra Tiếng Anh cho K22 Khoa CNTT')" class="shrink-0 px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-[#1d4ed8] hover:text-[#1d4ed8] text-slate-600 shadow-2xs transition-colors cursor-pointer">
+                                    🇬🇧 Chuẩn đầu ra Tiếng Anh
+                                </button>
+                                <button onclick="fillPrompt('Cách nộp đơn phúc khảo bài thi kết thúc môn')" class="shrink-0 px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-[#1d4ed8] hover:text-[#1d4ed8] text-slate-600 shadow-2xs transition-colors cursor-pointer">
+                                    📑 Phúc khảo bài thi
+                                </button>
+                            </div>
+
+                            <!-- Input Box -->
+                            <div class="rounded-2xl bg-white border border-[#cbd5e1] shadow-lg p-2.5 focus-within:border-[#1d4ed8] focus-within:ring-2 focus-within:ring-[#1d4ed8]/15 transition-all">
+                                <textarea class="w-full bg-transparent border-none text-[#0f172a] placeholder-[#94a3b8] text-sm focus:outline-none resize-none px-2 py-1 leading-relaxed" 
+                                          id="chatInput" onkeydown="handleInputKey(event)" 
+                                          placeholder="Đặt câu hỏi về học vụ, quy chế, học bổng, đăng ký học phần... (Enter để gửi, Shift + Enter xuống dòng)" rows="2"></textarea>
+                                
+                                <div class="flex items-center justify-between pt-1.5 px-1 border-t border-[#f1f5f9]">
+                                    <div class="flex items-center gap-1.5">
+                                        <!-- Paperclip Attachment Info -->
+                                        <button class="p-1.5 rounded-lg text-[#64748b] hover:text-[#1d4ed8] hover:bg-[#f1f5f9] transition-colors cursor-pointer" title="Đính kèm tài liệu minh chứng" type="button" onclick="alert('Tính năng tải tài liệu đính kèm đang kết nối với hệ thống lưu trữ HCMUTE Cloud.')">
+                                            <span class="material-symbols-outlined text-lg">attach_file</span>
+                                        </button>
+                                        <div class="h-4 w-px bg-[#e2e8f0] mx-0.5"></div>
+                                        <!-- Model Chip Indicator -->
+                                        <span class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-[#f1f5f9] text-[#64748b] flex items-center gap-1" id="activeModelChip">
+                                            <span class="material-symbols-outlined text-xs text-[#1d4ed8]">auto_awesome</span> Gemini 1.5 Pro
+                                        </span>
+                                    </div>
+
+                                    <!-- Circular Blue Send Button with upward arrow -->
+                                    <button id="sendBtn" class="w-9 h-9 rounded-full bg-[#1d4ed8] text-white flex items-center justify-center shadow-xs hover:bg-[#1e40af] active:scale-95 transition-all shrink-0 cursor-pointer disabled:opacity-50" onclick="sendMessage()" title="Gửi câu hỏi" type="button">
+                                        <span class="material-symbols-outlined text-lg">arrow_upward</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Subtle Disclaimer -->
+                            <p class="text-center text-[11px] text-[#94a3b8]">
+                                Trợ lý AI có thể đưa ra thông tin cần đối chiếu. Vui lòng tham khảo văn bản chính thức tại 
+                                <a class="text-[#1d4ed8] hover:underline" href="https://daotao.hcmute.edu.vn" target="_blank">daotao.hcmute.edu.vn</a>.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- ================= 8. CONVERT-TO-TICKET MODAL ================= -->
+    <div class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs" id="ticketModal">
+        <div class="w-full max-w-lg rounded-2xl bg-white shadow-2xl border border-[#e2e8f0] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <!-- Modal Header -->
+            <div class="px-5 py-3.5 bg-[#003882] text-white flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-xl">confirmation_number</span>
+                    <h3 class="font-heading font-semibold text-sm">Chuyển thành yêu cầu hỗ trợ (Create Ticket)</h3>
+                </div>
+                <button class="text-white/80 hover:text-white p-1 rounded-lg cursor-pointer" onclick="closeTicketModal()" type="button">
+                    <span class="material-symbols-outlined text-lg leading-none">close</span>
+                </button>
             </div>
 
-            <!-- Chat Main -->
-            <div class="chat-main">
-                <div class="chat-messages" id="chat-messages">
-                    
-                    <!-- System Welcome (AI - Left aligned) -->
-                    <div class="message-row ai">
-                        <div class="message-content">
-                            <div class="avatar avatar-ai"><i class='bx bx-bot'></i></div>
-                            <div class="message-bubble">
-                                <div style="margin-bottom: 8px;">
-                                    <span style="display:inline-flex; align-items:center; gap:4px; font-size: 0.75rem; font-weight:600; padding: 2px 8px; border-radius: 6px; background: #e0f2fe; color: #0369a1;">
-                                        <i class='bx bx-bot'></i> Trợ lý Thông minh HCMUTE
-                                    </span>
-                                </div>
-                                <p>Xin chào! Tôi là Trợ lý AI của HCMUTE. Tôi được huấn luyện để giải đáp các thắc mắc về học vụ, thủ tục hành chính, và tư vấn học tập cho sinh viên.</p>
-                                <p>Bạn đang thắc mắc về vấn đề gì?</p>
-                                <div class="message-actions">
-                                    <span class="msg-time">Vừa xong</span>
-                                    <div class="action-buttons">
-                                        <button class="action-btn" title="Sao chép" onclick="copyMessage(this)"><i class='bx bx-copy'></i></button>
-                                        <button class="action-btn" title="Hữu ích"><i class='bx bx-like'></i></button>
-                                        <button class="action-btn" title="Chưa hài lòng"><i class='bx bx-dislike'></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- User Message (Right aligned) -->
-                    <div class="message-row user">
-                        <div class="message-content">
-                            <div class="avatar avatar-user"><i class='bx bx-user'></i></div>
-                            <div class="message-bubble">
-                                <p>Bạn có thể cho mình biết điều kiện để được cấp học bổng Khuyến khích học tập là gì không?</p>
-                                <div class="message-meta">
-                                    <span>15:20</span>
-                                    <i class='bx bx-check-double'></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- AI Response (Left aligned) -->
-                    <div class="message-row ai">
-                        <div class="message-content">
-                            <div class="avatar avatar-ai"><i class='bx bx-bot'></i></div>
-                            <div class="message-bubble">
-                                <div style="margin-bottom: 8px;">
-                                    <span style="display:inline-flex; align-items:center; gap:4px; font-size: 0.75rem; font-weight:600; padding: 2px 8px; border-radius: 6px; background: #e0f2fe; color: #0369a1;">
-                                        <i class='bx bx-bolt-circle'></i> Google Gemini
-                                    </span>
-                                </div>
-                                <p>Để được xét cấp Học bổng Khuyến khích học tập (HB KKHT) tại HCMUTE, bạn cần đáp ứng các điều kiện cơ bản sau đây:</p>
-                                <ol>
-                                    <li><strong>Điểm trung bình học kỳ (GPA):</strong> Đạt từ 7.0 trở lên (không có môn nào dưới 5.0).</li>
-                                    <li><strong>Điểm rèn luyện:</strong> Đạt từ loại Khá trở lên (từ 70 điểm).</li>
-                                    <li><strong>Tín chỉ:</strong> Tích lũy đủ số tín chỉ tối thiểu theo quy định của chương trình đào tạo trong học kỳ xét (thường là 14 tín chỉ).</li>
-                                    <li><strong>Kỷ luật:</strong> Không bị kỷ luật từ mức Khiển trách trở lên trong học kỳ xét học bổng.</li>
-                                </ol>
-                                <p><em>Lưu ý:</em> Học bổng sẽ được xét từ cao xuống thấp cho đến khi hết quỹ học bổng của Khoa.</p>
-                                <div class="message-actions">
-                                    <span class="msg-time">15:20</span>
-                                    <div class="action-buttons">
-                                        <button class="action-btn" title="Sao chép" onclick="copyMessage(this)"><i class='bx bx-copy'></i></button>
-                                        <button class="action-btn" title="Hữu ích"><i class='bx bx-like'></i></button>
-                                        <button class="action-btn" title="Chưa hài lòng"><i class='bx bx-dislike'></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Typing Indicator Row (Hidden by default) -->
-                    <div class="message-row ai" id="typing-indicator-row" style="display: none;">
-                        <div class="message-content">
-                            <div class="avatar avatar-ai"><i class='bx bx-bot'></i></div>
-                            <div class="message-bubble" style="width: auto; padding: 12px 18px;">
-                                <div class="typing-indicator" style="display: flex;">
-                                    <span></span><span></span><span></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+            <!-- Modal Body -->
+            <form th:action="@{/tickets/create}" method="post" id="convertTicketForm" class="p-5 space-y-3.5 text-[#0f172a] text-xs">
+                <!-- Tiêu đề -->
+                <div>
+                    <label class="block font-semibold mb-1 text-[#0f172a]">Tiêu đề yêu cầu <span class="text-rose-500">*</span></label>
+                    <input name="title" id="ticketTitleInput" required class="w-full px-3 py-2 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] text-xs focus:outline-none focus:border-[#003882] focus:bg-white" type="text" value="Cần tư vấn hỗ trợ quy chế học vụ từ phiên chat AI"/>
                 </div>
 
-                <!-- Input Area (Always fixed at bottom) -->
-                <div class="chat-input-wrapper">
-                    <div style="width: 100%; max-width: 820px; display: flex; flex-direction: column; align-items: center;">
-                        <div class="chat-input-box">
-                            <input type="text" id="chat-input" placeholder="Nhập câu hỏi của bạn tại đây..." autocomplete="off">
-                            <button id="send-btn" title="Gửi câu hỏi"><i class='bx bx-send'></i></button>
-                        </div>
-                        <div class="disclaimer">AI có thể cung cấp thông tin chưa chính xác. Vui lòng tham khảo thêm từ Phòng Đào Tạo.</div>
-                    </div>
+                <!-- Đơn vị tiếp nhận -->
+                <div>
+                    <label class="block font-semibold mb-1 text-[#0f172a]">Đơn vị tiếp nhận (Khoa / Phòng)</label>
+                    <select name="departmentId" id="ticketDeptSelect" class="w-full px-3 py-2 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] text-xs focus:outline-none focus:border-[#003882] focus:bg-white">
+                        <option value="">-- Chọn Khoa / Phòng ban tiếp nhận --</option>
+                        <option th:if="${departments != null}" th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}">Phòng Đào tạo</option>
+                    </select>
                 </div>
+
+                <!-- Độ ưu tiên (Priority) -->
+                <div>
+                    <label class="block font-semibold mb-1 text-[#0f172a]">Độ ưu tiên (SLA)</label>
+                    <select name="priority" class="w-full px-3 py-2 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] text-xs focus:outline-none focus:border-[#003882] focus:bg-white">
+                        <option value="LOW">Thấp (Phản hồi trong 7 ngày)</option>
+                        <option value="MEDIUM" selected="">Trung bình (Phản hồi trong 72 giờ)</option>
+                        <option value="HIGH">Cao (Phản hồi trong 48 giờ)</option>
+                        <option value="URGENT">Khẩn cấp (Phản hồi trong 24 giờ)</option>
+                    </select>
+                </div>
+
+                <!-- Tóm tắt nội dung trích từ đoạn chat -->
+                <div>
+                    <label class="block font-semibold mb-1 text-[#0f172a]">Nội dung yêu cầu chi tiết <span class="text-rose-500">*</span></label>
+                    <textarea name="description" id="ticketDescriptionInput" required class="w-full px-3 py-2 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] text-xs focus:outline-none focus:border-[#003882] focus:bg-white leading-relaxed" rows="4" placeholder="Mô tả cụ thể vấn đề bạn cần giải quyết..."></textarea>
+                </div>
+
+                <!-- Auto attach banner -->
+                <div class="p-2.5 rounded-xl bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-between text-[11px] text-[#003882]">
+                    <span class="flex items-center gap-1.5 font-medium">
+                        <span class="material-symbols-outlined text-base">attach_email</span>
+                        Tự động đính kèm lịch sử đoạn chat làm minh chứng
+                    </span>
+                    <span class="font-semibold text-[#047857] text-[10px] uppercase">Đã sẵn sàng</span>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-[#e2e8f0]">
+                    <button class="px-4 py-2 rounded-xl border border-[#cbd5e1] text-[#475569] hover:bg-[#f1f5f9] transition-colors text-xs font-medium cursor-pointer" onclick="closeTicketModal()" type="button">
+                        Hủy
+                    </button>
+                    <button class="px-5 py-2 rounded-xl bg-[#003882] text-white hover:bg-[#002456] font-semibold text-xs shadow-xs transition-all cursor-pointer" type="submit">
+                        Tạo Ticket
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= 9. RAG CITATION SIDE DRAWER ================= -->
+    <div class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex justify-end transition-opacity" id="citationDrawer">
+        <div class="w-full max-w-lg h-full bg-white shadow-2xl flex flex-col border-l border-[#e2e8f0] animate-in slide-in-from-right duration-200">
+            <div class="p-4 border-b border-[#e2e8f0] flex items-center justify-between bg-[#f8fafc]">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#1d4ed8]">menu_book</span>
+                    <h3 class="font-heading font-bold text-sm text-[#0f172a]" id="drawerDocTitle">Trích đoạn văn bản quy chế</h3>
+                </div>
+                <button class="p-1 text-[#64748b] hover:text-[#0f172a] hover:bg-[#e2e8f0] rounded-lg transition-colors cursor-pointer" onclick="closeCitationDrawer()" type="button">
+                    <span class="material-symbols-outlined text-lg">close</span>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-5 space-y-4 text-xs leading-relaxed text-[#0f172a] chat-scrollbar">
+                <div class="p-3 rounded-xl bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-between text-[#1d4ed8]">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-base">verified</span>
+                        <span class="font-semibold" id="drawerMeta">Cơ sở dữ liệu Đào tạo HCMUTE</span>
+                    </div>
+                    <span class="text-[10px] bg-white px-2 py-0.5 rounded font-mono border border-[#bfdbfe]">RAG Verified</span>
+                </div>
+                <div class="border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] font-mono text-[11px] text-[#475569] space-y-2 whitespace-pre-line" id="drawerContent">
+                    Đang tải nội dung văn bản gốc...
+                </div>
+                <div class="p-3 bg-amber-50/80 rounded-xl border border-[#f59e0b]/40 text-[#92400e]">
+                    <p class="font-semibold flex items-center gap-1.5 mb-1">
+                        <span class="material-symbols-outlined text-sm">gavel</span> Hiệu lực pháp lý:
+                    </p>
+                    <p class="text-[11px]">Văn bản này được ban hành chính thức theo thẩm quyền của Hiệu trưởng Trường Đại học Sư phạm Kỹ thuật TP.HCM và áp dụng cho toàn bộ sinh viên hệ đào tạo chính quy.</p>
+                </div>
+            </div>
+            <div class="p-4 border-t border-[#e2e8f0] bg-white flex items-center justify-between">
+                <a class="flex items-center gap-1.5 text-xs text-[#1d4ed8] font-semibold hover:underline" href="https://daotao.hcmute.edu.vn" target="_blank">
+                    <span class="material-symbols-outlined text-base">download</span> Tải bản PDF chính thức
+                </a>
+                <button class="px-4 py-2 rounded-xl bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#0f172a] font-medium text-xs transition-colors cursor-pointer" onclick="closeCitationDrawer()" type="button">
+                    Đóng
+                </button>
             </div>
         </div>
     </div>
 
-    <script>
-        // JS for typing effect and mock chat
-        const input = document.getElementById('chat-input');
-        const sendBtn = document.getElementById('send-btn');
-        const messagesContainer = document.getElementById('chat-messages');
-        const indicatorRow = document.getElementById('typing-indicator-row');
+    <!-- Toast Notification -->
+    <div class="hidden fixed bottom-6 right-6 z-50 bg-[#0f172a] text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-150" id="toastNotification">
+        <span class="material-symbols-outlined text-[#10b981] text-xl">check_circle</span>
+        <div class="flex flex-col">
+            <span class="text-xs font-semibold" id="toastTitle">Thành công!</span>
+            <span class="text-[11px] text-white/80" id="toastMessage">Nội dung thông báo</span>
+        </div>
+        <button class="p-1 text-white/60 hover:text-white cursor-pointer" onclick="document.getElementById('toastNotification').classList.add('hidden')" type="button">
+            <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+    </div>
 
-        function scrollToBottom() {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    <!-- Hidden Context for Client Script -->
+    <div id="aiUserContext" 
+         th:data-fullname="${currentUserFullName != null ? currentUserFullName : 'Sinh viên'}"
+         th:data-avatar="${currentUserAvatar != null ? currentUserAvatar : ''}"
+         th:data-role="${currentUserRole != null ? currentUserRole : 'STUDENT'}"
+         class="hidden"></div>
+
+    <!-- INTERACTIVE SCRIPTS -->
+    <script th:inline="none">
+        const _ctxEl = document.getElementById('aiUserContext');
+        const currentUserFullName = _ctxEl ? (_ctxEl.dataset.fullname || 'Sinh viên') : 'Sinh viên';
+        const currentUserAvatar = _ctxEl ? (_ctxEl.dataset.avatar || '') : '';
+        let currentProvider = 'gemini';
+        let currentSessionId = 'session_' + Date.now();
+        let sessions = [];
+
+        // Citation database simulation
+        const citationDb = {
+            'qd824': {
+                title: 'Quyết định 824/QĐ-ĐHSPKT: Quy chế Đào tạo & CTSV',
+                meta: 'Phòng Đào tạo & CTSV • Điều 24',
+                content: `Điều 24: Quy định xét cấp Học bổng Khuyến khích học tập (KKHT)
+1. Đối tượng xét cấp: Sinh viên có kết quả học tập và rèn luyện từ loại Khá trở lên trong học kỳ xét, không bị kỷ luật từ mức khiển trách trở lên trong học kỳ xét học bổng.
+2. Tiêu chuẩn xét cấp:
+   - Loại Xuất sắc: Điểm trung bình học kỳ (GPA) >= 3.60 VÀ Điểm rèn luyện (ĐRL) >= 90 điểm. Mức học bổng bằng 120% mức học phí của học kỳ.
+   - Loại Giỏi: Điểm GPA >= 3.20 VÀ Điểm ĐRL >= 80 điểm. Mức học bổng bằng 100% mức học phí.
+   - Loại Khá: Điểm GPA >= 2.50 VÀ Điểm ĐRL >= 70 điểm. Mức học bổng từ 50% đến 80% mức học phí tùy thuộc quỹ học bổng.
+3. Sinh viên phải tích lũy tối thiểu 15 tín chỉ trong học kỳ chính (không tính các học phần GDTC, GDQP và Anh văn không tính điểm tích lũy).`
+            },
+            'cntt_notice': {
+                title: 'Thông báo xét duyệt học bổng HK1 (Phòng Tuyển sinh & CTSV)',
+                meta: 'Văn bản hướng dẫn chi trả học bổng qua ngân hàng',
+                content: `Kế hoạch chi trả học bổng KKHT năm học 2026:
+- Danh sách dự kiến sẽ được công bố công khai trên Cổng thông tin sinh viên sau khi có quyết định chính thức từ Ban Giám hiệu.
+- Thời gian tiếp nhận khiếu nại, điều chỉnh thông tin tài khoản ngân hàng: trong vòng 07 ngày làm việc kể từ ngày công bố.
+- Tiền học bổng sẽ được chuyển khoản trực tiếp vào tài khoản ngân hàng liên kết của sinh viên đã đăng ký trên hệ thống Portal.`
+            }
+        };
+
+        // --- Model Selector Logic ---
+        function toggleModelDropdown(e) {
+            e.stopPropagation();
+            document.getElementById('modelDropdown').classList.toggle('hidden');
         }
 
-        function getCurrentTime() {
-            const now = new Date();
-            return now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+        function selectModel(provider, label) {
+            currentProvider = provider;
+            document.getElementById('currentModelLabel').innerText = label;
+            document.getElementById('activeModelChip').innerHTML = 
+                `<span class="material-symbols-outlined text-xs text-[#1d4ed8]">${provider === 'gemini' ? 'auto_awesome' : 'dns'}</span> ${label}`;
+            document.getElementById('modelDropdown').classList.add('hidden');
+            showToast('Chuyển mô hình', `Đã kích hoạt mô hình: ${label}`);
         }
 
-        function copyMessage(btn) {
-            const bubble = btn.closest('.message-bubble');
-            const body = bubble.querySelector('.message-body') || bubble.querySelector('p');
-            if (body) {
-                navigator.clipboard.writeText(body.innerText).then(() => {
-                    const icon = btn.querySelector('i');
-                    const oldClass = icon.className;
-                    icon.className = 'bx bx-check';
-                    setTimeout(() => { icon.className = oldClass; }, 1500);
+        function toggleHeaderOverflow(e) {
+            e.stopPropagation();
+            document.getElementById('headerOverflow').classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', () => {
+            const md = document.getElementById('modelDropdown');
+            if (md) md.classList.add('hidden');
+            const ho = document.getElementById('headerOverflow');
+            if (ho) ho.classList.add('hidden');
+        });
+
+        // --- History & Sessions Management ---
+        function loadSessions() {
+            try {
+                const stored = localStorage.getItem('hcmute_ai_chat_sessions');
+                if (stored) {
+                    sessions = JSON.parse(stored);
+                } else {
+                    // Seed initial demo session
+                    sessions = [
+                        {
+                            id: 'session_demo_1',
+                            title: 'Điều kiện xét học bổng HK1 2026 - 2027',
+                            timestamp: Date.now() - 3600000,
+                            messages: []
+                        },
+                        {
+                            id: 'session_demo_2',
+                            title: 'Cách tính điểm rèn luyện & GPA',
+                            timestamp: Date.now() - 7200000,
+                            messages: []
+                        }
+                    ];
+                    saveSessions();
+                }
+            } catch (e) {
+                sessions = [];
+            }
+            renderHistoryList();
+        }
+
+        function saveSessions() {
+            try {
+                localStorage.setItem('hcmute_ai_chat_sessions', JSON.stringify(sessions));
+            } catch (e) {}
+        }
+
+        function renderHistoryList(filterText = '') {
+            const listToday = document.getElementById('list-today');
+            const listRecent = document.getElementById('list-recent');
+            const listOlder = document.getElementById('list-older');
+            if (!listToday) return;
+
+            listToday.innerHTML = '';
+            listRecent.innerHTML = '';
+            listOlder.innerHTML = '';
+
+            const now = Date.now();
+            const oneDay = 24 * 60 * 60 * 1000;
+            const sevenDays = 7 * oneDay;
+
+            let cToday = 0, cRecent = 0, cOlder = 0;
+
+            sessions.forEach(sess => {
+                if (filterText && !sess.title.toLowerCase().includes(filterText.toLowerCase())) return;
+
+                const diff = now - sess.timestamp;
+                let targetList = listOlder;
+                if (diff < oneDay) {
+                    targetList = listToday;
+                    cToday++;
+                } else if (diff < sevenDays) {
+                    targetList = listRecent;
+                    cRecent++;
+                } else {
+                    cOlder++;
+                }
+
+                const isActive = sess.id === currentSessionId;
+                const item = document.createElement('div');
+                item.className = `group relative flex items-center justify-between px-2.5 py-2 rounded-xl cursor-pointer transition-all ${
+                    isActive ? 'bg-[#eff6ff] text-[#1d4ed8] font-semibold border border-[#1d4ed8]/20' : 'text-[#475569] hover:bg-[#f1f5f9] hover:text-[#0f172a]'
+                }`;
+                item.onclick = () => switchSession(sess.id);
+
+                item.innerHTML = `
+                    <div class="flex items-center gap-2 min-w-0 pr-1 flex-1">
+                        <span class="material-symbols-outlined text-base shrink-0 ${isActive ? 'text-[#1d4ed8]' : 'text-[#94a3b8]'}">chat_bubble_outline</span>
+                        <span class="text-xs truncate ${isActive ? 'text-[#1d4ed8]' : 'text-slate-800'}">${escapeHtml(sess.title)}</span>
+                    </div>
+                    <div class="relative shrink-0">
+                        <button class="opacity-0 group-hover:opacity-100 p-1 text-[#64748b] hover:text-[#0f172a] hover:bg-white rounded transition-opacity cursor-pointer" onclick="event.stopPropagation(); toggleItemMenu(this)">
+                            <span class="material-symbols-outlined text-base leading-none">more_vert</span>
+                        </button>
+                        <div class="hidden absolute right-0 top-full mt-1 w-36 bg-white rounded-xl shadow-lg border border-[#e2e8f0] p-1 z-30 text-xs text-[#0f172a]">
+                            <button class="w-full text-left px-2 py-1.5 rounded-lg hover:bg-[#f1f5f9] flex items-center gap-2 cursor-pointer" onclick="event.stopPropagation(); renameSession('${sess.id}')">
+                                <span class="material-symbols-outlined text-sm text-[#64748b]">edit</span> Đổi tên
+                            </button>
+                            <button class="w-full text-left px-2 py-1.5 rounded-lg hover:bg-[#f1f5f9] flex items-center gap-2 cursor-pointer" onclick="event.stopPropagation(); shareSession('${sess.id}')">
+                                <span class="material-symbols-outlined text-sm text-[#64748b]">share</span> Chia sẻ
+                            </button>
+                            <button class="w-full text-left px-2 py-1.5 rounded-lg hover:bg-red-50 text-red-600 flex items-center gap-2 cursor-pointer" onclick="event.stopPropagation(); deleteSession('${sess.id}')">
+                                <span class="material-symbols-outlined text-sm text-red-500">delete</span> Xóa
+                            </button>
+                        </div>
+                    </div>
+                `;
+                targetList.appendChild(item);
+            });
+
+            document.getElementById('todayCount').innerText = cToday;
+            document.getElementById('recentCount').innerText = cRecent;
+            document.getElementById('olderCount').innerText = cOlder;
+        }
+
+        function filterHistoryList(val) {
+            renderHistoryList(val);
+        }
+
+        function toggleItemMenu(btn) {
+            document.querySelectorAll('#historyGroupContainer .history-item-list div.relative > div').forEach(m => m.classList.add('hidden'));
+            const menu = btn.nextElementSibling;
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        function startNewChat() {
+            currentSessionId = 'session_' + Date.now();
+            const container = document.getElementById('messageContainer');
+            // Reset to initial welcome message
+            const welcome = document.getElementById('welcomeMessage');
+            container.innerHTML = '';
+            if (welcome) container.appendChild(welcome);
+            renderHistoryList();
+            document.getElementById('chatInput').focus();
+        }
+
+        function switchSession(sessId) {
+            currentSessionId = sessId;
+            renderHistoryList();
+            // In a full implementation, messages can be restored from session.messages
+        }
+
+        function renameSession(sessId) {
+            const sess = sessions.find(s => s.id === sessId);
+            if (!sess) return;
+            const newTitle = prompt('Nhập tiêu đề mới cho hội thoại:', sess.title);
+            if (newTitle && newTitle.trim()) {
+                sess.title = newTitle.trim();
+                saveSessions();
+                renderHistoryList();
+            }
+        }
+
+        function shareSession(sessId) {
+            navigator.clipboard.writeText(window.location.origin + '/ai-chat?session=' + sessId);
+            showToast('Đã sao chép liên kết', 'Liên kết chia sẻ đoạn chat đã được lưu vào khay nhớ tạm.');
+        }
+
+        function deleteSession(sessId) {
+            if (confirm('Bạn có chắc chắn muốn xóa hội thoại này khỏi lịch sử?')) {
+                sessions = sessions.filter(s => s.id !== sessId);
+                saveSessions();
+                if (currentSessionId === sessId) startNewChat();
+                else renderHistoryList();
+            }
+        }
+
+        function clearCurrentConversation() {
+            if (confirm('Bạn có chắc chắn muốn làm mới toàn bộ cuộc trò chuyện hiện tại?')) {
+                startNewChat();
+            }
+        }
+
+        function toggleMobileSidebar() {
+            const sb = document.getElementById('historySidebar');
+            if (sb) sb.classList.toggle('hidden');
+        }
+
+        // --- Sending & Receiving Messages ---
+        function handleInputKey(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function fillPrompt(text) {
+            const input = document.getElementById('chatInput');
+            if (input) {
+                input.value = text;
+                input.focus();
+            }
+        }
+
+        function fillAndSend(text) {
+            const input = document.getElementById('chatInput');
+            if (input) {
+                input.value = text;
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const query = input.value.trim();
+            if (!query) return;
+
+            // Clear input & disable
+            input.value = '';
+            input.disabled = true;
+            sendBtn.disabled = true;
+
+            // Register session title if first message
+            const currentSess = sessions.find(s => s.id === currentSessionId);
+            if (!currentSess) {
+                sessions.unshift({
+                    id: currentSessionId,
+                    title: query.length > 40 ? query.substring(0, 40) + '...' : query,
+                    timestamp: Date.now(),
+                    messages: []
                 });
+                saveSessions();
+                renderHistoryList();
+            }
+
+            // Append Student Message
+            appendUserMessage(query);
+
+            // Append Typing Indicator
+            const typingEl = appendTypingIndicator();
+            scrollToBottom();
+
+            const startTime = Date.now();
+
+            try {
+                const res = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: query,
+                        session_id: currentSessionId,
+                        provider: currentProvider
+                    })
+                });
+
+                typingEl.remove();
+
+                if (!res.ok) throw new Error('Máy chủ phản hồi mã lỗi: ' + res.status);
+                const data = await res.json();
+                const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+
+                appendAiMessage(data.answer, data.sources, duration, query);
+            } catch (err) {
+                if (typingEl) typingEl.remove();
+                appendAiMessage(
+                    "Xin lỗi bạn, hiện tại kết nối đến hệ thống máy chủ AI đang bị gián đoạn. Bạn vui lòng thử lại sau giây lát hoặc sử dụng chức năng [Tra cứu câu hỏi FAQ](/faqs) và [Gửi yêu cầu hỗ trợ (Ticket)](/tickets/create) nhé!",
+                    [],
+                    "0.1",
+                    query
+                );
+            } finally {
+                input.disabled = false;
+                sendBtn.disabled = false;
+                input.focus();
+                scrollToBottom();
             }
         }
 
         function appendUserMessage(text) {
-            const timeStr = getCurrentTime();
-            const safeText = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            const html = `
-                <div class="message-row user">
-                    <div class="message-content">
-                        <div class="avatar avatar-user"><i class='bx bx-user'></i></div>
-                        <div class="message-bubble">
-                            <p>${safeText}</p>
-                            <div class="message-meta">
-                                <span>${timeStr}</span>
-                                <i class='bx bx-check-double'></i>
+            const container = document.getElementById('messageContainer');
+            const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+            const div = document.createElement('div');
+            div.className = "flex items-start justify-end gap-3 pl-8 md:pl-16 animate-in fade-in slide-in-from-bottom-2 duration-150";
+
+            div.innerHTML = `
+                <div class="flex flex-col items-end max-w-xl">
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <span class="text-xs font-semibold text-[#0f172a]">${escapeHtml(currentUserFullName)}</span>
+                        <span class="text-[11px] text-[#94a3b8]">${timeStr}</span>
+                    </div>
+                    <div class="p-3.5 rounded-2xl rounded-tr-xs bg-[#003882] text-white leading-relaxed text-sm shadow-xs whitespace-pre-line">${escapeHtml(text)}</div>
+                    <span class="mt-1 text-[11px] text-[#94a3b8] flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs text-[#10b981]">done_all</span> Đã gửi qua Portal
+                    </span>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-[#eff6ff] text-[#003882] font-bold text-xs flex items-center justify-center shrink-0 shadow-xs border border-[#003882]/30 mt-1">
+                    ${currentUserAvatar ? `<img src="${currentUserAvatar}" class="w-full h-full rounded-full object-cover"/>` : (currentUserFullName ? currentUserFullName.substring(0, 2).toUpperCase() : 'SV')}
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function appendTypingIndicator() {
+            const container = document.getElementById('messageContainer');
+            const div = document.createElement('div');
+            div.className = "flex items-start gap-3.5 pr-2 animate-in fade-in duration-150";
+            div.id = "typingIndicator";
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-[#eff6ff] p-0.5 border border-[#1d4ed8]/20 flex items-center justify-center shrink-0 shadow-xs mt-1">
+                    <img alt="HCMUTE AI Mascot" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg"/>
+                </div>
+                <div class="flex items-center gap-1.5 p-3 bg-white border border-[#e2e8f0] rounded-2xl rounded-tl-xs shadow-xs text-xs text-[#64748b]">
+                    <span class="w-2 h-2 rounded-full bg-[#1d4ed8] animate-bounce"></span>
+                    <span class="w-2 h-2 rounded-full bg-[#1d4ed8] animate-bounce [animation-delay:0.2s]"></span>
+                    <span class="w-2 h-2 rounded-full bg-[#1d4ed8] animate-bounce [animation-delay:0.4s]"></span>
+                    <span class="text-[11px] ml-1.5 font-medium text-slate-500">Trợ lý AI đang suy luận quy chế...</span>
+                </div>
+            `;
+            container.appendChild(div);
+            return div;
+        }
+
+        function appendAiMessage(answer, sources, duration, originalQuery) {
+            const container = document.getElementById('messageContainer');
+            const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            const modelLabel = currentProvider === 'gemini' ? 'Gemini 1.5 Pro' : 'Ollama Local';
+
+            const div = document.createElement('div');
+            div.className = "flex items-start gap-3.5 pr-2 animate-in fade-in slide-in-from-bottom-2 duration-200";
+
+            // Format markdown to HTML
+            const formattedContent = renderMarkdown(answer);
+
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-[#eff6ff] p-0.5 border border-[#1d4ed8]/20 flex items-center justify-center shrink-0 shadow-xs mt-1">
+                    <img alt="HCMUTE AI Mascot" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg"/>
+                </div>
+                <div class="flex-1 flex flex-col space-y-3 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span class="font-heading font-bold text-xs text-[#003882]">Trợ lý AI học vụ HCMUTE</span>
+                        <span class="px-2 py-0.2 rounded-full text-[10px] font-medium bg-[#eff6ff] text-[#003882] border border-[#bfdbfe]">${modelLabel}</span>
+                        <span class="text-[11px] text-[#94a3b8]">• ${timeStr} (${duration}s)</span>
+                    </div>
+
+                    <!-- Clean Document-Style Bubble -->
+                    <div class="text-sm text-[#0f172a] leading-relaxed space-y-3 bg-white p-4 rounded-2xl rounded-tl-xs border border-slate-200/90 shadow-xs">
+                        <div class="ai-content-body space-y-2.5">${formattedContent}</div>
+
+                        <!-- Action Bar below answer -->
+                        <div class="flex items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-500 action-buttons">
+                            <div class="flex items-center gap-2">
+                                <button class="p-1 hover:text-[#003882] hover:bg-slate-100 rounded flex items-center gap-1 transition-colors cursor-pointer" onclick="copyMessageText(this)" title="Sao chép nội dung">
+                                    <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                                    <span class="text-[11px]">Sao chép</span>
+                                </button>
+                                <button class="p-1 hover:text-emerald-600 hover:bg-slate-100 rounded transition-colors cursor-pointer" onclick="showToast('Cảm ơn!', 'Cảm ơn bạn đã phản hồi câu trả lời hữu ích.')" title="Câu trả lời hữu ích">
+                                    <span class="material-symbols-outlined text-[16px]">thumb_up</span>
+                                </button>
+                                <button class="p-1 hover:text-rose-600 hover:bg-slate-100 rounded transition-colors cursor-pointer" onclick="showToast('Ghi nhận', 'Chúng tôi sẽ rà soát và cải thiện chất lượng câu trả lời này.')" title="Câu trả lời chưa đúng">
+                                    <span class="material-symbols-outlined text-[16px]">thumb_down</span>
+                                </button>
                             </div>
+
+                            <!-- Convert to Ticket Button -->
+                            <button class="px-2.5 py-1 rounded-lg bg-blue-50 text-[#003882] hover:bg-blue-100 font-medium text-[11px] flex items-center gap-1 transition-colors border border-blue-200 cursor-pointer" 
+                                    onclick="openTicketModalWithData('${escapeHtml(originalQuery)}', '${escapeHtml(answer.substring(0, 200))}')">
+                                <span class="material-symbols-outlined text-[14px]">confirmation_number</span>
+                                <span>Chuyển thành Ticket</span>
+                            </button>
                         </div>
                     </div>
                 </div>
             `;
-            indicatorRow.insertAdjacentHTML('beforebegin', html);
-            scrollToBottom();
+            container.appendChild(div);
         }
 
-        function appendAIMessage(text, provider) {
-            const timeStr = getCurrentTime();
-            const providerBadge = (provider === 'gemini')
-                ? `<div style="margin-bottom: 8px;"><span style="display:inline-flex; align-items:center; gap:4px; font-size: 0.75rem; font-weight:600; padding: 2px 8px; border-radius: 6px; background: #e0f2fe; color: #0369a1;"><i class='bx bx-bolt-circle'></i> Google Gemini</span></div>`
-                : `<div style="margin-bottom: 8px;"><span style="display:inline-flex; align-items:center; gap:4px; font-size: 0.75rem; font-weight:600; padding: 2px 8px; border-radius: 6px; background: #fef3c7; color: #b45309;"><i class='bx bx-chip'></i> Ollama Llama 3.2</span></div>`;
+        // Simple Markdown Renderer
+        function renderMarkdown(md) {
+            if (!md) return '';
+            let html = md
+                .replace(/^### (.*$)/gim, '<h4 class="font-bold text-sm text-[#003882] mt-2 mb-1">$1</h4>')
+                .replace(/^## (.*$)/gim, '<h3 class="font-bold text-base text-[#003882] mt-3 mb-1.5">$1</h3>')
+                .replace(/^# (.*$)/gim, '<h2 class="font-bold text-lg text-[#003882] mt-3 mb-2">$1</h2>')
+                .replace(/\*\*(.*?)\*\*/gim, '<strong class="font-semibold text-slate-900">$1</strong>')
+                .replace(/\*(.*?)\*/gim, '<em class="italic">$1</em>')
+                .replace(/`([^`]+)`/gim, '<code class="px-1.5 py-0.5 rounded bg-slate-100 text-[#003882] font-mono text-xs">$1</code>');
 
-            const html = `
-                <div class="message-row ai">
-                    <div class="message-content">
-                        <div class="avatar avatar-ai"><i class='bx bx-bot'></i></div>
-                        <div class="message-bubble">
-                            ${providerBadge}
-                            <div class="message-body mock-typing"></div>
-                            <div class="message-actions">
-                                <span class="msg-time">${timeStr}</span>
-                                <div class="action-buttons">
-                                    <button class="action-btn" title="Sao chép" onclick="copyMessage(this)"><i class='bx bx-copy'></i></button>
-                                    <button class="action-btn" title="Hữu ích"><i class='bx bx-like'></i></button>
-                                    <button class="action-btn" title="Chưa hài lòng"><i class='bx bx-dislike'></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            indicatorRow.insertAdjacentHTML('beforebegin', html);
-            scrollToBottom();
-            
-            const messageElements = document.querySelectorAll('.mock-typing');
-            const targetElement = messageElements[messageElements.length - 1];
-            
-            let i = 0;
-            const speed = 12; // ms per char
-            function typeWriter() {
-                if (i < text.length) {
-                    const char = text.charAt(i);
-                    targetElement.innerHTML += (char === '\n') ? '<br>' : char;
-                    i++;
-                    if(i % 5 === 0) scrollToBottom(); // smooth scroll
-                    setTimeout(typeWriter, speed);
-                } else {
-                    targetElement.classList.remove('mock-typing');
-                }
-            }
-            typeWriter();
+            // Format markdown links safely without triggering Thymeleaf inlining parser
+            const linkRegex = new RegExp('\\[' + '([^\\]]+)' + '\\]\\(([^)]+)\\)', 'gim');
+            html = html.replace(linkRegex, '<a href="$2" class="text-[#003882] font-medium underline hover:text-[#002456]" target="_blank">$1</a>');
+
+            html = html
+                .replace(/^\s*•\s+(.*$)/gim, '<li class="ml-4 list-disc">$1</li>')
+                .replace(/^\s*\*\s+(.*$)/gim, '<li class="ml-4 list-disc">$1</li>')
+                .replace(/^\s*-\s+(.*$)/gim, '<li class="ml-4 list-disc">$1</li>')
+                .replace(/^\s*(\d+)\.\s+(.*$)/gim, '<li class="ml-4 list-decimal">$2</li>');
+
+            return html.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
         }
 
-        async function handleSend() {
-            const text = input.value.trim();
-            if(!text) return;
-            
-            const modelSelect = document.getElementById('ai-model-select');
-            const selectedProvider = modelSelect ? modelSelect.value : 'gemini';
-
-            // 1. Show user message
-            appendUserMessage(text);
-            input.value = '';
-            
-            // 2. Show typing indicator
-            indicatorRow.style.display = 'flex';
-            scrollToBottom();
-            
-            // 3. Call actual backend API
-            try {
-                const response = await fetch('/api/ai/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        query: text,
-                        session_id: 'session_' + Date.now(),
-                        provider: selectedProvider
-                    })
-                });
-                
-                indicatorRow.style.display = 'none';
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    appendAIMessage(data.answer, data.provider || selectedProvider);
-                } else {
-                    appendAIMessage("Xin lỗi, hệ thống AI đang gặp sự cố. Vui lòng thử lại sau.", selectedProvider);
-                }
-            } catch (error) {
-                indicatorRow.style.display = 'none';
-                appendAIMessage("Lỗi kết nối tới máy chủ. Vui lòng kiểm tra lại mạng.", selectedProvider);
-                console.error('Chat error:', error);
-            }
+        function scrollToBottom() {
+            const stream = document.getElementById('chatStream');
+            if (stream) stream.scrollTop = stream.scrollHeight;
         }
 
-        sendBtn.addEventListener('click', handleSend);
-        input.addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') handleSend();
+        function copyMessageText(btn) {
+            const content = btn.closest('.text-sm').querySelector('.ai-content-body').innerText;
+            navigator.clipboard.writeText(content);
+            showToast('Đã sao chép', 'Nội dung câu trả lời đã được chép vào khay nhớ tạm.');
+        }
+
+        // --- Ticket Modal Logic ---
+        function openTicketModal() {
+            document.getElementById('ticketModal').classList.remove('hidden');
+        }
+
+        function openTicketModalWithData(title, summary) {
+            const titleInput = document.getElementById('ticketTitleInput');
+            const descInput = document.getElementById('ticketDescriptionInput');
+            if (titleInput && title) titleInput.value = title;
+            if (descInput && summary) descInput.value = "Trích từ phiên tư vấn AI:\n" + summary + "\n\nKính gửi Thầy/Cô hỗ trợ trường hợp của em với ạ.";
+            openTicketModal();
+        }
+
+        function closeTicketModal() {
+            document.getElementById('ticketModal').classList.add('hidden');
+        }
+
+        // --- Citation Drawer Logic ---
+        function openCitationDrawer(key) {
+            const item = citationDb[key];
+            if (!item) return;
+
+            document.getElementById('drawerDocTitle').innerText = item.title;
+            document.getElementById('drawerMeta').innerText = item.meta;
+            document.getElementById('drawerContent').innerText = item.content;
+            document.getElementById('citationDrawer').classList.remove('hidden');
+        }
+
+        function closeCitationDrawer() {
+            document.getElementById('citationDrawer').classList.add('hidden');
+        }
+
+        // --- Toast Alert ---
+        function showToast(title, message) {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastMessage').innerText = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3500);
+        }
+
+        function shareCurrentChat() {
+            navigator.clipboard.writeText(window.location.href);
+            showToast('Đã sao chép liên kết', 'Liên kết trang tư vấn AI đã được lưu vào khay nhớ tạm.');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.toString().replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSessions();
         });
-        
-        // Initial scroll
-        scrollToBottom();
+
+        // Header Account Dropdown Toggle
+        (function() {
+            const toggle = document.getElementById('headerAccountToggle');
+            const dropdown = document.getElementById('headerDropdownMenu');
+            if (!toggle || !dropdown) return;
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isHidden = dropdown.classList.contains('hidden');
+                dropdown.classList.toggle('hidden');
+                toggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+            });
+            document.addEventListener('click', function(e) {
+                if (!dropdown.classList.contains('hidden') && !toggle.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                    toggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && !dropdown.classList.contains('hidden')) {
+                    dropdown.classList.add('hidden');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.focus();
+                }
+            });
+        })();
+
+        function toggleMobileNav() {
+            const drawer = document.getElementById('mobileNavDrawer');
+            if (drawer) drawer.classList.toggle('hidden');
+        }
     </script>
 </body>
 </html>

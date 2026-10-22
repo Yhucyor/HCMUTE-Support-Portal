@@ -1,82 +1,1160 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <th:block th:replace="~{fragments/head :: publicHead('Trang chủ')}"></th:block>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Trường Đại học Sư phạm Kỹ thuật TP.HCM | HCMUTE Official Portal</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <style>
+        @layer base {
+            html, body { margin: 0; padding: 0; }
+            body { overscroll-behavior: none; }
+        }
+        ::-webkit-scrollbar { display: none; }
+        .hero-slide-bg {
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+        }
+    </style>
+    <!-- Tailwind CSS with configuration matching HCMUTE Design Tokens -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "brand-red": "#991b1e",
+                        "brand-red-hover": "#831518",
+                        "brand-blue": "#003882",
+                        "brand-blue-dark": "#002456",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#f1f5f9",
+                        "on-surface": "#0f172a",
+                        "secondary": "#64748b"
+                    },
+                    fontFamily: {
+                        headline: ["Outfit", "sans-serif"],
+                        body: ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        };
+    </script>
 </head>
-<body>
+<body class="bg-[#f8fafc] font-body text-slate-800 antialiased selection:bg-[#991b1e] selection:text-white">
 
-    <!-- Header / Navbar Fragment -->
-    <header th:replace="~{fragments/navbar :: navbar('home')}"></header>
+    <!-- 1. TOP HEADER & NAVIGATION -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all">
+        <div class="w-full px-4 sm:px-6 lg:px-8 h-[74px] flex items-center justify-between">
+            <!-- Logo HCMUTE -->
+            <a class="flex items-center gap-3 group py-1.5" th:href="@{/}">
+                <img alt="HCMUTE Logo" class="h-12 w-auto object-contain transition-transform group-hover:scale-105" 
+                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKSHNb9YZP8QFQKzZ-_B_glnPE615kLoTh0DIZM9-id7Eb1Z7EZXRKcjBeCckK7VOaTPGdnMs7Cl7qdtjr1Mry3Y7d1U0S8maxw8fAHipOBnT-HFyaVBuqc6xe0fMZJf4fPlHw6UIkL0vHJV2kfl-tnjJgobCtm7Cy-KazrUCaEZefkxCcT9HC_-zWiT9twVqKg6xymALE7_hrVpAjI-XYdTFsbm3wyDRY8PxAR-vjOB00BqpW9wX9dVryQuIfZgdSA">
+                <div class="flex flex-col text-[#003882]">
+                    <span class="font-bold text-sm sm:text-base tracking-tight leading-tight text-[#003882]">Trường Đại học Sư phạm Kỹ thuật Tp. Hồ Chí Minh</span>
+                    <span class="font-normal text-[11px] sm:text-xs text-[#003882] tracking-normal leading-normal">HCMC University of Technology and Education</span>
+                </div>
+            </a>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <!-- Slider Images -->
-        <div class="hero-slide active" style="background-image: url('/images/hero1.jpg');"></div>
-        <div class="hero-slide" style="background-image: url('/images/hero2.jpg');"></div>
+            <!-- Nav Items (Desktop) -->
+            <nav class="hidden xl:flex items-center space-x-7">
+                <a class="font-semibold text-[14px] text-[#991b1e] border-b-2 border-[#991b1e] pb-1" th:href="@{/}">Trang chủ</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/feed/forum}">Diễn đàn</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/faqs}">Tra cứu FAQ</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
+            </nav>
 
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <h2>Welcome to HCMUTE</h2>
-            <p>"Truth, Excellence, and Innovation"</p>
-            <a href="#" class="btn-primary">Explore Programs</a>
+            <!-- Header Actions -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button aria-label="Tìm kiếm" onclick="focusSearchInput()" class="w-9 h-9 rounded-full flex items-center justify-center text-slate-600 hover:text-[#003882] hover:bg-slate-100 transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">search</span>
+                </button>
+
+                <div class="hidden sm:flex items-center text-xs font-semibold text-slate-600 px-2 py-1 rounded cursor-pointer hover:bg-slate-100">
+                    <span>VI</span>
+                    <span class="material-symbols-outlined text-[16px]">expand_more</span>
+                </div>
+
+                <!-- Đã đăng nhập: Student Account Dropdown Menu -->
+                <div sec:authorize="isAuthenticated()" class="relative">
+                    <button id="indexAccountToggle" 
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95" 
+                            th:title="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}"
+                            aria-haspopup="true"
+                            aria-expanded="false">
+                        <span class="material-symbols-outlined text-[16px]">account_circle</span>
+                        <span class="hidden sm:inline truncate max-w-[150px]" th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
+                        <span class="material-symbols-outlined text-[14px]">expand_more</span>
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="indexDropdownMenu" 
+                         class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50"
+                         role="menu">
+                        <a href="/profile" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">person</span>
+                            <span>Thông tin cá nhân</span>
+                        </a>
+                        <a href="/academic/sync" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">home</span>
+                            <span>Tổng quan</span>
+                        </a>
+                        <a href="/academic/grades" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">description</span>
+                            <span>Bảng điểm</span>
+                        </a>
+                        <a href="/academic/timetable" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                            <span>Thời khóa biểu</span>
+                        </a>
+                        <a href="/academic/curriculum" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">book</span>
+                            <span>Chương trình đào tạo</span>
+                        </a>
+                        <a href="/tickets/my-tickets" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">confirmation_number</span>
+                            <span>Ticket hỗ trợ</span>
+                        </a>
+                        <div class="border-t border-slate-200 my-1"></div>
+                        <a th:href="@{/auth/logout}" 
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">logout</span>
+                            <span>Đăng xuất</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Chưa đăng nhập: Nút Đăng nhập -->
+                <div sec:authorize="!isAuthenticated()">
+                    <a class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#991b1e] hover:bg-[#831518] rounded-md shadow-sm transition-all active:scale-95" th:href="@{/auth/login}">
+                        <span class="material-symbols-outlined text-[16px]">person</span>
+                        <span>Đăng nhập</span>
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button aria-label="Mở menu" onclick="toggleMobileNav()" class="xl:hidden w-9 h-9 rounded-md flex items-center justify-center text-slate-700 hover:bg-slate-100">
+                    <span class="material-symbols-outlined text-[24px]">menu</span>
+                </button>
+            </div>
         </div>
-    </section>
 
-    <!-- News & Events Section -->
-    <section class="news-section">
-        <h3 class="section-title">Latest Updates</h3>
-        <div class="news-grid">
-            <!-- News Item 1 -->
-            <a th:href="@{/news/1}" style="text-decoration: none; color: inherit; display: block;">
-                <article class="news-card">
-                    <div class="news-image" style="background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
-                    <div class="news-content">
-                        <span class="news-date">September 26, 2026</span>
-                        <h4 class="news-title">New AI Research Center Opens on Campus</h4>
-                        <p class="news-excerpt">The university inaugurates a state-of-the-art facility dedicated to advancing artificial intelligence and machine learning research.</p>
-                    </div>
-                </article>
-            </a>
-
-            <!-- News Item 2 -->
-            <a th:href="@{/news/2}" style="text-decoration: none; color: inherit; display: block;">
-                <article class="news-card">
-                    <div class="news-image" style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
-                    <div class="news-content">
-                        <span class="news-date">September 20, 2026</span>
-                        <h4 class="news-title">Global Leaders Summit 2026</h4>
-                        <p class="news-excerpt">Join us for a three-day summit bringing together world leaders, academics, and innovators to discuss future global challenges.</p>
-                    </div>
-                </article>
-            </a>
-
-            <!-- News Item 3 -->
-            <a th:href="@{/news/3}" style="text-decoration: none; color: inherit; display: block;">
-                <article class="news-card">
-                    <div class="news-image" style="background-image: url('https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');"></div>
-                    <div class="news-content">
-                        <span class="news-date">September 15, 2026</span>
-                        <h4 class="news-title">Fall Semester Commencement</h4>
-                        <p class="news-excerpt">Welcoming thousands of new and returning students to the historic campus for the beginning of a new academic year.</p>
-                    </div>
-                </article>
-            </a>
+        <!-- Mobile Drawer Menu -->
+        <div id="mobileNavDrawer" class="hidden xl:hidden bg-white border-b border-slate-200 px-4 pt-3 pb-5 space-y-2.5 shadow-lg">
+            <a class="block py-2 text-sm font-semibold text-[#991b1e]" th:href="@{/}">Trang chủ</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/feed/forum}">Diễn đàn</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/faqs}">Tra cứu FAQ</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
+            <div sec:authorize="isAuthenticated()" class="pt-2 border-t border-slate-200">
+                <a class="flex items-center gap-2 py-2 text-sm font-semibold text-[#003882]" href="/academic/sync">
+                    <span class="material-symbols-outlined text-[18px]">home</span>
+                    <span>Tổng quan học tập</span>
+                </a>
+                <a class="flex items-center gap-2 py-2 text-sm font-medium text-slate-700" href="/profile">
+                    <span class="material-symbols-outlined text-[18px]">person</span>
+                    <span th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
+                </a>
+                <a class="block py-1.5 text-sm font-medium text-[#991b1e]" th:href="@{/auth/logout}">Đăng xuất</a>
+            </div>
         </div>
-    </section>
+    </header>
 
-    <!-- Footer & AI Widget Fragment -->
-    <th:block th:replace="~{fragments/footer :: footer}"></th:block>
+    <main class="w-full pt-[74px]">
+        <!-- 2. HERO SECTION -->
+        <section class="relative w-full min-h-[640px] lg:min-h-[700px] bg-slate-900 overflow-hidden flex items-center pt-8 pb-20">
+            <!-- Hero Image Background: Cổng & toà nhà trung tâm HCMUTE -->
+            <div class="absolute inset-0 z-0">
+                <img id="heroSlideImg" alt="HCMUTE Campus Gate" class="hero-slide-bg w-full h-full object-cover object-center transform scale-100 filter brightness-110" 
+                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoccAbK8VsruXpycy90Sn25S0uEYyPGo7g_GNyfmK7-1JN485OqzWd6nlbXCU6URMftUttd3_PfD0Fjlket5RQI5PpkSBkqMtLSV4owDEUe8H_WAJacNxAX7E4dpdzkKTqogPMlU9WvOwCYx56tfAWB-Thf9nZsT58a94GJtNz-Me_GA04E-Ue2nHYpf0oiGS30AnRSJq-iJgGB1e6VmMgIjx2LoOmm8iEpOK9A69IuZx0Or6v1mpBVoiBckTH2Z6OrQ">
+                <!-- Dark vignette overlay for sharp typography -->
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/45 to-transparent"></div>
+            </div>
 
-    <!-- Slider Script -->
+            <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex flex-col justify-center">
+                <div class="max-w-3xl backdrop-blur-xs">
+                    <!-- University Headline Accent -->
+                    <div class="inline-flex items-center gap-2 mb-3">
+                        <span class="w-7 h-[2px] bg-[#991b1e]"></span>
+                        <span class="text-xs sm:text-sm font-semibold tracking-wider text-slate-200 uppercase">Ho Chi Minh City University of Technology and Education</span>
+                    </div>
+                    <h1 class="font-headline text-3xl sm:text-5xl lg:text-[54px] font-extrabold text-white leading-tight tracking-tight mb-4">
+                        Kiến tạo tri thức.<br>
+                        Dẫn lối tương lai.
+                    </h1>
+                    <p class="text-sm sm:text-base text-slate-200/90 leading-relaxed mb-8 max-w-xl font-normal">
+                        Nơi hội tụ tri thức, công nghệ và tinh thần sáng tạo — phát triển thế hệ kỹ sư, nhà nghiên cứu và những lãnh đạo tương lai.
+                    </p>
+                    
+                    <!-- CTA Buttons -->
+                    <div class="flex flex-wrap items-center gap-4">
+                        <a class="inline-flex items-center gap-2 px-6 py-3 rounded bg-[#991b1e] hover:bg-[#831518] text-white text-sm font-semibold shadow-lg transition-transform active:scale-95" href="#">
+                            <span>Khám phá chương trình đào tạo</span>
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                        </a>
+                        <a class="inline-flex items-center gap-2 px-6 py-3 rounded border border-white/70 hover:bg-white/10 text-white text-sm font-semibold transition-colors" href="#">
+                            <span>Tìm hiểu về HCMUTE</span>
+                        </a>
+                    </div>
+
+                    <!-- Search Box Floating Pill -->
+                    <div class="mt-8 max-w-2xl">
+                        <div class="bg-white/95 backdrop-blur-md p-1.5 rounded-full shadow-2xl border border-white/80 flex items-center gap-2">
+                            <div class="flex items-center pl-3 text-slate-400">
+                                <span class="material-symbols-outlined text-[20px] text-[#003882]">search</span>
+                            </div>
+                            <input id="heroSearchInput" type="text" placeholder="Tìm kiếm thông tin tuyển sinh, ngành học, FAQ, quy chế học vụ..." 
+                                   onkeydown="if(event.key === 'Enter') executeSearch();"
+                                   class="flex-1 bg-transparent border-none outline-none text-xs sm:text-sm text-slate-800 placeholder-slate-400 px-2 py-1.5 focus:ring-0">
+                            <button onclick="executeSearch()" class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#003882] hover:bg-[#002456] text-white text-xs sm:text-sm font-semibold rounded-full shadow-md transition-all active:scale-95">
+                                <span>Tìm kiếm</span>
+                                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                            </button>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-1.5 mt-2.5 px-2 text-[11px]">
+                            <span class="text-slate-300 font-medium">Gợi ý:</span>
+                            <a href="javascript:void(0)" onclick="quickSearch('Điểm chuẩn 2026')" class="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 transition-colors border border-white/10">Điểm chuẩn 2026</a>
+                            <a href="javascript:void(0)" onclick="quickSearch('Học phí & Miễn giảm')" class="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 transition-colors border border-white/10">Học phí &amp; Miễn giảm</a>
+                            <a href="javascript:void(0)" onclick="quickSearch('Học bổng khuyến khích')" class="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 transition-colors border border-white/10">Học bổng</a>
+                            <a href="javascript:void(0)" onclick="quickSearch('Ký túc xá')" class="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 transition-colors border border-white/10">Ký túc xá</a>
+                            <a href="javascript:void(0)" onclick="quickSearch('Đề án tuyển sinh')" class="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 transition-colors border border-white/10">Đề án tuyển sinh</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slider Counter Badge -->
+            <div class="absolute bottom-20 right-6 sm:right-8 lg:right-16 z-20 flex items-center gap-3 bg-black/50 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 text-white text-xs shadow-lg">
+                <span id="sliderCurrentNum" class="font-bold text-[#fca5a5]">01</span>
+                <span class="opacity-60">/ 03</span>
+                <button aria-label="Slide trước" onclick="prevHeroSlide()" class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"><span class="material-symbols-outlined text-[16px]">chevron_left</span></button>
+                <button aria-label="Slide sau" onclick="nextHeroSlide()" class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"><span class="material-symbols-outlined text-[16px]">chevron_right</span></button>
+            </div>
+        </section>
+
+        <!-- 3. STATISTICS OVERLAY CARDS (4 thẻ trắng đè nhẹ dưới hero) -->
+        <section class="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 sm:-mt-12">
+            <div class="bg-white rounded-xl shadow-lg border border-slate-100 p-5 lg:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Stat 1 -->
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-blue-50 text-[#003882] flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-[26px]">school</span>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-500 font-medium">Chương trình đào tạo</div>
+                        <div class="font-headline font-bold text-2xl text-slate-900 leading-tight">50+</div>
+                        <div class="text-xs text-slate-500">ngành, chuyên ngành</div>
+                    </div>
+                </div>
+                <!-- Stat 2 -->
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-blue-50 text-[#003882] flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-[26px]">group</span>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-500 font-medium">Đội ngũ giảng viên</div>
+                        <div class="font-headline font-bold text-2xl text-slate-900 leading-tight">300+</div>
+                        <div class="text-xs text-slate-500">giảng viên, tiến sĩ, thạc sĩ</div>
+                    </div>
+                </div>
+                <!-- Stat 3 -->
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-blue-50 text-[#003882] flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-[26px]">science</span>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-500 font-medium">Hoạt động nghiên cứu</div>
+                        <div class="font-headline font-bold text-2xl text-slate-900 leading-tight">100+</div>
+                        <div class="text-xs text-slate-500">đề tài, dự án mỗi năm</div>
+                    </div>
+                </div>
+                <!-- Stat 4 -->
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-blue-50 text-[#003882] flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-[26px]">handshake</span>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-500 font-medium">Đối tác doanh nghiệp</div>
+                        <div class="font-headline font-bold text-2xl text-slate-900 leading-tight">200+</div>
+                        <div class="text-xs text-slate-500">doanh nghiệp trong và ngoài nước</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. LĨNH VỰC ĐÀO TẠO NỔI BẬT (4 Thẻ Ngành) -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+                <div>
+                    <div class="inline-flex items-center gap-2 mb-1.5">
+                        <span class="w-4 h-[2px] bg-[#991b1e]"></span>
+                        <span class="text-xs font-bold text-[#991b1e] uppercase tracking-wider">Chương trình đào tạo</span>
+                    </div>
+                    <h2 class="font-headline text-2xl sm:text-3xl font-extrabold text-slate-900">Lĩnh vực đào tạo nổi bật</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
+                        Đa dạng ngành nghề, đáp ứng nhu cầu nguồn nhân lực chất lượng cao trong thời đại công nghệ 4.0.
+                    </p>
+                </div>
+                <a class="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#003882] hover:text-[#991b1e] transition-colors whitespace-nowrap" href="#">
+                    <span>Xem tất cả ngành đào tạo</span>
+                    <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                </a>
+            </div>
+
+            <!-- 4 Cards Ngành -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Card 1: Công nghệ thông tin -->
+                <div class="bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col group">
+                    <div class="relative h-40 overflow-hidden bg-slate-100">
+                        <img alt="Công nghệ thông tin" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkgF06e5ayEkGewn7QxPCM0S_U3FLIOG3nt15C4HPHxu7qMN6R7UX6gmJw68AkX-BXrfnt7ExEj6w_MFr0LojL6sLV3bImbOmRzuiXL01WfTX9NbvcMJ9UDiozxVdijCUyixZNmQUx4GtTx-tTFedyD9e9zMBm0_iZ4cWIdjAkrsD3hqxQF_VdenPEBwxSkhinceAuE9i-ohgXe0E2CWJwWEP5UGMSfLsQVFMuqYUoznVuMlOpAcoH">
+                    </div>
+                    <div class="p-4 pt-0 flex flex-col flex-1 relative">
+                        <div class="-mt-4 mb-2">
+                            <div class="w-8 h-8 rounded-full bg-[#003882] text-white flex items-center justify-center shadow">
+                                <span class="material-symbols-outlined text-[18px]">terminal</span>
+                            </div>
+                        </div>
+                        <h3 class="font-headline font-bold text-sm text-slate-900 group-hover:text-[#003882] transition-colors mb-1.5">Công nghệ thông tin</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed mb-4 flex-1">
+                            Đào tạo nguồn nhân lực chất lượng cao trong lĩnh vực CNTT, Trí tuệ nhân tạo (AI), Kỹ thuật dữ liệu...
+                        </p>
+                        <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline" href="#">
+                            <span>Khám phá chương trình</span>
+                            <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 2: Kỹ thuật và công nghệ -->
+                <div class="bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col group">
+                    <div class="relative h-40 overflow-hidden bg-slate-100">
+                        <img alt="Kỹ thuật và công nghệ" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjsDsO4FzavpVXgzTqYuTXpezAp54hQ6IPDAn2-fSmOVI-t4uvA2QeEJ4XhwS2R6M314AaUrwgfx5rVxIlsP0KNGdvfjz97hgg6rVSRWM7SCjjjpJtXqinH9uLXHBdHS7YQXvRaCEl1xDKt0LqhQkYYYfokPOwhZvD2ZI5Z0ZCCnmr6g918KZikpulVeeI9qA974KOLRyCCzRFkoQ_v903QGhPlKwNI5dN-jDNTQV0VFhC7NjKy6NL">
+                    </div>
+                    <div class="p-4 pt-0 flex flex-col flex-1 relative">
+                        <div class="-mt-4 mb-2">
+                            <div class="w-8 h-8 rounded-full bg-[#991b1e] text-white flex items-center justify-center shadow">
+                                <span class="material-symbols-outlined text-[18px]">precision_manufacturing</span>
+                            </div>
+                        </div>
+                        <h3 class="font-headline font-bold text-sm text-slate-900 group-hover:text-[#991b1e] transition-colors mb-1.5">Kỹ thuật &amp; Công nghệ</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed mb-4 flex-1">
+                            Cơ điện tử, Ô tô, Điện - Điện tử, Tự động hóa hiện đại, gắn liền thực tiễn doanh nghiệp.
+                        </p>
+                        <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline" href="#">
+                            <span>Khám phá chương trình</span>
+                            <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 3: Kinh tế và quản lý -->
+                <div class="bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col group">
+                    <div class="relative h-40 overflow-hidden bg-slate-100">
+                        <img alt="Kinh tế và quản lý" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuRJXNMrLXfz5pT1vJnTXeaHYsVXJIfIlSOryoKIoinWIqQCf3LfqNi5jWycthFfNvZefjaWpp0DLBwMwBUkHMIPNhS4CNUlgqTGpCq13ao6ZkKeuPtoDch9EXC9EXMax5xWF1K9wXAN0wvMKBM2fx2slTD6Xm1tfl71IhAEM4qkx6aPBMujvvknOCI9_do2T0xkPO8265vEUxytVkZ6fRFTKD1iaySr7UnT9AicrB7hrQnxVQQ1x3">
+                    </div>
+                    <div class="p-4 pt-0 flex flex-col flex-1 relative">
+                        <div class="-mt-4 mb-2">
+                            <div class="w-8 h-8 rounded-full bg-[#003882] text-white flex items-center justify-center shadow">
+                                <span class="material-symbols-outlined text-[18px]">monitoring</span>
+                            </div>
+                        </div>
+                        <h3 class="font-headline font-bold text-sm text-slate-900 group-hover:text-[#003882] transition-colors mb-1.5">Kinh tế &amp; Quản trị</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed mb-4 flex-1">
+                            Logistics, Quản lý công nghiệp, Thương mại điện tử, tư duy chiến lược và hội nhập toàn cầu.
+                        </p>
+                        <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline" href="#">
+                            <span>Khám phá chương trình</span>
+                            <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 4: Ngoại ngữ -->
+                <div class="bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col group">
+                    <div class="relative h-40 overflow-hidden bg-slate-100">
+                        <img alt="Ngoại ngữ" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7PvJBbTtBqMIkY8iPQA37wi_m3BV4tc6ZBFdFZ_Y8Zw9mcMSrMFlyv0Vy4DGgsLtN0Go_Tjj3D7wOhuepgzwwLvyn5uB-9yUi-hmseFrG2ea0IWT92q8yJP4Liw59kxVC3NFgheE0TN2p_Y1GCmyAhXYf_mBWse5CXjl36Iaf0eVcqUFECry0Pa2YE5TKFU2ET3gdA5X2fHtklS5e6K4S48DAwmZoYxGpkusJ_2xa9eE3G5a3VEkv">
+                    </div>
+                    <div class="p-4 pt-0 flex flex-col flex-1 relative">
+                        <div class="-mt-4 mb-2">
+                            <div class="w-8 h-8 rounded-full bg-[#4f46e5] text-white flex items-center justify-center shadow">
+                                <span class="material-symbols-outlined text-[18px]">translate</span>
+                            </div>
+                        </div>
+                        <h3 class="font-headline font-bold text-sm text-slate-900 group-hover:text-[#4f46e5] transition-colors mb-1.5">Ngôn ngữ &amp; Sư phạm</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed mb-4 flex-1">
+                            Ngôn ngữ Anh, Sư phạm công nghệ, trang bị năng lực hội nhập và mở rộng nghề nghiệp tương lai.
+                        </p>
+                        <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline" href="#">
+                            <span>Khám phá chương trình</span>
+                            <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. TIN TỨC & SỰ KIỆN (Bố cục 2 cột) -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+                <div>
+                    <div class="inline-flex items-center gap-2 mb-1.5">
+                        <span class="w-4 h-[2px] bg-[#991b1e]"></span>
+                        <span class="text-xs font-bold text-[#991b1e] uppercase tracking-wider">Tin tức &amp; Sự kiện</span>
+                    </div>
+                    <h2 class="font-headline text-2xl sm:text-3xl font-extrabold text-slate-900">
+                        Cập nhật những hoạt động, thành tựu mới nhất từ HCMUTE.
+                    </h2>
+                </div>
+                <a class="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#003882] hover:text-[#991b1e] transition-colors whitespace-nowrap" th:href="@{/feed}">
+                    <span>Xem tất cả tin tức</span>
+                    <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                </a>
+            </div>
+
+            <!-- 2 Cột Tin tức -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <!-- Cột Trái: Tin tiêu điểm lớn -->
+                <article class="lg:col-span-6 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col group">
+                    <div class="relative aspect-[16/10] overflow-hidden bg-slate-100">
+                        <img alt="HCMUTE Announcement" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1Ds92ZUE1RuZXEH1z8Yrll-VXSeiXEnLJNIeCH0bQc647wKq-iS9BEX3UIsGT6LwL2yUoMo4fdvWH6QD-0XtmoVP9sKk4cOAgjtbNwbRX1mI3QdMEt9owTtNPlQcfobKUYKiP3xlL-UG8Qfano_p-O46pdXvKNeje3P5-FbXxYfco5obx9m81-1S3hw8pFIl4AisJo4KxuObjk_SJ-VgL-QEa--fNN79giqmieQZasDJX6QIblw8G">
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="px-2.5 py-0.5 rounded text-[11px] font-semibold bg-[#991b1e] text-white">Tuyển sinh</span>
+                            <span class="text-xs text-slate-500">26.09.2026</span>
+                        </div>
+                        <h3 class="font-headline font-bold text-lg sm:text-xl text-slate-900 group-hover:text-[#991b1e] transition-colors mb-3 leading-snug">
+                            HCMUTE công bố phương án tuyển sinh đại học chính quy năm 2026
+                        </h3>
+                        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
+                            Trường Đại học Sư phạm Kỹ thuật TP.HCM chính thức công bố phương án tuyển sinh năm 2026 với nhiều điểm mới hấp dẫn, tiếp tục gia tăng cơ hội trúng tuyển cho học sinh toàn quốc...
+                        </p>
+                        <a class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#991b1e] hover:underline" href="#">
+                            <span>Đọc tiếp</span>
+                            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- Cột Phải: Danh sách 3 tin ngắn -->
+                <div class="lg:col-span-6 flex flex-col divide-y divide-slate-100 bg-white rounded-xl border border-slate-100 shadow-sm p-4 sm:p-6">
+                    <!-- Item 1 -->
+                    <article class="flex gap-4 py-4 first:pt-0 group">
+                        <div class="w-28 sm:w-36 h-20 sm:h-24 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100">
+                            <img alt="Sinh viên HCMUTE sáng tạo" class="w-full h-full object-cover group-hover:scale-105 transition-transform" 
+                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuC07M2Qnaq-8FmJ3hQS9WLRrG_K_Gc8Zyo8JoiuebrgOBYjC1LSEfAH_zKlf87wGVtSFz8LTe93SqYct6cU8MU5ZmshwfF7HYwu9pEsRG6s2d8tWkcBW02cbu_YBHz3pbR55nxVcq9LsmvwK0S0hMjzpJSfB2Y9JxhbHbQqfd1M7I9yZjCGNXZeH65gBtrSk6CjrEzC3fZAtzk69gLyThnSjqBLsmMiZ8bNehexvxThIZcESPPiJ3hV">
+                        </div>
+                        <div class="flex flex-col justify-between flex-1">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-[#003882]">Nghiên cứu</span>
+                                    <span class="text-[11px] text-slate-400">22.09.2026</span>
+                                </div>
+                                <h4 class="font-headline font-bold text-xs sm:text-sm text-slate-900 group-hover:text-[#003882] transition-colors line-clamp-2">
+                                    Sinh viên HCMUTE đạt giải cao tại Cuộc thi Sáng tạo Kỹ thuật toàn quốc 2026
+                                </h4>
+                            </div>
+                            <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline mt-2" href="#">
+                                <span>Đọc tiếp</span>
+                                <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
+                            </a>
+                        </div>
+                    </article>
+
+                    <!-- Item 2 -->
+                    <article class="flex gap-4 py-4 group">
+                        <div class="w-28 sm:w-36 h-20 sm:h-24 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100">
+                            <img alt="Ngày hội việc làm" class="w-full h-full object-cover group-hover:scale-105 transition-transform" 
+                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2mzpwjo8xW1O7waS4y5vuF5KXT2KKPIzpsW2YgE_Lnkb8wRYEjMIutZeiyWVqOJOAtWfgnmy-DPzl6bar-TzqzWkT-oozFwse_o0ohjTDWMPWsv-XH30jSvpTohcbZlVrLkb6-beZ0TNRDEWvk5wIbpB6JtC6vSoytWIaEGNkavGmdiBcFdlbg10-mnHu-wsq0K3NwLxyZMWA84SOk2SW2NChnc5_lR4fN02bM9JuapNr_p98dZzp">
+                        </div>
+                        <div class="flex flex-col justify-between flex-1">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800">Sinh viên</span>
+                                    <span class="text-[11px] text-slate-400">18.09.2026</span>
+                                </div>
+                                <h4 class="font-headline font-bold text-xs sm:text-sm text-slate-900 group-hover:text-[#003882] transition-colors line-clamp-2">
+                                    HCMUTE tổ chức Ngày hội việc làm năm 2026 kết nối hơn 150 doanh nghiệp
+                                </h4>
+                            </div>
+                            <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline mt-2" th:href="@{/feed}">
+                                <span>Đọc tiếp</span>
+                                <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
+                            </a>
+                        </div>
+                    </article>
+
+                    <!-- Item 3 -->
+                    <article class="flex gap-4 py-4 last:pb-0 group">
+                        <div class="w-28 sm:w-36 h-20 sm:h-24 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100">
+                            <img alt="Ký kết quốc tế" class="w-full h-full object-cover group-hover:scale-105 transition-transform" 
+                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYwKvDUq7Prg4KyChK5ZlVy31N8K2tMYtVLbNctJdAdvsXL0xyc6RSP_8GCPfwVsufPBlBa6yBdQ6KZ-DpUoCjMB6xozC-57VFg46mwNPuf3YqEgNVc4ystcWvQMJHzILxNOLuAFYw_MdrM2VkU9ISRurtRtcecwE84Xpn44yLvM1Uf9-Wfq9fhFkcPfOf6d5yE8M7jUuvn36rO5I_and6BLW2478qO_IFIr3isl7-RyoBHzpkhqif">
+                        </div>
+                        <div class="flex flex-col justify-between flex-1">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">Hợp tác quốc tế</span>
+                                    <span class="text-[11px] text-slate-400">15.09.2026</span>
+                                </div>
+                                <h4 class="font-headline font-bold text-xs sm:text-sm text-slate-900 group-hover:text-[#003882] transition-colors line-clamp-2">
+                                    Ký kết hợp tác chiến lược đào tạo &amp; nghiên cứu với các trường đại học quốc tế
+                                </h4>
+                            </div>
+                            <a class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#991b1e] hover:underline mt-2" href="#">
+                                <span>Đọc tiếp</span>
+                                <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
+                            </a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5.5 VỊ TRÍ & BẢN ĐỒ KHUÔN VIÊN TRƯỜNG -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+                <div>
+                    <div class="inline-flex items-center gap-2 mb-1.5">
+                        <span class="w-4 h-[2px] bg-[#991b1e]"></span>
+                        <span class="text-xs font-bold text-[#991b1e] uppercase tracking-wider">Vị trí &amp; Bản đồ</span>
+                    </div>
+                    <h2 class="font-headline text-2xl sm:text-3xl font-extrabold text-slate-900">
+                        Bản đồ hướng dẫn di chuyển đến HCMUTE
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-500 mt-1 max-w-3xl">
+                        Khuôn viên chính tại Số 1 Võ Văn Ngân, Phường Linh Chiểu, TP. Thủ Đức, TP. Hồ Chí Minh — Trung tâm kết nối giao thông thuận tiện với tuyến Metro số 1 Bến Thành - Suối Tiên.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-50 text-[#003882] rounded-lg text-xs font-semibold hover:bg-blue-100 transition-colors border border-slate-200/60" 
+                       href="https://maps.google.com/?q=Tr%C6%B0%E1%BB%9Dng+%C4%90%E1%BA%A1i+h%E1%BB%8Dc+S%C6%B0+ph%E1%BA%A1m+K%E1%BB%B9+thu%E1%BA%ADt+TP.HCM" target="_blank" rel="noopener noreferrer">
+                        <span class="material-symbols-outlined text-[16px]">near_me</span>
+                        <span>Xem lộ trình</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                <!-- Thông tin di chuyển & Hướng dẫn cơ sở (Cột trái) -->
+                <div class="lg:col-span-5 bg-white rounded-2xl p-6 sm:p-8 border border-slate-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-2.5 pb-4 border-b border-slate-100 mb-5">
+                            <div class="w-10 h-10 rounded-xl bg-blue-50 text-[#003882] flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-[20px]">apartment</span>
+                            </div>
+                            <div>
+                                <h3 class="font-headline font-bold text-sm sm:text-base text-slate-900 leading-tight">Khuôn viên trung tâm</h3>
+                                <p class="text-[11px] text-slate-500">Trường ĐH Sư phạm Kỹ thuật TP.HCM</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 text-xs">
+                            <!-- Địa chỉ -->
+                            <div class="flex items-start gap-3">
+                                <div class="w-7 h-7 rounded-lg bg-slate-100 text-[#991b1e] flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span class="material-symbols-outlined text-[16px]">location_on</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-bold text-slate-800">Địa chỉ chính thức</div>
+                                    <p class="text-slate-600 text-[11px] leading-relaxed mt-0.5">Số 1 Võ Văn Ngân, Phường Linh Chiểu, TP. Thủ Đức, TP. Hồ Chí Minh</p>
+                                </div>
+                            </div>
+
+                            <!-- Giao thông công cộng & Metro -->
+                            <div class="flex items-start gap-3">
+                                <div class="w-7 h-7 rounded-lg bg-slate-100 text-[#003882] flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span class="material-symbols-outlined text-[16px]">directions_subway</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-bold text-slate-800">Phương tiện công cộng</div>
+                                    <p class="text-slate-600 text-[11px] leading-relaxed mt-0.5">• Tuyến Metro số 1: Ga Thủ Đức (cách 300m, 4 phút đi bộ)<br>• Xe buýt các tuyến: 06, 08, 53, 56, 150 dừng trực tiếp cổng trường.</p>
+                                </div>
+                            </div>
+
+                            <!-- Cổng ra vào -->
+                            <div class="flex items-start gap-3">
+                                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span class="material-symbols-outlined text-[16px]">door_front</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-bold text-slate-800">Cổng vào khuôn viên</div>
+                                    <p class="text-slate-600 text-[11px] leading-relaxed mt-0.5">• Cổng 1: Số 1 Võ Văn Ngân (Cổng chính - Toà nhà Trung tâm)<br>• Cổng 2: Đường Lê Văn Chí (Khu xưởng &amp; KTX sinh viên)</p>
+                                </div>
+                            </div>
+
+                            <!-- Thời gian đón tiếp -->
+                            <div class="flex items-start gap-3">
+                                <div class="w-7 h-7 rounded-lg bg-slate-100 text-emerald-800 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span class="material-symbols-outlined text-[16px]">schedule</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-bold text-slate-800">Giờ đón tiếp &amp; làm việc</div>
+                                    <p class="text-slate-600 text-[11px] leading-relaxed mt-0.5">• Thứ Hai – Thứ Sáu: 07:00 – 17:00<br>• Thứ Bảy: 07:30 – 11:30 (Bộ phận Tuyển sinh &amp; Học vụ)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nút thao tác -->
+                    <div class="pt-6 mt-6 border-t border-slate-100 flex flex-wrap items-center gap-3">
+                        <a class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#991b1e] hover:bg-[#831518] text-white text-xs font-semibold rounded-lg shadow-sm transition-all active:scale-95 flex-1 justify-center" 
+                           href="https://maps.google.com/?q=Tr%C6%B0%E1%BB%9Dng+%C4%90%E1%BA%A1i+h%E1%BB%8Dc+S%C6%B0+ph%E1%BA%A1m+K%E1%BB%B9+thu%E1%BA%ADt+TP.HCM" target="_blank" rel="noopener noreferrer">
+                            <span class="material-symbols-outlined text-[16px]">explore</span>
+                            <span>Chỉ đường Google Maps</span>
+                        </a>
+                        <a class="inline-flex items-center gap-2 px-4 py-2.5 border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg transition-colors justify-center" 
+                           href="#">
+                            <span class="material-symbols-outlined text-[16px]">map</span>
+                            <span>Xem sơ đồ trường</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Interactive Google Map Embed Card (Cột phải) -->
+                <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col relative min-h-[380px]">
+                    <!-- Floating Badge góc trên bản đồ -->
+                    <div class="absolute top-4 left-4 z-10 flex items-center gap-2.5 bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-xl shadow-md border border-slate-200/80">
+                        <div class="w-3 h-3 rounded-full bg-[#991b1e] animate-pulse"></div>
+                        <div>
+                            <div class="text-[11px] font-bold text-slate-900 leading-none">HCMUTE – Trụ sở chính</div>
+                            <div class="text-[10px] text-slate-500 mt-0.5">Số 1 Võ Văn Ngân, Thủ Đức</div>
+                        </div>
+                    </div>
+
+                    <!-- Google Maps Iframe Embed -->
+                    <div class="w-full h-full min-h-[380px] bg-slate-100">
+                        <iframe title="HCMUTE Campus Map" class="w-full h-full min-h-[380px] border-none" 
+                                src="https://maps.google.com/maps?q=Tr%C6%B0%E1%BB%9Dng+%C4%90%E1%BA%A1i+h%E1%BB%8Dc+S%C6%B0+ph%E1%BA%A1m+K%E1%BB%B9+thu%E1%BA%ADt+TP.HCM&amp;t=&amp;z=16&amp;ie=UTF8&amp;iwloc=&amp;output=embed" 
+                                allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. NGHIÊN CỨU & ĐỔI MỚI SÁNG TẠO + ĐỜI SỐNG SINH VIÊN (BỐ CỤC 2 KHỐI SONG SONG) -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                <!-- Khối Trái: Nghiên cứu (Banner Xanh Đậm) -->
+                <div class="lg:col-span-6 bg-gradient-to-br from-[#002456] via-[#003882] to-[#0b4d9c] rounded-2xl p-6 sm:p-8 text-white flex flex-col justify-between relative overflow-hidden shadow-lg">
+                    <div class="relative z-10">
+                        <div class="text-[11px] font-semibold tracking-wider text-blue-200 uppercase mb-2">Nghiên cứu &amp; Đổi mới sáng tạo</div>
+                        <h3 class="font-headline font-bold text-2xl sm:text-3xl text-white mb-3">
+                            Khoa học công nghệ<br>kiến tạo giá trị thực tiễn
+                        </h3>
+                        <p class="text-xs sm:text-sm text-blue-100/90 leading-relaxed max-w-md mb-6">
+                            Hệ thống phòng thí nghiệm hiện đại, đội ngũ chuyên gia giàu kinh nghiệm và nhiều dự án nghiên cứu có tầm ảnh hưởng.
+                        </p>
+                        <a class="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-md transition-colors" href="#">
+                            <span>Tìm hiểu thêm</span>
+                            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                        </a>
+                    </div>
+                    <div class="mt-6 pt-4 relative z-10 flex justify-end">
+                        <img alt="Sinh viên nghiên cứu khoa học" class="w-full sm:w-80 h-44 object-cover rounded-xl shadow-md border-2 border-white/20" 
+                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuD55kuWbFgNNaNgeEdQEwrcSVhGvGlyV6Kc4tQA0bn_wxDDPZAHPZwlp3E7WTMsftnQ03bRLRU_QA3hhT_u1LepJsCrG6ZbTWzT3D9ylOBrEdE7NNNslkvVffD7ODjvs3UVpNz0-IZgkGTK6LkRHpchMbgCSGl9Bejpfnbq3TaVnM3A9jONR2o9-fVZBoaKSkErgAdLCUrW8KyLA0EuwSybLsvde9LkwmtiZDAWMsiiTvKUD9l8cm4J">
+                    </div>
+                </div>
+
+                <!-- Khối Phải: Đời sống sinh viên (Collage 4 ảnh hoạt động) -->
+                <div class="lg:col-span-6 bg-white rounded-2xl p-6 sm:p-8 border border-slate-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="inline-flex items-center gap-2 mb-1.5">
+                            <span class="w-4 h-[2px] bg-[#991b1e]"></span>
+                            <span class="text-xs font-bold text-[#991b1e] uppercase tracking-wider">Đời sống sinh viên</span>
+                        </div>
+                        <h3 class="font-headline font-bold text-xl sm:text-2xl text-slate-900 mb-2">
+                            Học tập – Sáng tạo – Trải nghiệm
+                        </h3>
+                        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-lg mb-6">
+                            Môi trường năng động, nhiều hoạt động ngoại khóa, câu lạc bộ, cuộc thi và cơ hội phát triển toàn diện.
+                        </p>
+                    </div>
+                    <!-- 4 Ảnh Collage -->
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="h-28 rounded-lg overflow-hidden bg-slate-100">
+                            <img alt="Áo xanh tình nguyện" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8P5NtN6wnowfFmAoXlzqZGK_bYiDivR-I8hJe7LL0fFgsts4YMJAKnNXM23WJTgCEVbbRyN2EKm4RWmgd-VGausAtE0QO85-cKqiZtD1VDAd2VI2C8UBWgA7YibK48aEVHRIahsNPIcP67KiyfBrAa8fYiZJEa7CJULlrvtr8L_CmlMC6n4ZcC9KJMTKLrqZ86LOtudDWk-AQ6KQtJZbPcwnOSTciegXjI58XfN-eP-zwbOXZUo12">
+                        </div>
+                        <div class="h-28 rounded-lg overflow-hidden bg-slate-100">
+                            <img alt="Teambuilding sinh viên" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNjaE2xg-QslTa_sB3r8PQ5PS8RVQsLsWzMVpKnB4zAq7GIq4lPRlU8i9vdqd3nLtK8sM_8mfM_U4ymWDl2yUGL687djPCKkwbm0HSJ8tJk9gcjNDy-zK-1aXRYwJoZ1P-0HNLLDOYJlnNMZ5Gnoy-aBvB8T2uveLxcbeimf73pb6-8VI8YsVfzOfrs4WLDrVBPXTO3XvBCMRNINZtw46Y7CWFLpsTYmP65B85wXJosABJW_i4srfz">
+                        </div>
+                        <div class="h-28 rounded-lg overflow-hidden bg-slate-100">
+                            <img alt="Hoạt động thể thao" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-1ykYbJJMtQH2g-pVkY7FA4FFjstmr20nAuvCEqYy5HWcbI39d-T7ylBgq__-MAQDCgxyLM3ldgMiou_hQCTdRULJy9OPiBG2OxdyfqVL9MSunj31RWyI3KoNDMbFYZ3zGEHTks92XCVropZ4Qu9exvoG3amgiHwEOxCi61-wGqmEtlQyWTXt9_WAHmKoieNHvcoTPqzG-5WtX1cTp6HYxM5QuKLbQ6Z_pSctjoXjRw5sio4gKRYB">
+                        </div>
+                        <div class="h-28 rounded-lg overflow-hidden bg-slate-100">
+                            <img alt="Văn nghệ sinh viên" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIWyOlQqUUVw01oe1wjMCixnkT5zmWec1-tgUB90Oh4eiy2FB-o5SKfLCl4cQnk61ORNS4WNVQgWPhaW6AFTgdA_VmWrC1BuQr2mTabm6p5N3Sr59dWSKhmFuadK92tL4iNtYCiTIjUE8RdTTNXSsevSII2mEkWdxVWVWWr0wM13QwxckpGqnTMqyOEdt1iGxo1m9NvyKabP-uSrpo7OHfdkugQTGUr4EuVerhWpL_JwETrfoziQB-">
+                        </div>
+                    </div>
+                    <a class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#991b1e] hover:underline" th:href="@{/feed}">
+                        <span>Khám phá đời sống sinh viên</span>
+                        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. WIDGET CHATBOT TRỢ LÝ HCMUTE (Floating Mascot AI) -->
+        <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+            <!-- Chatbox container -->
+            <div id="hcmuteChatWindow" class="hidden w-[330px] sm:w-[360px] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden mb-3 transition-all duration-300">
+                <!-- Header Chatbox -->
+                <div class="bg-white border-b border-slate-100 p-3.5 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-full bg-blue-50 border border-slate-200 overflow-hidden flex items-center justify-center shadow-xs flex-shrink-0">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDal19qGXszE1yVLlWrchkc2CRKylUftJRlipfnB8gqWSMxky8egEKvmKMHQQKEU_fq_LKN60MpD2MH5d-pAEGA9J3dhIfW0NBRKsFh9ehXbY3_KekJ9sYMYlzW6L0xCxQuTZMqo24VsLxo5ZMlKMHfCq5QhGCv1sA05dB4KsRYz0H-FDl5LCT8fpVgvL_Lrmonh6Ba7PbMA0Sj0iwJOc4RJmWQYmskr2D6mhPNyouFBffj6oaMOADNfOKOqbkm_MgPQA" 
+                                 alt="Trợ lý HCMUTE Mascot" class="w-full h-full object-contain p-0.5">
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-900 leading-none">Trợ lý HCMUTE</div>
+                            <div class="text-[10px] text-emerald-600 font-medium flex items-center gap-1 mt-0.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                <span>Sẵn sàng hỗ trợ</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1 text-slate-400">
+                        <a th:href="@{/ai-chat}" title="Mở trang tư vấn AI chuyên sâu" class="hover:text-[#003882] p-1 text-slate-500" target="_blank">
+                            <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+                        </a>
+                        <button aria-label="Đóng" class="hover:text-slate-600 p-1" onclick="toggleChatWindow()">
+                            <span class="material-symbols-outlined text-[16px]">close</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Messages Body -->
+                <div id="chatScrollArea" class="p-4 bg-[#f8fafc] space-y-3 text-xs max-h-[340px] overflow-y-auto">
+                    <div class="bg-slate-200/60 text-slate-800 p-3 rounded-2xl rounded-tl-none max-w-[90%] leading-relaxed shadow-xs">
+                        Xin chào! 👋 Tôi là trợ lý ảo QAUTE của HCMUTE. Bạn cần hỗ trợ thông tin gì hôm nay?
+                    </div>
+                    <!-- 4 Gợi ý bấm nhanh -->
+                    <div id="quickPromptContainer" class="flex flex-col gap-1.5 pt-1">
+                        <button class="text-left px-3 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#003882] hover:text-[#003882] transition-colors text-[11px] font-medium text-slate-700 shadow-2xs" 
+                                onclick="handleQuickClick('Thông tin tuyển sinh đại học 2026')">
+                            👉 Thông tin tuyển sinh 2026
+                        </button>
+                        <button class="text-left px-3 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#003882] hover:text-[#003882] transition-colors text-[11px] font-medium text-slate-700 shadow-2xs" 
+                                onclick="handleQuickClick('Tra cứu ngành đào tạo và học phí')">
+                            🔍 Tra cứu ngành học &amp; Học phí
+                        </button>
+                        <button class="text-left px-3 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#003882] hover:text-[#003882] transition-colors text-[11px] font-medium text-slate-700 shadow-2xs" 
+                                onclick="handleQuickClick('Hướng dẫn đồng bộ học vụ và xem điểm Portal')">
+                            💻 Cổng thông tin sinh viên &amp; Học vụ
+                        </button>
+                        <button class="text-left px-3 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#003882] hover:text-[#003882] transition-colors text-[11px] font-medium text-slate-700 shadow-2xs" 
+                                onclick="handleQuickClick('Quy trình gửi Ticket yêu cầu hỗ trợ')">
+                            🎫 Gửi yêu cầu hỗ trợ (Ticket SLA)
+                        </button>
+                    </div>
+                    <!-- Typing Indicator -->
+                    <div id="chatTypingIndicator" class="hidden flex items-center gap-1.5 p-2.5 bg-slate-200/60 rounded-2xl rounded-tl-none w-fit text-slate-500 shadow-xs">
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0.2s]"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0.4s]"></span>
+                        <span class="text-[10px] ml-1 text-slate-500 font-medium">Trợ lý đang phản hồi...</span>
+                    </div>
+                </div>
+
+                <!-- Input Chat -->
+                <div class="p-2.5 bg-white border-t border-slate-100 flex items-center gap-2">
+                    <input id="chatMessageInput" class="flex-1 text-xs border border-slate-200 rounded-full px-3.5 py-2 outline-none focus:border-[#991b1e] transition-colors" 
+                           onkeydown="if(event.key === 'Enter') sendUserMsg();" placeholder="Hỏi về tuyển sinh, học vụ, học phí..." type="text">
+                    <button id="chatSendBtn" aria-label="Gửi tin nhắn" class="w-8 h-8 rounded-full bg-[#991b1e] hover:bg-[#831518] disabled:opacity-50 text-white flex items-center justify-center flex-shrink-0 transition-transform active:scale-95 shadow" onclick="sendUserMsg()">
+                        <span class="material-symbols-outlined text-[16px]">send</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Floating Circular Bot Button -->
+            <button aria-label="Mở Trợ lý HCMUTE" class="w-16 h-16 rounded-full bg-transparent hover:scale-105 active:scale-95 flex items-center justify-center transition-all cursor-pointer group drop-shadow-xl focus:outline-none" onclick="toggleChatWindow()">
+                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDal19qGXszE1yVLlWrchkc2CRKylUftJRlipfnB8gqWSMxky8egEKvmKMHQQKEU_fq_LKN60MpD2MH5d-pAEGA9J3dhIfW0NBRKsFh9ehXbY3_KekJ9sYMYlzW6L0xCxQuTZMqo24VsLxo5ZMlKMHfCq5QhGCv1sA05dB4KsRYz0H-FDl5LCT8fpVgvL_Lrmonh6Ba7PbMA0Sj0iwJOc4RJmWQYmskr2D6mhPNyouFBffj6oaMOADNfOKOqbkm_MgPQA" 
+                     alt="HCMUTE AI Mascot" class="w-full h-full object-contain filter group-hover:scale-110 transition-transform">
+            </button>
+        </div>
+    </main>
+
+    <!-- 8. FOOTER TOÀN DIỆN -->
+    <footer class="w-full">
+        <!-- Dải banner CTA trên chân trang -->
+        <div class="w-full bg-gradient-to-r from-[#002456] via-[#003882] to-[#0b4d9c] text-white py-6 border-b border-blue-900/40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                    <h4 class="font-headline font-bold text-base sm:text-lg">Sẵn sàng bắt đầu hành trình của bạn?</h4>
+                    <p class="text-xs text-blue-100/80">Khám phá ngành học, tìm kiếm thông tin tuyển sinh và liên hệ ngay với chúng tôi.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a class="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-[#003882] text-xs font-bold rounded shadow hover:bg-slate-100 transition-colors" href="#">
+                        <span>Thông tin tuyển sinh</span>
+                        <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
+                    </a>
+                    <a class="inline-flex items-center px-4 py-2 border border-white/80 text-white text-xs font-semibold rounded hover:bg-white/10 transition-colors" href="#">
+                        <span>Khám phá ngành học</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chân trang chính -->
+        <div class="w-full bg-[#0b1c30] text-slate-200 text-xs pt-12 pb-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-10 border-b border-white/10">
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-white rounded-lg p-1.5 flex items-center justify-center shadow-xs flex-shrink-0">
+                                <img alt="HCMUTE Logo" class="h-11 w-auto object-contain" 
+                                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuD53choCLG-XvbDYgSWMKZw8rilSvY6cMS4LwXv0NjjocM_28wn6qkbqxYXqm47hoTLRSc1GvgksubA8igeBsjSTyKgTMyUQzq2FChKLEPKME0pbsWAGq4-CNIUHSOCWGR32y_5-b-BvNPIpGGgk_hvc9JbSjnQd0PNZrjxX7EK4hL3R7_MiJhns8uC4r91dfACmu2XQMGKQ3h7cJVBBvRwQDeCoF5xsBl_w3XJqKWjB7nHAqtdB1dOcFHnsxHexlRMVg">
+                            </div>
+                            <div class="flex flex-col">
+                                <div class="font-headline font-extrabold text-sm text-white tracking-wide leading-tight">HCMUTE</div>
+                                <div class="text-[10px] text-blue-200 font-medium leading-tight mt-0.5">ĐẠI HỌC SƯ PHẠM KỸ THUẬT TP.HCM</div>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-slate-300/80 leading-relaxed max-w-sm">
+                            Trung tâm đào tạo nguồn nhân lực khoa học công nghệ, kỹ thuật và chuyển giao tri thức hàng đầu tại khu vực phía Nam và cả nước.
+                        </p>
+                        <div class="space-y-1.5 pt-2 text-[11px] text-slate-200/90">
+                            <div class="flex items-start gap-2">
+                                <span class="material-symbols-outlined text-[15px] text-blue-200">location_on</span>
+                                <span>Số 1 Võ Văn Ngân, P. Linh Chiểu, TP. Thủ Đức, TP. Hồ Chí Minh</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[15px] text-blue-200">call</span>
+                                <span>(028) 3896 8641 - (028) 3896 1333</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[15px] text-blue-200">mail</span>
+                                <span>tuyensinh@hcmute.edu.vn</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2.5">
+                        <div class="font-headline font-bold text-white text-xs uppercase tracking-wider">Liên kết nhanh</div>
+                        <ul class="space-y-1.5 text-[11px] text-slate-300/80">
+                            <li><a class="hover:text-white transition-colors" th:href="@{/}">Trang chủ</a></li>
+                            <li><a class="hover:text-white transition-colors" href="#">Tuyển sinh đại học</a></li>
+                            <li><a class="hover:text-white transition-colors" href="#">Đào tạo chính quy</a></li>
+                            <li><a class="hover:text-white transition-colors" href="#">Nghiên cứu khoa học</a></li>
+                            <li><a class="hover:text-white transition-colors" href="#">Khám phá HCMUTE</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="space-y-2.5">
+                        <div class="font-headline font-bold text-white text-xs uppercase tracking-wider">Đào tạo &amp; Tuyển sinh</div>
+                        <ul class="space-y-1.5 text-[11px] text-slate-300/80">
+                            <li><a class="hover:text-white transition-colors" href="#">Chương trình đào tạo</a></li>
+                            <li><a class="hover:text-white transition-colors" href="#">Thông tin tuyển sinh 2026</a></li>
+                            <li><a class="hover:text-white transition-colors" href="#">Học phí &amp; Học bổng</a></li>
+                            <li><a class="hover:text-white transition-colors" th:href="@{/academic/sync}">Đồng bộ hồ sơ học vụ</a></li>
+                            <li><a class="hover:text-white transition-colors" href="#">Quy chế đào tạo tín chỉ</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="space-y-2.5">
+                        <div class="font-headline font-bold text-white text-xs uppercase tracking-wider">Hỗ trợ sinh viên</div>
+                        <ul class="space-y-1.5 text-[11px] text-slate-300/80 mb-4">
+                            <li><a class="hover:text-white transition-colors" th:href="@{/dashboard}">Portal sinh viên HCMUTE</a></li>
+                            <li><a class="hover:text-white transition-colors" th:href="@{/ticket}">Dịch vụ công một cửa (Ticket)</a></li>
+                            <li><a class="hover:text-white transition-colors" th:href="@{/ai-chat}">Trợ lý AI tư vấn học vụ</a></li>
+                            <li><a class="hover:text-white transition-colors" th:href="@{/feed}">Bảng tin sinh viên &amp; Đoàn thể</a></li>
+                        </ul>
+                        <div class="flex items-center gap-2 pt-1">
+                            <a aria-label="Facebook" class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors" href="https://facebook.com/hcmute" target="_blank"><span class="font-bold text-[11px]">f</span></a>
+                            <a aria-label="YouTube" class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors" href="https://youtube.com/hcmute" target="_blank"><span class="font-bold text-[11px]">▶</span></a>
+                            <a aria-label="LinkedIn" class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors" href="https://linkedin.com/school/hcmute" target="_blank"><span class="font-bold text-[11px]">in</span></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-400">
+                    <p>© 2026 Trường Đại học Sư phạm Kỹ thuật TP.HCM. All rights reserved.</p>
+                    <div class="flex items-center gap-4">
+                        <a class="hover:text-white transition-colors" href="#">Chính sách bảo mật</a>
+                        <span>•</span>
+                        <a class="hover:text-white transition-colors" href="#">Điều khoản sử dụng</a>
+                        <button aria-label="Lên đầu trang" class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white ml-2 transition-colors" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+                            <span class="material-symbols-outlined text-[16px]">arrow_upward</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive Scripts -->
     <script>
-        const slides = document.querySelectorAll('.hero-slide');
-        let currentSlide = 0;
+        // Hero Slider Controls
+        const heroSlides = [
+            "https://lh3.googleusercontent.com/aida-public/AB6AXuDoccAbK8VsruXpycy90Sn25S0uEYyPGo7g_GNyfmK7-1JN485OqzWd6nlbXCU6URMftUttd3_PfD0Fjlket5RQI5PpkSBkqMtLSV4owDEUe8H_WAJacNxAX7E4dpdzkKTqogPMlU9WvOwCYx56tfAWB-Thf9nZsT58a94GJtNz-Me_GA04E-Ue2nHYpf0oiGS30AnRSJq-iJgGB1e6VmMgIjx2LoOmm8iEpOK9A69IuZx0Or6v1mpBVoiBckTH2Z6OrQ",
+            "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80",
+            "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80"
+        ];
+        let currentSlideIdx = 0;
 
-        setInterval(() => {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
-        }, 4000); // Đổi ảnh mỗi 4 giây
+        function updateSlide() {
+            const imgEl = document.getElementById('heroSlideImg');
+            const numEl = document.getElementById('sliderCurrentNum');
+            if (imgEl) {
+                imgEl.style.opacity = '0.5';
+                setTimeout(() => {
+                    imgEl.src = heroSlides[currentSlideIdx];
+                    imgEl.style.opacity = '1';
+                }, 200);
+            }
+            if (numEl) {
+                numEl.textContent = '0' + (currentSlideIdx + 1);
+            }
+        }
+
+        function nextHeroSlide() {
+            currentSlideIdx = (currentSlideIdx + 1) % heroSlides.length;
+            updateSlide();
+        }
+
+        function prevHeroSlide() {
+            currentSlideIdx = (currentSlideIdx - 1 + heroSlides.length) % heroSlides.length;
+            updateSlide();
+        }
+
+        // Auto change slide every 6 seconds
+        setInterval(nextHeroSlide, 6000);
+
+        // Mobile drawer navigation toggle
+        function toggleMobileNav() {
+            const drawer = document.getElementById('mobileNavDrawer');
+            if (drawer) {
+                drawer.classList.toggle('hidden');
+            }
+        }
+
+        // Search Actions
+        function focusSearchInput() {
+            const input = document.getElementById('heroSearchInput');
+            if (input) {
+                input.focus();
+                input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function quickSearch(keyword) {
+            const input = document.getElementById('heroSearchInput');
+            if (input) {
+                input.value = keyword;
+                executeSearch();
+            }
+        }
+
+        function executeSearch() {
+            const input = document.getElementById('heroSearchInput');
+            const q = input ? input.value.trim() : '';
+            if (!q) return;
+            // Open chatbot with query or navigate to explore
+            toggleChatWindow(true);
+            handleQuickClick(q);
+        }
+
+        // Mascot AI Chat Window Controls
+        function toggleChatWindow(forceOpen) {
+            const chat = document.getElementById('hcmuteChatWindow');
+            if (!chat) return;
+            if (forceOpen === true) {
+                chat.classList.remove('hidden');
+            } else {
+                chat.classList.toggle('hidden');
+            }
+        }
+
+        function getChatSessionId() {
+            let sid = sessionStorage.getItem('hcmute_ai_session_id');
+            if (!sid) {
+                sid = 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+                sessionStorage.setItem('hcmute_ai_session_id', sid);
+            }
+            return sid;
+        }
+
+        function formatMarkdown(text) {
+            if (!text) return '';
+            let escaped = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            // Bold **text**
+            escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-slate-900">$1</strong>');
+            // Italic *text*
+            escaped = escaped.replace(/\*(.*?)\*/g, '<em class="italic">$1</em>');
+            // Links
+            escaped = escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline font-medium hover:text-blue-800 break-all">$1</a>');
+            // Bullet points
+            escaped = escaped.replace(/^• (.*?)$/gm, '<div class="flex items-start gap-1.5 my-0.5"><span class="text-[#003882] font-bold">•</span><span>$1</span></div>');
+            escaped = escaped.replace(/^👉 (.*?)$/gm, '<div class="flex items-start gap-1.5 my-0.5"><span class="text-amber-600">👉</span><span>$1</span></div>');
+            // Line breaks
+            escaped = escaped.replace(/\n/g, '<br>');
+            return escaped;
+        }
+
+        let isAiChatLoading = false;
+
+        function setChatLoading(loading) {
+            isAiChatLoading = loading;
+            const indicator = document.getElementById('chatTypingIndicator');
+            const btn = document.getElementById('chatSendBtn');
+            const input = document.getElementById('chatMessageInput');
+            if (indicator) {
+                if (loading) {
+                    indicator.classList.remove('hidden');
+                } else {
+                    indicator.classList.add('hidden');
+                }
+            }
+            if (btn) btn.disabled = loading;
+            if (input) input.disabled = loading;
+            const scrollArea = document.getElementById('chatScrollArea');
+            if (scrollArea) scrollArea.scrollTop = scrollArea.scrollHeight;
+        }
+
+        function appendUser(txt) {
+            const body = document.getElementById('chatScrollArea');
+            const indicator = document.getElementById('chatTypingIndicator');
+            const div = document.createElement('div');
+            div.className = 'bg-[#991b1e] text-white p-2.5 rounded-2xl rounded-tr-none max-w-[85%] ml-auto text-xs leading-relaxed shadow-xs';
+            div.innerText = txt;
+            if (indicator) {
+                body.insertBefore(div, indicator);
+            } else {
+                body.appendChild(div);
+            }
+            body.scrollTop = body.scrollHeight;
+        }
+
+        function appendBot(txt, provider) {
+            const body = document.getElementById('chatScrollArea');
+            const indicator = document.getElementById('chatTypingIndicator');
+            const div = document.createElement('div');
+            div.className = 'bg-slate-200/60 text-slate-800 p-3 rounded-2xl rounded-tl-none max-w-[92%] text-xs leading-relaxed shadow-xs';
+            
+            let badgeHtml = '';
+            if (provider === 'hcmute-faq-knowledge') {
+                badgeHtml = '<div class="text-[10px] font-semibold text-[#003882] mb-1.5 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>Cơ sở tri thức HCMUTE (FAQ)</div>';
+            } else if (provider === 'gemini' || provider === 'ollama') {
+                badgeHtml = '<div class="text-[10px] font-semibold text-purple-700 mb-1.5 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-purple-600"></span>Trợ lý AI Trực tuyến</div>';
+            } else {
+                badgeHtml = '<div class="text-[10px] font-semibold text-[#991b1e] mb-1.5 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#991b1e]"></span>Trợ lý QAUTE</div>';
+            }
+
+            div.innerHTML = badgeHtml + '<div class="text-slate-800 space-y-1">' + formatMarkdown(txt) + '</div>';
+            if (indicator) {
+                body.insertBefore(div, indicator);
+            } else {
+                body.appendChild(div);
+            }
+            body.scrollTop = body.scrollHeight;
+        }
+
+        async function sendToAi(messageText) {
+            if (isAiChatLoading) return;
+            const text = messageText.trim();
+            if (!text) return;
+
+            appendUser(text);
+            setChatLoading(true);
+
+            try {
+                const response = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: text,
+                        session_id: getChatSessionId(),
+                        provider: 'gemini'
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    appendBot(data.answer || 'Xin chào! Tôi đã ghi nhận thông tin từ bạn.', data.provider);
+                } else {
+                    appendBot('Xin lỗi, hệ thống AI hiện chưa thể phản hồi câu hỏi này. Bạn có thể mở trang <a href="/ai-chat" class="underline text-blue-600 font-bold" target="_blank">Tư vấn AI chuyên sâu</a> hoặc tra cứu mục <a href="/faqs" class="underline text-blue-600 font-bold">Hỏi đáp FAQ</a> nhé!');
+                }
+            } catch (err) {
+                console.error('Lỗi kết nối AI chatbot:', err);
+                appendBot('Không thể kết nối đến máy chủ AI. Vui lòng kiểm tra lại mạng hoặc gửi Ticket hỗ trợ cho Phòng Đào tạo!');
+            } finally {
+                setChatLoading(false);
+                const input = document.getElementById('chatMessageInput');
+                if (input) {
+                    input.focus();
+                }
+            }
+        }
+
+        function handleQuickClick(query) {
+            sendToAi(query);
+        }
+
+        function sendUserMsg() {
+            const input = document.getElementById('chatMessageInput');
+            if (!input) return;
+            const msg = input.value;
+            input.value = '';
+            sendToAi(msg);
+        }
+        
+        // Index Account Dropdown Toggle
+        (function() {
+            const toggle = document.getElementById('indexAccountToggle');
+            const dropdown = document.getElementById('indexDropdownMenu');
+            
+            if (!toggle || !dropdown) return;
+            
+            // Toggle dropdown
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isHidden = dropdown.classList.contains('hidden');
+                dropdown.classList.toggle('hidden');
+                toggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+            });
+            
+            // Close on click outside
+            document.addEventListener('click', function(e) {
+                if (!dropdown.classList.contains('hidden') && 
+                    !toggle.contains(e.target) && 
+                    !dropdown.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                    toggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+            
+            // Close on ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && !dropdown.classList.contains('hidden')) {
+                    dropdown.classList.add('hidden');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.focus();
+                }
+            });
+        })();
     </script>
 </body>
 </html>

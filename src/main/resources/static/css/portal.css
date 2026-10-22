@@ -324,3 +324,131 @@ body {
     color: var(--text-gray);
     font-size: 0.9rem;
 }
+
+/* User Account Area Dropdown Menu */
+.user-account-area {
+    position: relative;
+}
+
+.user-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    min-width: 240px;
+    padding: 8px 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    z-index: 1001;
+}
+
+.user-dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: var(--text-dark);
+    text-decoration: none;
+    transition: background-color 0.15s ease;
+    cursor: pointer;
+    font-size: 0.9rem;
+    min-height: 44px;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: #fdf2f4;
+    color: var(--crimson);
+    outline: none;
+}
+
+.dropdown-item i {
+    font-size: 1.3rem;
+    color: var(--text-gray);
+    transition: color 0.15s ease;
+}
+
+.dropdown-item:hover i,
+.dropdown-item:focus i {
+    color: var(--crimson);
+}
+
+/* Focus indicator for accessibility */
+.user-profile:focus {
+    outline: 2px solid var(--crimson);
+    outline-offset: 2px;
+}
+
+.dropdown-item:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: -2px;
+}
+
+/* Login button fallback */
+.login-btn {
+    padding: 8px 20px;
+    background-color: var(--crimson);
+    color: white;
+    text-decoration: none;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.login-btn:hover {
+    background-color: #8a1726;
+}
+
+/* Responsive Mobile (<768px) */
+@media (max-width: 767px) {
+    .user-dropdown-menu {
+        position: fixed;
+        top: var(--topbar-height);
+        right: 0;
+        left: auto;
+        width: calc(100% - 32px);
+        max-width: 320px;
+        margin: 16px;
+    }
+    
+    .dropdown-item {
+        min-height: 48px;
+        padding: 14px 20px;
+    }
+    
+    .user-info {
+        display: none;
+    }
+    
+    .search-bar {
+        width: 150px;
+    }
+}
+
+/* Tablet and up */
+@media (min-width: 768px) {
+    .user-dropdown-menu {
+        animation: dropdownFadeIn 0.25s ease-out;
+    }
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

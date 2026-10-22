@@ -16,16 +16,20 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
-@EnableWebSecurity // bật hệ thống bảo vệ web
-@EnableMethodSecurity(prePostEnabled = true) // cho phpes bảo mật sâu đến từng hàm ở controller các nhãn
-@RequiredArgsConstructor // auto tạo constructor đẻ DI vào các biến final vào class
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    // các thanh phan đc tiem
-    private final UserDetailsServiceImpl userDetailsService;// tim kiem thong tin tk trong csdl
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;// bo loc kt token jwt
+    private final UserDetailsServiceImpl userDetailsService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(UserDetailsServiceImpl userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.userDetailsService = userDetailsService;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -61,7 +65,8 @@ public class SecurityConfig {
                                 "/", "/home", "/about", "/explore", "/admission", "/research",
                                 "/ai-chat", "/api/ai/**", "/api/v1/ai/**",
                                 "/academic/**", "/api/academic/**",
-                                "/faqs", "/api/v1/faqs/**",
+                                "/grades", "/timetable", "/curriculum",
+                                "/faqs", "/faq", "/api/v1/faqs/**",
                                 "/feed/official/**", "/feed/forum/**",
                                 "/auth/**", "/api/v1/auth/**",
                                 "/error",
@@ -82,8 +87,8 @@ public class SecurityConfig {
                         .passwordParameter("password")
                         .permitAll())
                 .logout(logout -> logout
-                        .logoutUrl("/auth/logout")
-                        .logoutSuccessUrl("/auth/login?logout=true")
+                        .logoutRequestMatcher(new AntPathRequestMatcher("/auth/logout"))
+                        .logoutSuccessUrl("/?logout=true")
                         .deleteCookies("JSESSIONID")
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)

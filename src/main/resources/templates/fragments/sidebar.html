@@ -9,7 +9,7 @@
         </div>
         <ul class="sidebar-menu">
             <li>
-                <a th:href="@{/dashboard}" th:classappend="${activeTab == 'dashboard'} ? 'active' : ''">
+                <a th:href="@{/academic/sync}" th:classappend="${activeTab == 'dashboard' or activeTab == 'academic'} ? 'active' : ''">
                     <i class='bx bxs-dashboard'></i>
                     <span>Tổng quan</span>
                 </a>
@@ -21,13 +21,7 @@
                 </a>
             </li>
             <li>
-                <a th:href="@{/academic/sync}" th:classappend="${activeTab == 'academic'} ? 'active' : ''">
-                    <i class='bx bx-book-bookmark'></i>
-                    <span>Đồng bộ Học vụ (HCMUTE)</span>
-                </a>
-            </li>
-            <li>
-                <a th:href="@{/ticket}" th:classappend="${activeTab == 'ticket'} ? 'active' : ''">
+                <a th:href="@{/tickets/my-tickets}" th:classappend="${activeTab == 'ticket'} ? 'active' : ''">
                     <i class='bx bx-support'></i>
                     <span>Yêu cầu hỗ trợ (Ticket)</span>
                 </a>
@@ -36,12 +30,6 @@
                 <a th:href="@{/feed}" th:classappend="${activeTab == 'feed'} ? 'active' : ''">
                     <i class='bx bx-news'></i>
                     <span>Bảng tin sinh viên</span>
-                </a>
-            </li>
-            <li>
-                <a th:href="@{/group}" th:classappend="${activeTab == 'group'} ? 'active' : ''">
-                    <i class='bx bx-group'></i>
-                    <span>Nhóm Khoa</span>
                 </a>
             </li>
             <li>

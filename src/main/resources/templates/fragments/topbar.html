@@ -14,13 +14,92 @@
                 <span class="badge">3</span>
             </div>
             
-            <div class="user-profile">
-                <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=A51C30&color=fff" alt="Avatar">
-                <div class="user-info">
-                    <span class="user-name">Nguyễn Văn A</span>
-                    <span class="user-role">Sinh viên K23 - CNTT</span>
+            <!-- User Account Area with Dropdown -->
+            <div class="user-account-area" th:if="${userAccountMenu != null}">
+                <div class="user-profile" id="userAccountToggle" 
+                     tabindex="0" 
+                     role="button" 
+                     aria-haspopup="true" 
+                     aria-expanded="false"
+                     aria-label="Menu tài khoản">
+                    
+                    <!-- Avatar: Hiển thị từ URL hoặc generated avatar -->
+                    <img th:if="${userAccountMenu.hasAvatar()}" 
+                         th:src="${userAccountMenu.avatarUrl}" 
+                         th:alt="${userAccountMenu.displayName}"
+                         onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&background=A51C30&color=fff'">
+                    
+                    <img th:unless="${userAccountMenu.hasAvatar()}"
+                         th:src="@{'https://ui-avatars.com/api/?name=' + ${userAccountMenu.avatarInitial} + '&background=A51C30&color=fff'}"
+                         th:alt="${userAccountMenu.displayName}">
+                    
+                    <div class="user-info">
+                        <span class="user-name" th:text="${userAccountMenu.displayName}">Sinh viên</span>
+                        <span class="user-role" th:text="${userAccountMenu.username}">MSSV</span>
+                    </div>
+                    <i class='bx bx-chevron-down' style="color: var(--text-gray);"></i>
                 </div>
-                <i class='bx bx-chevron-down' style="color: var(--text-gray);"></i>
+                
+                <!-- Dropdown Menu - Chỉ hiển thị cho STUDENT -->
+                <div class="user-dropdown-menu" 
+                     id="userDropdownMenu" 
+                     role="menu" 
+                     aria-labelledby="userAccountToggle"
+                     th:if="${isStudent}">
+                    
+                    <a href="/profile" 
+                       class="dropdown-item" 
+                       role="menuitem"
+                       tabindex="-1">
+                        <i class='bx bx-user'></i>
+                        <span>Thông tin cá nhân</span>
+                    </a>
+                    
+                    <a href="/academic/sync" 
+                       class="dropdown-item" 
+                       role="menuitem"
+                       tabindex="-1">
+                        <i class='bx bx-home'></i>
+                        <span>Tổng quan</span>
+                    </a>
+                    
+                    <a href="/academic/grades" 
+                       class="dropdown-item" 
+                       role="menuitem"
+                       tabindex="-1">
+                        <i class='bx bx-file'></i>
+                        <span>Bảng điểm</span>
+                    </a>
+                    
+                    <a href="/academic/timetable" 
+                       class="dropdown-item" 
+                       role="menuitem"
+                       tabindex="-1">
+                        <i class='bx bx-calendar'></i>
+                        <span>Thời khóa biểu</span>
+                    </a>
+                    
+                    <a href="/academic/curriculum" 
+                       class="dropdown-item" 
+                       role="menuitem"
+                       tabindex="-1">
+                        <i class='bx bx-book'></i>
+                        <span>Chương trình đào tạo</span>
+                    </a>
+
+                    <a href="/tickets/my-tickets" 
+                       class="dropdown-item" 
+                       role="menuitem"
+                       tabindex="-1">
+                        <i class='bx bx-support'></i>
+                        <span>Ticket hỗ trợ</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Fallback khi chưa đăng nhập -->
+            <div th:unless="${userAccountMenu != null}">
+                <a href="/auth/login" class="login-btn">Đăng nhập</a>
             </div>
         </div>
     </header>

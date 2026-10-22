@@ -19,17 +19,24 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Controller
 @RequestMapping("/feed/forum")
-@RequiredArgsConstructor
 public class ForumController {
 
     private final PostService postService;
     private final UserRepository userRepository;
     private final LikeService likeService;
     private final DepartmentRepository departmentRepository;
+
+    public ForumController(PostService postService, UserRepository userRepository, LikeService likeService, DepartmentRepository departmentRepository) {
+        this.postService = postService;
+        this.userRepository = userRepository;
+        this.likeService = likeService;
+        this.departmentRepository = departmentRepository;
+    }
 
     /**
      * Diễn đàn thảo luận sinh viên (Hỗ trợ Bộ lọc Khoa, Tìm kiếm và Tab "Bài viết của tôi")
@@ -40,8 +47,10 @@ public class ForumController {
             @RequestParam(value = "departmentId", required = false) Long departmentId,
             @RequestParam(value = "q", required = false) String query,
             @RequestParam(value = "page", defaultValue = "0") int page,
+            HttpServletRequest request,
             Model model) {
 
+        request.getSession(true);
         Pageable pageable = PageRequest.of(Math.max(0, page), 10);
         Long currentUserId = SecurityUtils.getCurrentUserId().orElse(null);
 
@@ -100,6 +109,30 @@ public class ForumController {
     }
 
     /**
+     * Giao diện trang tạo bài viết mới trên Diễn đàn
+     */
+    @GetMapping({"/create", "/new"})
+    public String viewCreatePostPage(HttpServletRequest request, Model model) {
+        request.getSession(true);
+        Long currentUserId = SecurityUtils.getCurrentUserId().orElse(null);
+        if (currentUserId != null) {
+            userRepository.findByIdWithRoleAndDepartment(currentUserId).ifPresent(user -> {
+                model.addAttribute("currentUser", user);
+                model.addAttribute("currentUserFullName", user.getFullName());
+                model.addAttribute("currentUserAvatar", user.getAvatarUrl());
+                String role = (user.getRole() != null) ? user.getRole().getName().replace("ROLE_", "") : "STUDENT";
+                model.addAttribute("currentUserRole", role);
+                model.addAttribute("currentUserDept", user.getDepartment() != null ? user.getDepartment().getName() : "Toàn trường");
+            });
+        }
+        List<Department> departments = departmentRepository.findByIsActiveTrue();
+        model.addAttribute("departments", departments);
+        model.addAttribute("currentUserId", currentUserId);
+
+        return "feed/create-post";
+    }
+
+    /**
      * Sinh viên đăng bài thảo luận mới (Trạng thái PENDING_APPROVAL)
      */
     @PostMapping("/create")
@@ -107,27 +140,41 @@ public class ForumController {
     public String handleCreateForumPost(
             @RequestParam("title") String title,
             @RequestParam("content") String content,
+            @RequestParam(value = "departmentId", required = false) Long departmentId,
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "tags", required = false) String tags,
             @RequestParam(value = "image", required = false) MultipartFile image,
             RedirectAttributes redirectAttributes) {
 
-        if (title.isBlank() || content.isBlank()) {
+        if (title == null || title.isBlank() || content == null || content.isBlank()) {
             redirectAttributes.addFlashAttribute("errorMessage", "Tiêu đề và nội dung bài viết không được để trống.");
-            return "redirect:/feed/forum";
+            return "redirect:/feed/forum/create";
         }
 
         Long currentUserId = SecurityUtils.getCurrentUserId().orElseThrow();
         User author = userRepository.findById(currentUserId).orElseThrow();
 
-        Post post = postService.createForumPost(title, content, image, author);
-
-        if ("APPROVED".equalsIgnoreCase(post.getStatus())) {
-            redirectAttributes.addFlashAttribute("successMessage",
-                    "Bài viết của bạn đã được xuất bản công khai trên Diễn đàn!");
-        } else {
-            redirectAttributes.addFlashAttribute("successMessage",
-                    "Bài thảo luận đã được gửi thành công! Theo quy định, bài viết sẽ hiển thị công khai sau khi được Cán bộ phê duyệt.");
+        // Ghép thêm tag nếu người dùng nhập vào
+        StringBuilder enrichedContent = new StringBuilder(content.trim());
+        if (tags != null && !tags.isBlank()) {
+            enrichedContent.append("\n\n").append(tags.trim());
         }
-        return "redirect:/feed/forum";
+
+        try {
+            Post post = postService.createForumPost(title.trim(), enrichedContent.toString(), departmentId, image, author);
+
+            if ("APPROVED".equalsIgnoreCase(post.getStatus())) {
+                redirectAttributes.addFlashAttribute("successMessage",
+                        "Bài viết của bạn đã được xuất bản công khai trên Diễn đàn!");
+            } else {
+                redirectAttributes.addFlashAttribute("successMessage",
+                        "Bài thảo luận đã được gửi thành công! Theo quy định, bài viết sẽ hiển thị công khai sau khi được Cán bộ phê duyệt.");
+            }
+            return "redirect:/feed/forum";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể tạo bài viết: " + e.getMessage());
+            return "redirect:/feed/forum/create";
+        }
     }
 
     /**

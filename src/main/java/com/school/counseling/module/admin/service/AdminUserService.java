@@ -22,13 +22,18 @@ import java.util.List;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AdminUserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final DepartmentRepository departmentRepository;
+
+    public AdminUserService(UserRepository userRepository, RoleRepository roleRepository, DepartmentRepository departmentRepository) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.departmentRepository = departmentRepository;
+    }
 
     public Page<UserManagementDto> getUsers(String keyword, Long roleId, Long departmentId, String status, Pageable pageable) {
         String kw = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;

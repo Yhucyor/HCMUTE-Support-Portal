@@ -17,13 +17,18 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AdminDepartmentService {
 
     private final DepartmentRepository departmentRepository;
     private final UserRepository userRepository;
     private final TicketRepository ticketRepository;
+
+    public AdminDepartmentService(DepartmentRepository departmentRepository, UserRepository userRepository, TicketRepository ticketRepository) {
+        this.departmentRepository = departmentRepository;
+        this.userRepository = userRepository;
+        this.ticketRepository = ticketRepository;
+    }
 
     public List<DepartmentAdminDto> getAllDepartmentsWithStats() {
         return departmentRepository.findAll().stream()

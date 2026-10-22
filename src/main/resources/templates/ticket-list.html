@@ -1,218 +1,1011 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HCMUTE - Yêu cầu hỗ trợ</title>
-    <!-- Fonts -->
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Quản lý Ticket hỗ trợ | HCMUTE Student Portal</title>
+    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Boxicons -->
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <!-- Portal CSS -->
-    <link rel="stylesheet" th:href="@{/css/portal.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <style>
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
+        @layer base {
+            html, body { margin: 0; padding: 0; }
+            body { overscroll-behavior: none; }
+            main > :first-child { margin-top: 0 !important; }
+            main > :last-child { margin-bottom: 0 !important; }
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
+        }
+        .animate-pulse-dot {
+            animation: pulse-subtle 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
 
-        .page-header h2 {
-            margin: 0;
-            color: var(--text-dark);
-            font-size: 1.5rem;
-        }
-
-        .btn-primary {
-            background: var(--crimson);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.3s;
-        }
-        .btn-primary:hover { background: #8a1525; }
-
-        .ticket-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-        }
-
-        /* Data Table */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .data-table th, .data-table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .data-table th {
-            color: var(--text-gray);
-            font-weight: 500;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-        }
-        .data-table td {
-            color: var(--text-dark);
-            font-size: 0.95rem;
-        }
-        .data-table tbody tr {
-            transition: background 0.2s;
-        }
-        .data-table tbody tr:hover {
-            background: #fdf2f4;
-        }
-
-        /* Badges */
-        .badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        .badge-pending { background: #fff3e0; color: #e65100; }
-        .badge-processing { background: #e3f2fd; color: #1565c0; }
-        .badge-resolved { background: #e8f5e9; color: #2e7d32; }
-        .badge-closed { background: #eeeeee; color: #616161; }
-
-        .ticket-link {
-            text-decoration: none;
-            color: var(--text-dark);
-            font-weight: 600;
-        }
-        .ticket-link:hover {
-            color: var(--crimson);
-        }
-
-        .text-gray {
-            color: var(--text-gray);
-            font-size: 0.85rem;
+        @media print {
+            header, #topActionButtons, #filterToolbar, .no-print, #stateSwitcherBar, #paginationContainer {
+                display: none !important;
+            }
+            main {
+                padding-top: 0 !important;
+                background: #ffffff !important;
+            }
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
         }
     </style>
+    <!-- Tailwind CSS with Academic Horizon Tokens -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "brand-blue":  "#003882",
+                        "brand-blue-dark": "#002456",
+                        "brand-red":   "#991b1e",
+                        primary: "#1d4ed8",
+                        "primary-hover": "#1e40af",
+                        "primary-subtle": "#eff6ff",
+                        "primary-border": "#bfdbfe",
+                        surface: "#f8fafc",
+                        border: "#e2e8f0"
+                    },
+                    fontFamily: {
+                        body: ["Inter", "sans-serif"],
+                        display: ["Outfit", "sans-serif"],
+                        mono: ["JetBrains Mono", "monospace"]
+                    }
+                }
+            }
+        };
+    </script>
 </head>
-<body>
+<body class="bg-[#f8fafc] font-body text-[#0f172a] antialiased min-h-screen flex flex-col">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <i class='bx bx-menu menu-icon'></i>
-            <span class="logo-text">Portal</span>
-        </div>
-        <ul class="sidebar-menu">
-            <li><a th:href="@{/dashboard}"><i class='bx bxs-dashboard'></i><span>Tổng quan</span></a></li>
-            <li><a th:href="@{/ai-chat}"><i class='bx bx-bot'></i><span>Trợ lý AI</span></a></li>
-            <li><a th:href="@{/ticket}" class="active"><i class='bx bx-support'></i><span>Yêu cầu hỗ trợ</span></a></li>
-            <li><a th:href="@{/feed}"><i class='bx bx-news'></i><span>Bảng tin chung</span></a></li>
-            <li><a th:href="@{/group}"><i class='bx bx-group'></i><span>Nhóm Khoa</span></a></li>
-            <li><a th:href="@{/profile}"><i class='bx bx-user'></i><span>Hồ sơ cá nhân</span></a></li>
-        </ul>
-        <div class="sidebar-footer">
-            <a th:href="@{/}"><i class='bx bx-log-out'></i><span>Đăng xuất</span></a>
-        </div>
-    </aside>
-
-    <!-- MAIN CONTENT WRAPPER -->
-    <div class="main-wrapper">
-        
-        <!-- TOPBAR -->
-        <header class="topbar">
-            <div class="search-bar">
-                <i class='bx bx-search' style="color: var(--text-gray);"></i>
-                <input type="text" placeholder="Tìm mã Ticket...">
+    <!-- ═══════════════════════════ FIXED HEADER ═══════════════════════════ -->
+    <header class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 transition-all duration-300">
+        <div class="w-full px-4 sm:px-6 lg:px-8 h-[74px] flex items-center justify-between">
+            <a class="flex items-center gap-3 group py-1.5" th:href="@{/}">
+                <img alt="HCMUTE Logo" class="h-12 w-auto object-contain transition-transform group-hover:scale-105"
+                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKSHNb9YZP8QFQKzZ-_B_glnPE615kLoTh0DIZM9-id7Eb1Z7EZXRKcjBeCckK7VOaTPGdnMs7Cl7qdtjr1Mry3Y7d1U0S8maxw8fAHipOBnT-HFyaVBuqc6xe0fMZJf4fPlHw6UIkL0vHJV2kfl-tnjJgobCtm7Cy-KazrUCaEZefkxCcT9HC_-zWiT9twVqKg6xymALE7_hrVpAjI-XYdTFsbm3wyDRY8PxAR-vjOB00BqpW9wX9dVryQuIfZgdSA">
+                <div class="flex flex-col text-[#003882]">
+                    <span class="font-bold text-sm sm:text-base tracking-tight leading-tight">Trường Đại học Sư phạm Kỹ thuật Tp. Hồ Chí Minh</span>
+                    <span class="font-normal text-[11px] sm:text-xs tracking-normal leading-normal">HCMC University of Technology and Education</span>
+                </div>
+            </a>
+            <nav class="hidden xl:flex items-center space-x-7">
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/}">Trang chủ</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/feed/forum}">Diễn đàn</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/faqs}">Tra cứu FAQ</a>
+                <a class="font-bold text-[14px] text-[#003882] border-b-2 border-[#003882] transition-colors pb-1" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
+            </nav>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="hidden sm:flex items-center text-xs font-semibold text-slate-600 px-2 py-1 rounded cursor-pointer hover:bg-slate-100">
+                    <span>VI</span>
+                    <span class="material-symbols-outlined text-[16px]">expand_more</span>
+                </div>
+                <div sec:authorize="isAuthenticated()" class="relative">
+                    <button id="ttAccountToggle"
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95"
+                            th:title="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}"
+                            aria-haspopup="true" aria-expanded="false">
+                        <span class="material-symbols-outlined text-[16px]">account_circle</span>
+                        <span class="hidden sm:inline truncate max-w-[150px]"
+                              th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
+                        <span class="material-symbols-outlined text-[14px]">expand_more</span>
+                    </button>
+                    <div id="ttDropdownMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50" role="menu">
+                        <a href="/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">person</span><span>Thông tin cá nhân</span>
+                        </a>
+                        <a href="/academic/sync" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">home</span><span>Tổng quan</span>
+                        </a>
+                        <a href="/academic/grades" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">description</span><span>Bảng điểm</span>
+                        </a>
+                        <a href="/academic/timetable" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">calendar_month</span><span>Thời khóa biểu</span>
+                        </a>
+                        <a href="/academic/curriculum" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">book</span><span>Chương trình đào tạo</span>
+                        </a>
+                        <a href="/tickets/my-tickets" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-[#003882] bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">confirmation_number</span><span>Ticket hỗ trợ</span>
+                        </a>
+                        <div class="border-t border-slate-200 my-1"></div>
+                        <a th:href="@{/auth/logout}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">logout</span><span>Đăng xuất</span>
+                        </a>
+                    </div>
+                </div>
+                <div sec:authorize="!isAuthenticated()">
+                    <a class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#991b1e] hover:bg-[#831518] rounded-md shadow-sm transition-all active:scale-95" th:href="@{/auth/login}">
+                        <span class="material-symbols-outlined text-[16px]">person</span><span>Đăng nhập</span>
+                    </a>
+                </div>
+                <button aria-label="Mở menu" onclick="toggleMobileNav()" class="xl:hidden w-9 h-9 rounded-md flex items-center justify-center text-slate-700 hover:bg-slate-100">
+                    <span class="material-symbols-outlined text-[24px]">menu</span>
+                </button>
             </div>
-            
-            <div class="topbar-right">
-                <div class="user-profile">
-                    <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=A51C30&color=fff" alt="Avatar">
-                    <div class="user-info">
-                        <span class="user-name">Nguyễn Văn A</span>
+        </div>
+        <!-- Mobile Drawer -->
+        <div id="mobileNavDrawer" class="hidden xl:hidden bg-white border-b border-slate-200 px-4 pt-3 pb-5 space-y-2.5 shadow-lg">
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/}">Trang chủ</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/feed/forum}">Diễn đàn</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/faqs}">Tra cứu FAQ</a>
+            <a class="block py-2 text-sm font-semibold text-[#003882]" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
+            <div sec:authorize="isAuthenticated()" class="pt-2 border-t border-slate-200">
+                <a class="flex items-center gap-2 py-2 text-sm font-semibold text-[#003882]" href="/academic/sync">
+                    <span class="material-symbols-outlined text-[18px]">home</span>
+                    <span>Tổng quan học tập</span>
+                </a>
+                <a class="flex items-center gap-2 py-2 text-sm font-medium text-slate-700" href="/profile">
+                    <span class="material-symbols-outlined text-[18px]">person</span>
+                    <span th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
+                </a>
+                <a class="block py-1.5 text-sm font-medium text-[#991b1e]" th:href="@{/auth/logout}">Đăng xuất</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════════ MAIN CONTENT CANVAS ═══════════════════════════ -->
+    <div class="flex-1 flex flex-col pt-[74px]">
+        <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-7 flex flex-col gap-6">
+
+            <!-- Toast Notification -->
+            <div class="fixed bottom-6 right-6 z-50 transform translate-y-16 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2.5 bg-[#0f172a] text-white px-4 py-3 rounded-xl shadow-2xl text-sm" id="toast-notification">
+                <span class="material-symbols-outlined text-[#60a5fa] text-xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                <span id="toast-message">Đã sao chép mã Ticket vào clipboard</span>
+            </div>
+
+            <!-- 1. Header Phân khu & Actions -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+                <div class="flex flex-col gap-1.5">
+                    <nav aria-label="Breadcrumb" class="flex items-center gap-1.5 text-xs text-[#64748b]">
+                        <a class="hover:text-[#0f172a] transition-colors flex items-center gap-1" th:href="@{/}">
+                            <span class="material-symbols-outlined text-sm">home</span> Trang chủ
+                        </a>
+                        <span class="text-[#cbd5e1]">/</span>
+                        <a class="hover:text-[#0f172a] transition-colors" th:href="@{/academic/sync}">Dịch vụ sinh viên</a>
+                        <span class="text-[#cbd5e1]">/</span>
+                        <span class="text-[#0f172a] font-medium">Ticket hỗ trợ</span>
+                    </nav>
+                    <div class="flex items-center gap-3">
+                        <h1 class="font-display text-2xl sm:text-[28px] font-bold text-[#0f172a] tracking-tight">Ticket hỗ trợ</h1>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#e0e7ff] text-[#1e40af]"
+                              id="total-badge" th:text="${(totalCount != null ? totalCount : 12) + ' yêu cầu'}">12 yêu cầu</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-[#64748b]">Theo dõi và quản lý các yêu cầu hỗ trợ của bạn.</p>
+                </div>
+
+                <!-- Header Action Buttons -->
+                <div id="topActionButtons" class="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+                    <button class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-[#e2e8f0] bg-white text-[#334155] hover:text-[#0f172a] hover:bg-[#f8fafc] text-xs font-semibold shadow-xs transition-colors"
+                            onclick="refreshTableData()" title="Làm mới danh sách" type="button">
+                        <span class="material-symbols-outlined text-base text-[#64748b]">refresh</span>
+                        <span>Tải lại</span>
+                    </button>
+                    <a th:href="@{/tickets/create}"
+                       class="inline-flex items-center gap-2 px-4 py-2 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs sm:text-sm font-semibold rounded-lg shadow-sm hover:shadow transition-all">
+                        <span class="material-symbols-outlined text-lg leading-none">add</span>
+                        <span>Tạo ticket mới</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 2. Bốn Thẻ Thống Kê Tổng Quan (KPI Cards) -->
+            <section aria-label="Chỉ số yêu cầu" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Card 1: Tất cả ticket -->
+                <div class="bg-white border border-slate-200/80 rounded-[14px] p-4 shadow-sm hover:shadow-md transition-all flex items-center justify-between cursor-pointer border-l-4 border-l-[#1d4ed8]" onclick="filterStatus('all')">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-medium text-[#64748b]">Tất cả ticket</span>
+                        <div class="flex items-baseline gap-2 mt-0.5">
+                            <span class="font-display text-2xl sm:text-[26px] font-bold text-[#0f172a]" th:text="${totalCount != null ? totalCount : 12}">12</span>
+                            <span class="text-[11px] font-medium text-[#1d4ed8] bg-blue-50 px-1.5 py-0.5 rounded">Tổng số</span>
+                        </div>
+                        <span class="text-[11px] text-[#94a3b8] mt-1">Đã đồng bộ thời gian thực</span>
+                    </div>
+                    <div class="w-11 h-11 rounded-xl bg-blue-50 text-[#1d4ed8] flex items-center justify-center flex-shrink-0 border border-blue-100">
+                        <span class="material-symbols-outlined text-2xl">layers</span>
+                    </div>
+                </div>
+
+                <!-- Card 2: Chờ tiếp nhận -->
+                <div class="bg-white border border-slate-200/80 rounded-[14px] p-4 shadow-sm hover:shadow-md transition-all flex items-center justify-between cursor-pointer border-l-4 border-l-amber-500" onclick="filterStatus('pending')">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-medium text-[#64748b]">Chờ tiếp nhận</span>
+                        <div class="flex items-baseline gap-2 mt-0.5">
+                            <span class="font-display text-2xl sm:text-[26px] font-bold text-[#0f172a]" th:text="${pendingCount != null ? pendingCount : 3}">3</span>
+                            <span class="text-[11px] font-medium text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">Cần xử lý</span>
+                        </div>
+                        <span class="text-[11px] text-[#94a3b8] mt-1">Chờ đơn vị tiếp nhận</span>
+                    </div>
+                    <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0 border border-amber-100">
+                        <span class="material-symbols-outlined text-2xl">hourglass_top</span>
+                    </div>
+                </div>
+
+                <!-- Card 3: Đang xử lý -->
+                <div class="bg-white border border-slate-200/80 rounded-[14px] p-4 shadow-sm hover:shadow-md transition-all flex items-center justify-between cursor-pointer border-l-4 border-l-sky-500" onclick="filterStatus('processing')">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-medium text-[#64748b]">Đang xử lý</span>
+                        <div class="flex items-baseline gap-2 mt-0.5">
+                            <span class="font-display text-2xl sm:text-[26px] font-bold text-[#0f172a]" th:text="${processingCount != null ? processingCount : 4}">4</span>
+                            <span class="text-[11px] font-medium text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded">Tiến trình</span>
+                        </div>
+                        <span class="text-[11px] text-[#94a3b8] mt-1">Chuyên viên đang giải quyết</span>
+                    </div>
+                    <div class="w-11 h-11 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center flex-shrink-0 border border-sky-100">
+                        <span class="material-symbols-outlined text-2xl animate-spin" style="animation-duration: 12s;">sync</span>
+                    </div>
+                </div>
+
+                <!-- Card 4: Đã giải quyết -->
+                <div class="bg-white border border-slate-200/80 rounded-[14px] p-4 shadow-sm hover:shadow-md transition-all flex items-center justify-between cursor-pointer border-l-4 border-l-emerald-500" onclick="filterStatus('resolved')">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-medium text-[#64748b]">Đã giải quyết</span>
+                        <div class="flex items-baseline gap-2 mt-0.5">
+                            <span class="font-display text-2xl sm:text-[26px] font-bold text-[#0f172a]" th:text="${resolvedCount != null ? resolvedCount : 5}">5</span>
+                            <span class="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">Hoàn tất</span>
+                        </div>
+                        <span class="text-[11px] text-[#94a3b8] mt-1">Kết quả đã ghi nhận</span>
+                    </div>
+                    <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 border border-emerald-100">
+                        <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Demo Mock State View Switcher (Các trạng thái giao diện bổ sung) -->
+            <div id="stateSwitcherBar" class="flex flex-wrap items-center justify-between gap-2.5 bg-blue-50/70 border border-blue-200/80 rounded-xl px-3.5 py-2 text-xs">
+                <div class="flex items-center gap-2 text-blue-900 font-medium">
+                    <span class="material-symbols-outlined text-base text-[#1d4ed8]">preview</span>
+                    <span>Xem thử giao diện:</span>
+                </div>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                    <button class="px-2.5 py-1 rounded-md bg-[#1d4ed8] text-white font-semibold shadow-xs hover:bg-[#1e40af] transition-colors" id="btn-state-normal" onclick="setDashboardState('normal')">Dữ liệu đầy đủ</button>
+                    <button class="px-2.5 py-1 rounded-md bg-white text-[#334155] border border-blue-200 hover:bg-blue-100/50 font-medium transition-colors" id="btn-state-skeleton" onclick="setDashboardState('skeleton')">Đang tải (Skeleton)</button>
+                    <button class="px-2.5 py-1 rounded-md bg-white text-[#334155] border border-blue-200 hover:bg-blue-100/50 font-medium transition-colors" id="btn-state-no-search" onclick="setDashboardState('no-search')">Không tìm thấy kết quả</button>
+                    <button class="px-2.5 py-1 rounded-md bg-white text-[#334155] border border-blue-200 hover:bg-blue-100/50 font-medium transition-colors" id="btn-state-empty" onclick="setDashboardState('empty')">Chưa có ticket nào</button>
+                </div>
+            </div>
+
+            <!-- 4. Thanh Tìm Kiếm & Bộ Lọc Đa Năng (Filter Bar) + Status Chips -->
+            <div id="filterToolbar" class="bg-white border border-[#e2e8f0] rounded-2xl shadow-xs overflow-hidden flex flex-col">
+                <!-- Status Tabs / Chips Bar -->
+                <div class="px-5 pt-4 pb-2 border-b border-[#f1f5f9] flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none">
+                    <button class="ticket-tab active-tab px-3 py-1.5 rounded-lg text-xs font-semibold text-[#1d4ed8] bg-[#eff6ff] flex items-center gap-1.5 transition-colors whitespace-nowrap" data-status="all" onclick="filterStatus('all', this)">
+                        <span class="material-symbols-outlined text-sm">inbox</span>
+                        <span>Tất cả</span>
+                        <span class="text-[11px] text-[#1d4ed8] opacity-80" th:text="'(' + ${totalCount != null ? totalCount : 12} + ')'">(12)</span>
+                    </button>
+                    <button class="ticket-tab px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748b] hover:text-[#0f172a] hover:bg-[#f8fafc] flex items-center gap-1.5 transition-colors whitespace-nowrap" data-status="pending" onclick="filterStatus('pending', this)">
+                        <span class="material-symbols-outlined text-sm text-slate-500">schedule</span>
+                        <span>Chờ tiếp nhận</span>
+                        <span class="text-[11px] text-[#94a3b8]" th:text="'(' + ${pendingCount != null ? pendingCount : 3} + ')'">(3)</span>
+                    </button>
+                    <button class="ticket-tab px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748b] hover:text-[#0f172a] hover:bg-[#f8fafc] flex items-center gap-1.5 transition-colors whitespace-nowrap" data-status="processing" onclick="filterStatus('processing', this)">
+                        <span class="material-symbols-outlined text-sm text-blue-600">sync</span>
+                        <span>Đang xử lý</span>
+                        <span class="text-[11px] text-[#94a3b8]" th:text="'(' + ${processingCount != null ? processingCount : 4} + ')'">(4)</span>
+                    </button>
+                    <button class="ticket-tab px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748b] hover:text-[#0f172a] hover:bg-[#f8fafc] flex items-center gap-1.5 transition-colors whitespace-nowrap" data-status="waiting" onclick="filterStatus('waiting', this)">
+                        <span class="material-symbols-outlined text-sm text-amber-600">reply</span>
+                        <span>Chờ phản hồi</span>
+                        <span class="text-[11px] text-amber-600 font-semibold" th:text="'(' + ${waitingCount != null ? waitingCount : 1} + ')'">(1)</span>
+                    </button>
+                    <button class="ticket-tab px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748b] hover:text-[#0f172a] hover:bg-[#f8fafc] flex items-center gap-1.5 transition-colors whitespace-nowrap" data-status="resolved" onclick="filterStatus('resolved', this)">
+                        <span class="material-symbols-outlined text-sm text-emerald-600">task_alt</span>
+                        <span>Đã giải quyết</span>
+                        <span class="text-[11px] text-[#94a3b8]" th:text="'(' + ${resolvedCount != null ? resolvedCount : 5} + ')'">(5)</span>
+                    </button>
+                    <button class="ticket-tab px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748b] hover:text-[#0f172a] hover:bg-[#f8fafc] flex items-center gap-1.5 transition-colors whitespace-nowrap" data-status="closed" onclick="filterStatus('closed', this)">
+                        <span class="material-symbols-outlined text-sm text-slate-400">check_box</span>
+                        <span>Đã đóng</span>
+                        <span class="text-[11px] text-[#94a3b8]" th:text="'(' + ${closedCount != null ? closedCount : 0} + ')'">(0)</span>
+                    </button>
+                </div>
+
+                <!-- Multi Filter Control Bar -->
+                <div class="p-4 sm:p-5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3.5 bg-[#fafbfd] border-b border-[#f1f5f9]">
+                    <!-- Left: Search Input -->
+                    <div class="relative flex-1 max-w-lg">
+                        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-lg pointer-events-none">search</span>
+                        <input class="w-full pl-10 pr-9 py-2 text-xs sm:text-sm text-[#0f172a] placeholder:text-[#94a3b8] bg-white border border-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1d4ed8]/20 focus:border-[#1d4ed8] transition-all shadow-xs"
+                               id="ticket-search" oninput="filterTickets()" placeholder="Tìm theo mã Ticket (VD: TKT-2026...) hoặc tiêu đề..." type="text">
+                        <button class="absolute right-3 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#0f172a] text-xs transition-colors" onclick="clearSearch()" title="Xóa tìm kiếm" type="button">
+                            <span class="material-symbols-outlined text-base">cancel</span>
+                        </button>
+                    </div>
+
+                    <!-- Right: Dropdowns + Reset Button -->
+                    <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-between lg:justify-end">
+                        <!-- Category Filter -->
+                        <div class="relative flex-1 sm:flex-none">
+                            <select class="w-full text-xs font-medium bg-white border border-[#e2e8f0] rounded-xl px-3 py-2 text-[#334155] focus:outline-none focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/20 cursor-pointer shadow-xs"
+                                    id="filter-dept" onchange="filterTickets()">
+                                <option value="all">Tất cả danh mục</option>
+                                <th:block th:if="${departments != null}">
+                                    <option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}">Học vụ & Đào tạo</option>
+                                </th:block>
+                                <th:block th:unless="${departments != null}">
+                                    <option value="daotao">Học vụ & Đào tạo</option>
+                                    <option value="khtc">Học phí & KHTC</option>
+                                    <option value="ctsv">Công tác sinh viên</option>
+                                    <option value="khaothi">Khảo thí & ĐBCL</option>
+                                    <option value="cntt">Kỹ thuật CNTT & Tài khoản</option>
+                                </th:block>
+                            </select>
+                        </div>
+
+                        <!-- Priority Filter -->
+                        <div class="relative flex-1 sm:flex-none">
+                            <select class="w-full text-xs font-medium bg-white border border-[#e2e8f0] rounded-xl px-3 py-2 text-[#334155] focus:outline-none focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/20 cursor-pointer shadow-xs"
+                                    id="filter-priority" onchange="filterTickets()">
+                                <option value="all">Mức độ ưu tiên: Tất cả</option>
+                                <option value="urgent">Khẩn cấp</option>
+                                <option value="high">Cao</option>
+                                <option value="medium">Trung bình</option>
+                                <option value="low">Thấp</option>
+                            </select>
+                        </div>
+
+                        <!-- Timeframe Filter -->
+                        <div class="relative flex-1 sm:flex-none">
+                            <select class="w-full text-xs font-medium bg-white border border-[#e2e8f0] rounded-xl px-3 py-2 text-[#334155] focus:outline-none focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/20 cursor-pointer shadow-xs"
+                                    id="filter-timeframe" onchange="filterTickets()">
+                                <option value="30">30 ngày gần đây</option>
+                                <option value="7">7 ngày qua</option>
+                                <option value="semester">Học kỳ này</option>
+                            </select>
+                        </div>
+
+                        <!-- Reset Filter Button -->
+                        <button class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-[#64748b] hover:text-[#ef4444] hover:bg-red-50 border border-[#e2e8f0] hover:border-red-200 rounded-xl transition-all shadow-xs whitespace-nowrap bg-white"
+                                onclick="resetFilters()" title="Đặt lại bộ lọc về mặc định" type="button">
+                            <span class="material-symbols-outlined text-base">restart_alt</span>
+                            <span class="hidden sm:inline">Xóa bộ lọc</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 5. Bảng Dữ Liệu Ticket Hiện Đại Chuẩn SaaS -->
+                <div class="overflow-x-auto w-full" id="table-container">
+                    <table class="w-full text-left border-collapse min-w-[1060px]">
+                        <thead>
+                            <tr class="border-b border-[#e2e8f0] bg-[#f8fafc] text-[11px] font-bold uppercase tracking-wider text-[#64748b]">
+                                <th class="py-3.5 px-5 min-w-[340px]" scope="col">Tiêu đề &amp; Nội dung tóm tắt</th>
+                                <th class="py-3.5 px-5 w-48" scope="col">Danh mục</th>
+                                <th class="py-3.5 px-5 w-40" scope="col">Ngày tạo</th>
+                                <th class="py-3.5 px-5 w-36" scope="col">Ưu tiên</th>
+                                <th class="py-3.5 px-5 w-44" scope="col">Trạng thái</th>
+                                <th class="py-3.5 px-5 w-52" scope="col">Người phụ trách</th>
+                                <th class="py-3.5 px-5 w-28 text-right" scope="col">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#f1f5f9] text-xs" id="ticket-table-body">
+                            <!-- TH1: RENDER TICKETS TỪ DATABASE NẾU CÓ DỮ LIỆU THẬT -->
+                            <th:block th:if="${tickets != null and !tickets.isEmpty()}">
+                                <tr th:each="t : ${tickets}" class="ticket-row h-[76px] hover:bg-blue-50/40 transition-colors group"
+                                    th:data-category="${t.departmentId}"
+                                    th:data-priority="${t.priority != null ? #strings.toLowerCase(t.priority) : 'medium'}"
+                                    th:data-status="${t.status != null ? #strings.toLowerCase(t.status) : 'pending'}">
+                                    <td class="py-4 px-5">
+                                        <div class="flex flex-col gap-1 max-w-md">
+                                            <a class="font-semibold text-[#0f172a] text-sm hover:text-[#1d4ed8] transition-colors line-clamp-1 cursor-pointer"
+                                               th:href="@{'/tickets/detail/' + ${t.id}}"
+                                               th:text="${t.title}">Tiêu đề ticket</a>
+                                            <div class="flex items-center gap-2 text-[#64748b] text-xs">
+                                                <span class="font-mono text-primary font-semibold" th:text="${t.ticketCode}">TKT-2026-00130</span>
+                                                <span>&bull;</span>
+                                                <span th:text="${t.departmentName}">Phòng Đào tạo</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200/60">
+                                            <span class="material-symbols-outlined text-sm text-blue-500">domain</span>
+                                            <span th:text="${t.departmentName}">Học vụ &amp; Đào tạo</span>
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-[#0f172a]" th:text="${#temporals.format(t.createdAt, 'dd/MM/yyyy HH:mm')}">19/10/2026 08:30</span>
+                                            <span class="text-[11px] text-[#94a3b8]" th:text="${t.isOverdue() ? 'Quá hạn SLA' : (t.isDueSoon() ? 'Sắp đến hạn' : 'Đúng hạn')}">Đúng hạn</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span th:if="${t.priority == 'URGENT'}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                                            <span class="w-2 h-2 rounded-full bg-rose-600 animate-pulse-dot"></span>Khẩn cấp
+                                        </span>
+                                        <span th:if="${t.priority == 'HIGH'}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200">
+                                            <span class="w-2 h-2 rounded-full bg-orange-500"></span>Cao
+                                        </span>
+                                        <span th:if="${t.priority == 'MEDIUM' or t.priority == null}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                            <span class="w-2 h-2 rounded-full bg-amber-500"></span>Trung bình
+                                        </span>
+                                        <span th:if="${t.priority == 'LOW'}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                                            <span class="w-2 h-2 rounded-full bg-slate-400"></span>Thấp
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span th:if="${t.status == 'OPEN' or t.status == 'PENDING'}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                                            <span class="material-symbols-outlined text-sm text-slate-500">schedule</span>Chờ tiếp nhận
+                                        </span>
+                                        <span th:if="${t.status == 'IN_PROGRESS'}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100/80 text-blue-800 border border-blue-200/80">
+                                            <span class="material-symbols-outlined text-sm text-blue-600 animate-spin" style="animation-duration: 9s;">sync</span>Đang xử lý
+                                        </span>
+                                        <span th:if="${t.status == 'WAITING_FOR_STUDENT' or t.hasStudentReply}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200/60">
+                                            <span class="material-symbols-outlined text-sm text-amber-700">mark_email_unread</span>Chờ phản hồi
+                                        </span>
+                                        <span th:if="${t.status == 'RESOLVED'}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200/70">
+                                            <span class="material-symbols-outlined text-sm text-emerald-600">check_circle</span>Đã giải quyết
+                                        </span>
+                                        <span th:if="${t.status == 'CLOSED'}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                                            <span class="material-symbols-outlined text-sm text-slate-400">lock</span>Đã đóng
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-[11px]"
+                                                 th:text="${t.assignedStaffName != null ? #strings.substring(t.assignedStaffName, 0, 1) : 'BP'}">BP</div>
+                                            <div class="flex flex-col leading-tight">
+                                                <span class="font-semibold text-[#0f172a]" th:text="${t.assignedStaffName != null ? t.assignedStaffName : 'Chờ phân công'}">Chờ phân công</span>
+                                                <span class="text-[11px] text-[#64748b]" th:text="${t.departmentName}">Phòng Đào tạo</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-5 text-right whitespace-nowrap">
+                                        <a th:href="@{'/tickets/detail/' + ${t.id}}" class="p-1.5 rounded-lg text-[#1d4ed8] hover:bg-blue-100/60 transition-colors inline-flex" title="Xem chi tiết ticket">
+                                            <span class="material-symbols-outlined text-lg">visibility</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </th:block>
+
+                            <!-- TH2: RENDER MOCK DATA NẾU CHƯA CÓ VÉ NÀO ĐỂ PREVIEW GIAO DIỆN CHUẨN ĐÚNG THEO CODE.HTML -->
+                            <th:block th:if="${tickets == null or tickets.isEmpty()}">
+                                <!-- Row 1: Khẩn cấp / Chờ phản hồi -->
+                                <tr class="ticket-row h-[76px] hover:bg-blue-50/40 transition-colors group" data-category="cntt" data-priority="urgent" data-status="waiting">
+                                    <td class="py-4 px-5">
+                                        <div class="flex flex-col gap-1 max-w-md">
+                                            <a class="font-semibold text-[#0f172a] text-sm hover:text-[#1d4ed8] transition-colors line-clamp-1 cursor-pointer" onclick="viewTicketDetail('TKT-2026-00130')">Lỗi đồng bộ tài khoản LMS Canvas khi thi trắc nghiệm giữa kỳ</a>
+                                            <p class="text-[#64748b] text-xs truncate">Tài khoản bị khóa phiên đăng nhập lúc 14:15 môn Lập trình mạng, đã chụp ảnh lỗi màn hình...</p>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/60">
+                                            <span class="material-symbols-outlined text-sm text-slate-500">dns</span>Kỹ thuật CNTT &amp; Tài khoản
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <div class="flex flex-col"><span class="font-medium text-[#0f172a]">19/10/2026 08:30</span><span class="text-[11px] text-[#94a3b8]">15 phút trước</span></div>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                                            <span class="w-2 h-2 rounded-full bg-rose-600 animate-pulse-dot"></span>Khẩn cấp
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200/60">
+                                            <span class="material-symbols-outlined text-sm text-amber-700">mark_email_unread</span>Chờ phản hồi
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-[11px]">TH</div>
+                                            <div class="flex flex-col leading-tight"><span class="font-semibold text-[#0f172a]">KS. Trần Hưng</span><span class="text-[11px] text-[#64748b]">Trung tâm CNTT</span></div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-5 text-right whitespace-nowrap">
+                                        <div class="flex items-center justify-end gap-1.5">
+                                            <button class="p-1.5 rounded-lg text-[#1d4ed8] hover:bg-blue-100/60 transition-colors" onclick="viewTicketDetail('TKT-2026-00130')" title="Xem chi tiết ticket" type="button">
+                                                <span class="material-symbols-outlined text-lg">visibility</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 2: Cao / Đang xử lý -->
+                                <tr class="ticket-row h-[76px] hover:bg-blue-50/40 transition-colors group" data-category="daotao" data-priority="high" data-status="processing">
+                                    <td class="py-4 px-5">
+                                        <div class="flex flex-col gap-1 max-w-md">
+                                            <a class="font-semibold text-[#0f172a] text-sm hover:text-[#1d4ed8] transition-colors line-clamp-1 cursor-pointer" onclick="viewTicketDetail('TKT-2026-00123')">Không đăng ký được học phần Chuyên ngành học kỳ 2</a>
+                                            <p class="text-[#64748b] text-xs truncate">Hệ thống báo lỗi thiếu môn tiên quyết Xử lý ảnh số dù đã hoàn thành kỳ 1 với điểm B+...</p>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200/60">
+                                            <span class="material-symbols-outlined text-sm text-blue-500">school</span>Học vụ &amp; Đào tạo
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <div class="flex flex-col"><span class="font-medium text-[#0f172a]">18/10/2026 14:10</span><span class="text-[11px] text-[#94a3b8]">Hôm nay, 14:10</span></div>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200">
+                                            <span class="w-2 h-2 rounded-full bg-orange-500"></span>Cao
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100/80 text-blue-800 border border-blue-200/80">
+                                            <span class="material-symbols-outlined text-sm text-blue-600 animate-spin" style="animation-duration: 9s;">sync</span>Đang xử lý
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-[11px]">HT</div>
+                                            <div class="flex flex-col leading-tight"><span class="font-semibold text-[#0f172a]">ThS. Hoàng Tuấn</span><span class="text-[11px] text-[#64748b]">Phòng Đào tạo</span></div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-5 text-right whitespace-nowrap">
+                                        <div class="flex items-center justify-end gap-1.5">
+                                            <button class="p-1.5 rounded-lg text-[#1d4ed8] hover:bg-blue-100/60 transition-colors" onclick="viewTicketDetail('TKT-2026-00123')" title="Xem chi tiết ticket" type="button">
+                                                <span class="material-symbols-outlined text-lg">visibility</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 3: Trung bình / Chờ tiếp nhận -->
+                                <tr class="ticket-row h-[76px] hover:bg-blue-50/40 transition-colors group" data-category="daotao" data-priority="medium" data-status="pending">
+                                    <td class="py-4 px-5">
+                                        <div class="flex flex-col gap-1 max-w-md">
+                                            <a class="font-semibold text-[#0f172a] text-sm hover:text-[#1d4ed8] transition-colors line-clamp-1 cursor-pointer" onclick="viewTicketDetail('TKT-2026-00124')">Xác nhận thông tin bảng điểm tốt nghiệp tạm thời (Song ngữ)</a>
+                                            <p class="text-[#64748b] text-xs truncate">Cần xin cấp trích lục bảng điểm bằng tiếng Anh phục vụ nộp hồ sơ xin học bổng chính phủ...</p>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200/60">
+                                            <span class="material-symbols-outlined text-sm text-blue-500">school</span>Học vụ &amp; Đào tạo
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <div class="flex flex-col"><span class="font-medium text-[#0f172a]">17/10/2026 09:20</span><span class="text-[11px] text-[#94a3b8]">1 ngày trước</span></div>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                            <span class="w-2 h-2 rounded-full bg-amber-500"></span>Trung bình
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                                            <span class="material-symbols-outlined text-sm text-slate-500">schedule</span>Chờ tiếp nhận
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-7 h-7 rounded-full bg-slate-100 text-slate-500 font-bold flex items-center justify-center text-[11px]">BP</div>
+                                            <div class="flex flex-col leading-tight"><span class="font-medium text-slate-500 italic">Chờ phân công</span><span class="text-[11px] text-[#94a3b8]">P. Đào tạo</span></div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-5 text-right whitespace-nowrap">
+                                        <div class="flex items-center justify-end gap-1.5">
+                                            <button class="p-1.5 rounded-lg text-[#1d4ed8] hover:bg-blue-100/60 transition-colors" onclick="viewTicketDetail('TKT-2026-00124')" title="Xem chi tiết ticket" type="button">
+                                                <span class="material-symbols-outlined text-lg">visibility</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 4: Trung bình / Đã giải quyết -->
+                                <tr class="ticket-row h-[76px] hover:bg-blue-50/40 transition-colors group" data-category="khtc" data-priority="medium" data-status="resolved">
+                                    <td class="py-4 px-5">
+                                        <div class="flex flex-col gap-1 max-w-md">
+                                            <a class="font-semibold text-[#0f172a] text-sm hover:text-[#1d4ed8] transition-colors line-clamp-1 cursor-pointer" onclick="viewTicketDetail('TKT-2026-00125')">Hỗ trợ đối soát học phí học kỳ 1 (2025 - 2026)</a>
+                                            <p class="text-[#64748b] text-xs truncate">Đã thanh toán qua BIDV iBank mã giao dịch 984021 nhưng hệ thống chưa gạch nợ...</p>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                                            <span class="material-symbols-outlined text-sm text-emerald-600">payments</span>Học phí &amp; KHTC
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <div class="flex flex-col"><span class="font-medium text-[#0f172a]">16/10/2026 11:05</span><span class="text-[11px] text-[#94a3b8]">2 ngày trước</span></div>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                            <span class="w-2 h-2 rounded-full bg-amber-500"></span>Trung bình
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200/70">
+                                            <span class="material-symbols-outlined text-sm text-emerald-600" style="font-variation-settings: 'FILL' 1;">check_circle</span>Đã giải quyết
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-[11px]">ML</div>
+                                            <div class="flex flex-col leading-tight"><span class="font-semibold text-[#0f172a]">CN. Mai Lan</span><span class="text-[11px] text-[#64748b]">Phòng KHTC</span></div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-5 text-right whitespace-nowrap">
+                                        <div class="flex items-center justify-end gap-1.5">
+                                            <button class="p-1.5 rounded-lg text-[#1d4ed8] hover:bg-blue-100/60 transition-colors" onclick="viewTicketDetail('TKT-2026-00125')" title="Xem chi tiết ticket" type="button">
+                                                <span class="material-symbols-outlined text-lg">visibility</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 5: Thấp / Chờ tiếp nhận -->
+                                <tr class="ticket-row h-[76px] hover:bg-blue-50/40 transition-colors group" data-category="ctsv" data-priority="low" data-status="pending">
+                                    <td class="py-4 px-5">
+                                        <div class="flex flex-col gap-1 max-w-md">
+                                            <a class="font-semibold text-[#0f172a] text-sm hover:text-[#1d4ed8] transition-colors line-clamp-1 cursor-pointer" onclick="viewTicketDetail('TKT-2026-00126')">Cập nhật số CCCD và thông tin hộ khẩu thường trú</a>
+                                            <p class="text-[#64748b] text-xs truncate">Đã tải lên ảnh 2 mặt CCCD gắn chip mới đổi tại phường Linh Chiểu để cập nhật hồ sơ...</p>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200/60">
+                                            <span class="material-symbols-outlined text-sm text-purple-600">badge</span>Công tác sinh viên
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <div class="flex flex-col"><span class="font-medium text-[#0f172a]">14/10/2026 16:45</span><span class="text-[11px] text-[#94a3b8]">4 ngày trước</span></div>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                                            <span class="w-2 h-2 rounded-full bg-slate-400"></span>Thấp
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                                            <span class="material-symbols-outlined text-sm text-slate-500">schedule</span>Chờ tiếp nhận
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-7 h-7 rounded-full bg-slate-100 text-slate-500 font-bold flex items-center justify-center text-[11px]">BP</div>
+                                            <div class="flex flex-col leading-tight"><span class="font-medium text-slate-500 italic">Chờ phân công</span><span class="text-[11px] text-[#94a3b8]">P. CTSV</span></div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-5 text-right whitespace-nowrap">
+                                        <div class="flex items-center justify-end gap-1.5">
+                                            <button class="p-1.5 rounded-lg text-[#1d4ed8] hover:bg-blue-100/60 transition-colors" onclick="viewTicketDetail('TKT-2026-00126')" title="Xem chi tiết ticket" type="button">
+                                                <span class="material-symbols-outlined text-lg">visibility</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </th:block>
+                        </tbody>
+                    </table>
+
+                    <!-- Skeleton Loading State (Hidden by default) -->
+                    <div class="hidden p-6 space-y-4" id="skeleton-container">
+                        <div class="animate-pulse space-y-4">
+                            <div class="h-10 bg-slate-200/70 rounded-lg"></div>
+                            <div class="h-16 bg-slate-100 rounded-xl"></div>
+                            <div class="h-16 bg-slate-100 rounded-xl"></div>
+                            <div class="h-16 bg-slate-100 rounded-xl"></div>
+                            <div class="h-16 bg-slate-100 rounded-xl"></div>
+                        </div>
+                    </div>
+
+                    <!-- Empty Search State (Hidden by default) -->
+                    <div class="hidden py-14 px-6 text-center flex-col items-center justify-center gap-3" id="no-search-container">
+                        <div class="w-16 h-16 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-3xl">search_off</span>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <h3 class="font-display text-base font-bold text-[#0f172a]">Không tìm thấy kết quả phù hợp</h3>
+                            <p class="text-xs text-[#64748b] max-w-sm">Không có ticket nào khớp với từ khóa hoặc bộ lọc đã chọn. Hãy thử tìm với từ khóa khác.</p>
+                        </div>
+                        <button class="mt-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#1d4ed8] text-white hover:bg-[#1e40af] transition-colors" onclick="resetFilters()">Xóa tất cả bộ lọc</button>
+                    </div>
+
+                    <!-- Empty State: Chưa có ticket nào (Hidden by default) -->
+                    <div class="hidden py-16 px-6 text-center flex-col items-center justify-center gap-3.5" id="empty-state-container">
+                        <div class="w-16 h-16 rounded-2xl bg-blue-50 text-[#1d4ed8] flex items-center justify-center">
+                            <span class="material-symbols-outlined text-3xl">inbox</span>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <h3 class="font-display text-base font-bold text-[#0f172a]">Bạn chưa tạo ticket hỗ trợ nào</h3>
+                            <p class="text-xs text-[#64748b] max-w-sm">Mọi thắc mắc về học phần, học phí, điểm số hoặc thủ tục sinh viên sẽ được tiếp nhận và xử lý nhanh chóng tại đây.</p>
+                        </div>
+                        <a th:href="@{/tickets/create}" class="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-[#1d4ed8] text-white hover:bg-[#1e40af] shadow-sm transition-all">
+                            <span class="material-symbols-outlined text-base">add</span>
+                            <span>Tạo ticket đầu tiên</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 6. Phân Trang (Pagination) Chuẩn SaaS -->
+                <div id="paginationContainer" class="px-5 py-4 border-t border-[#f1f5f9] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+                    <div class="flex items-center gap-3 text-[#64748b]">
+                        <span id="pagination-info">Hiển thị <span class="font-semibold text-[#0f172a]">1–6</span> trong tổng số <span class="font-semibold text-[#0f172a]" th:text="${totalCount != null ? totalCount : 12}">12</span> ticket</span>
+                        <div class="h-3.5 w-[1px] bg-slate-200 hidden sm:block"></div>
+                        <div class="hidden sm:flex items-center gap-1.5">
+                            <span>Hiển thị:</span>
+                            <select class="text-xs font-semibold bg-[#f8fafc] border border-[#e2e8f0] rounded-md px-2 py-1 text-[#0f172a] cursor-pointer" id="page-size-select" onchange="changePageSize()">
+                                <option value="10">10 / trang</option>
+                                <option value="25">25 / trang</option>
+                                <option value="50">50 / trang</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Page Buttons -->
+                    <div class="flex items-center gap-1">
+                        <button class="px-2.5 py-1.5 rounded-lg border border-[#e2e8f0] text-[#94a3b8] hover:bg-[#f8fafc] disabled:opacity-50 font-medium inline-flex items-center gap-1" disabled onclick="goToPage('prev')">
+                            <span class="material-symbols-outlined text-sm">chevron_left</span>
+                            <span class="hidden sm:inline">Trước</span>
+                        </button>
+                        <button class="w-8 h-8 rounded-lg bg-[#1d4ed8] text-white font-semibold flex items-center justify-center">1</button>
+                        <button class="w-8 h-8 rounded-lg text-[#334155] hover:bg-[#f8fafc] font-medium flex items-center justify-center" onclick="goToPage(2)">2</button>
+                        <button class="w-8 h-8 rounded-lg text-[#334155] hover:bg-[#f8fafc] font-medium flex items-center justify-center" onclick="goToPage(3)">3</button>
+                        <button class="px-2.5 py-1.5 rounded-lg border border-[#e2e8f0] text-[#334155] hover:bg-[#f8fafc] font-medium inline-flex items-center gap-1" onclick="goToPage('next')">
+                            <span class="hidden sm:inline">Sau</span>
+                            <span class="material-symbols-outlined text-sm">chevron_right</span>
+                        </button>
                     </div>
                 </div>
             </div>
-        </header>
 
-        <!-- PAGE CONTENT -->
-        <main class="page-content">
-            
-            <div class="page-header">
-                <h2>Lịch sử Yêu cầu hỗ trợ (Tickets)</h2>
-                <button class="btn-primary" onclick="alert('Tính năng form tạo Ticket dạng popup sẽ được thêm vào sau!')">
-                    <i class='bx bx-plus'></i> Tạo yêu cầu mới
-                </button>
-            </div>
-
-            <div class="ticket-card">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Mã Ticket</th>
-                            <th>Tiêu đề / Vấn đề</th>
-                            <th>Phòng ban xử lý</th>
-                            <th>Trạng thái</th>
-                            <th>Cập nhật cuối</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><a th:href="@{/ticket/TK-1045}" class="ticket-link">#TK-1045</a></td>
-                            <td>
-                                <a th:href="@{/ticket/TK-1045}" class="ticket-link">Xin cấp lại bảng điểm Tiếng Anh đầu ra</a><br>
-                                <span class="text-gray">Loại: Giấy tờ & Chứng chỉ</span>
-                            </td>
-                            <td>Phòng Đào Tạo</td>
-                            <td><span class="badge badge-pending">Chờ tiếp nhận</span></td>
-                            <td>Hôm nay, 08:30</td>
-                        </tr>
-                        <tr>
-                            <td><a th:href="@{/ticket/TK-1022}" class="ticket-link">#TK-1022</a></td>
-                            <td>
-                                <a th:href="@{/ticket/TK-1022}" class="ticket-link">Hỏi về việc chuyển đổi môn học tương đương</a><br>
-                                <span class="text-gray">Loại: Học vụ</span>
-                            </td>
-                            <td>Khoa CNTT</td>
-                            <td><span class="badge badge-processing">Đang xử lý</span></td>
-                            <td>Hôm qua, 14:15</td>
-                        </tr>
-                        <tr>
-                            <td><a th:href="@{/ticket/TK-0980}" class="ticket-link">#TK-0980</a></td>
-                            <td>
-                                <a th:href="@{/ticket/TK-0980}" class="ticket-link">Báo lỗi không đóng được học phí qua Momo</a><br>
-                                <span class="text-gray">Loại: Học phí & Tài chính</span>
-                            </td>
-                            <td>Phòng Kế hoạch Tài chính</td>
-                            <td><span class="badge badge-resolved">Đã giải quyết</span></td>
-                            <td>20/09/2026</td>
-                        </tr>
-                        <tr>
-                            <td><a th:href="@{/ticket/TK-0850}" class="ticket-link">#TK-0850</a></td>
-                            <td>
-                                <a th:href="@{/ticket/TK-0850}" class="ticket-link">Xin giấy xác nhận sinh viên để vay vốn</a><br>
-                                <span class="text-gray">Loại: Giấy tờ & Chứng chỉ</span>
-                            </td>
-                            <td>Phòng CTSV</td>
-                            <td><span class="badge badge-closed">Đã đóng</span></td>
-                            <td>15/08/2026</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
         </main>
-        
     </div>
 
+    <!-- ═══════════════════════════ GLOBAL FOOTER ═══════════════════════════ -->
+    <footer class="mt-auto border-t border-[#e2e8f0] bg-white py-4 px-6 text-xs text-[#64748b]">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+            <span>&copy; 2026 Trường Đại học Sư phạm Kỹ thuật TP.HCM (HCMUTE). All rights reserved.</span>
+            <div class="flex items-center gap-4">
+                <a href="/faqs" class="hover:text-[#1d4ed8] transition-colors">Tra cứu FAQ</a>
+                <span>&bull;</span>
+                <a href="/ai-chat" class="hover:text-[#1d4ed8] transition-colors">Trợ lý AI</a>
+                <span>&bull;</span>
+                <a href="/tickets/my-tickets" class="hover:text-[#1d4ed8] transition-colors">Hỗ trợ kỹ thuật</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ═══════════════════════════ CLIENT JAVASCRIPT LOGIC ═══════════════════════════ -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        let currentStatusFilter = 'all';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup account dropdown
+            const toggleBtn = document.getElementById('ttAccountToggle');
+            const menu = document.getElementById('ttDropdownMenu');
+            if (toggleBtn && menu) {
+                toggleBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const isHidden = menu.classList.contains('hidden');
+                    menu.classList.toggle('hidden');
+                    toggleBtn.setAttribute('aria-expanded', !isHidden);
+                });
+                document.addEventListener('click', function(e) {
+                    if (!menu.contains(e.target) && !toggleBtn.contains(e.target)) {
+                        menu.classList.add('hidden');
+                        toggleBtn.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
+        });
+
+        function toggleMobileNav() {
+            const drawer = document.getElementById('mobileNavDrawer');
+            if (drawer) drawer.classList.toggle('hidden');
+        }
+
+        function filterStatus(status, element) {
+            currentStatusFilter = status;
+
+            // Highlight Tab
+            document.querySelectorAll('.ticket-tab').forEach(tab => {
+                tab.classList.remove('active-tab', 'text-[#1d4ed8]', 'bg-[#eff6ff]', 'font-semibold');
+                tab.classList.add('text-[#64748b]', 'font-medium');
+            });
+
+            if (element) {
+                element.classList.add('active-tab', 'text-[#1d4ed8]', 'bg-[#eff6ff]', 'font-semibold');
+                element.classList.remove('text-[#64748b]', 'font-medium');
+            } else {
+                const targetTab = document.querySelector(`.ticket-tab[data-status="${status}"]`);
+                if (targetTab) {
+                    targetTab.classList.add('active-tab', 'text-[#1d4ed8]', 'bg-[#eff6ff]', 'font-semibold');
+                    targetTab.classList.remove('text-[#64748b]', 'font-medium');
+                }
+            }
+
+            filterTickets();
+        }
+
+        function filterTickets() {
+            const searchQuery = (document.getElementById('ticket-search')?.value || '').toLowerCase().trim();
+            const selectedDept = document.getElementById('filter-dept')?.value;
+            const selectedPriority = document.getElementById('filter-priority')?.value;
+
+            const rows = document.querySelectorAll('.ticket-row');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const rowStatus = row.getAttribute('data-status');
+                const rowCategory = row.getAttribute('data-category');
+                const rowPriority = row.getAttribute('data-priority');
+                const textContent = row.textContent.toLowerCase();
+
+                let matchesStatus = (currentStatusFilter === 'all');
+                if (!matchesStatus) {
+                    if (currentStatusFilter === 'pending') {
+                        matchesStatus = (rowStatus === 'pending' || rowStatus === 'open');
+                    } else if (currentStatusFilter === 'processing') {
+                        matchesStatus = (rowStatus === 'processing' || rowStatus === 'in_progress');
+                    } else if (currentStatusFilter === 'waiting') {
+                        matchesStatus = (rowStatus === 'waiting' || rowStatus === 'waiting_for_student');
+                    } else if (currentStatusFilter === 'resolved') {
+                        matchesStatus = (rowStatus === 'resolved');
+                    } else if (currentStatusFilter === 'closed') {
+                        matchesStatus = (rowStatus === 'closed');
+                    }
+                }
+
+                const matchesDept = (!selectedDept || selectedDept === 'all' || rowCategory === selectedDept);
+                const matchesPriority = (!selectedPriority || selectedPriority === 'all' || rowPriority === selectedPriority);
+                const matchesSearch = (!searchQuery || textContent.includes(searchQuery));
+
+                if (matchesStatus && matchesDept && matchesPriority && matchesSearch) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Handle Empty Search State
+            const noSearch = document.getElementById('no-search-container');
+            const tableBody = document.getElementById('ticket-table-body');
+            const pagination = document.getElementById('paginationContainer');
+
+            if (visibleCount === 0) {
+                if (noSearch) noSearch.classList.remove('hidden');
+                if (noSearch) noSearch.classList.add('flex');
+                if (tableBody) tableBody.classList.add('hidden');
+                if (pagination) pagination.classList.add('hidden');
+            } else {
+                if (noSearch) noSearch.classList.add('hidden');
+                if (noSearch) noSearch.classList.remove('flex');
+                if (tableBody) tableBody.classList.remove('hidden');
+                if (pagination) pagination.classList.remove('hidden');
+            }
+
+            const pInfo = document.getElementById('pagination-info');
+            if (pInfo) {
+                pInfo.innerHTML = `Hiển thị <span class="font-semibold text-[#0f172a]">${visibleCount > 0 ? 1 : 0}–${visibleCount}</span> trong tổng số <span class="font-semibold text-[#0f172a]">${visibleCount}</span> ticket`;
+            }
+        }
+
+        function clearSearch() {
+            const input = document.getElementById('ticket-search');
+            if (input) {
+                input.value = '';
+                filterTickets();
+                input.focus();
+            }
+        }
+
+        function resetFilters() {
+            const searchInput = document.getElementById('ticket-search');
+            const filterDept = document.getElementById('filter-dept');
+            const filterPriority = document.getElementById('filter-priority');
+            const filterTimeframe = document.getElementById('filter-timeframe');
+
+            if (searchInput) searchInput.value = '';
+            if (filterDept) filterDept.value = 'all';
+            if (filterPriority) filterPriority.value = 'all';
+            if (filterTimeframe) filterTimeframe.value = '30';
+
+            filterStatus('all');
+            showToast('Đã đặt lại toàn bộ bộ lọc');
+        }
+
+        function setDashboardState(state) {
+            const tableContainer = document.getElementById('table-container');
+            const skeletonContainer = document.getElementById('skeleton-container');
+            const noSearchContainer = document.getElementById('no-search-container');
+            const emptyStateContainer = document.getElementById('empty-state-container');
+            const tableBody = document.getElementById('ticket-table-body');
+            const paginationContainer = document.getElementById('paginationContainer');
+
+            // Reset buttons style
+            ['normal', 'skeleton', 'no-search', 'empty'].forEach(s => {
+                const b = document.getElementById('btn-state-' + s);
+                if (b) {
+                    b.className = "px-2.5 py-1 rounded-md bg-white text-[#334155] border border-blue-200 hover:bg-blue-100/50 font-medium transition-colors";
+                }
+            });
+            const activeBtn = document.getElementById('btn-state-' + state);
+            if (activeBtn) {
+                activeBtn.className = "px-2.5 py-1 rounded-md bg-[#1d4ed8] text-white font-semibold shadow-xs hover:bg-[#1e40af] transition-colors";
+            }
+
+            // Hide all
+            if (skeletonContainer) skeletonContainer.classList.add('hidden');
+            if (noSearchContainer) { noSearchContainer.classList.add('hidden'); noSearchContainer.classList.remove('flex'); }
+            if (emptyStateContainer) { emptyStateContainer.classList.add('hidden'); emptyStateContainer.classList.remove('flex'); }
+            if (tableBody) tableBody.classList.remove('hidden');
+            if (paginationContainer) paginationContainer.classList.remove('hidden');
+
+            if (state === 'normal') {
+                filterTickets();
+            } else if (state === 'skeleton') {
+                if (tableBody) tableBody.classList.add('hidden');
+                if (paginationContainer) paginationContainer.classList.add('hidden');
+                if (skeletonContainer) skeletonContainer.classList.remove('hidden');
+            } else if (state === 'no-search') {
+                if (tableBody) tableBody.classList.add('hidden');
+                if (paginationContainer) paginationContainer.classList.add('hidden');
+                if (noSearchContainer) { noSearchContainer.classList.remove('hidden'); noSearchContainer.classList.add('flex'); }
+            } else if (state === 'empty') {
+                if (tableBody) tableBody.classList.add('hidden');
+                if (paginationContainer) paginationContainer.classList.add('hidden');
+                if (emptyStateContainer) { emptyStateContainer.classList.remove('hidden'); emptyStateContainer.classList.add('flex'); }
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast-notification');
+            const msgEl = document.getElementById('toast-message');
+            if (!toast || !msgEl) return;
+            msgEl.textContent = message;
+            toast.classList.remove('translate-y-16', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-16', 'opacity-0');
+            }, 2600);
+        }
+
+        function refreshTableData() {
+            showToast('Đang làm mới dữ liệu...');
+            setDashboardState('skeleton');
+            setTimeout(() => {
+                setDashboardState('normal');
+                showToast('Dữ liệu ticket đã được cập nhật mới nhất');
+            }, 600);
+        }
+
+        function viewTicketDetail(id) {
+            window.location.href = '/tickets/detail/' + id;
+        }
+
+        function goToPage(page) {
+            showToast('Chuyển tới trang ' + page);
+        }
+
+        function changePageSize() {
+            const sz = document.getElementById('page-size-select')?.value;
+            showToast('Đã đổi số dòng hiển thị: ' + sz + ' dòng / trang');
+        }
+
+        // Global Ctrl+K shortcut listener
+        window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                const searchInput = document.getElementById('ticket-search');
+                searchInput?.focus();
+                showToast('Tìm kiếm nhanh (Ctrl + K)');
+            }
+        });
+        /*]]>*/
+    </script>
 </body>
 </html>

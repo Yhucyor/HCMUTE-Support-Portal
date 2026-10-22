@@ -1,13 +1,66 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HCMUTE Portal | Quản lý & Đồng bộ Học vụ Cổng trường</title>
+    <title>Tổng quan học vụ | HCMUTE Student Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Tailwind for new dashboard section -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "brand-blue": "#003882", "brand-blue-dark": "#002456",
+                        "brand-red": "#991b1e",
+                        "primary": "#0037b0", "on-primary": "#ffffff",
+                        "primary-container": "#1d4ed8", "on-primary-container": "#cad3ff",
+                        "primary-fixed": "#dce1ff", "on-primary-fixed": "#001551",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "secondary": "#565e74", "on-secondary": "#ffffff",
+                        "secondary-container": "#dae2fd", "on-secondary-container": "#5c647a",
+                        "tertiary": "#003ca3", "on-tertiary": "#ffffff",
+                        "tertiary-container": "#0051d6",
+                        "error": "#ba1a1a", "on-error": "#ffffff",
+                        "surface": "#f8f9ff", "surface-bright": "#f8f9ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#eff4ff",
+                        "surface-container": "#e5eeff",
+                        "surface-container-high": "#dce9ff",
+                        "on-surface": "#0b1c30", "on-surface-variant": "#434655",
+                        "inverse-surface": "#213145", "inverse-on-surface": "#eaf1ff",
+                        "outline": "#747686", "outline-variant": "#c4c5d7",
+                        "background": "#f8f9ff"
+                    },
+                    spacing: {
+                        "space-xs": "0.25rem", "space-sm": "0.5rem", "space-md": "1rem",
+                        "space-lg": "1.5rem", "space-xl": "2rem",
+                        "gutter-sm": "1rem", "gutter": "1.5rem", "gutter-lg": "2rem",
+                        "margin-sm": "1rem", "margin": "2rem"
+                    },
+                    fontFamily: {
+                        headline: ["Outfit", "sans-serif"],
+                        body: ["Inter", "sans-serif"]
+                    },
+                    fontSize: {
+                        "headline-sm": ["20px", {lineHeight:"28px", fontWeight:"600"}],
+                        "title-md":    ["16px", {lineHeight:"24px", fontWeight:"600"}],
+                        "body-md":     ["14px", {lineHeight:"20px", fontWeight:"400"}],
+                        "body-sm":     ["12px", {lineHeight:"16px", fontWeight:"400"}],
+                        "label-lg":    ["14px", {lineHeight:"20px", fontWeight:"600"}],
+                        "label-md":    ["12px", {lineHeight:"16px", fontWeight:"500"}],
+                        "label-caps":  ["11px", {lineHeight:"14px", letterSpacing:"0.05em", fontWeight:"600"}]
+                    }
+                }
+            }
+        };
+    </script>
     <style>
         :root {
             --primary: #1d4ed8;
@@ -823,29 +876,362 @@
         }
     </style>
 </head>
-<body>
+<body class="bg-surface font-body text-on-surface antialiased selection:bg-[#991b1e] selection:text-white">
 
-    <!-- TOP NAVBAR -->
-    <header class="top-navbar">
-        <a href="/" class="nav-brand">
-            <div class="brand-icon">
-                <i class='bx bxs-graduation'></i>
-            </div>
-            <div>
-                <div class="brand-title">HCMUTE Student Portal</div>
-                <div class="brand-subtitle">Cổng Hỗ trợ & Học vụ Sinh viên</div>
-            </div>
-        </a>
-
-        <div class="nav-actions">
-            <a href="/" class="btn-link-back">
-                <i class='bx bx-home-alt'></i> Trang chủ
+    <!-- ═══════════════════════════════════════
+         TOP GLOBAL HEADER (nhất quán toàn site)
+    ═══════════════════════════════════════════ -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all h-[74px]">
+        <div class="w-full px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+            <a class="flex items-center gap-3 group py-1.5" th:href="@{/}">
+                <img alt="HCMUTE Logo" class="h-12 w-auto object-contain transition-transform group-hover:scale-105"
+                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKSHNb9YZP8QFQKzZ-_B_glnPE615kLoTh0DIZM9-id7Eb1Z7EZXRKcjBeCckK7VOaTPGdnMs7Cl7qdtjr1Mry3Y7d1U0S8maxw8fAHipOBnT-HFyaVBuqc6xe0fMZJf4fPlHw6UIkL0vHJV2kfl-tnjJgobCtm7Cy-KazrUCaEZefkxCcT9HC_-zWiT9twVqKg6xymALE7_hrVpAjI-XYdTFsbm3wyDRY8PxAR-vjOB00BqpW9wX9dVryQuIfZgdSA">
+                <div class="flex flex-col text-[#003882]">
+                    <span class="font-bold text-sm sm:text-base tracking-tight leading-tight">Trường Đại học Sư phạm Kỹ thuật Tp. Hồ Chí Minh</span>
+                    <span class="font-normal text-[11px] sm:text-xs tracking-normal leading-normal">HCMC University of Technology and Education</span>
+                </div>
             </a>
-            <a href="https://online.hcmute.edu.vn" target="_blank" class="btn-link-back" style="color:var(--primary);">
-                <i class='bx bx-link-external'></i> online.hcmute.edu.vn
-            </a>
+            <nav class="hidden xl:flex items-center space-x-7">
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/}">Trang chủ</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/feed/forum}">Diễn đàn</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/faqs}">Tra cứu FAQ</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
+            </nav>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button aria-label="Tìm kiếm" onclick="document.getElementById('studentId')?.focus()" class="w-9 h-9 rounded-full flex items-center justify-center text-slate-600 hover:text-[#003882] hover:bg-slate-100 transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">search</span>
+                </button>
+                <div class="hidden sm:flex items-center text-xs font-semibold text-slate-600 px-2 py-1 rounded cursor-pointer hover:bg-slate-100">
+                    <span>VI</span>
+                    <span class="material-symbols-outlined text-[16px]">expand_more</span>
+                </div>
+                <div sec:authorize="isAuthenticated()" class="relative">
+                    <button id="headerAccountToggle"
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95"
+                            th:title="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}"
+                            aria-haspopup="true" aria-expanded="false">
+                        <span class="material-symbols-outlined text-[16px]">account_circle</span>
+                        <span class="hidden sm:inline truncate max-w-[150px]"
+                              th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
+                        <span class="material-symbols-outlined text-[14px]">expand_more</span>
+                    </button>
+                    <div id="headerDropdownMenu"
+                         class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50" role="menu">
+                        <a href="/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">person</span><span>Thông tin cá nhân</span>
+                        </a>
+                        <a href="/academic/sync" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-[#003882] bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">home</span><span>Tổng quan</span>
+                        </a>
+                        <a href="/academic/grades" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">description</span><span>Bảng điểm</span>
+                        </a>
+                        <a href="/academic/timetable" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">calendar_month</span><span>Thời khóa biểu</span>
+                        </a>
+                        <a href="/academic/curriculum" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">book</span><span>Chương trình đào tạo</span>
+                        </a>
+                        <a href="/tickets/my-tickets" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">confirmation_number</span><span>Ticket hỗ trợ</span>
+                        </a>
+                        <div class="border-t border-slate-200 my-1"></div>
+                        <a th:href="@{/auth/logout}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">logout</span><span>Đăng xuất</span>
+                        </a>
+                    </div>
+                </div>
+                <div sec:authorize="!isAuthenticated()">
+                    <a class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#991b1e] hover:bg-[#831518] rounded-md shadow-sm transition-all active:scale-95" th:href="@{/auth/login}">
+                        <span class="material-symbols-outlined text-[16px]">person</span><span>Đăng nhập</span>
+                    </a>
+                </div>
+                <button aria-label="Mở menu" onclick="toggleMobileNav()" class="xl:hidden w-9 h-9 rounded-md flex items-center justify-center text-slate-700 hover:bg-slate-100">
+                    <span class="material-symbols-outlined text-[24px]">menu</span>
+                </button>
+            </div>
+        </div>
+        <div id="mobileNavDrawer" class="hidden xl:hidden bg-white border-b border-slate-200 px-4 pt-3 pb-5 space-y-2.5 shadow-lg">
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/}">Trang chủ</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/feed/forum}">Diễn đàn</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/faqs}">Tra cứu FAQ</a>
+            <a class="block py-2 text-sm font-medium text-slate-700 hover:text-[#003882]" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
+            <div sec:authorize="isAuthenticated()" class="pt-2 border-t border-slate-200">
+                <a class="flex items-center gap-2 py-2 text-sm font-semibold text-[#003882]" href="/academic/sync">
+                    <span class="material-symbols-outlined text-[18px]">home</span>
+                    <span>Tổng quan học tập</span>
+                </a>
+                <a class="flex items-center gap-2 py-2 text-sm font-medium text-slate-700" href="/profile">
+                    <span class="material-symbols-outlined text-[18px]">person</span>
+                    <span th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
+                </a>
+                <a class="block py-1.5 text-sm font-medium text-[#991b1e]" th:href="@{/auth/logout}">Đăng xuất</a>
+            </div>
         </div>
     </header>
+
+    <!-- ═══════════════════════════════════════
+         DASHBOARD OVERVIEW (Academic Horizon Design)
+    ═══════════════════════════════════════════ -->
+    <div class="pt-[74px] bg-surface">
+      <div class="p-space-md lg:p-space-xl space-y-space-lg max-w-[1536px] mx-auto w-full">
+
+        <!-- Breadcrumb -->
+        <div class="flex items-center gap-2 text-secondary font-body text-body-md pt-space-sm">
+            <a class="hover:text-primary transition-colors flex items-center gap-1" th:href="@{/}">
+                <span class="material-symbols-outlined text-[16px]">home</span><span>Trang chủ</span>
+            </a>
+            <span class="text-secondary/60">/</span>
+            <span class="text-on-surface font-semibold">Tổng quan học vụ</span>
+        </div>
+        <div>
+            <h1 class="font-headline text-headline-sm font-bold text-on-surface">Tổng quan học vụ</h1>
+            <p class="font-body text-body-md text-on-surface-variant mt-1">Theo dõi tiến độ học tập, lịch học và các hoạt động sinh viên tại HCMUTE</p>
+        </div>
+
+        <!-- 4 KPI Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+            <div class="bg-surface-container-lowest px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary shrink-0"><span class="material-symbols-outlined text-2xl">school</span></div>
+                    <div>
+                        <p class="font-label-caps text-label-caps uppercase text-outline tracking-wider leading-none">Điểm trung bình</p>
+                        <div class="flex items-baseline gap-1 mt-0.5">
+                            <span id="dash-gpa10" class="font-headline text-xl font-bold text-on-surface leading-tight">--</span>
+                            <span class="font-label-md text-xs text-outline">/ 4.0</span>
+                        </div>
+                    </div>
+                </div>
+                <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-caps text-label-caps shrink-0">
+                    <span class="material-symbols-outlined text-xs">trending_up</span>GPA
+                </span>
+            </div>
+            <div class="bg-surface-container-lowest px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-center">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-tertiary shrink-0"><span class="material-symbols-outlined text-2xl">layers</span></div>
+                        <div>
+                            <p class="font-label-caps text-label-caps uppercase text-outline tracking-wider leading-none">Tín chỉ tích lũy</p>
+                            <div class="flex items-baseline gap-1 mt-0.5">
+                                <span id="dash-credits" class="font-headline text-xl font-bold text-on-surface leading-tight">--</span>
+                                <span class="font-label-md text-xs text-outline">TC</span>
+                            </div>
+                        </div>
+                    </div>
+                    <span id="dash-credits-pct" class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-caps text-label-caps shrink-0">--%</span>
+                </div>
+                <div class="w-full bg-surface-container h-1.5 rounded-full mt-2 overflow-hidden">
+                    <div id="dash-credits-bar" class="bg-primary h-full rounded-full transition-all duration-500" style="width:0%"></div>
+                </div>
+            </div>
+            <div class="bg-surface-container-lowest px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 shrink-0"><span class="material-symbols-outlined text-2xl">support_agent</span></div>
+                    <div>
+                        <p class="font-label-caps text-label-caps uppercase text-outline tracking-wider leading-none">Ticket hỗ trợ</p>
+                        <div class="flex items-baseline gap-1 mt-0.5">
+                            <span class="font-headline text-xl font-bold text-on-surface leading-tight">2</span>
+                            <span class="font-label-md text-xs text-outline">đang mở</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end gap-1 shrink-0">
+                    <span class="px-2 py-0.5 rounded-full bg-amber-100/70 text-amber-800 font-label-caps text-label-caps">SLA Hoạt động</span>
+                    <a class="inline-flex items-center gap-0.5 text-xs text-primary hover:text-tertiary font-medium" href="/tickets">Quản lý <span class="material-symbols-outlined text-xs">arrow_forward</span></a>
+                </div>
+            </div>
+            <div class="bg-surface-container-lowest px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-error shrink-0"><span class="material-symbols-outlined text-2xl">notifications_active</span></div>
+                    <div>
+                        <p class="font-label-caps text-label-caps uppercase text-outline tracking-wider leading-none">Thông báo mới</p>
+                        <div class="flex items-baseline gap-1 mt-0.5">
+                            <span class="font-headline text-xl font-bold text-on-surface leading-tight">5</span>
+                            <span class="font-label-md text-xs text-outline">chưa đọc</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end gap-1 shrink-0">
+                    <span class="px-2 py-0.5 rounded-full bg-red-100 text-error font-label-caps text-label-caps">Mới</span>
+                    <a class="inline-flex items-center gap-0.5 text-xs text-primary hover:text-tertiary font-medium" href="#">Xem tất cả <span class="material-symbols-outlined text-xs">arrow_forward</span></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
+            <div class="flex items-center justify-between mb-space-sm">
+                <div class="flex items-center gap-space-xs">
+                    <span class="material-symbols-outlined text-primary text-xl">bolt</span>
+                    <h2 class="font-title-md text-title-md text-on-surface">Truy cập nhanh</h2>
+                </div>
+                <span class="font-label-caps text-label-caps text-outline uppercase">Lối tắt tác vụ</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-space-sm">
+                <a class="group flex items-center gap-space-sm p-space-sm rounded-lg bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all" href="/academic/grades">
+                    <div class="w-9 h-9 rounded-lg bg-surface-container-lowest group-hover:bg-primary-container flex items-center justify-center text-primary group-hover:text-on-primary transition-colors shrink-0"><span class="material-symbols-outlined text-lg">description</span></div>
+                    <span class="font-label-lg text-label-lg font-medium truncate">Xem bảng điểm</span>
+                </a>
+                <a class="group flex items-center gap-space-sm p-space-sm rounded-lg bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all" href="/academic/timetable">
+                    <div class="w-9 h-9 rounded-lg bg-surface-container-lowest group-hover:bg-primary-container flex items-center justify-center text-primary group-hover:text-on-primary transition-colors shrink-0"><span class="material-symbols-outlined text-lg">calendar_month</span></div>
+                    <span class="font-label-lg text-label-lg font-medium truncate">Thời khóa biểu</span>
+                </a>
+                <a class="group flex items-center gap-space-sm p-space-sm rounded-lg bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all" href="/tickets/create">
+                    <div class="w-9 h-9 rounded-lg bg-surface-container-lowest group-hover:bg-primary-container flex items-center justify-center text-primary group-hover:text-on-primary transition-colors shrink-0"><span class="material-symbols-outlined text-lg">add_circle</span></div>
+                    <span class="font-label-lg text-label-lg font-medium truncate">Tạo Ticket hỗ trợ</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 2-column layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+            <div class="lg:col-span-8 space-y-space-lg">
+                <!-- TKB hôm nay -->
+                <div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-space-md gap-space-xs">
+                        <div class="flex items-center gap-space-xs">
+                            <span class="material-symbols-outlined text-primary text-2xl">schedule</span>
+                            <h2 class="font-title-md text-title-md text-on-surface">Thời khóa biểu hôm nay</h2>
+                            <span id="todayDateBadge" class="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-label-caps text-label-caps">--</span>
+                        </div>
+                        <a class="inline-flex items-center gap-1 font-label-md text-label-md text-primary hover:text-tertiary transition-colors" href="/academic/timetable">
+                            Xem đầy đủ <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        </a>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps uppercase">
+                                    <th class="py-2.5 px-space-md rounded-l-lg">Thời gian</th>
+                                    <th class="py-2.5 px-space-md">Môn học</th>
+                                    <th class="py-2.5 px-space-md">Phòng</th>
+                                    <th class="py-2.5 px-space-md">Giảng viên</th>
+                                    <th class="py-2.5 px-space-md text-right rounded-r-lg">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="today-schedule-body" class="text-on-surface font-body text-body-md">
+                                <tr><td colspan="5" class="py-8 text-center text-secondary text-body-md">Chưa có dữ liệu — đồng bộ để cập nhật thời khóa biểu</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Tickets gần đây -->
+                <div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-space-md gap-space-sm">
+                        <div class="flex items-center gap-space-xs">
+                            <span class="material-symbols-outlined text-amber-600 text-2xl">confirmation_number</span>
+                            <h2 class="font-title-md text-title-md text-on-surface">Ticket hỗ trợ gần đây</h2>
+                            <span class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-label-caps text-label-caps">SLA Theo dõi</span>
+                        </div>
+                        <div class="flex items-center gap-space-sm">
+                            <a href="/tickets/create" class="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-tertiary-container transition-colors flex items-center gap-1 shadow-sm">
+                                <span class="material-symbols-outlined text-base">add</span><span>Tạo yêu cầu mới</span>
+                            </a>
+                            <a class="font-label-md text-label-md text-primary hover:text-tertiary transition-colors hidden sm:inline-flex items-center gap-1" href="/tickets">
+                                Xem tất cả <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="space-y-space-sm">
+                        <p class="text-center text-secondary text-body-md py-6">Chưa có ticket nào gần đây</p>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-4 space-y-space-lg">
+                <!-- Tiến độ học tập -->
+                <div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
+                    <div class="flex items-center justify-between pb-space-sm">
+                        <div class="flex items-center gap-space-xs">
+                            <span class="material-symbols-outlined text-primary text-2xl">donut_large</span>
+                            <h2 class="font-title-md text-title-md text-on-surface">Tiến độ học tập</h2>
+                        </div>
+                        <span class="font-label-caps text-label-caps text-outline uppercase">Chương trình ĐT</span>
+                    </div>
+                    <div class="flex flex-col items-center justify-center py-space-sm">
+                        <div class="relative w-36 h-36 flex items-center justify-center">
+                            <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" fill="transparent" r="42" stroke="#eff4ff" stroke-width="12"></circle>
+                                <circle id="dash-donut-circle" cx="50" cy="50" fill="transparent" r="42"
+                                        stroke="#1d4ed8" stroke-dasharray="264" stroke-dashoffset="264"
+                                        stroke-linecap="round" stroke-width="12"></circle>
+                            </svg>
+                            <div class="absolute flex flex-col items-center justify-center text-center">
+                                <span id="dash-donut-pct" class="font-headline text-headline-sm font-bold text-on-surface">--%</span>
+                                <span id="dash-donut-label" class="font-label-caps text-label-caps text-outline uppercase tracking-tight">-- TC</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-space-sm mt-space-sm">
+                        <div class="text-center text-secondary text-body-sm py-2">Đồng bộ để xem tiến độ</div>
+                    </div>
+                    <div class="pt-space-md mt-space-sm">
+                        <a class="inline-flex items-center gap-1 font-label-md text-label-md text-primary hover:text-tertiary transition-colors" href="/academic/curriculum">
+                            Xem chi tiết chương trình đào tạo <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        </a>
+                    </div>
+                </div>
+                <!-- Thông báo -->
+                <div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
+                    <div class="flex items-center justify-between pb-space-sm">
+                        <div class="flex items-center gap-space-xs">
+                            <span class="material-symbols-outlined text-primary text-2xl">campaign</span>
+                            <h2 class="font-title-md text-title-md text-on-surface">Thông báo mới nhất</h2>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1 bg-surface-container-low p-1 rounded-lg mb-space-md">
+                        <button class="flex-1 py-1 text-center font-label-md text-label-md rounded bg-surface-container-lowest shadow-xs text-primary font-semibold">Tất cả</button>
+                        <button class="flex-1 py-1 text-center font-label-md text-label-md rounded text-on-surface-variant hover:text-on-surface">Học vụ</button>
+                        <button class="flex-1 py-1 text-center font-label-md text-label-md rounded text-on-surface-variant hover:text-on-surface">Học bổng</button>
+                    </div>
+                    <div class="space-y-space-sm">
+                        <a class="block p-space-sm rounded-lg hover:bg-surface-container-low transition-colors relative pl-6" href="#">
+                            <span class="absolute left-2 top-3 w-2 h-2 rounded-full bg-primary"></span>
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span class="px-1.5 py-0.5 rounded bg-primary-fixed text-on-primary-fixed-variant font-label-caps text-label-caps">Học vụ</span>
+                                <span class="font-body text-body-sm text-outline">24/03/2026</span>
+                            </div>
+                            <p class="font-label-md text-label-md text-on-surface font-medium hover:text-primary transition-colors line-clamp-2">Thông báo lịch đăng ký môn học Giai đoạn 2 HK2 (2025-2026)</p>
+                        </a>
+                        <a class="block p-space-sm rounded-lg hover:bg-surface-container-low transition-colors relative pl-6" href="#">
+                            <span class="absolute left-2 top-3 w-2 h-2 rounded-full bg-primary"></span>
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span class="px-1.5 py-0.5 rounded bg-secondary-container text-on-secondary-container font-label-caps text-label-caps">Học bổng</span>
+                                <span class="font-body text-body-sm text-outline">22/03/2026</span>
+                            </div>
+                            <p class="font-label-md text-label-md text-on-surface font-medium hover:text-primary transition-colors line-clamp-2">Chương trình học bổng Doanh nghiệp tài trợ Khoa CNTT năm 2026</p>
+                        </a>
+                        <a class="block p-space-sm rounded-lg hover:bg-surface-container-low transition-colors relative pl-6 opacity-75" href="#">
+                            <span class="absolute left-2 top-3 w-2 h-2 rounded-full bg-outline-variant"></span>
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span class="px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-caps text-label-caps">Lịch thi</span>
+                                <span class="font-body text-body-sm text-outline">20/03/2026</span>
+                            </div>
+                            <p class="font-label-md text-label-md text-on-surface hover:text-primary transition-colors line-clamp-2">Công bố lịch thi giữa kỳ bổ sung đợt 1</p>
+                        </a>
+                    </div>
+                    <div class="pt-space-md">
+                        <a class="inline-flex items-center gap-1 font-label-md text-label-md text-primary hover:text-tertiary transition-colors" href="#">
+                            Xem tất cả thông báo <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Divider before sync section -->
+        <div class="border-t border-surface-container-high pt-space-lg">
+            <div class="flex items-center gap-2 mb-space-md">
+                <span class="material-symbols-outlined text-primary text-xl">sync</span>
+                <h2 class="font-title-md text-title-md text-on-surface font-bold">Đồng bộ dữ liệu từ Cổng trường HCMUTE</h2>
+            </div>
+        </div>
+      </div>
+    </div><!-- /dashboard overview -->
+
+    <!-- Old sync content wrapped in matching container -->
+    <div class="max-w-[1536px] mx-auto w-full px-space-md lg:px-space-xl pb-16">
 
     <div class="page-container">
 
@@ -866,10 +1252,17 @@
 
         <!-- FORM CRAWLER / SYNC -->
         <div class="sync-box">
+            <!-- Banner khi đã có credentials lưu sẵn -->
+            <div th:if="${portalLinked}"
+                 style="display:flex; align-items:center; gap:10px; padding:10px 14px; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:10px; margin-bottom:16px; font-size:0.88rem; color:#065f46;">
+                <i class='bx bx-link-alt' style="font-size:1.2rem; color:#059669;"></i>
+                <span>Đã liên kết tài khoản Portal <strong th:text="${savedPortalUsername}"></strong> — hệ thống sẽ tự đồng bộ dữ liệu khi trang tải xong.</span>
+            </div>
+
             <div class="sync-box-header">
                 <div class="sync-box-title">
                     <i class='bx bx-cloud-download' style="color:var(--primary); font-size:1.3rem;"></i>
-                    Xác thực & Đồng bộ Dữ liệu từ HCMUTE Online
+                    Xác thực &amp; Đồng bộ Dữ liệu từ HCMUTE Online
                 </div>
                 <button type="button" class="btn-demo-fill" id="btn-demo-fill" title="Nạp nhanh tài khoản demo để kiểm thử offline">
                     <i class='bx bx-vial'></i> Điền nhanh tài khoản Demo (Offline)
@@ -877,13 +1270,18 @@
             </div>
 
             <form id="sync-form">
+                <!-- Hidden fields chứa saved credentials để JS đọc (không hiển thị ra UI) -->
+                <input type="hidden" id="savedPortalUsername" th:value="${savedPortalUsername}">
+                <input type="hidden" id="savedPortalPassword" th:value="${savedPortalPassword}">
+                <input type="hidden" id="portalLinkedFlag" th:value="${portalLinked != null and portalLinked ? 'true' : 'false'}">
+
                 <div class="sync-form-grid">
                     <div class="form-group">
                         <label for="studentId"><i class='bx bx-id-card'></i> Mã số sinh viên (MSSV):</label>
                         <div class="form-input-wrapper">
                             <i class='bx bx-user'></i>
-                            <input type="text" id="studentId" class="form-control" placeholder="Ví dụ: 21110123 hoặc demo" 
-                                   th:value="${currentStudentId != null and currentStudentId != '' ? currentStudentId : '21110123'}" required>
+                            <input type="text" id="studentId" class="form-control" placeholder="Ví dụ: 21110123 hoặc demo"
+                                   th:value="${savedPortalUsername != null and savedPortalUsername != ''} ? ${savedPortalUsername} : ${currentStudentId != null and currentStudentId != '' ? currentStudentId : ''}" required>
                         </div>
                     </div>
 
@@ -891,8 +1289,9 @@
                         <label for="password"><i class='bx bx-lock-alt'></i> Mật khẩu cổng đào tạo:</label>
                         <div class="form-input-wrapper">
                             <i class='bx bx-key'></i>
-                            <input type="password" id="password" class="form-control" placeholder="Mật khẩu tài khoản sinh viên" 
-                                   value="Password123@" required>
+                            <input type="password" id="password" class="form-control"
+                                   th:placeholder="${portalLinked} ? '••••••• (đã lưu sẵn)' : 'Mật khẩu tài khoản sinh viên'"
+                                   th:required="${!portalLinked}">
                         </div>
                     </div>
 
@@ -1183,6 +1582,7 @@
         </div>
 
     </div>
+    </div><!-- /old sync wrapper -->
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
@@ -1484,13 +1884,100 @@
             const urlParams = new URLSearchParams(window.location.search);
             const queryStudentId = urlParams.get('studentId');
             const studentIdInput = document.getElementById('studentId');
+            const passwordInput = document.getElementById('password');
+            const portalLinkedFlag = document.getElementById('portalLinkedFlag')?.value === 'true';
+            const savedUsername = document.getElementById('savedPortalUsername')?.value || '';
+            const savedPassword = document.getElementById('savedPortalPassword')?.value || '';
+
+            // Pre-fill từ saved credentials
+            if (portalLinkedFlag && savedUsername && studentIdInput) {
+                studentIdInput.value = savedUsername;
+            }
+            if (portalLinkedFlag && savedPassword && passwordInput) {
+                passwordInput.value = savedPassword;
+            }
+
             const effectiveId = queryStudentId || (studentIdInput ? studentIdInput.value.trim() : '');
 
             if (effectiveId && effectiveId !== '21110123') {
                 resultsContainer.style.display = 'block';
                 loadAllAcademicData(effectiveId);
             }
+
+            // Auto-sync nếu đã có credentials lưu sẵn
+            if (portalLinkedFlag && savedUsername && savedPassword) {
+                // Delay nhỏ để trang render xong
+                setTimeout(() => {
+                    showAlert('Đang tự động đồng bộ dữ liệu học vụ từ Portal...', 'info');
+                    syncForm.dispatchEvent(new Event('submit'));
+                }, 600);
+            }
+
+            // Update today date badge
+            const badge = document.getElementById('todayDateBadge');
+            if (badge) {
+                const days = ['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+                const now = new Date();
+                badge.textContent = `${days[now.getDay()]}, ${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}`;
+            }
+
+            // Update KPI dashboard from summary if available
+            fetch(`/api/academic/summary?studentId=${encodeURIComponent(effectiveId || '')}`)
+                .then(r => r.ok ? r.json() : null)
+                .then(s => {
+                    if (!s) return;
+                    const g4 = document.getElementById('dash-gpa10');
+                    const cr = document.getElementById('dash-credits');
+                    const crPct = document.getElementById('dash-credits-pct');
+                    const crBar = document.getElementById('dash-credits-bar');
+                    const donutPct = document.getElementById('dash-donut-pct');
+                    const donutLabel = document.getElementById('dash-donut-label');
+                    const donutCircle = document.getElementById('dash-donut-circle');
+                    if (g4) g4.textContent = s.gpa4 != null ? s.gpa4.toFixed(2) : '--';
+                    if (s.totalCredits != null) {
+                        const total = 120, pct = Math.round(s.totalCredits / total * 100);
+                        if (cr) cr.textContent = s.totalCredits;
+                        if (crPct) crPct.textContent = pct + '%';
+                        if (crBar) crBar.style.width = pct + '%';
+                        if (donutPct) donutPct.textContent = pct + '%';
+                        if (donutLabel) donutLabel.textContent = `${s.totalCredits}/${total} TC`;
+                        if (donutCircle) donutCircle.setAttribute('stroke-dashoffset', String(264 - (264 * pct / 100)));
+                    }
+                }).catch(() => {});
         });
+    </script>
+
+    <!-- Header Dropdown Script -->
+    <script>
+        (function () {
+            const toggleBtn = document.getElementById('headerAccountToggle');
+            const dropdownMenu = document.getElementById('headerDropdownMenu');
+            if (!toggleBtn || !dropdownMenu) return;
+            toggleBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const isHidden = dropdownMenu.classList.contains('hidden');
+                dropdownMenu.classList.toggle('hidden');
+                toggleBtn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+            });
+            document.addEventListener('click', function (e) {
+                if (!toggleBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownMenu.classList.add('hidden');
+                    toggleBtn.setAttribute('aria-expanded', 'false');
+                }
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && !dropdownMenu.classList.contains('hidden')) {
+                    dropdownMenu.classList.add('hidden');
+                    toggleBtn.setAttribute('aria-expanded', 'false');
+                    toggleBtn.focus();
+                }
+            });
+        })();
+
+        function toggleMobileNav() {
+            const drawer = document.getElementById('mobileNavDrawer');
+            if (drawer) drawer.classList.toggle('hidden');
+        }
     </script>
 </body>
 </html>

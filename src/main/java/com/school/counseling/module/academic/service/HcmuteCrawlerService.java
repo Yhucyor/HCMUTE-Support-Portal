@@ -3,6 +3,8 @@ package com.school.counseling.module.academic.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.school.counseling.module.academic.dto.AcademicSummaryResponse;
+import com.school.counseling.module.academic.dto.CurriculumCourseDto;
+import com.school.counseling.module.academic.dto.CurriculumSummaryDto;
 import com.school.counseling.module.academic.dto.HcmuteSyncRequest;
 import com.school.counseling.module.academic.dto.HcmuteSyncResponse;
 import com.school.counseling.module.academic.entity.CourseSchedule;
@@ -15,23 +17,29 @@ import com.school.counseling.module.academic.repository.CurriculumSubjectReposit
 import com.school.counseling.module.academic.repository.StudentGradeRepository;
 import com.school.counseling.module.academic.repository.StudentProfileRepository;
 import com.school.counseling.module.academic.repository.SyncHistoryRepository;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@Slf4j
 @Service
 public class HcmuteCrawlerService {
+
+    private static final Logger log = LoggerFactory.getLogger(HcmuteCrawlerService.class);
 
     private static final String API_BASE = "https://portalapi.hcmute.edu.vn/api";
     private static final String API_KEY = "utepscRBF0zT2Mqo6vMw69YMOH43IrB2RtXBS0EHit2kzvL2auxaFJBvw==";
@@ -62,7 +70,31 @@ public class HcmuteCrawlerService {
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(TIMEOUT)
                 .followRedirects(HttpClient.Redirect.NORMAL)
+                .sslContext(buildTrustAllSslContext())
                 .build();
+    }
+
+    /**
+     * Tạo SSLContext bỏ qua certificate verification.
+     * Cần thiết vì portalapi.hcmute.edu.vn dùng certificate
+     * không có trong Java default truststore.
+     */
+    private static SSLContext buildTrustAllSslContext() {
+        try {
+            TrustManager[] trustAll = new TrustManager[]{
+                new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+                    public void checkClientTrusted(X509Certificate[] chain, String authType) {}
+                    public void checkServerTrusted(X509Certificate[] chain, String authType) {}
+                }
+            };
+            SSLContext ctx = SSLContext.getInstance("TLS");
+            ctx.init(null, trustAll, new java.security.SecureRandom());
+            return ctx;
+        } catch (Exception e) {
+            log.warn("Không thể tạo trust-all SSLContext, dùng default: {}", e.getMessage());
+            try { return SSLContext.getDefault(); } catch (Exception ex) { throw new RuntimeException(ex); }
+        }
     }
 
     @Transactional
@@ -476,9 +508,13 @@ public class HcmuteCrawlerService {
         else if (m.hasNonNull("SoTC")) credits = m.get("SoTC").asInt(0);
 
         Double totalScore = null;
-        if (m.hasNonNull("DiemTK_10")) totalScore = m.get("DiemTK_10").asDouble();
-        else if (m.hasNonNull("DiemTK")) totalScore = m.get("DiemTK").asDouble();
-        else if (m.hasNonNull("TotalMark")) totalScore = m.get("TotalMark").asDouble();
+        if (m.hasNonNull("DiemTK_10") && !m.get("DiemTK_10").asText().isBlank()) {
+            try { totalScore = m.get("DiemTK_10").asDouble(); } catch (Exception ignored) {}
+        } else if (m.hasNonNull("DiemTK") && !m.get("DiemTK").asText().isBlank()) {
+            try { totalScore = m.get("DiemTK").asDouble(); } catch (Exception ignored) {}
+        } else if (m.hasNonNull("TotalMark") && !m.get("TotalMark").asText().isBlank()) {
+            try { totalScore = m.get("TotalMark").asDouble(); } catch (Exception ignored) {}
+        }
 
         String gradeLetter = "";
         if (m.hasNonNull("DiemTK_Chu")) gradeLetter = m.get("DiemTK_Chu").asText().trim();
@@ -494,8 +530,15 @@ public class HcmuteCrawlerService {
         else if (m.hasNonNull("DiemCK")) finalScore = m.get("DiemCK").asDouble();
         else if (m.hasNonNull("DiemThi_10")) finalScore = m.get("DiemThi_10").asDouble();
 
-        boolean isPassed = (m.hasNonNull("IsPass") && "1".equals(m.get("IsPass").asText()))
-                || (totalScore != null && totalScore >= 4.0 && !"F".equalsIgnoreCase(gradeLetter));
+        // Chỉ đánh giá kết quả đạt/rớt khi môn học đã có điểm kết quả cuối cùng trên Portal
+        boolean hasFinalResult = (totalScore != null) || (!gradeLetter.isBlank() && !"--".equals(gradeLetter));
+
+        Boolean isPassed = null;
+        if (hasFinalResult) {
+            isPassed = (m.hasNonNull("IsPass") && "1".equals(m.get("IsPass").asText()))
+                    || (totalScore != null && totalScore >= 4.0 && !"F".equalsIgnoreCase(gradeLetter))
+                    || (!gradeLetter.isBlank() && !"F".equalsIgnoreCase(gradeLetter) && !"--".equals(gradeLetter));
+        }
 
         String sem = (semesterName != null && !semesterName.isBlank()) ? semesterName
                 : (m.hasNonNull("HocKy") ? m.get("HocKy").asText() : "Học kỳ");
@@ -565,15 +608,30 @@ public class HcmuteCrawlerService {
                         String room = s.hasNonNull("Phong") && !s.get("Phong").asText().isBlank() ? s.get("Phong").asText() : "Chưa xếp phòng";
                         String lecturer = s.hasNonNull("HoTenGV") ? s.get("HoTenGV").asText() : "Giảng viên bộ môn";
 
+                        String[] times = calculateTimesFromShift(shift);
+                        String startTime = s.hasNonNull("GioBatDau") && !s.get("GioBatDau").asText().isBlank()
+                                ? s.get("GioBatDau").asText().trim() : times[0];
+                        String endTime = s.hasNonNull("GioKetThuc") && !s.get("GioKetThuc").asText().isBlank()
+                                ? s.get("GioKetThuc").asText().trim() : times[1];
+                        String groupCode = s.hasNonNull("Nhom") ? s.get("Nhom").asText().trim()
+                                : (s.hasNonNull("MaLHP") && s.get("MaLHP").asText().contains("_")
+                                ? s.get("MaLHP").asText().substring(s.get("MaLHP").asText().indexOf("_") + 1) : "");
+                        int credits = s.hasNonNull("SoTinChi") ? s.get("SoTinChi").asInt(3)
+                                : (s.hasNonNull("STC") ? s.get("STC").asInt(3) : 3);
+
                         list.add(CourseSchedule.builder()
                                 .studentId(studentId)
                                 .courseCode(courseCode)
                                 .courseName(courseName)
                                 .dayOfWeek(dayOfWeek)
                                 .shift(shift)
+                                .startTime(startTime)
+                                .endTime(endTime)
                                 .room(room)
                                 .lecturer(lecturer)
                                 .semester(currentTerm + " (" + currentYear + ")")
+                                .groupCode(groupCode)
+                                .credits(credits)
                                 .build());
                     }
                 }
@@ -733,8 +791,19 @@ public class HcmuteCrawlerService {
         for (StudentGrade g : grades) {
             int credits = g.getCredits() != null ? g.getCredits() : 0;
             Double score10 = g.getTotalScore();
+            String letter = g.getGradeLetter() != null ? g.getGradeLetter().trim().toUpperCase() : "";
 
-            if (Boolean.TRUE.equals(g.getIsPassed())) {
+            // QUAN TRỌNG: Môn nào chưa có điểm tổng kết cuối cùng trên Portal thì bỏ qua, KHÔNG tính vào GPA / Nợ môn
+            boolean hasFinalResult = (score10 != null) || (!letter.isBlank() && !"--".equals(letter));
+            if (!hasFinalResult) {
+                continue;
+            }
+
+            boolean isPassed = Boolean.TRUE.equals(g.getIsPassed())
+                    || (score10 != null && score10 >= 4.0 && !"F".equals(letter))
+                    || (!letter.isBlank() && !"F".equals(letter));
+
+            if (isPassed) {
                 passedCount++;
                 totalPassedCredits += credits;
             } else {
@@ -744,7 +813,11 @@ public class HcmuteCrawlerService {
             if (score10 != null && credits > 0) {
                 totalCreditsForGpa += credits;
                 weightedScore10Sum += score10 * credits;
-                weightedScore4Sum += convertScale10To4(score10, g.getGradeLetter()) * credits;
+                weightedScore4Sum += convertScale10To4(score10, letter) * credits;
+            } else if (!letter.isBlank() && credits > 0) {
+                double score4 = convertScale10To4(null, letter);
+                totalCreditsForGpa += credits;
+                weightedScore4Sum += score4 * credits;
             }
         }
 
@@ -784,7 +857,152 @@ public class HcmuteCrawlerService {
                 .build();
     }
 
-    private double convertScale10To4(double score10, String letter) {
+    @Transactional(readOnly = true)
+    public CurriculumSummaryDto getCurriculumSummary(String studentId) {
+        List<CurriculumSubject> curriculums = curriculumRepository.findByStudentIdOrderBySemesterRecommendedAsc(studentId);
+        List<StudentGrade> grades = gradeRepository.findByStudentIdOrderBySemesterDesc(studentId);
+        Optional<StudentProfile> profileOpt = profileRepository.findByStudentId(studentId);
+        List<SyncHistory> histories = syncHistoryRepository.findByStudentIdOrderBySyncedAtDesc(studentId);
+
+        // Nếu chưa có curriculums trong DB, fallback tạo demo để hiển thị lộ trình mẫu
+        if (curriculums.isEmpty()) {
+            curriculums = generateDemoCurriculums(studentId, grades);
+        }
+
+        // Tạo map tra cứu điểm theo courseCode (ưu tiên bản ghi điểm mới nhất/đạt)
+        Map<String, StudentGrade> gradeMap = new HashMap<>();
+        for (StudentGrade g : grades) {
+            if (g.getCourseCode() != null && !g.getCourseCode().isBlank()) {
+                String code = g.getCourseCode().trim();
+                if (!gradeMap.containsKey(code) || Boolean.TRUE.equals(g.getIsPassed())) {
+                    gradeMap.put(code, g);
+                }
+            }
+        }
+
+        List<CurriculumCourseDto> courseDtos = new ArrayList<>();
+        int totalRequiredCredits = 0;
+        int completedCredits = 0;
+        int inProgressCredits = 0;
+        int completedCount = 0;
+        int inProgressCount = 0;
+
+        for (CurriculumSubject cs : curriculums) {
+            int credits = cs.getCredits() != null ? cs.getCredits() : 0;
+            totalRequiredCredits += credits;
+
+            int sem = cs.getSemesterRecommended() != null ? cs.getSemesterRecommended() : 1;
+            String knowledgeBlock = resolveKnowledgeBlock(sem, cs.getCourseName());
+
+            String status = "NOT_TAKEN";
+            String statusLabel = "Chưa học";
+            String gradeLetter = "--";
+            Double finalScore = null;
+            Double scale4Score = null;
+
+            StudentGrade g = gradeMap.get(cs.getCourseCode() != null ? cs.getCourseCode().trim() : "");
+            if (g != null) {
+                if (Boolean.TRUE.equals(g.getIsPassed())) {
+                    status = "COMPLETED";
+                    statusLabel = "Đã đạt";
+                    gradeLetter = (g.getGradeLetter() != null && !g.getGradeLetter().isBlank()) ? g.getGradeLetter().trim() : "P";
+                    finalScore = g.getTotalScore();
+                    scale4Score = convertScale10To4(g.getTotalScore(), g.getGradeLetter());
+                    completedCredits += credits;
+                    completedCount++;
+                } else if (g.getIsPassed() == null || g.getTotalScore() == null) {
+                    status = "IN_PROGRESS";
+                    statusLabel = "Đang học";
+                    gradeLetter = "--";
+                    inProgressCredits += credits;
+                    inProgressCount++;
+                } else {
+                    status = "FAILED";
+                    statusLabel = "Chưa đạt";
+                    gradeLetter = (g.getGradeLetter() != null && !g.getGradeLetter().isBlank()) ? g.getGradeLetter().trim() : "F";
+                    finalScore = g.getTotalScore();
+                    scale4Score = convertScale10To4(g.getTotalScore(), g.getGradeLetter());
+                }
+            } else if (Boolean.TRUE.equals(cs.getIsCompleted())) {
+                status = "COMPLETED";
+                statusLabel = "Đã đạt";
+                gradeLetter = "P";
+                completedCredits += credits;
+                completedCount++;
+            }
+
+            courseDtos.add(CurriculumCourseDto.builder()
+                    .id(cs.getId())
+                    .courseCode(cs.getCourseCode())
+                    .courseName(cs.getCourseName())
+                    .credits(credits)
+                    .semesterRecommended(sem)
+                    .knowledgeBlock(knowledgeBlock)
+                    .status(status)
+                    .statusLabel(statusLabel)
+                    .gradeLetter(gradeLetter)
+                    .finalScore(finalScore)
+                    .scale4Score(scale4Score)
+                    .build());
+        }
+
+        // Đảm bảo tổng tín chỉ chuẩn theo ngành (tối thiểu 132 TC)
+        if (totalRequiredCredits < 132 && totalRequiredCredits > 0) {
+            totalRequiredCredits = 132;
+        }
+
+        int remainingCredits = Math.max(0, totalRequiredCredits - completedCredits);
+        double progressPercentage = totalRequiredCredits > 0
+                ? Math.min(100.0, Math.round(((double) completedCredits / totalRequiredCredits) * 1000.0) / 10.0)
+                : 0.0;
+
+        int totalCourses = courseDtos.size();
+        int remainingCourses = Math.max(0, totalCourses - completedCount - inProgressCount);
+
+        StudentProfile profile = profileOpt.orElse(null);
+        SyncHistory latestHistory = histories.isEmpty() ? null : histories.get(0);
+
+        return CurriculumSummaryDto.builder()
+                .studentId(studentId)
+                .studentName(profile != null ? profile.getFullName() : "Sinh viên " + studentId)
+                .major(profile != null && profile.getMajor() != null ? profile.getMajor() : "Công nghệ Thông tin")
+                .faculty(profile != null && profile.getFaculty() != null ? profile.getFaculty() : "Khoa CNTT")
+                .className(profile != null && profile.getStudentClass() != null ? profile.getStudentClass() : "--")
+                .academicYear(profile != null && profile.getAcademicYear() != null ? profile.getAcademicYear() : "2021 - 2025")
+                .totalRequiredCredits(totalRequiredCredits)
+                .completedCredits(completedCredits)
+                .inProgressCredits(inProgressCredits)
+                .remainingCredits(remainingCredits)
+                .progressPercentage(progressPercentage)
+                .completedCoursesCount(completedCount)
+                .inProgressCoursesCount(inProgressCount)
+                .remainingCoursesCount(remainingCourses)
+                .totalCoursesCount(totalCourses)
+                .courses(courseDtos)
+                .lastSyncedAt(latestHistory != null ? latestHistory.getSyncedAt() : LocalDateTime.now())
+                .syncStatus(latestHistory != null ? latestHistory.getStatus() : "LIVE_PORTAL")
+                .build();
+    }
+
+    private String resolveKnowledgeBlock(int semester, String courseName) {
+        if (courseName != null) {
+            String lower = courseName.toLowerCase();
+            if (lower.contains("khóa luận") || lower.contains("đồ án tốt nghiệp") || lower.contains("thực tập")) {
+                return "Thực tập & Tốt nghiệp";
+            }
+        }
+        if (semester <= 2) {
+            return "Đại cương";
+        } else if (semester <= 4) {
+            return "Cơ sở ngành";
+        } else if (semester <= 6) {
+            return "Chuyên ngành";
+        } else {
+            return "Thực tập & Tốt nghiệp";
+        }
+    }
+
+    private double convertScale10To4(Double score10, String letter) {
         if (letter != null && !letter.isBlank()) {
             return switch (letter.trim().toUpperCase()) {
                 case "A+", "A" -> 4.0;
@@ -797,6 +1015,7 @@ public class HcmuteCrawlerService {
                 default -> 0.0;
             };
         }
+        if (score10 == null) return 0.0;
         if (score10 >= 8.5) return 4.0;
         if (score10 >= 8.0) return 3.5;
         if (score10 >= 7.0) return 3.0;
@@ -945,11 +1164,16 @@ public class HcmuteCrawlerService {
         list.add(createGrade(studentId, "DBMS330264", "Hệ cơ sở dữ liệu", 3, 8.5, 9.0, 8.8, "A", "Học kỳ 1 (2024-2025)", true));
         list.add(createGrade(studentId, "MATH230301", "Xác suất thống kê", 3, 7.5, 7.5, 7.5, "B", "Học kỳ 1 (2024-2025)", true));
 
+        // HK01 (2025-2026) - Học phần đang học (chưa có điểm thi cuối kỳ & tổng kết)
+        list.add(createGrade(studentId, "SWEN330252", "Công nghệ phần mềm", 3, 8.5, null, null, "", "Học kỳ 1 (2025-2026)", null));
+        list.add(createGrade(studentId, "WENG330154", "Lập trình Web nâng cao", 3, null, null, null, "", "Học kỳ 1 (2025-2026)", null));
+        list.add(createGrade(studentId, "MOBL330354", "Phát triển ứng dụng di động", 3, 8.0, null, null, "", "Học kỳ 1 (2025-2026)", null));
+
         return list;
     }
 
     private StudentGrade createGrade(String studentId, String code, String name, int credits,
-                                     Double midterm, Double finalScore, Double total, String letter, String semester, boolean passed) {
+                                     Double midterm, Double finalScore, Double total, String letter, String semester, Boolean passed) {
         return StudentGrade.builder()
                 .studentId(studentId)
                 .courseCode(code)
@@ -964,6 +1188,29 @@ public class HcmuteCrawlerService {
                 .build();
     }
 
+    public static String[] calculateTimesFromShift(String shift) {
+        if (shift == null || shift.isBlank()) return new String[]{"07:30", "09:45"};
+        String[] startTimes = {
+            "", "07:30", "08:15", "09:00", "10:00", "10:45", "11:30",
+            "13:00", "13:45", "14:30", "15:30", "16:15", "17:00",
+            "18:00", "18:45", "19:30"
+        };
+        String[] endTimes = {
+            "", "08:15", "09:00", "09:45", "10:45", "11:30", "12:15",
+            "13:45", "14:30", "15:15", "16:15", "17:00", "17:45",
+            "18:45", "19:30", "20:15"
+        };
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d+)\\s*[-–]\\s*(\\d+)").matcher(shift);
+        if (m.find()) {
+            int s = Integer.parseInt(m.group(1));
+            int e = Integer.parseInt(m.group(2));
+            String start = (s >= 1 && s < startTimes.length) ? startTimes[s] : "07:30";
+            String end = (e >= 1 && e < endTimes.length) ? endTimes[e] : "09:45";
+            return new String[]{start, end};
+        }
+        return new String[]{"07:30", "09:45"};
+    }
+
     private List<CourseSchedule> generateDemoSchedules(String studentId) {
         List<CourseSchedule> list = new ArrayList<>();
         String semester = "HK01 (2024-2025)";
@@ -974,9 +1221,13 @@ public class HcmuteCrawlerService {
                 .courseName("Lập trình hướng đối tượng")
                 .dayOfWeek("Thứ 2")
                 .shift("Tiết 1 - 3")
+                .startTime("07:30")
+                .endTime("09:45")
                 .room("A1-302")
                 .lecturer("TS. Trần Nam Dũng")
                 .semester(semester)
+                .groupCode("01CLC")
+                .credits(3)
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -985,9 +1236,13 @@ public class HcmuteCrawlerService {
                 .courseName("Phát triển ứng dụng Web")
                 .dayOfWeek("Thứ 3")
                 .shift("Tiết 7 - 9")
+                .startTime("13:00")
+                .endTime("15:15")
                 .room("E1-401")
                 .lecturer("ThS. Nguyễn Văn Toàn")
                 .semester(semester)
+                .groupCode("02CLC")
+                .credits(3)
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -996,9 +1251,13 @@ public class HcmuteCrawlerService {
                 .courseName("Hệ điều hành")
                 .dayOfWeek("Thứ 4")
                 .shift("Tiết 4 - 6")
+                .startTime("10:00")
+                .endTime("12:15")
                 .room("B2-205")
                 .lecturer("PGS.TS. Lê Hoài Bắc")
                 .semester(semester)
+                .groupCode("01")
+                .credits(3)
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -1007,9 +1266,13 @@ public class HcmuteCrawlerService {
                 .courseName("Mạng máy tính")
                 .dayOfWeek("Thứ 5")
                 .shift("Tiết 1 - 3")
+                .startTime("07:30")
+                .endTime("09:45")
                 .room("C1-102")
                 .lecturer("ThS. Đỗ Thị Thu Hiền")
                 .semester(semester)
+                .groupCode("03")
+                .credits(3)
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -1018,9 +1281,28 @@ public class HcmuteCrawlerService {
                 .courseName("Trí tuệ nhân tạo")
                 .dayOfWeek("Thứ 6")
                 .shift("Tiết 7 - 9")
+                .startTime("13:00")
+                .endTime("15:15")
                 .room("E1-304")
                 .lecturer("TS. Hoàng Lê Minh")
                 .semester(semester)
+                .groupCode("01CLC")
+                .credits(3)
+                .build());
+
+        list.add(CourseSchedule.builder()
+                .studentId(studentId)
+                .courseCode("ENG202")
+                .courseName("Tiếng Anh chuyên ngành CNTT 2")
+                .dayOfWeek("Thứ 7")
+                .shift("Tiết 2 - 4")
+                .startTime("08:15")
+                .endTime("10:45")
+                .room("C1-204")
+                .lecturer("Cô Sarah Jenkins")
+                .semester(semester)
+                .groupCode("02")
+                .credits(3)
                 .build());
 
         return list;

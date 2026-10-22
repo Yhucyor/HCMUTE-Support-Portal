@@ -1,386 +1,1058 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
-
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <title>Tra Cứu Câu Hỏi Thường Gặp (FAQ) - QAUTE Portal</title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Trung tâm trợ giúp sinh viên - FAQ | HCMUTE Support Portal</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .faq-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+    </style>
+
+    <!-- Tailwind CSS with Academic Horizon & HCMUTE Tokens -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0037b0",
+                        "primary-fixed": "#dce1ff",
+                        "surface-tint": "#2151da",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-surface": "#0b1c30",
+                        "tertiary-container": "#0051d6",
+                        "secondary": "#565e74",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#434655",
+                        "on-tertiary-container": "#c9d4ff",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#e5eeff",
+                        "inverse-primary": "#b7c4ff",
+                        "on-secondary-container": "#5c647a",
+                        "secondary-fixed": "#dae2fd",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-primary-container": "#cad3ff",
+                        "tertiary-fixed": "#dbe1ff",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#003ea8",
+                        "surface-variant": "#d3e4fe",
+                        "surface-container-high": "#dce9ff",
+                        "secondary-container": "#dae2fd",
+                        "tertiary": "#003ca3",
+                        "inverse-surface": "#213145",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container-highest": "#d3e4fe",
+                        "background": "#f8f9ff",
+                        "primary-container": "#1d4ed8",
+                        "surface": "#f8f9ff",
+                        "surface-container-low": "#eff4ff",
+                        "surface-bright": "#f8f9ff",
+                        "on-primary-fixed": "#001551",
+                        "outline-variant": "#c4c5d7",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed": "#131b2e",
+                        "primary-fixed-dim": "#b7c4ff",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed": "#00174b",
+                        "outline": "#747686",
+                        "tertiary-fixed-dim": "#b4c5ff",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "on-background": "#0b1c30",
+                        "brand-red": "#991b1e",
+                        "brand-red-hover": "#831518",
+                        "brand-blue": "#003882",
+                        "brand-blue-dark": "#002456"
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        heading: ["Outfit", "sans-serif"]
+                    }
+                }
+            }
+        };
+    </script>
 </head>
+<body class="bg-[#f8f9ff] font-sans text-sm text-[#0b1c30] antialiased min-h-screen flex flex-col selection:bg-[#991b1e] selection:text-white">
 
-<body>
-    <div th:fragment="content">
-
-        <!-- Title Section -->
-        <div
-            class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 pb-2 border-bottom">
-            <div>
-                <h4 class="fw-bold text-dark mb-1 d-flex align-items-center">
-                    <i class="bi bi-question-diamond-fill text-primary me-2"></i>Tra Cứu Câu Hỏi Thường Gặp (FAQ)
-                </h4>
-                <p class="small text-muted mb-0">Hệ thống giải đáp học vụ, quy chế đào tạo, học phí và đời sống sinh
-                    viên</p>
-            </div>
-            <div class="mt-3 mt-md-0">
-                <a th:href="@{/tickets/create}" class="btn btn-primary btn-sm px-3 shadow-sm">
-                    <i class="bi bi-plus-circle me-1"></i>Không tìm thấy? Gửi Ticket
-                </a>
-            </div>
-        </div>
-
-        <!-- Live Search Input Box -->
-        <div class="card p-3 p-md-4 mb-4 shadow-sm border rounded-3 bg-white">
-            <div class="input-group input-group-lg shadow-none">
-                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                <input type="text" id="faqSearchInput" th:value="${query}"
-                    class="form-control bg-light border-start-0 ps-1"
-                    placeholder="Nhập từ khóa tìm kiếm (Ví dụ: học phí, TOEIC, đăng ký môn học, học bổng...)"
-                    autocomplete="off">
-                <button class="btn btn-primary px-4 fw-semibold d-flex align-items-center" type="button"
-                    id="btnExecuteSearch">
-                    <span id="searchSpinner" class="spinner-border spinner-border-sm me-2 d-none" role="status"></span>
-                    <span id="searchText">Tìm Kiếm</span>
-                </button>
-            </div>
-
-            <!-- Suggested Quick Search Tags -->
-            <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-2 border-top">
-                <small class="text-muted fw-semibold me-1"><i class="bi bi-tags-fill me-1"></i>Từ khóa gợi ý:</small>
-                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill quick-tag-btn"
-                    data-tag="học phí">học phí</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill quick-tag-btn"
-                    data-tag="TOEIC chuẩn đầu ra">TOEIC đầu ra</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill quick-tag-btn"
-                    data-tag="đăng ký môn học">đăng ký môn học</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill quick-tag-btn"
-                    data-tag="học bổng">học bổng</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill quick-tag-btn"
-                    data-tag="xét tốt nghiệp">xét tốt nghiệp</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill quick-tag-btn"
-                    data-tag="bảo lưu">bảo lưu</button>
-
-                <button type="button" id="btnClearSearch"
-                    class="btn btn-link btn-sm text-decoration-none text-danger ms-auto p-0 d-none">
-                    <i class="bi bi-x-circle me-1"></i>Xóa tìm kiếm
-                </button>
-            </div>
-        </div>
-
-        <!-- Department Filter Pills -->
-        <div class="d-flex flex-wrap gap-2 mb-4 align-items-center">
-            <span class="small fw-bold text-muted me-1"><i class="bi bi-funnel-fill me-1"></i>Đơn vị:</span>
-            <a th:href="@{/faqs}" class="btn btn-sm rounded-pill"
-                th:classappend="${selectedDept == null ? 'btn-primary' : 'btn-outline-secondary'}">
-                Tất cả
+    <!-- 1. TOP GLOBAL HEADER -->
+    <header class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all h-[74px]">
+        <div class="w-full px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+            <!-- Logo HCMUTE -->
+            <a class="flex items-center gap-3 group py-1.5" th:href="@{/}">
+                <img alt="HCMUTE Logo" class="h-12 w-auto object-contain transition-transform group-hover:scale-105" 
+                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKSHNb9YZP8QFQKzZ-_B_glnPE615kLoTh0DIZM9-id7Eb1Z7EZXRKcjBeCckK7VOaTPGdnMs7Cl7qdtjr1Mry3Y7d1U0S8maxw8fAHipOBnT-HFyaVBuqc6xe0fMZJf4fPlHw6UIkL0vHJV2kfl-tnjJgobCtm7Cy-KazrUCaEZefkxCcT9HC_-zWiT9twVqKg6xymALE7_hrVpAjI-XYdTFsbm3wyDRY8PxAR-vjOB00BqpW9wX9dVryQuIfZgdSA">
+                <div class="flex flex-col text-[#003882]">
+                    <span class="font-bold text-sm sm:text-base tracking-tight leading-tight text-[#003882]">Trường Đại học Sư phạm Kỹ thuật Tp. Hồ Chí Minh</span>
+                    <span class="font-normal text-[11px] sm:text-xs text-[#003882] tracking-normal leading-normal">HCMC University of Technology and Education</span>
+                </div>
             </a>
-            <a th:each="dept : ${departments}" th:href="@{/faqs(departmentId=${dept.id})}"
-                class="btn btn-sm rounded-pill"
-                th:classappend="${selectedDept == dept.id ? 'btn-primary' : 'btn-outline-secondary'}"
-                th:text="${dept.name}">
-                Phòng Ban
-            </a>
-        </div>
 
-        <!-- Results Status Meta Bar -->
-        <div id="searchResultsMeta" class="d-flex justify-content-between align-items-center mb-3"
-            th:classappend="${!isSearchMode ? 'd-none' : ''}">
-            <div>
-                <span class="badge bg-primary px-2 py-1" id="resultsCountBadge"
-                    th:text="${searchResults != null ? searchResults.size() + ' câu hỏi' : '0 câu hỏi'}">0 câu
-                    hỏi</span>
-                <span class="small text-muted ms-2" id="resultsDetailText"
-                    th:text="${isSearchMode ? 'Kết quả tìm kiếm cho từ khóa: &quot;' + query + '&quot;' : ''}"></span>
+            <!-- Nav Items (Desktop) -->
+            <nav class="hidden xl:flex items-center space-x-7">
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/}">Trang chủ</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/feed/forum}">Diễn đàn</a>
+                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/ai-chat}">Hỗ trợ AI</a>
+                <a class="font-semibold text-[14px] text-[#991b1e] border-b-2 border-[#991b1e] pb-1" th:href="@{/faqs}">Tra cứu FAQ</a>
+            </nav>
+
+            <!-- Header Actions -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="hidden sm:flex items-center text-xs font-semibold text-slate-600 px-2 py-1 rounded cursor-pointer hover:bg-slate-100">
+                    <span>VI</span>
+                    <span class="material-symbols-outlined text-[16px]">expand_more</span>
+                </div>
+
+                <!-- Đã đăng nhập: Nút Dashboard & Logout -->
+                <div sec:authorize="isAuthenticated()" class="flex items-center gap-2">
+                    <a th:href="@{/dashboard}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95" th:title="${currentUserFullName != null ? currentUserFullName : 'Tài khoản'}">
+                        <span class="material-symbols-outlined text-[16px]">account_circle</span>
+                        <span class="hidden sm:inline truncate max-w-[150px]" th:text="${currentUserFullName != null ? currentUserFullName : 'Tài khoản'}">Họ Tên</span>
+                    </a>
+                    <a th:href="@{/auth/logout}" class="p-2 text-slate-500 hover:text-[#991b1e] hover:bg-slate-100 rounded-md transition-colors" title="Đăng xuất">
+                        <span class="material-symbols-outlined text-[18px]">logout</span>
+                    </a>
+                </div>
+
+                <!-- Chưa đăng nhập: Nút Đăng nhập -->
+                <div sec:authorize="!isAuthenticated()">
+                    <a class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#991b1e] hover:bg-[#831518] rounded-md shadow-sm transition-all active:scale-95" th:href="@{/auth/login}">
+                        <span class="material-symbols-outlined text-[16px]">person</span>
+                        <span>Đăng nhập</span>
+                    </a>
+                </div>
             </div>
         </div>
+    </header>
 
-        <!-- Section Title for Default Mode -->
-        <div id="defaultSectionTitle" class="mb-3" th:classappend="${isSearchMode ? 'd-none' : ''}">
-            <h6 class="fw-bold text-secondary mb-0">
-                <i class="bi bi-pin-angle-fill text-warning me-1"></i>Câu hỏi thường gặp tiêu biểu
-            </h6>
-        </div>
+    <!-- 2. MAIN FAQ WORKSPACE -->
+    <main class="flex-1 w-full pt-[90px] pb-16">
+        <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-        <!-- FAQ Results Accordion Container -->
-        <div id="faqResultsContainer" class="accordion shadow-sm">
+            <!-- Breadcrumb Navigation -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+                <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-[#565e74]">
+                    <a class="hover:text-[#0037b0] transition-colors flex items-center gap-1 font-medium" th:href="@{/}">
+                        <span class="material-symbols-outlined text-[16px]">home</span>
+                        <span>Trang chủ</span>
+                    </a>
+                    <span class="text-[#c4c5d7]">/</span>
+                    <span class="hover:text-[#0037b0] transition-colors cursor-pointer">Dịch vụ sinh viên</span>
+                    <span class="text-[#c4c5d7]">/</span>
+                    <span class="text-[#0037b0] font-semibold">Câu hỏi thường gặp (FAQ)</span>
+                </nav>
+                <div class="text-[11px] text-[#565e74] flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span>Cập nhật liên tục từ Phòng Đào tạo &amp; CTSV</span>
+                </div>
+            </div>
 
-            <!-- Render khi ở chế độ Tìm kiếm (Server-side ban đầu nếu có) -->
-            <th:block th:if="${isSearchMode}">
-                <div th:if="${#lists.isEmpty(searchResults)}"
-                    class="card p-5 text-center text-muted border shadow-sm rounded-3">
-                    <i class="bi bi-search fs-1 text-warning mb-3"></i>
-                    <h5 class="fw-bold text-dark mb-2">Không tìm thấy câu hỏi phù hợp</h5>
-                    <p class="mb-3 text-muted">Hệ thống chưa có câu hỏi có sẵn liên quan đến từ khóa "<strong
-                            th:text="${query}"></strong>".</p>
-                    <div>
-                        <a th:href="@{/tickets/create(title=${query})}"
-                            class="btn btn-primary px-4 fw-semibold shadow-sm">
-                            <i class="bi bi-ticket-perforated me-1"></i>Gửi Ticket đến Cán Bộ Chuyên Môn
+            <!-- Page Title Hero Header Card -->
+            <div class="relative overflow-hidden rounded-2xl bg-white border border-[#e2e8f0] p-6 sm:p-8 shadow-sm">
+                <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="space-y-2">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#dce1ff]/70 text-[#0037b0] text-[11px] font-bold tracking-wide uppercase">
+                            <span class="material-symbols-outlined text-[14px]">support_agent</span>
+                            <span>QAUTE HELP DESK 24/7</span>
+                        </div>
+                        <div class="flex items-center gap-3 pt-1">
+                            <div class="w-12 h-12 rounded-xl bg-[#0037b0] flex items-center justify-center text-white shadow-md">
+                                <span class="material-symbols-outlined text-[28px]">help_center</span>
+                            </div>
+                            <div>
+                                <h1 class="font-heading font-bold text-2xl sm:text-3xl text-[#0b1c30] tracking-tight">
+                                    Trung tâm trợ giúp sinh viên
+                                </h1>
+                                <p class="text-xs sm:text-sm text-[#434655] pt-0.5">
+                                    Kho tri thức giải đáp quy chế đào tạo, học bổng, học phí, điểm số và dịch vụ một cửa HCMUTE.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="shrink-0 flex items-center gap-3">
+                        <a th:href="@{/ticket}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0037b0] text-white text-xs font-semibold shadow-sm hover:bg-[#2151da] transition-all active:scale-95">
+                            <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                            <span>Gửi yêu cầu hỗ trợ</span>
+                        </a>
+                        <a th:href="@{/ai-chat}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#eff4ff] text-[#0037b0] border border-[#dce1ff] text-xs font-semibold hover:bg-[#dce1ff] transition-all">
+                            <span class="material-symbols-outlined text-[18px]">smart_toy</span>
+                            <span>Trợ lý AI RAG</span>
                         </a>
                     </div>
                 </div>
-
-                <div th:each="faq, iter : ${searchResults}"
-                    class="accordion-item mb-2 border rounded overflow-hidden shadow-sm">
-                    <h2 class="accordion-header" th:id="'resHeading_' + ${iter.index}">
-                        <button class="accordion-button collapsed fw-semibold text-dark py-3" type="button"
-                            data-bs-toggle="collapse" th:data-bs-target="'#resCollapse_' + ${iter.index}"
-                            aria-expanded="false" th:aria-controls="'resCollapse_' + ${iter.index}">
-                            <span class="badge bg-primary bg-opacity-10 text-primary me-2 px-2 py-1"
-                                th:text="${faq.departmentName}">Phòng Đào tạo</span>
-                            <span class="badge bg-light text-muted border me-2 px-2 py-1" th:text="${faq.category}">Học
-                                vụ</span>
-                            <span class="badge bg-light text-secondary border me-2 px-2 py-1" th:if="${faq.formattedDate != null and !#strings.isEmpty(faq.formattedDate)}">
-                                <i class="bi bi-clock me-1 text-primary"></i><span th:text="${faq.formattedDate}">21/09/2026 03:18</span>
-                            </span>
-                            <span class="text-dark" th:text="${faq.question}">Nội dung câu hỏi</span>
-                        </button>
-                    </h2>
-                    <div th:id="'resCollapse_' + ${iter.index}" class="accordion-collapse collapse"
-                        th:aria-labelledby="'resHeading_' + ${iter.index}" data-bs-parent="#faqResultsContainer">
-                        <div class="accordion-body bg-light text-secondary">
-                            <p class="mb-2 fw-semibold text-primary"><i class="bi bi-chat-quote-fill me-1"></i>Giải đáp
-                                chính thức:</p>
-                            <div class="bg-white p-3 rounded border text-dark shadow-sm"
-                                style="white-space: pre-line; line-height: 1.6;" th:text="${faq.answer}">
-                                Nội dung trả lời
-                            </div>
-                            <div class="mt-3 pt-2 border-top d-flex justify-content-between align-items-center">
-                                <small class="text-muted">Chưa giải quyết được thắc mắc của bạn?</small>
-                                <a th:href="@{/tickets/create(title=${faq.question})}"
-                                    class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-envelope-plus me-1"></i>Gửi Ticket cho Cán bộ
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </th:block>
-
-            <!-- Render mặc định (Top FAQs tiêu biểu) khi chưa gõ tìm kiếm -->
-            <th:block th:unless="${isSearchMode}">
-                <div th:each="faq, iter : ${topFaqs}"
-                    class="accordion-item mb-2 border rounded overflow-hidden shadow-sm">
-                    <h2 class="accordion-header" th:id="'topHeading_' + ${iter.index}">
-                        <button class="accordion-button collapsed fw-semibold text-dark py-3" type="button"
-                            data-bs-toggle="collapse" th:data-bs-target="'#topCollapse_' + ${iter.index}"
-                            aria-expanded="false" th:aria-controls="'topCollapse_' + ${iter.index}">
-                            <span class="badge bg-primary bg-opacity-10 text-primary me-2 px-2 py-1"
-                                th:text="${faq.department != null ? faq.department.name : 'Phòng Đào tạo'}">Đơn
-                                vị</span>
-                            <span class="badge bg-light text-muted border me-2 px-2 py-1"
-                                th:text="${faq.category != null ? faq.category : 'Học vụ'}">Quy chế</span>
-                            <span class="badge bg-light text-secondary border me-2 px-2 py-1">
-                                <i class="bi bi-clock me-1 text-primary"></i><span th:text="${faq.postDate != null ? #temporals.format(faq.postDate, 'dd/MM/yyyy HH:mm') : #temporals.format(faq.createdAt, 'dd/MM/yyyy HH:mm')}">21/09/2026 03:18</span>
-                            </span>
-                            <span class="text-dark" th:text="${faq.question}">Câu hỏi tiêu biểu</span>
-                        </button>
-                    </h2>
-                    <div th:id="'topCollapse_' + ${iter.index}" class="accordion-collapse collapse"
-                        th:aria-labelledby="'topHeading_' + ${iter.index}" data-bs-parent="#faqResultsContainer">
-                        <div class="accordion-body bg-light text-secondary">
-                            <p class="mb-2 fw-semibold text-primary"><i class="bi bi-chat-quote-fill me-1"></i>Giải đáp
-                                chính thức:</p>
-                            <div class="bg-white p-3 rounded border text-dark shadow-sm"
-                                style="white-space: pre-line; line-height: 1.6;" th:text="${faq.answer}">
-                                Nội dung trả lời
-                            </div>
-                            <div class="mt-3 pt-2 border-top d-flex justify-content-between align-items-center">
-                                <small class="text-muted">Chưa giải quyết được thắc mắc của bạn?</small>
-                                <a th:href="@{/tickets/create(title=${faq.question})}"
-                                    class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-envelope-plus me-1"></i>Gửi Ticket cho Cán bộ
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </th:block>
-        </div>
-
-        <!-- Bottom Help Banner -->
-        <div class="card bg-light border-0 p-4 mt-5 text-center rounded-3">
-            <h6 class="fw-bold text-dark mb-1">Không tìm thấy câu trả lời cho trường hợp của bạn?</h6>
-            <p class="small text-muted mb-3">Mỗi sinh viên có thể có hoàn cảnh và thắc mắc học vụ riêng. Cán bộ
-                Khoa/Phòng luôn sẵn sàng hỗ trợ bạn theo chuẩn SLA cam kết thời gian.</p>
-            <div>
-                <a th:href="@{/tickets/create}" class="btn btn-primary px-4 fw-semibold shadow-sm">
-                    <i class="bi bi-ticket-detailed me-1"></i>Tạo Yêu Cầu Hỗ Trợ Mới (Ticket)
-                </a>
+                <!-- Subtle Decorative Accent Background -->
+                <div class="absolute -right-8 -bottom-8 w-56 h-56 bg-gradient-to-br from-[#dce1ff]/60 to-[#eff4ff] rounded-full blur-2xl pointer-events-none"></div>
             </div>
-        </div>
 
-        <!-- Live Instant Search Script (Clean & Accurate) -->
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const input = document.getElementById('faqSearchInput');
-                const btn = document.getElementById('btnExecuteSearch');
-                const btnClear = document.getElementById('btnClearSearch');
-                const container = document.getElementById('faqResultsContainer');
-                const spinner = document.getElementById('searchSpinner');
-                const btnText = document.getElementById('searchText');
-                const metaSec = document.getElementById('searchResultsMeta');
-                const countBadge = document.getElementById('resultsCountBadge');
-                const detailText = document.getElementById('resultsDetailText');
-                const defaultSectionTitle = document.getElementById('defaultSectionTitle');
+            <!-- Search Section (Primary Focus) -->
+            <div class="rounded-2xl bg-white border border-[#e2e8f0] p-5 sm:p-6 shadow-sm space-y-4">
+                <form th:action="@{/faqs}" method="get" id="faq-search-form" class="max-w-4xl mx-auto space-y-3">
+                    <div class="relative flex items-center bg-[#eff4ff] rounded-xl shadow-inner border border-[#dce1ff]/60 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#0037b0]/30 transition-all p-1.5">
+                        <span class="material-symbols-outlined text-[#747686] pl-3 pr-2 text-[24px] select-none">search</span>
+                        <input class="flex-1 bg-transparent py-2 px-2 text-sm text-[#0b1c30] placeholder-[#747686] focus:outline-none" 
+                               id="faq-search-input" 
+                               name="q" 
+                               th:value="${query}" 
+                               placeholder="Bạn cần tìm thông tin gì? Ví dụ: học phí, đăng ký học phần, TOEIC, học bổng..." 
+                               type="text" 
+                               autocomplete="off">
+                        <button class="p-1.5 text-[#747686] hover:text-[#0b1c30] rounded-lg hover:bg-[#e5eeff] transition-colors hidden" 
+                                id="search-clear-btn" 
+                                title="Xóa nội dung" 
+                                type="button">
+                            <span class="material-symbols-outlined text-[20px]">close</span>
+                        </button>
+                        <button class="ml-1 inline-flex items-center gap-1.5 px-6 py-2.5 rounded-lg bg-[#0037b0] text-white text-xs font-semibold hover:bg-[#2151da] shadow-sm transition-all cursor-pointer" 
+                                id="search-submit-btn" 
+                                type="submit">
+                            <span>Tìm kiếm</span>
+                        </button>
+                    </div>
 
-                // Lưu lại HTML ban đầu phục vụ khôi phục khi xóa tìm kiếm
-                const initialHtml = container.innerHTML;
-                let debounceTimer = null;
+                    <!-- Popular Search Chips -->
+                    <div class="flex flex-wrap items-center gap-2 pt-1 text-xs">
+                        <span class="text-[11px] font-semibold text-[#565e74] uppercase tracking-wider flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[15px] text-[#0037b0]">trending_up</span>
+                            Tìm kiếm phổ biến:
+                        </span>
+                        <button class="search-chip px-3 py-1 rounded-full bg-[#eff4ff] hover:bg-[#dce1ff] text-[#434655] hover:text-[#0037b0] border border-[#dce1ff] transition-all cursor-pointer" type="button">Học phí</button>
+                        <button class="search-chip px-3 py-1 rounded-full bg-[#eff4ff] hover:bg-[#dce1ff] text-[#434655] hover:text-[#0037b0] border border-[#dce1ff] transition-all cursor-pointer" type="button">TOEIC đầu ra</button>
+                        <button class="search-chip px-3 py-1 rounded-full bg-[#eff4ff] hover:bg-[#dce1ff] text-[#434655] hover:text-[#0037b0] border border-[#dce1ff] transition-all cursor-pointer" type="button">Đăng ký học phần</button>
+                        <button class="search-chip px-3 py-1 rounded-full bg-[#eff4ff] hover:bg-[#dce1ff] text-[#434655] hover:text-[#0037b0] border border-[#dce1ff] transition-all cursor-pointer" type="button">Học bổng</button>
+                        <button class="search-chip px-3 py-1 rounded-full bg-[#eff4ff] hover:bg-[#dce1ff] text-[#434655] hover:text-[#0037b0] border border-[#dce1ff] transition-all cursor-pointer" type="button">Xét tốt nghiệp</button>
+                        <button class="search-chip px-3 py-1 rounded-full bg-[#eff4ff] hover:bg-[#dce1ff] text-[#434655] hover:text-[#0037b0] border border-[#dce1ff] transition-all cursor-pointer" type="button">Bảo lưu</button>
+                    </div>
+                </form>
+            </div>
 
-                function doSearch() {
-                    const q = input.value.trim();
-                    if (!q) {
-                        resetToInitial();
-                        return;
-                    }
+            <!-- Category Navigation Pills -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="font-heading font-bold text-lg text-[#0b1c30] tracking-tight">Danh mục hỗ trợ</h2>
+                        <p class="text-xs text-[#565e74]">Chọn danh mục bên dưới để lọc câu hỏi nhanh chóng</p>
+                    </div>
+                </div>
 
-                    // UI Loading
-                    spinner.classList.remove('d-none');
-                    btnText.textContent = 'Đang tìm...';
-                    btnClear.classList.remove('d-none');
-                    if (defaultSectionTitle) defaultSectionTitle.classList.add('d-none');
+                <div class="flex flex-wrap items-center gap-2.5 pt-1" id="category-grid">
+                    <button class="category-card category-pill px-4 py-2 rounded-full text-xs font-semibold bg-[#0037b0] text-white border border-[#0037b0] shadow-sm flex items-center gap-1.5 transition-all cursor-pointer" 
+                            data-category="all" 
+                            type="button" 
+                            onclick="selectCategory(this, 'all')">
+                        <span class="material-symbols-outlined text-[16px]">apps</span>
+                        <span>Tất cả</span>
+                        <span class="pill-count px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20 text-white" id="count-all">10</span>
+                    </button>
+                    
+                    <button class="category-card category-pill px-4 py-2 rounded-full text-xs font-medium bg-white text-[#434655] hover:text-[#0037b0] hover:bg-[#eff4ff] border border-[#c4c5d7]/60 hover:border-[#0037b0]/40 shadow-sm flex items-center gap-1.5 transition-all cursor-pointer" 
+                            data-category="hoc-vu" 
+                            type="button" 
+                            onclick="selectCategory(this, 'hoc-vu')">
+                        <span class="material-symbols-outlined text-[16px]">school</span>
+                        <span>Học vụ &amp; đào tạo</span>
+                        <span class="pill-count px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-[#eff4ff] text-[#0037b0]" id="count-hoc-vu">3</span>
+                    </button>
 
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const deptId = urlParams.get('departmentId');
-                    const deptParam = deptId ? `&departmentId=${encodeURIComponent(deptId)}` : '';
+                    <button class="category-card category-pill px-4 py-2 rounded-full text-xs font-medium bg-white text-[#434655] hover:text-[#0037b0] hover:bg-[#eff4ff] border border-[#c4c5d7]/60 hover:border-[#0037b0]/40 shadow-sm flex items-center gap-1.5 transition-all cursor-pointer" 
+                            data-category="hoc-phi" 
+                            type="button" 
+                            onclick="selectCategory(this, 'hoc-phi')">
+                        <span class="material-symbols-outlined text-[16px]">account_balance_wallet</span>
+                        <span>Học phí &amp; tài chính</span>
+                        <span class="pill-count px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-[#eff4ff] text-[#0037b0]" id="count-hoc-phi">2</span>
+                    </button>
 
-                    fetch(`/api/v1/faqs/match?q=${encodeURIComponent(q)}${deptParam}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            spinner.classList.add('d-none');
-                            btnText.textContent = 'Tìm Kiếm';
+                    <button class="category-card category-pill px-4 py-2 rounded-full text-xs font-medium bg-white text-[#434655] hover:text-[#0037b0] hover:bg-[#eff4ff] border border-[#c4c5d7]/60 hover:border-[#0037b0]/40 shadow-sm flex items-center gap-1.5 transition-all cursor-pointer" 
+                            data-category="quy-che" 
+                            type="button" 
+                            onclick="selectCategory(this, 'quy-che')">
+                        <span class="material-symbols-outlined text-[16px]">policy</span>
+                        <span>Quy chế &amp; tốt nghiệp</span>
+                        <span class="pill-count px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-[#eff4ff] text-[#0037b0]" id="count-quy-che">2</span>
+                    </button>
 
-                            if (data.success && data.data && data.data.length > 0) {
-                                renderResults(data.data, q);
-                            } else {
-                                renderEmpty(q);
-                            }
-                        })
-                        .catch(() => {
-                            spinner.classList.add('d-none');
-                            btnText.textContent = 'Tìm Kiếm ';
-                            renderEmpty(q);
-                        });
-                }
+                    <button class="category-card category-pill px-4 py-2 rounded-full text-xs font-medium bg-white text-[#434655] hover:text-[#0037b0] hover:bg-[#eff4ff] border border-[#c4c5d7]/60 hover:border-[#0037b0]/40 shadow-sm flex items-center gap-1.5 transition-all cursor-pointer" 
+                            data-category="ngoai-ngu" 
+                            type="button" 
+                            onclick="selectCategory(this, 'ngoai-ngu')">
+                        <span class="material-symbols-outlined text-[16px]">translate</span>
+                        <span>Ngoại ngữ &amp; chuẩn đầu ra</span>
+                        <span class="pill-count px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-[#eff4ff] text-[#0037b0]" id="count-ngoai-ngu">1</span>
+                    </button>
 
-                function renderResults(items, query) {
-                    metaSec.classList.remove('d-none');
-                    countBadge.textContent = `${items.length} câu hỏi phù hợp`;
-                    detailText.textContent = `Kết quả tìm kiếm cho từ khóa "${escapeHtml(query)}"`;
+                    <button class="category-card category-pill px-4 py-2 rounded-full text-xs font-medium bg-white text-[#434655] hover:text-[#0037b0] hover:bg-[#eff4ff] border border-[#c4c5d7]/60 hover:border-[#0037b0]/40 shadow-sm flex items-center gap-1.5 transition-all cursor-pointer" 
+                            data-category="tai-khoan" 
+                            type="button" 
+                            onclick="selectCategory(this, 'tai-khoan')">
+                        <span class="material-symbols-outlined text-[16px]">manage_accounts</span>
+                        <span>Tài khoản &amp; hệ thống</span>
+                        <span class="pill-count px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-[#eff4ff] text-[#0037b0]" id="count-tai-khoan">1</span>
+                    </button>
 
-                    let html = '';
-                    items.forEach((item, idx) => {
-                        const isFirst = idx === 0;
-                        const deptName = item.departmentName || 'Phòng Đào tạo';
-                        const category = item.category || 'Học vụ';
-                        const dateBadge = item.formattedDate 
-                            ? `<span class="badge bg-light text-secondary border me-2 px-2 py-1"><i class="bi bi-clock me-1 text-primary"></i>${escapeHtml(item.formattedDate)}</span>` 
-                            : '';
+                    <button class="category-card category-pill px-4 py-2 rounded-full text-xs font-medium bg-white text-[#434655] hover:text-[#0037b0] hover:bg-[#eff4ff] border border-[#c4c5d7]/60 hover:border-[#0037b0]/40 shadow-sm flex items-center gap-1.5 transition-all cursor-pointer" 
+                            data-category="dich-vu" 
+                            type="button" 
+                            onclick="selectCategory(this, 'dich-vu')">
+                        <span class="material-symbols-outlined text-[16px]">room_service</span>
+                        <span>Dịch vụ sinh viên</span>
+                        <span class="pill-count px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-[#eff4ff] text-[#0037b0]" id="count-dich-vu">1</span>
+                    </button>
+                </div>
+            </div>
 
-                        html += `
-                        <div class="accordion-item mb-2 border rounded overflow-hidden shadow-sm">
-                            <h2 class="accordion-header" id="dynHeading_${idx}">
-                                <button class="accordion-button ${isFirst ? '' : 'collapsed'} fw-semibold text-dark py-3" type="button" 
-                                        data-bs-toggle="collapse" 
-                                        data-bs-target="#dynCollapse_${idx}" 
-                                        aria-expanded="${isFirst ? 'true' : 'false'}" 
-                                        aria-controls="dynCollapse_${idx}">
-                                    <span class="badge bg-primary bg-opacity-10 text-primary me-2 px-2 py-1">${escapeHtml(deptName)}</span>
-                                    <span class="badge bg-light text-muted border me-2 px-2 py-1">${escapeHtml(category)}</span>
-                                    ${dateBadge}
-                                    <span class="text-dark">${escapeHtml(item.question)}</span>
-                                </button>
-                            </h2>
-                            <div id="dynCollapse_${idx}" class="accordion-collapse collapse ${isFirst ? 'show' : ''}" 
-                                 aria-labelledby="dynHeading_${idx}" data-bs-parent="#faqResultsContainer">
-                                <div class="accordion-body bg-light text-secondary">
-                                    <p class="mb-2 fw-semibold text-primary"><i class="bi bi-chat-quote-fill me-1"></i>Giải đáp chính thức:</p>
-                                    <div class="bg-white p-3 rounded border text-dark shadow-sm" style="white-space: pre-line; line-height: 1.6;">
-                                        ${escapeHtml(item.answer)}
+            <!-- Main Content Grid: 2 Columns (8 / 4) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                <!-- ================= LEFT COLUMN: FAQ ACCORDION (8 Cols) ================= -->
+                <div class="lg:col-span-8 space-y-4">
+                    
+                    <!-- Toolbar (Counter, Tabs, Department Select) -->
+                    <div class="p-3.5 px-5 rounded-2xl bg-white border border-[#e2e8f0] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <h3 class="font-heading font-bold text-base text-[#0b1c30]">Câu hỏi thường gặp</h3>
+                            <span class="px-2.5 py-0.5 rounded-full bg-[#eff4ff] text-[11px] text-[#0037b0] font-bold tracking-wider" id="faq-counter-badge">10 CÂU HỎI</span>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-3">
+                            <!-- Tabs (Tất cả, Phổ biến, Mới cập nhật) -->
+                            <div class="flex items-center gap-1 bg-[#eff4ff] p-1 rounded-xl" id="faq-tabs">
+                                <button class="faq-tab px-3 py-1 rounded-lg text-xs bg-white text-[#0037b0] font-semibold shadow-xs transition-all cursor-pointer" data-tab="all" type="button">Tất cả</button>
+                                <button class="faq-tab px-3 py-1 rounded-lg text-xs text-[#565e74] hover:text-[#0b1c30] transition-all cursor-pointer" data-tab="popular" type="button">Phổ biến</button>
+                                <button class="faq-tab px-3 py-1 rounded-lg text-xs text-[#565e74] hover:text-[#0b1c30] transition-all cursor-pointer" data-tab="recent" type="button">Mới cập nhật</button>
+                            </div>
+
+                            <!-- Department Filter Dropdown -->
+                            <div class="relative">
+                                <select class="h-8 pl-3 pr-8 rounded-lg bg-[#eff4ff] border border-[#dce1ff] text-xs text-[#0b1c30] appearance-none focus:outline-none focus:bg-white focus:border-[#0037b0] cursor-pointer" id="dept-filter">
+                                    <option value="all">Tất cả đơn vị</option>
+                                    <option th:each="dept : ${departments}" th:value="${'dept-' + dept.id}" th:text="${dept.name}">Phòng Đào tạo</option>
+                                    <option value="p-daotao">Phòng Đào tạo</option>
+                                    <option value="p-ctsv">Phòng CTSV &amp; Tuyển sinh</option>
+                                    <option value="p-taichinh">Phòng Kế hoạch - Tài chính</option>
+                                    <option value="k-cntt">Khoa Công nghệ Thông tin</option>
+                                    <option value="k-nn">Khoa Ngoại ngữ</option>
+                                    <option value="tt-cntt">Trung tâm CNTT</option>
+                                </select>
+                                <span class="material-symbols-outlined absolute right-2.5 top-2 text-[#565e74] pointer-events-none text-[18px]">expand_more</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Items List Container -->
+                    <div class="space-y-3" id="faq-list">
+
+                        <!-- Item 1: Đăng ký học phần -->
+                        <div class="faq-item rounded-2xl bg-white border border-[#e2e8f0] shadow-sm transition-all overflow-hidden" 
+                             data-cat="hoc-vu" data-dept="p-daotao" data-type="popular">
+                            <button class="faq-toggle w-full px-5 py-3.5 text-left flex items-start justify-between gap-4 hover:bg-[#f8f9ff] transition-colors cursor-pointer" type="button">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded-full bg-[#dce1ff] text-[#0037b0] text-[10px] font-bold uppercase">Học vụ &amp; đào tạo</span>
+                                        <span class="text-xs text-[#565e74]">Phòng Đào tạo &amp; CTSV</span>
                                     </div>
-                                    <div class="mt-3 pt-2 border-top d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">Chưa giải quyết được thắc mắc của bạn?</small>
-                                        <a href="/tickets/create?title=${encodeURIComponent(item.question)}" class="btn btn-outline-primary btn-sm">
-                                            <i class="bi bi-envelope-plus me-1"></i>Gửi Ticket cho Cán bộ
-                                        </a>
+                                    <div class="font-heading font-semibold text-sm sm:text-base text-[#0b1c30]">Làm thế nào để đăng ký học phần trên hệ thống Portal?</div>
+                                </div>
+                                <div class="w-8 h-8 rounded-lg bg-[#eff4ff] flex items-center justify-center text-[#0037b0] shrink-0 mt-0.5">
+                                    <span class="faq-chevron material-symbols-outlined text-[20px] transition-transform duration-200 rotate-180">expand_more</span>
+                                </div>
+                            </button>
+                            <div class="faq-content px-5 pb-4 pt-1 space-y-3">
+                                <div class="p-4 rounded-xl bg-[#eff4ff] text-[#434655] text-xs sm:text-sm leading-relaxed border border-[#dce1ff]/70">
+                                    Bạn có thể tra cứu thông tin học phần trong mục <strong>Đăng ký học phần</strong> của QAUTE Portal. Kiểm tra học kỳ, lớp học phần và các điều kiện tiên quyết liên quan trước khi bấm xác nhận. Hãy đối chiếu hướng dẫn chính thức của trường khi thực hiện đăng ký để tránh trùng lịch học hoặc vượt quá số tín chỉ quy định tối đa (24 tín chỉ trong học kỳ chính).
+                                </div>
+                                <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                                    <a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0037b0] text-white text-xs font-semibold hover:bg-[#2151da] shadow-xs transition-all" th:href="@{/dashboard}">
+                                        <span>→ Đến trang Đăng ký học phần</span>
+                                    </a>
+                                    <div class="flex items-center gap-2 text-xs text-[#565e74]">
+                                        <span>Nguồn tham khảo:</span>
+                                        <span class="font-semibold text-[#0b1c30]">Sổ tay sinh viên HCMUTE (Mục 3.2, Trang 18)</span>
+                                    </div>
+                                </div>
+                                <div class="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100">
+                                    <span class="text-xs text-[#565e74]">Câu trả lời này có hữu ích không?</span>
+                                    <div class="flex items-center gap-2">
+                                        <button class="helpful-btn px-2.5 py-1 rounded-lg bg-[#eff4ff] hover:bg-[#dce1ff] text-[#0b1c30] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer" type="button" title="Hữu ích">
+                                            <span>👍</span><span class="count text-[#0037b0]">142</span>
+                                        </button>
+                                        <button class="helpful-btn px-2.5 py-1 rounded-lg bg-[#eff4ff] hover:bg-[#dce1ff] text-[#0b1c30] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer" type="button" title="Chưa hữu ích">
+                                            <span>👎</span><span class="count text-[#565e74]">4</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    `;
-                    });
-                    container.innerHTML = html;
-                }
 
-                function renderEmpty(query) {
-                    metaSec.classList.remove('d-none');
-                    countBadge.textContent = '0 kết quả';
-                    detailText.textContent = `Không tìm thấy câu hỏi với từ khóa "${escapeHtml(query)}"`;
+                        <!-- Item 2: Thời khóa biểu -->
+                        <div class="faq-item rounded-2xl bg-white border border-[#e2e8f0] shadow-sm transition-all overflow-hidden" 
+                             data-cat="hoc-vu" data-dept="p-daotao" data-type="popular">
+                            <button class="faq-toggle w-full px-5 py-3.5 text-left flex items-start justify-between gap-4 hover:bg-[#f8f9ff] transition-colors cursor-pointer" type="button">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded-full bg-[#dce1ff] text-[#0037b0] text-[10px] font-bold uppercase">Học vụ</span>
+                                        <span class="text-xs text-[#565e74]">Phòng Đào tạo</span>
+                                    </div>
+                                    <div class="font-heading font-semibold text-sm sm:text-base text-[#0b1c30]">Xem thời khóa biểu học tập ở đâu và khi nào được cập nhật?</div>
+                                </div>
+                                <div class="w-8 h-8 rounded-lg bg-[#eff4ff] flex items-center justify-center text-[#0037b0] shrink-0 mt-0.5">
+                                    <span class="faq-chevron material-symbols-outlined text-[20px] transition-transform duration-200">expand_more</span>
+                                </div>
+                            </button>
+                            <div class="faq-content px-5 pb-4 pt-1 space-y-3 hidden">
+                                <p class="text-xs sm:text-sm text-[#434655] leading-relaxed">
+                                    Sinh viên có thể xem Thời khóa biểu chi tiết theo tuần, học kỳ hoặc in biểu mẫu tại mục "Học vụ cá nhân &gt; Thời khóa biểu". Lịch học sẽ được tự động đồng bộ ngay sau khi đăng ký học phần thành công hoặc khi giảng viên điều chỉnh phòng học.
+                                </p>
+                                <div>
+                                    <a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#eff4ff] hover:bg-[#dce1ff] text-[#0037b0] text-xs font-semibold transition-colors" th:href="@{/dashboard}">
+                                        <span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                                        <span>Xem thời khóa biểu</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
 
-                    container.innerHTML = `
-                    <div class="card p-5 text-center text-muted border shadow-sm rounded-3">
-                        <i class="bi bi-search fs-1 text-warning mb-3"></i>
-                        <h5 class="fw-bold text-dark mb-2">Không tìm thấy câu hỏi phù hợp</h5>
-                        <p class="mb-3 text-muted">Hệ thống chưa tìm thấy câu hỏi có sẵn với từ khóa "<strong>${escapeHtml(query)}</strong>".</p>
-                        <div>
-                            <a href="/tickets/create?title=${encodeURIComponent(query)}" class="btn btn-primary px-4 fw-semibold shadow-sm">
-                                <i class="bi bi-ticket-perforated me-1"></i>Gửi Ticket đến Cán Bộ Chuyên Môn
+                        <!-- Item 3: Bảng điểm & GPA -->
+                        <div class="faq-item rounded-2xl bg-white border border-[#e2e8f0] shadow-sm transition-all overflow-hidden" 
+                             data-cat="hoc-vu" data-dept="p-daotao" data-type="recent">
+                            <button class="faq-toggle w-full px-5 py-3.5 text-left flex items-start justify-between gap-4 hover:bg-[#f8f9ff] transition-colors cursor-pointer" type="button">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded-full bg-[#dce1ff] text-[#0037b0] text-[10px] font-bold uppercase">Học vụ</span>
+                                        <span class="text-xs text-[#565e74]">Phòng Đào tạo</span>
+                                    </div>
+                                    <div class="font-heading font-semibold text-sm sm:text-base text-[#0b1c30]">Làm thế nào để tra cứu bảng điểm và kết quả học tập GPA/CPA?</div>
+                                </div>
+                                <div class="w-8 h-8 rounded-lg bg-[#eff4ff] flex items-center justify-center text-[#0037b0] shrink-0 mt-0.5">
+                                    <span class="faq-chevron material-symbols-outlined text-[20px] transition-transform duration-200">expand_more</span>
+                                </div>
+                            </button>
+                            <div class="faq-content px-5 pb-4 pt-1 space-y-3 hidden">
+                                <p class="text-xs sm:text-sm text-[#434655] leading-relaxed">
+                                    Bảng điểm quá trình, điểm thi kết thúc môn và điểm trung bình tích lũy GPA được cập nhật liên tục tại giao diện "Kết quả học tập". Bạn có thể tải bảng điểm xác nhận điện tử có chữ ký số hoặc nộp đơn xin bảng điểm tiếng Anh.
+                                </p>
+                                <div>
+                                    <a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#eff4ff] hover:bg-[#dce1ff] text-[#0037b0] text-xs font-semibold transition-colors" th:href="@{/dashboard}">
+                                        <span class="material-symbols-outlined text-[16px]">monitoring</span>
+                                        <span>Xem kết quả học tập</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Item 4: Học phí & Thời hạn đóng -->
+                        <div class="faq-item rounded-2xl bg-white border border-[#e2e8f0] shadow-sm transition-all overflow-hidden" 
+                             data-cat="hoc-phi" data-dept="p-taichinh" data-type="popular">
+                            <button class="faq-toggle w-full px-5 py-3.5 text-left flex items-start justify-between gap-4 hover:bg-[#f8f9ff] transition-colors cursor-pointer" type="button">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded-full bg-[#dae2fd] text-[#5c647a] text-[10px] font-bold uppercase">Học phí &amp; Tài chính</span>
+                                        <span class="text-xs text-[#565e74]">Phòng Kế hoạch - Tài chính</span>
+                                    </div>
+                                    <div class="font-heading font-semibold text-sm sm:text-base text-[#0b1c30]">Làm thế nào để tra cứu học phí và thời hạn đóng học phí?</div>
+                                </div>
+                                <div class="w-8 h-8 rounded-lg bg-[#eff4ff] flex items-center justify-center text-[#0037b0] shrink-0 mt-0.5">
+                                    <span class="faq-chevron material-symbols-outlined text-[20px] transition-transform duration-200">expand_more</span>
+                                </div>
+                            </button>
+                            <div class="faq-content px-5 pb-4 pt-1 space-y-3 hidden">
+                                <p class="text-xs sm:text-sm text-[#434655] leading-relaxed">
+                                    Tại cổng thanh toán trực tuyến của HCMUTE, chọn mục "Học phí &amp; Công nợ". Hệ thống hiển thị số tín chỉ đăng ký, đơn giá mỗi tín chỉ, tổng số tiền cần thanh toán và thời hạn chót nộp học phí theo thông báo từng học kỳ.
+                                </p>
+                                <div>
+                                    <a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#eff4ff] hover:bg-[#dce1ff] text-[#0037b0] text-xs font-semibold transition-colors" th:href="@{/dashboard}">
+                                        <span class="material-symbols-outlined text-[16px]">payments</span>
+                                        <span>Xem học phí</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Item 5: Khiếu nại đóng học phí -->
+                        <div class="faq-item rounded-2xl bg-white border border-[#e2e8f0] shadow-sm transition-all overflow-hidden" 
+                             data-cat="hoc-phi" data-dept="p-taichinh" data-type="recent">
+                            <button class="faq-toggle w-full px-5 py-3.5 text-left flex items-start justify-between gap-4 hover:bg-[#f8f9ff] transition-colors cursor-pointer" type="button">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded-full bg-[#dae2fd] text-[#5c647a] text-[10px] font-bold uppercase">Học phí</span>
+                                        <span class="text-xs text-[#565e74]">Phòng Kế hoạch - Tài chính</span>
+                                    </div>
+                                    <div class="font-heading font-semibold text-sm sm:text-base text-[#0b1c30]">Tôi cần làm gì khi thông tin thanh toán học phí qua ngân hàng chưa được cập nhật?</div>
+                                </div>
+                                <div class="w-8 h-8 rounded-lg bg-[#eff4ff] flex items-center justify-center text-[#0037b0] shrink-0 mt-0.5">
+                                    <span class="faq-chevron material-symbols-outlined text-[20px] transition-transform duration-200">expand_more</span>
+                                </div>
+                            </button>
+                            <div class="faq-content px-5 pb-4 pt-1 space-y-3 hidden">
+                                <p class="text-xs sm:text-sm text-[#434655] leading-relaxed">
+                                    Giao dịch ngân hàng có thể mất 15-30 phút để đối soát. Nếu sau 24 giờ kể từ khi thanh toán mà trạng thái vẫn là "Chưa thanh toán", bạn hãy đính kèm ảnh chụp biên lai ngân hàng và tạo ticket hỗ trợ khẩn tới Phòng Kế hoạch - Tài chính.
+                                </p>
+                                <div>
+                                    <a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#eff4ff] hover:bg-[#dce1ff] text-[#0037b0] text-xs font-semibold transition-colors" th:href="@{/ticket}">
+                                        <span class="material-symbols-outlined text-[16px]">receipt_long</span>
+                                        <span>Tạo yêu cầu đối soát học phí</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Item 6: Khung chương trình đào tạo -->
+                        <div class="faq-item rounded-2xl bg-white border border-[#e2e8f0] shadow-sm transition-all overflow-hidden" 
+                             data-cat="quy-che" data-dept="k-cntt" data-type="all">
+                            <button class="faq-toggle w-full px-5 py-3.5 text-left flex items-start justify-between gap-4 hover:bg-[#f8f9ff] transition-colors cursor-pointer" type="button">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded-full bg-[#dce9ff] text-[#0b1c30] text-[10px] font-bold uppercase">Quy chế</span>
+                                        <span class="text-xs text-[#565e74]">Khoa Công nghệ Thông tin</span>
+                                    </div>
+                                    <div class="font-heading font-semibold text-sm sm:text-base text-[#0b1c30]">Làm thế nào để theo dõi tiến độ chương trình đào tạo của ngành?</div>
+                                </div>
+                                <div class="w-8 h-8 rounded-lg bg-[#eff4ff] flex items-center justify-center text-[#0037b0] shrink-0 mt-0.5">
+                                    <span class="faq-chevron material-symbols-outlined text-[20px] transition-transform duration-200">expand_more</span>
+                                </div>
+                            </button>
+                            <div class="faq-content px-5 pb-4 pt-1 space-y-3 hidden">
+                                <p class="text-xs sm:text-sm text-[#434655] leading-relaxed">
+                                    Vào mục "Khung chương trình đào tạo" theo khóa tuyển sinh của bạn để xem số tín chỉ bắt buộc, tự chọn đã hoàn thành và danh sách các môn chưa đạt cần đăng ký học lại.
+                                </p>
+                                <div>
+                                    <a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#eff4ff] hover:bg-[#dce1ff] text-[#0037b0] text-xs font-semibold transition-colors" th:href="@{/explore}">
+                                        <span class="material-symbols-outlined text-[16px]">account_tree</span>
+                                        <span>Xem chương trình đào tạo</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Item 7: Điều kiện xét tốt nghiệp -->
+                        <div class="faq-item rounded-2xl bg-white border border-[#e2e8f0] shadow-sm transition-all overflow-hidden" 
+                             data-cat="quy-che" data-dept="p-daotao" data-type="popular">
+                            <button class="faq-toggle w-full px-5 py-3.5 text-left flex items-start justify-between gap-4 hover:bg-[#f8f9ff] transition-colors cursor-pointer" type="button">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded-full bg-[#dce9ff] text-[#0b1c30] text-[10px] font-bold uppercase">Quy chế</span>
+                                        <span class="text-xs text-[#565e74]">Phòng Đào tạo</span>
+                                    </div>
+                                    <div class="font-heading font-semibold text-sm sm:text-base text-[#0b1c30]">Tôi muốn tìm hiểu điều kiện xét tốt nghiệp thì tra cứu ở đâu?</div>
+                                </div>
+                                <div class="w-8 h-8 rounded-lg bg-[#eff4ff] flex items-center justify-center text-[#0037b0] shrink-0 mt-0.5">
+                                    <span class="faq-chevron material-symbols-outlined text-[20px] transition-transform duration-200">expand_more</span>
+                                </div>
+                            </button>
+                            <div class="faq-content px-5 pb-4 pt-1 space-y-3 hidden">
+                                <p class="text-xs sm:text-sm text-[#434655] leading-relaxed">
+                                    Điều kiện xét tốt nghiệp bao gồm: Tích lũy đủ số tín chỉ quy định trong chương trình đào tạo, điểm rèn luyện toàn khóa đạt yêu cầu, hoàn thành chuẩn đầu ra ngoại ngữ (TOEIC/IELTS), chuẩn tin học và chứng chỉ Giáo dục Quốc phòng - Thể chất.
+                                </p>
+                                <div>
+                                    <a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#eff4ff] hover:bg-[#dce1ff] text-[#0037b0] text-xs font-semibold transition-colors" th:href="@{/explore}">
+                                        <span class="material-symbols-outlined text-[16px]">menu_book</span>
+                                        <span>Tra cứu tài liệu quy chế</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Item 8: Chuẩn đầu ra ngoại ngữ TOEIC -->
+                        <div class="faq-item rounded-2xl bg-white border border-[#e2e8f0] shadow-sm transition-all overflow-hidden" 
+                             data-cat="ngoai-ngu" data-dept="k-nn" data-type="recent">
+                            <button class="faq-toggle w-full px-5 py-3.5 text-left flex items-start justify-between gap-4 hover:bg-[#f8f9ff] transition-colors cursor-pointer" type="button">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded-full bg-[#d3e4fe] text-[#0037b0] text-[10px] font-bold uppercase">Chuẩn đầu ra</span>
+                                        <span class="text-xs text-[#565e74]">Khoa Ngoại ngữ</span>
+                                    </div>
+                                    <div class="font-heading font-semibold text-sm sm:text-base text-[#0b1c30]">Làm thế nào để nộp và tra cứu chuẩn đầu ra ngoại ngữ (TOEIC, IELTS)?</div>
+                                </div>
+                                <div class="w-8 h-8 rounded-lg bg-[#eff4ff] flex items-center justify-center text-[#0037b0] shrink-0 mt-0.5">
+                                    <span class="faq-chevron material-symbols-outlined text-[20px] transition-transform duration-200">expand_more</span>
+                                </div>
+                            </button>
+                            <div class="faq-content px-5 pb-4 pt-1 space-y-3 hidden">
+                                <p class="text-xs sm:text-sm text-[#434655] leading-relaxed">
+                                    Sinh viên gửi hồ sơ nộp chứng chỉ quốc tế (TOEIC, IELTS) trực tuyến qua mục "Chứng chỉ - Ngoại ngữ". Bộ phận chuyên trách sẽ hậu kiểm với tổ chức cấp bằng (IIG, British Council) và cập nhật trạng thái đạt chuẩn trong vòng 7 ngày làm việc.
+                                </p>
+                                <div>
+                                    <a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#eff4ff] hover:bg-[#dce1ff] text-[#0037b0] text-xs font-semibold transition-colors" th:href="@{/dashboard}">
+                                        <span class="material-symbols-outlined text-[16px]">description</span>
+                                        <span>Nộp chứng chỉ ngoại ngữ</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Item 9: Quên mật khẩu & Không đăng nhập được -->
+                        <div class="faq-item rounded-2xl bg-white border border-[#e2e8f0] shadow-sm transition-all overflow-hidden" 
+                             data-cat="tai-khoan" data-dept="tt-cntt" data-type="popular">
+                            <button class="faq-toggle w-full px-5 py-3.5 text-left flex items-start justify-between gap-4 hover:bg-[#f8f9ff] transition-colors cursor-pointer" type="button">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded-full bg-[#ffdad6] text-[#ba1a1a] text-[10px] font-bold uppercase">Tài khoản</span>
+                                        <span class="text-xs text-[#565e74]">Trung tâm CNTT</span>
+                                    </div>
+                                    <div class="font-heading font-semibold text-sm sm:text-base text-[#0b1c30]">Tôi không đăng nhập được vào hệ thống QAUTE Portal thì phải làm gì?</div>
+                                </div>
+                                <div class="w-8 h-8 rounded-lg bg-[#eff4ff] flex items-center justify-center text-[#0037b0] shrink-0 mt-0.5">
+                                    <span class="faq-chevron material-symbols-outlined text-[20px] transition-transform duration-200">expand_more</span>
+                                </div>
+                            </button>
+                            <div class="faq-content px-5 pb-4 pt-1 space-y-3 hidden">
+                                <p class="text-xs sm:text-sm text-[#434655] leading-relaxed">
+                                    Nếu quên mật khẩu hoặc bị khóa tài khoản do nhập sai nhiều lần, bạn dùng tính năng "Quên mật khẩu" thông qua email sinh viên (@student.hcmute.edu.vn) hoặc tạo ticket kỹ thuật khẩn cấp để được cấp lại mật khẩu ngay trong 30 phút.
+                                </p>
+                                <div>
+                                    <a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#eff4ff] hover:bg-[#dce1ff] text-[#0037b0] text-xs font-semibold transition-colors" th:href="@{/auth/forgot-password}">
+                                        <span class="material-symbols-outlined text-[16px]">lock_reset</span>
+                                        <span>Khôi phục mật khẩu</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Item 10: Gửi Ticket hỗ trợ -->
+                        <div class="faq-item rounded-2xl bg-white border border-[#e2e8f0] shadow-sm transition-all overflow-hidden" 
+                             data-cat="dich-vu" data-dept="p-ctsv" data-type="all">
+                            <button class="faq-toggle w-full px-5 py-3.5 text-left flex items-start justify-between gap-4 hover:bg-[#f8f9ff] transition-colors cursor-pointer" type="button">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded-full bg-[#dce1ff] text-[#0037b0] text-[10px] font-bold uppercase">Dịch vụ sinh viên</span>
+                                        <span class="text-xs text-[#565e74]">Phòng Tuyển sinh &amp; CTSV</span>
+                                    </div>
+                                    <div class="font-heading font-semibold text-sm sm:text-base text-[#0b1c30]">Làm thế nào để gửi yêu cầu hỗ trợ (Ticket) đến Khoa hoặc Phòng ban?</div>
+                                </div>
+                                <div class="w-8 h-8 rounded-lg bg-[#eff4ff] flex items-center justify-center text-[#0037b0] shrink-0 mt-0.5">
+                                    <span class="faq-chevron material-symbols-outlined text-[20px] transition-transform duration-200">expand_more</span>
+                                </div>
+                            </button>
+                            <div class="faq-content px-5 pb-4 pt-1 space-y-3 hidden">
+                                <p class="text-xs sm:text-sm text-[#434655] leading-relaxed">
+                                    Truy cập menu "Ticket hỗ trợ &gt; Tạo yêu cầu mới", chọn chính xác nhóm vấn đề và phòng ban tiếp nhận để yêu cầu được giải quyết nhanh nhất trong thời gian cam kết dịch vụ (SLA: URGENT 24h, HIGH 48h, MEDIUM 72h).
+                                </p>
+                                <div>
+                                    <a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0037b0] text-white text-xs font-semibold hover:bg-[#2151da] shadow-xs transition-colors" th:href="@{/ticket}">
+                                        <span class="material-symbols-outlined text-[16px]">send</span>
+                                        <span>Gửi yêu cầu hỗ trợ ngay</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Empty State (When no results found) -->
+                    <div class="hidden p-8 rounded-2xl bg-white border border-[#e2e8f0] text-center space-y-3" id="faq-empty-state">
+                        <div class="w-12 h-12 rounded-full bg-[#eff4ff] flex items-center justify-center text-[#0037b0] mx-auto shadow-xs">
+                            <span class="material-symbols-outlined text-[26px]">search_off</span>
+                        </div>
+                        <div class="font-heading font-bold text-base text-[#0b1c30]">Không tìm thấy câu hỏi phù hợp</div>
+                        <p class="text-xs text-[#565e74] max-w-md mx-auto">
+                            Hãy thử tìm kiếm với từ khóa khác hoặc bạn có thể gửi yêu cầu hỗ trợ trực tiếp để Thầy/Cô và cán bộ chuyên trách phản hồi sớm nhất.
+                        </p>
+                        <div class="pt-2 flex items-center justify-center gap-3">
+                            <a th:href="@{/ticket}" class="px-4 py-2 rounded-xl bg-[#0037b0] text-white text-xs font-semibold hover:bg-[#2151da] shadow-sm transition-all">
+                                Gửi yêu cầu hỗ trợ ngay
+                            </a>
+                            <a th:href="@{/ai-chat}" class="px-4 py-2 rounded-xl bg-[#eff4ff] text-[#0037b0] border border-[#dce1ff] text-xs font-semibold hover:bg-[#dce1ff] transition-all">
+                                Hỏi trợ lý AI QAUTE
                             </a>
                         </div>
                     </div>
-                `;
-                }
 
-                function resetToInitial() {
-                    container.innerHTML = initialHtml;
-                    btnClear.classList.add('d-none');
-                    metaSec.classList.add('d-none');
-                    if (defaultSectionTitle) defaultSectionTitle.classList.remove('d-none');
-                }
+                </div>
 
-                function escapeHtml(text) {
-                    if (!text) return '';
-                    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-                    return text.replace(/[&<>"']/g, m => map[m]);
-                }
+                <!-- ================= RIGHT COLUMN: SIDEBAR WIDGETS (4 Cols) ================= -->
+                <div class="lg:col-span-4 space-y-4">
+                    
+                    <!-- Support Card Widget -->
+                    <div class="rounded-2xl bg-[#e5eeff] border border-[#dce1ff] p-5 shadow-sm space-y-3.5 relative overflow-hidden">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-[#0037b0] text-white flex items-center justify-center shrink-0 shadow-sm">
+                                <span class="material-symbols-outlined text-[22px]">support_agent</span>
+                            </div>
+                            <div>
+                                <h3 class="font-heading font-bold text-sm text-[#0b1c30]">Bạn cần hỗ trợ thêm?</h3>
+                                <p class="text-xs text-[#434655] pt-0.5">Cán bộ phụ trách sẽ phản hồi theo cam kết SLA</p>
+                            </div>
+                        </div>
 
-                // Click nút Tìm Kiếm
-                btn.addEventListener('click', doSearch);
+                        <div class="space-y-2 pt-1">
+                            <a th:href="@{/ticket}" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#0037b0] text-white text-xs font-semibold hover:bg-[#2151da] shadow-sm transition-all active:scale-95">
+                                <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                                <span>Tạo yêu cầu hỗ trợ mới</span>
+                            </a>
+                            <a th:href="@{/dashboard}" class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white text-[#0b1c30] hover:bg-[#f8f9ff] text-xs font-semibold transition-colors shadow-xs border border-[#e2e8f0]">
+                                <span class="material-symbols-outlined text-[18px]">find_in_page</span>
+                                <span>Tra cứu Ticket của tôi</span>
+                            </a>
+                        </div>
+                    </div>
 
-                // Gõ phím tìm kiếm trực tiếp với Debounce 250ms
-                input.addEventListener('input', function () {
-                    clearTimeout(debounceTimer);
-                    if (input.value.trim().length === 0) {
-                        resetToInitial();
-                    } else {
-                        debounceTimer = setTimeout(doSearch, 250);
-                    }
-                });
+                    <!-- Quick Academic Links Card -->
+                    <div class="rounded-2xl bg-white border border-[#e2e8f0] p-5 shadow-sm space-y-3">
+                        <div class="flex items-center gap-2 pb-1 border-b border-slate-100">
+                            <span class="material-symbols-outlined text-[#0037b0] text-[20px]">link</span>
+                            <h3 class="font-heading font-bold text-sm text-[#0b1c30]">Liên kết &amp; Tiện ích học vụ</h3>
+                        </div>
+                        <ul class="space-y-1 text-xs">
+                            <li>
+                                <a class="flex items-center justify-between p-2 rounded-xl hover:bg-[#eff4ff] text-[#0b1c30] group transition-colors" th:href="@{/dashboard}">
+                                    <span class="flex items-center gap-2.5">
+                                        <span class="text-base">📅</span>
+                                        <span class="font-medium group-hover:text-[#0037b0] transition-colors">Thời khóa biểu sinh viên</span>
+                                    </span>
+                                    <span class="material-symbols-outlined text-[#747686] text-[16px] group-hover:text-[#0037b0] group-hover:translate-x-0.5 transition-all">chevron_right</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="flex items-center justify-between p-2 rounded-xl hover:bg-[#eff4ff] text-[#0b1c30] group transition-colors" th:href="@{/dashboard}">
+                                    <span class="flex items-center gap-2.5">
+                                        <span class="text-base">📊</span>
+                                        <span class="font-medium group-hover:text-[#0037b0] transition-colors">Kết quả học tập &amp; Bảng điểm</span>
+                                    </span>
+                                    <span class="material-symbols-outlined text-[#747686] text-[16px] group-hover:text-[#0037b0] group-hover:translate-x-0.5 transition-all">chevron_right</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="flex items-center justify-between p-2 rounded-xl hover:bg-[#eff4ff] text-[#0b1c30] group transition-colors" th:href="@{/explore}">
+                                    <span class="flex items-center gap-2.5">
+                                        <span class="text-base">🎓</span>
+                                        <span class="font-medium group-hover:text-[#0037b0] transition-colors">Khung chương trình đào tạo</span>
+                                    </span>
+                                    <span class="material-symbols-outlined text-[#747686] text-[16px] group-hover:text-[#0037b0] group-hover:translate-x-0.5 transition-all">chevron_right</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="flex items-center justify-between p-2 rounded-xl hover:bg-[#eff4ff] text-[#0b1c30] group transition-colors" th:href="@{/explore}">
+                                    <span class="flex items-center gap-2.5">
+                                        <span class="text-base">📁</span>
+                                        <span class="font-medium group-hover:text-[#0037b0] transition-colors">Tài liệu - Biểu mẫu học vụ</span>
+                                    </span>
+                                    <span class="material-symbols-outlined text-[#747686] text-[16px] group-hover:text-[#0037b0] group-hover:translate-x-0.5 transition-all">chevron_right</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="flex items-center justify-between p-2 rounded-xl hover:bg-[#eff4ff] text-[#0b1c30] group transition-colors" th:href="@{/ai-chat}">
+                                    <span class="flex items-center gap-2.5">
+                                        <span class="text-base">🤖</span>
+                                        <span class="font-medium group-hover:text-[#0037b0] transition-colors">Trợ lý AI học vụ QAUTE</span>
+                                    </span>
+                                    <span class="material-symbols-outlined text-[#747686] text-[16px] group-hover:text-[#0037b0] group-hover:translate-x-0.5 transition-all">chevron_right</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
 
-                // Nhấn Enter
-                input.addEventListener('keypress', function (e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        clearTimeout(debounceTimer);
-                        doSearch();
-                    }
-                });
+                    <!-- SLA Commitment Card -->
+                    <div class="rounded-2xl bg-white border border-[#e2e8f0] p-5 shadow-sm space-y-3">
+                        <div class="flex items-center gap-2 pb-1 border-b border-slate-100">
+                            <span class="material-symbols-outlined text-[#10b981] text-[20px]">verified</span>
+                            <h3 class="font-heading font-bold text-sm text-[#0b1c30]">Cam kết thời hạn xử lý (SLA)</h3>
+                        </div>
+                        <div class="space-y-2 text-xs">
+                            <div class="flex items-center justify-between p-2 rounded-lg bg-red-50 text-red-700">
+                                <span class="font-semibold flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-600"></span>Khẩn cấp (URGENT)</span>
+                                <span class="font-bold">24 giờ</span>
+                            </div>
+                            <div class="flex items-center justify-between p-2 rounded-lg bg-amber-50 text-amber-700">
+                                <span class="font-semibold flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-600"></span>Mức độ cao (HIGH)</span>
+                                <span class="font-bold">48 giờ</span>
+                            </div>
+                            <div class="flex items-center justify-between p-2 rounded-lg bg-blue-50 text-blue-700">
+                                <span class="font-semibold flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-600"></span>Trung bình (MEDIUM)</span>
+                                <span class="font-bold">72 giờ</span>
+                            </div>
+                            <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 text-slate-700">
+                                <span class="font-semibold flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-600"></span>Tiêu chuẩn (LOW)</span>
+                                <span class="font-bold">7 ngày</span>
+                            </div>
+                        </div>
+                    </div>
 
-                // Nút Xóa tìm kiếm
-                btnClear.addEventListener('click', function () {
-                    input.value = '';
-                    resetToInitial();
-                    input.focus();
-                });
+                </div>
 
-                // Click các nút Tag từ khóa gợi ý
-                document.querySelectorAll('.quick-tag-btn').forEach(tagBtn => {
-                    tagBtn.addEventListener('click', function () {
-                        input.value = this.getAttribute('data-tag');
-                        doSearch();
-                        input.focus();
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 3. FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-10 mt-auto">
+        <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-slate-100 text-xs">
+                <div>
+                    <h4 class="font-heading font-bold text-sm text-[#003882] mb-3">Dành Cho Sinh Viên</h4>
+                    <ul class="space-y-2 text-[#565e74]">
+                        <li><a th:href="@{/admission}" class="hover:text-[#003882] transition-colors">Tuyển sinh &amp; Đăng ký</a></li>
+                        <li><a th:href="@{/dashboard}" class="hover:text-[#003882] transition-colors">Sinh viên chính quy Portal</a></li>
+                        <li><a th:href="@{/about}" class="hover:text-[#003882] transition-colors">Đào tạo &amp; Quy chế học vụ</a></li>
+                        <li><a th:href="@{/research}" class="hover:text-[#003882] transition-colors">Nghiên cứu khoa học sinh viên</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-heading font-bold text-sm text-[#003882] mb-3">Liên Kết Nhanh</h4>
+                    <ul class="space-y-2 text-[#565e74]">
+                        <li><a th:href="@{/ticket}" class="hover:text-[#003882] transition-colors">Gửi Ticket Hỗ trợ một cửa</a></li>
+                        <li><a th:href="@{/ai-chat}" class="hover:text-[#003882] transition-colors">Trợ lý AI hỏi đáp học vụ</a></li>
+                        <li><a th:href="@{/faqs}" class="hover:text-[#003882] transition-colors">Tra cứu câu hỏi thường gặp (FAQ)</a></li>
+                        <li><a th:href="@{/explore}" class="hover:text-[#003882] transition-colors">Bản đồ trường &amp; Khám phá khuôn viên</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-heading font-bold text-sm text-[#003882] mb-3">Trường ĐH Sư Phạm Kỹ Thuật TP.HCM</h4>
+                    <ul class="space-y-2 text-[#565e74]">
+                        <li class="flex items-start gap-2"><span class="material-symbols-outlined text-[16px] text-[#003882] shrink-0">location_on</span><span>Số 1 Võ Văn Ngân, TP. Thủ Đức, TP. Hồ Chí Minh</span></li>
+                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-[#003882] shrink-0">call</span><span>(028) 3896 8641 - (028) 3896 1333</span></li>
+                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-[#003882] shrink-0">mail</span><span>support@hcmute.edu.vn</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#565e74]">
+                <p>&copy; 2026 Ho Chi Minh City University of Technology and Education. All rights reserved.</p>
+                <div class="flex items-center gap-4">
+                    <a th:href="@{/faqs}" class="hover:underline">Điều khoản dịch vụ</a>
+                    <a th:href="@{/faqs}" class="hover:underline">Chính sách bảo mật</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 4. FLOATING AI MASCOT WIDGET -->
+    <a th:href="@{/ai-chat}" class="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 group cursor-pointer" title="Trò chuyện với Trợ lý AI QAUTE">
+        <div class="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white shadow-xl border border-[#0037b0]/20 text-[#0b1c30] text-xs font-semibold transition-all group-hover:bg-[#0037b0] group-hover:text-white">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="whitespace-nowrap">Hỏi AI QAUTE</span>
+        </div>
+        <div class="relative w-14 h-14 rounded-full bg-white shadow-2xl border-2 border-[#0037b0]/40 flex items-center justify-center transition-all duration-200 group-hover:scale-105 group-hover:border-[#0037b0] group-hover:shadow-[0_8px_25px_rgba(0,55,176,0.35)]">
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUom5B8pn3Kt4WUUZeOxGJ5go9MQqTLOuTX7YM6HlWS2Us23yP8s1-Qx9qGczzhseOv__ZMzIRpJjcejuVvP5iQCMdtbuBVVzi4OeqLI7J1Xa-EgpqzyGkws_JzU8uZ9pUH0YKYtemtxxZA8P9Saqd9RqyW0e_WkS18YOG9Oh2-q36_dAscaDJgGI0G2c59tVWLbMcFgiUscqcGiGVnvj2b36b5DJQwXvfX2sE9n9HQ7JKoARwKQGGGUtVI-S_dTru0Q" 
+                 alt="HCMUTE AI Mascot" 
+                 class="w-10 h-10 object-contain select-none">
+            <span class="absolute top-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white animate-pulse"></span>
+        </div>
+    </a>
+
+    <!-- 5. INTERACTIVE SCRIPTS -->
+    <script th:inline="none">
+        (function initFAQApp() {
+            const searchInput = document.getElementById('faq-search-input');
+            const searchClearBtn = document.getElementById('search-clear-btn');
+            const searchSubmitBtn = document.getElementById('search-submit-btn');
+            const searchChips = document.querySelectorAll('.search-chip');
+            const categoryCards = document.querySelectorAll('.category-card');
+            const faqTabs = document.querySelectorAll('.faq-tab');
+            const deptFilter = document.getElementById('dept-filter');
+            const faqItems = document.querySelectorAll('.faq-item');
+            const counterBadge = document.getElementById('faq-counter-badge');
+            const emptyState = document.getElementById('faq-empty-state');
+
+            let activeCategory = 'all';
+            let activeTab = 'all';
+            let activeDept = 'all';
+            let searchQuery = '';
+
+            // Accordion expand/collapse
+            faqItems.forEach(item => {
+                const toggle = item.querySelector('.faq-toggle');
+                const content = item.querySelector('.faq-content');
+                const chevron = item.querySelector('.faq-chevron');
+
+                if (toggle && content) {
+                    toggle.addEventListener('click', () => {
+                        const isHidden = content.classList.contains('hidden');
+                        if (isHidden) {
+                            content.classList.remove('hidden');
+                            if (chevron) chevron.classList.add('rotate-180');
+                        } else {
+                            content.classList.add('hidden');
+                            if (chevron) chevron.classList.remove('rotate-180');
+                        }
                     });
+                }
+            });
+
+            // Helpful voting buttons
+            document.querySelectorAll('.helpful-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const countSpan = btn.querySelector('.count');
+                    if (countSpan) {
+                        const currentCount = parseInt(countSpan.textContent.replace(/[^\d]/g, ''), 10) || 0;
+                        countSpan.textContent = String(currentCount + 1);
+                        btn.classList.add('bg-[#dce1ff]', 'text-[#0037b0]');
+                    }
                 });
             });
-        </script>
-    </div>
-</body>
 
+            // Filter logic
+            function applyFilters() {
+                let visibleCount = 0;
+
+                faqItems.forEach(item => {
+                    const itemCat = item.getAttribute('data-cat') || '';
+                    const itemDept = item.getAttribute('data-dept') || '';
+                    const itemType = item.getAttribute('data-type') || '';
+                    const textContent = item.textContent.toLowerCase();
+
+                    const matchCat = (activeCategory === 'all' || itemCat === activeCategory);
+                    const matchDept = (activeDept === 'all' || itemDept === activeDept);
+                    const matchTab = (activeTab === 'all' || itemType === activeTab || itemType === 'all');
+                    const matchSearch = (!searchQuery || textContent.includes(searchQuery));
+
+                    if (matchCat && matchDept && matchTab && matchSearch) {
+                        item.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                // Update counter
+                if (counterBadge) {
+                    counterBadge.textContent = visibleCount + ' CÂU HỎI';
+                }
+
+                // Empty state toggle
+                if (emptyState) {
+                    if (visibleCount === 0) {
+                        emptyState.classList.remove('hidden');
+                    } else {
+                        emptyState.classList.add('hidden');
+                    }
+                }
+            }
+
+            // Expose selectCategory globally for onclick
+            window.selectCategory = function(btn, category) {
+                activeCategory = category;
+
+                // Reset all category pills
+                document.querySelectorAll('#category-grid .category-pill').forEach(function(p) {
+                    p.className = 'category-card category-pill px-4 py-2 rounded-full text-xs font-medium bg-white text-[#434655] hover:text-[#0037b0] hover:bg-[#eff4ff] border border-[#c4c5d7]/60 hover:border-[#0037b0]/40 shadow-sm flex items-center gap-1.5 transition-all cursor-pointer';
+                    var badge = p.querySelector('.pill-count');
+                    if (badge) {
+                        badge.className = 'pill-count px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-[#eff4ff] text-[#0037b0]';
+                    }
+                });
+
+                // Activate selected pill
+                btn.className = 'category-card category-pill px-4 py-2 rounded-full text-xs font-semibold bg-[#0037b0] text-white border border-[#0037b0] shadow-sm flex items-center gap-1.5 transition-all cursor-pointer';
+                var activeBadge = btn.querySelector('.pill-count');
+                if (activeBadge) {
+                    activeBadge.className = 'pill-count px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20 text-white';
+                }
+
+                applyFilters();
+            };
+
+            // Search input live filtering
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    searchQuery = e.target.value.trim().toLowerCase();
+                    if (searchQuery.length > 0) {
+                        if (searchClearBtn) searchClearBtn.classList.remove('hidden');
+                    } else {
+                        if (searchClearBtn) searchClearBtn.classList.add('hidden');
+                    }
+                    applyFilters();
+                });
+            }
+
+            // Clear search button
+            if (searchClearBtn) {
+                searchClearBtn.addEventListener('click', () => {
+                    if (searchInput) searchInput.value = '';
+                    searchQuery = '';
+                    searchClearBtn.classList.add('hidden');
+                    applyFilters();
+                    if (searchInput) searchInput.focus();
+                });
+            }
+
+            // Popular Chips Click
+            searchChips.forEach(chip => {
+                chip.addEventListener('click', () => {
+                    if (searchInput) {
+                        searchInput.value = chip.textContent.trim();
+                        searchQuery = searchInput.value.toLowerCase();
+                    }
+                    if (searchClearBtn) searchClearBtn.classList.remove('hidden');
+                    applyFilters();
+                });
+            });
+
+            // Tabs switch
+            faqTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    faqTabs.forEach(t => {
+                        t.className = 'faq-tab px-3 py-1 rounded-lg text-xs text-[#565e74] hover:text-[#0b1c30] transition-all cursor-pointer';
+                    });
+                    tab.className = 'faq-tab px-3 py-1 rounded-lg text-xs bg-white text-[#0037b0] font-semibold shadow-xs transition-all cursor-pointer';
+                    activeTab = tab.getAttribute('data-tab') || 'all';
+                    applyFilters();
+                });
+            });
+
+            // Department select change
+            if (deptFilter) {
+                deptFilter.addEventListener('change', (e) => {
+                    activeDept = e.target.value;
+                    applyFilters();
+                });
+            }
+
+            // Calculate category pill counts on initialization
+            const counts = {
+                'all': faqItems.length,
+                'hoc-vu': 0,
+                'hoc-phi': 0,
+                'quy-che': 0,
+                'ngoai-ngu': 0,
+                'tai-khoan': 0,
+                'dich-vu': 0
+            };
+            faqItems.forEach(item => {
+                const cat = item.getAttribute('data-cat');
+                if (cat && counts[cat] !== undefined) {
+                    counts[cat]++;
+                }
+            });
+            for (const [k, v] of Object.entries(counts)) {
+                const badgeEl = document.getElementById('count-' + k);
+                if (badgeEl) badgeEl.textContent = String(v);
+            }
+
+            // Apply initial query if pre-filled from server
+            if (searchInput && searchInput.value.trim().length > 0) {
+                searchQuery = searchInput.value.trim().toLowerCase();
+                if (searchClearBtn) searchClearBtn.classList.remove('hidden');
+                applyFilters();
+            }
+        })();
+    </script>
+</body>
 </html>

@@ -56,13 +56,15 @@ spring:
     cache: false
     mode: HTML
     encoding: UTF-8
+    servlet:
+      produce-partial-output-while-processing: false
 
   # Cấu hình Mail SMTP
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME:your_email@gmail.com}
-    password: ${MAIL_PASSWORD:your_app_password}
+    username: ${MAIL_USERNAME:trt571983@gmail.com}
+    password: ${MAIL_PASSWORD:sabipjlesvachnta}
     properties:
       mail:
         smtp:

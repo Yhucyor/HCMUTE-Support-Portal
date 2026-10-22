@@ -46,6 +46,10 @@ public final class SecurityUtils {
                 && !"anonymousUser".equals(authentication.getPrincipal());
     }
 
+    public static boolean hasRole(String role) {
+        return hasAnyRole(role);
+    }
+
     public static boolean hasAnyRole(String... roles) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
