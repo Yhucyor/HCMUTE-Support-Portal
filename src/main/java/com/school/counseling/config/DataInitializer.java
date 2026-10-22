@@ -107,11 +107,8 @@ public class DataInitializer implements CommandLineRunner {
             initUser("lecuong", "123456", "Lê Quốc Cường", "lecuong@gmail.com", roleStudent, deptCntt);
 
             // 4. Khởi tạo / Nạp Kho Tri Thức FAQs từ docs/dataset/faq_dataset_curated.json
-            if (faqRepository.count() == 0) {
-                log.info("Kho FAQ chưa khởi tạo. Tiến hành nạp kho tri thức FAQ...");
-                seedFaqsFromDataset(deptDoan, deptTuyenSinh, deptDaoTao, deptCntt, deptNn);
-                smartFaqMatcherService.reloadCache();
-            }
+            syncFaqsFromDataset(deptDoan, deptTuyenSinh, deptDaoTao, deptCntt, deptNn);
+            smartFaqMatcherService.reloadCache();
 
             log.info("Khởi tạo dữ liệu mẫu Auth & FAQ thành công!");
         } catch (Exception e) {
@@ -119,7 +116,7 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    private void seedFaqsFromDataset(Department deptDoan, Department deptTuyenSinh, Department deptDaoTao, Department deptCntt, Department deptNn) {
+    private void syncFaqsFromDataset(Department deptDoan, Department deptTuyenSinh, Department deptDaoTao, Department deptCntt, Department deptNn) {
         try {
             File file = new File("docs/dataset/faq_dataset_curated.json");
             if (!file.exists()) {
@@ -127,8 +124,12 @@ public class DataInitializer implements CommandLineRunner {
                 return;
             }
 
-            log.info("Bắt đầu nạp kho tri thức FAQ từ {}...", file.getPath());
+            log.info("Bắt đầu nạp / đồng bộ kho tri thức FAQ từ {}...", file.getPath());
             List<Map<String, Object>> records = objectMapper.readValue(file, new TypeReference<>() {});
+            Set<String> existingQuestions = faqRepository.findAll().stream()
+                    .map(f -> f.getQuestion().trim().toLowerCase(Locale.ROOT))
+                    .collect(Collectors.toSet());
+
             List<Faq> entities = new ArrayList<>();
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
@@ -154,6 +155,10 @@ public class DataInitializer implements CommandLineRunner {
                 }
                 if (cleanQuestion.length() > 490) {
                     cleanQuestion = cleanQuestion.substring(0, 490);
+                }
+
+                if (existingQuestions.contains(cleanQuestion.trim().toLowerCase(Locale.ROOT))) {
+                    continue;
                 }
 
                 LocalDateTime postDate = null;
@@ -191,11 +196,12 @@ public class DataInitializer implements CommandLineRunner {
                         .postDate(postDate)
                         .isActive(true)
                         .build());
+                existingQuestions.add(cleanQuestion.trim().toLowerCase(Locale.ROOT));
             }
 
             if (!entities.isEmpty()) {
                 faqRepository.saveAll(entities);
-                log.info("Đã nạp thành công {} câu hỏi FAQ tinh tuyển vào Database!", entities.size());
+                log.info("Đã đồng bộ bổ sung thành công {} câu hỏi FAQ mới vào Database!", entities.size());
             }
         } catch (Exception e) {
             log.warn("Lỗi khi nạp dữ liệu từ dataset FAQ: {}", e.getMessage(), e);

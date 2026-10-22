@@ -517,6 +517,16 @@
                         </div>
                     </div>
 
+                    <!-- Pagination Navigation Controls (Chống tràn màn hình, 10 câu/trang) -->
+                    <div id="faq-pagination-container" class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 px-5 rounded-2xl bg-white border border-[#e2e8f0] shadow-sm">
+                        <div class="text-xs text-[#565e74]">
+                            Đang hiển thị <span id="pagination-info" class="font-semibold text-[#0037b0]">1 - 10</span> trong tổng số <span id="pagination-total" class="font-bold text-[#0b1c30]" th:text="${totalCount != null ? totalCount : 351}">351</span> câu hỏi
+                        </div>
+                        <div class="flex items-center gap-1.5" id="pagination-controls">
+                            <!-- Page buttons rendered by faq-accordion.js -->
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- ================= RIGHT COLUMN: SIDEBAR WIDGETS (4 Cols) ================= -->
@@ -601,8 +611,8 @@
                         </ul>
                     </div>
 
-                    <!-- SLA Commitment Card -->
-                    <div class="rounded-2xl bg-white border border-[#e2e8f0] p-5 shadow-sm space-y-3">
+                    <!-- SLA Commitment Card (Ẩn hoàn toàn với giao diện sinh viên, chỉ hiển thị cho Cán bộ/Quản trị viên) -->
+                    <div sec:authorize="hasAnyRole('STAFF', 'ADMIN', 'DEPARTMENT_HEAD')" class="rounded-2xl bg-white border border-[#e2e8f0] p-5 shadow-sm space-y-3">
                         <div class="flex items-center gap-2 pb-1 border-b border-slate-100">
                             <span class="material-symbols-outlined text-[#10b981] text-[20px]">verified</span>
                             <h3 class="font-heading font-bold text-sm text-[#0b1c30]">Cam kết thời hạn xử lý (SLA)</h3>
@@ -1026,201 +1036,6 @@
 
     <!-- 5. INTERACTIVE SCRIPTS -->
     <script th:inline="none">
-        (function initFAQApp() {
-            const searchInput = document.getElementById('faq-search-input');
-            const searchClearBtn = document.getElementById('search-clear-btn');
-            const searchSubmitBtn = document.getElementById('search-submit-btn');
-            const searchChips = document.querySelectorAll('.search-chip');
-            const categoryCards = document.querySelectorAll('.category-card');
-            const faqTabs = document.querySelectorAll('.faq-tab');
-            const deptFilter = document.getElementById('dept-filter');
-            const faqItems = document.querySelectorAll('.faq-item');
-            const counterBadge = document.getElementById('faq-counter-badge');
-            const emptyState = document.getElementById('faq-empty-state');
-
-            let activeCategory = 'all';
-            let activeTab = 'all';
-            let activeDept = 'all';
-            let searchQuery = '';
-
-            // Accordion expand/collapse
-            faqItems.forEach(item => {
-                const toggle = item.querySelector('.faq-toggle');
-                const content = item.querySelector('.faq-content');
-                const chevron = item.querySelector('.faq-chevron');
-
-                if (toggle && content) {
-                    toggle.addEventListener('click', () => {
-                        const isHidden = content.classList.contains('hidden');
-                        if (isHidden) {
-                            content.classList.remove('hidden');
-                            if (chevron) chevron.classList.add('rotate-180');
-                        } else {
-                            content.classList.add('hidden');
-                            if (chevron) chevron.classList.remove('rotate-180');
-                        }
-                    });
-                }
-            });
-
-            // Helpful voting buttons
-            document.querySelectorAll('.helpful-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const countSpan = btn.querySelector('.count');
-                    if (countSpan) {
-                        const currentCount = parseInt(countSpan.textContent.replace(/[^\d]/g, ''), 10) || 0;
-                        countSpan.textContent = String(currentCount + 1);
-                        btn.classList.add('bg-[#dce1ff]', 'text-[#0037b0]');
-                    }
-                });
-            });
-
-            // Filter logic
-            function applyFilters() {
-                let visibleCount = 0;
-
-                faqItems.forEach(item => {
-                    const itemCat = item.getAttribute('data-cat') || '';
-                    const itemDept = item.getAttribute('data-dept') || '';
-                    const itemType = item.getAttribute('data-type') || '';
-                    const textContent = item.textContent.toLowerCase();
-
-                    const matchCat = (activeCategory === 'all' || itemCat === activeCategory);
-                    const matchDept = (activeDept === 'all' || itemDept === activeDept);
-                    const matchTab = (activeTab === 'all' || itemType === activeTab || itemType === 'all');
-                    const matchSearch = (!searchQuery || textContent.includes(searchQuery));
-
-                    if (matchCat && matchDept && matchTab && matchSearch) {
-                        item.style.display = 'block';
-                        visibleCount++;
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
-
-                // Update counter
-                if (counterBadge) {
-                    counterBadge.textContent = visibleCount + ' CÂU HỎI';
-                }
-
-                // Empty state toggle
-                if (emptyState) {
-                    if (visibleCount === 0) {
-                        emptyState.classList.remove('hidden');
-                    } else {
-                        emptyState.classList.add('hidden');
-                    }
-                }
-            }
-
-            // Expose selectCategory globally for onclick
-            window.selectCategory = function(btn, category) {
-                activeCategory = category;
-
-                // Reset all category pills
-                document.querySelectorAll('#category-grid .category-pill').forEach(function(p) {
-                    p.className = 'category-card category-pill px-4 py-2 rounded-full text-xs font-medium bg-white text-[#434655] hover:text-[#0037b0] hover:bg-[#eff4ff] border border-[#c4c5d7]/60 hover:border-[#0037b0]/40 shadow-sm flex items-center gap-1.5 transition-all cursor-pointer';
-                    var badge = p.querySelector('.pill-count');
-                    if (badge) {
-                        badge.className = 'pill-count px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-[#eff4ff] text-[#0037b0]';
-                    }
-                });
-
-                // Activate selected pill
-                btn.className = 'category-card category-pill px-4 py-2 rounded-full text-xs font-semibold bg-[#0037b0] text-white border border-[#0037b0] shadow-sm flex items-center gap-1.5 transition-all cursor-pointer';
-                var activeBadge = btn.querySelector('.pill-count');
-                if (activeBadge) {
-                    activeBadge.className = 'pill-count px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20 text-white';
-                }
-
-                applyFilters();
-            };
-
-            // Search input live filtering
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    searchQuery = e.target.value.trim().toLowerCase();
-                    if (searchQuery.length > 0) {
-                        if (searchClearBtn) searchClearBtn.classList.remove('hidden');
-                    } else {
-                        if (searchClearBtn) searchClearBtn.classList.add('hidden');
-                    }
-                    applyFilters();
-                });
-            }
-
-            // Clear search button
-            if (searchClearBtn) {
-                searchClearBtn.addEventListener('click', () => {
-                    if (searchInput) searchInput.value = '';
-                    searchQuery = '';
-                    searchClearBtn.classList.add('hidden');
-                    applyFilters();
-                    if (searchInput) searchInput.focus();
-                });
-            }
-
-            // Popular Chips Click
-            searchChips.forEach(chip => {
-                chip.addEventListener('click', () => {
-                    if (searchInput) {
-                        searchInput.value = chip.textContent.trim();
-                        searchQuery = searchInput.value.toLowerCase();
-                    }
-                    if (searchClearBtn) searchClearBtn.classList.remove('hidden');
-                    applyFilters();
-                });
-            });
-
-            // Tabs switch
-            faqTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    faqTabs.forEach(t => {
-                        t.className = 'faq-tab px-3 py-1 rounded-lg text-xs text-[#565e74] hover:text-[#0b1c30] transition-all cursor-pointer';
-                    });
-                    tab.className = 'faq-tab px-3 py-1 rounded-lg text-xs bg-white text-[#0037b0] font-semibold shadow-xs transition-all cursor-pointer';
-                    activeTab = tab.getAttribute('data-tab') || 'all';
-                    applyFilters();
-                });
-            });
-
-            // Department select change
-            if (deptFilter) {
-                deptFilter.addEventListener('change', (e) => {
-                    activeDept = e.target.value;
-                    applyFilters();
-                });
-            }
-
-            // Calculate category pill counts on initialization
-            const counts = {
-                'all': faqItems.length,
-                'hoc-vu': 0,
-                'hoc-phi': 0,
-                'quy-che': 0,
-                'ngoai-ngu': 0,
-                'tai-khoan': 0,
-                'dich-vu': 0
-            };
-            faqItems.forEach(item => {
-                const cat = item.getAttribute('data-cat');
-                if (cat && counts[cat] !== undefined) {
-                    counts[cat]++;
-                }
-            });
-            for (const [k, v] of Object.entries(counts)) {
-                const badgeEl = document.getElementById('count-' + k);
-                if (badgeEl) badgeEl.textContent = String(v);
-            }
-
-            // Apply initial query if pre-filled from server
-            if (searchInput && searchInput.value.trim().length > 0) {
-                searchQuery = searchInput.value.trim().toLowerCase();
-                if (searchClearBtn) searchClearBtn.classList.remove('hidden');
-                applyFilters();
-            }
-        })();
 
         // ================= TAO TICKET MODAL JAVASCRIPT =================
         function openTicketModal() {
