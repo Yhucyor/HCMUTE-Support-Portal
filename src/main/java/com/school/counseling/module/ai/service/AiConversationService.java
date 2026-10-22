@@ -347,6 +347,33 @@ public class AiConversationService {
     }
     
     /**
+     * Cập nhật tiêu đề cuộc trò chuyện (Rename conversation)
+     */
+    @Transactional
+    public Conversation updateConversationTitle(String sessionId, String newTitle, User currentUser) {
+        Conversation conversation = getConversationBySessionId(sessionId);
+        
+        // Validate ownership
+        if (currentUser != null && conversation.getUser() != null) {
+            boolean isOwner = conversation.getUser().getId().equals(currentUser.getId());
+            boolean isAdmin = currentUser.getRole() != null && "ROLE_ADMIN".equalsIgnoreCase(currentUser.getRole().getName());
+            if (!isOwner && !isAdmin) {
+                throw new ResourceNotFoundException("Conversation not found or access denied");
+            }
+        }
+        
+        String cleanTitle = (newTitle != null && !newTitle.isBlank()) ? newTitle.trim() : "Cuộc trò chuyện";
+        if (cleanTitle.length() > 255) {
+            cleanTitle = cleanTitle.substring(0, 255);
+        }
+        
+        conversation.setTitle(cleanTitle);
+        Conversation saved = conversationRepository.save(conversation);
+        log.info("Updated title for conversation {} to '{}'", sessionId, cleanTitle);
+        return saved;
+    }
+    
+    /**
      * Chuyển conversation thành Ticket
      */
     @Transactional
