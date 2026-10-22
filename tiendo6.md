@@ -103,9 +103,8 @@ Tuân thủ nghiêm ngặt **Quy tắc phân chia vai trò** giữa Backend Lead
 
 ## 📅 IV. LỘ TRÌNH THỰC HIỆN TỪNG BƯỚC
 
-- [ ] **Bước 1 (Dev A):** Viết Seeder bài viết và bình luận diễn đàn thực tế trong `DataInitializer.java`, kiểm tra `mvn test-compile`.
-- [ ] **Bước 2 (Dev A):** Bổ sung sorting tab "Phổ biến / Sôi nổi" (`popular`) và thống kê diễn đàn trong `PostRepository` & `PostService`.
-- [ ] **Bước 3 (Dev A & Dev B):** Rà soát các thuộc tính Model được truyền từ `ForumController` đảm bảo khớp tên biến với giao diện.
-- [ ] **Bước 4 (Dev B):** Tinh gọn `forum.html` thành 2 cột hiện đại, loại bỏ toàn bộ dữ liệu mock cứng, đưa script ra `forum.js`.
-- [ ] **Bước 5 (Kiểm thử):** Test chức năng lọc theo khoa, tìm kiếm từ khóa, đăng bài mới, bình luận và thả tim hoạt động trơn tru.
-- [ ] **Bước 6 (Git):** Commit theo chuẩn Conventional Commits và push lên nhánh tính năng.
+- [x] **Bước 1 (Dev A):** Viết Seeder bài viết và bình luận diễn đàn thực tế trong `DataInitializer.java` (12 bài viết phong phú các khoa CKM, CNTT, Điện - Điện tử, Kinh tế, Ngoại ngữ + 20+ bình luận trao đổi mồi thực tế + ảnh minh họa từ bài mẫu cũ). Kiểm tra `mvn test-compile` thành công.
+- [x] **Bước 2 (Dev A & Dev B):** Loại bỏ toàn bộ dữ liệu mock ảo trên giao diện `forum.html` (Xóa khối Nhóm sinh viên fake, xóa khối Sự kiện sắp diễn ra tĩnh, xóa số liệu 1,482 online, xóa bài mẫu tĩnh).
+- [x] **Bước 3 (Kiểm thử):** Đã khởi động ứng dụng và kiểm chứng `GET /feed/forum` trả về 12 bài viết động 100% từ Database JPA.
+- [ ] **Bước 4 (Dev A):** Bổ sung sorting tab "Sôi nổi nhất" (`popular`) theo `(likeCount + commentCount * 2)` trong `PostRepository` & `PostService`.
+- [ ] **Bước 5 (Dev B):** Tinh gọn script giao diện sang `forum.js`.
