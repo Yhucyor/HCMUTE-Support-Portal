@@ -24,6 +24,7 @@ public class AiChatRequest {
     private String query;
     
     @JsonProperty("session_id")
+    @com.fasterxml.jackson.annotation.JsonAlias({"sessionId", "session_id"})
     private String sessionId; // UUID của conversation
     
     @Pattern(regexp = "gemini|ollama|dify|python|default", message = "Provider không hợp lệ")

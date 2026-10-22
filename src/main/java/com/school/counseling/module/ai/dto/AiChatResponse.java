@@ -24,7 +24,13 @@ public class AiChatResponse {
     private String answer; // Câu trả lời từ AI
     
     @JsonProperty("session_id")
+    @com.fasterxml.jackson.annotation.JsonAlias({"sessionId", "session_id"})
     private String sessionId; // UUID conversation
+
+    @JsonProperty("sessionId")
+    public String getSessionIdCamelCase() {
+        return sessionId;
+    }
     
     private String provider; // Engine đã sử dụng (gemini, ollama, dify)
     
