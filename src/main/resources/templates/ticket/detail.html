@@ -839,7 +839,7 @@
                                     <div th:unless="${ticket.assignedStaffAvatarUrl != null}"
                                         class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-xs"
                                         style="width: 48px; height: 48px; background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); font-size: 1.25rem;"
-                                        th:text="${#strings.substring(ticket.assignedStaffName, 0, 1)}">S</div>
+                                        th:text="${(ticket.assignedStaffName != null and !ticket.assignedStaffName.isEmpty()) ? #strings.substring(ticket.assignedStaffName, 0, 1) : 'S'}">S</div>
                                     <span
                                         class="position-absolute bottom-0 end-0 p-1 bg-success border border-white rounded-circle"
                                         style="width: 12px; height: 12px;" title="Đang trực tuyến"></span>
@@ -1132,7 +1132,7 @@
                                 <div th:unless="${ticket.assignedStaffAvatarUrl != null}"
                                     class="rounded-circle text-primary bg-white d-flex align-items-center justify-content-center fw-bold shadow border border-3 border-white"
                                     style="width: 80px; height: 80px; font-size: 2.2rem;"
-                                    th:text="${ticket.assignedStaffName != null ? #strings.substring(ticket.assignedStaffName, 0, 1) : 'S'}">
+                                    th:text="${(ticket.assignedStaffName != null and !ticket.assignedStaffName.isEmpty()) ? #strings.substring(ticket.assignedStaffName, 0, 1) : 'S'}">
                                     S</div>
                                 <span
                                     class="position-absolute bottom-0 end-0 p-2 bg-success border border-2 border-white rounded-circle"

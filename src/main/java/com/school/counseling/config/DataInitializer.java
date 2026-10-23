@@ -315,7 +315,26 @@ public class DataInitializer implements CommandLineRunner {
 
     private User initUser(String username, String rawPassword, String fullName, String email, Role role,
             Department department, String customAvatarUrl) {
-        return userRepository.findByUsername(username).orElseGet(() -> {
+        return userRepository.findByUsername(username).map(existing -> {
+            boolean updated = false;
+            if (!passwordEncoder.matches(rawPassword, existing.getPasswordHash())) {
+                existing.setPasswordHash(passwordEncoder.encode(rawPassword));
+                updated = true;
+            }
+            if (existing.getStatus() != UserStatus.ACTIVE) {
+                existing.setStatus(UserStatus.ACTIVE);
+                updated = true;
+            }
+            if (existing.getRole() == null && role != null) {
+                existing.setRole(role);
+                updated = true;
+            }
+            if (existing.getDepartment() == null && department != null) {
+                existing.setDepartment(department);
+                updated = true;
+            }
+            return updated ? userRepository.save(existing) : existing;
+        }).orElseGet(() -> {
             String avatar = (customAvatarUrl != null && !customAvatarUrl.isBlank())
                     ? customAvatarUrl
                     : "https://ui-avatars.com/api/?name=" + fullName.replace(" ", "+") + "&background=0D8ABC&color=fff";
