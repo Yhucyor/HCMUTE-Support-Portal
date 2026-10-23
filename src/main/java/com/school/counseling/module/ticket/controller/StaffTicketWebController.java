@@ -80,6 +80,8 @@ public class StaffTicketWebController {
             filteredTickets = allTickets;
         } else if ("NEW_REPLY".equalsIgnoreCase(status)) {
             filteredTickets = allTickets.stream().filter(TicketSummaryDto::getHasStudentReply).toList();
+        } else if ("OVERDUE".equalsIgnoreCase(status)) {
+            filteredTickets = allTickets.stream().filter(TicketSummaryDto::isOverdue).toList();
         } else {
             filteredTickets = allTickets.stream().filter(t -> status.equalsIgnoreCase(t.getStatus())).toList();
         }
