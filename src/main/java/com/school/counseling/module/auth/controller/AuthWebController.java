@@ -39,13 +39,21 @@ public class AuthWebController {
             return "redirect:/home";
         }
         if (error != null) {
-            Object lastException = request.getSession().getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
-            if (lastException instanceof org.springframework.security.authentication.DisabledException) {
-                model.addAttribute("errorMessage", "Tài khoản của bạn chưa được kích hoạt qua mã OTP! Vui lòng hoàn tất kích hoạt tài khoản để đăng nhập.");
-            } else if (lastException instanceof org.springframework.security.authentication.LockedException) {
-                model.addAttribute("errorMessage", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Quản trị viên.");
+            if ("oauth2".equalsIgnoreCase(error)) {
+                Object oauthEx = request.getSession().getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
+                String msg = (oauthEx instanceof Exception e && e.getMessage() != null)
+                        ? e.getMessage()
+                        : "Đăng nhập bằng tài khoản Google không thành công. Vui lòng thử lại!";
+                model.addAttribute("errorMessage", msg);
             } else {
-                model.addAttribute("errorMessage", "Tên đăng nhập hoặc mật khẩu không chính xác!");
+                Object lastException = request.getSession().getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
+                if (lastException instanceof org.springframework.security.authentication.DisabledException) {
+                    model.addAttribute("errorMessage", "Tài khoản của bạn chưa được kích hoạt qua mã OTP! Vui lòng hoàn tất kích hoạt tài khoản để đăng nhập.");
+                } else if (lastException instanceof org.springframework.security.authentication.LockedException) {
+                    model.addAttribute("errorMessage", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Quản trị viên.");
+                } else {
+                    model.addAttribute("errorMessage", "Tên đăng nhập hoặc mật khẩu không chính xác!");
+                }
             }
         }
         if (logout != null) {

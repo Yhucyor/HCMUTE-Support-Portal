@@ -25,10 +25,14 @@ public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final com.school.counseling.module.auth.service.CustomOAuth2UserService customOAuth2UserService;
 
-    public SecurityConfig(UserDetailsServiceImpl userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(UserDetailsServiceImpl userDetailsService,
+                          JwtAuthenticationFilter jwtAuthenticationFilter,
+                          com.school.counseling.module.auth.service.CustomOAuth2UserService customOAuth2UserService) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.customOAuth2UserService = customOAuth2UserService;
     }
 
     @Bean
@@ -71,6 +75,7 @@ public class SecurityConfig {
                                 "/faqs", "/faq", "/api/v1/faqs/**",
                                 "/feed/official/**", "/feed/forum/**", "/api/v1/forum/**",
                                 "/auth/**", "/api/v1/auth/**",
+                                "/oauth2/**", "/login/oauth2/**",
                                 "/error",
                                 "/css/**", "/js/**", "/vendor/**", "/images/**", "/uploads/**", "/webjars/**", "/favicon.ico")
                         .permitAll()
@@ -88,6 +93,12 @@ public class SecurityConfig {
                         .usernameParameter("username")
                         .passwordParameter("password")
                         .permitAll())
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/auth/login")
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService))
+                        .defaultSuccessUrl("/home", false)
+                        .failureUrl("/auth/login?error=oauth2"))
                 .logout(logout -> logout
                         .logoutRequestMatcher(new AntPathRequestMatcher("/auth/logout"))
                         .logoutSuccessUrl("/?logout=true")
