@@ -68,6 +68,19 @@ class HcmuteCrawlerServiceTimetableTest {
         assertEquals("15:30", t10_12[0]);
         assertEquals("17:45", t10_12[1]);
 
+        // HCMUTE Portal real API formats
+        String[] portal1 = HcmuteCrawlerService.calculateTimesFromShift("1 (07g30)");
+        assertEquals("07:30", portal1[0]);
+        assertEquals("09:45", portal1[1]);
+
+        String[] portal7 = HcmuteCrawlerService.calculateTimesFromShift("7 (12g45)");
+        assertEquals("12:45", portal7[0]);
+        assertEquals("15:00", portal7[1]);
+
+        String[] portal10 = HcmuteCrawlerService.calculateTimesFromShift("10 (15g15)");
+        assertEquals("15:15", portal10[0]);
+        assertEquals("17:30", portal10[1]);
+
         // Null or blank fallback
         String[] fallback = HcmuteCrawlerService.calculateTimesFromShift(null);
         assertEquals("07:30", fallback[0]);

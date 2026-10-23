@@ -1280,6 +1280,20 @@ public class HcmuteCrawlerService {
 
     public static String[] calculateTimesFromShift(String shift) {
         if (shift == null || shift.isBlank()) return new String[]{"07:30", "09:45"};
+
+        // 1. Dạng dữ liệu từ HCMUTE Portal API: "7 (12g45)", "1 (07g30)", "10 (15g15)", "13 (18g00)"
+        java.util.regex.Matcher mPortal = java.util.regex.Pattern.compile("(\\d+)\\s*\\(\\s*(\\d{1,2})[gGhH:](\\d{2})\\s*\\)").matcher(shift.trim());
+        if (mPortal.find()) {
+            int h = Integer.parseInt(mPortal.group(2));
+            int min = Integer.parseInt(mPortal.group(3));
+            String start = String.format("%02d:%02d", h, min);
+            // Một ca học tiêu chuẩn gồm 3 tiết (135 phút)
+            int endMins = h * 60 + min + 135;
+            String end = String.format("%02d:%02d", endMins / 60, endMins % 60);
+            return new String[]{start, end};
+        }
+
+        // 2. Dạng khoảng tiết: "Tiết 1 - 3", "1 - 3", "Tiết 7 - 9"
         String[] startTimes = {
             "", "07:30", "08:15", "09:00", "10:00", "10:45", "11:30",
             "13:00", "13:45", "14:30", "15:30", "16:15", "17:00",
@@ -1298,6 +1312,22 @@ public class HcmuteCrawlerService {
             String end = (e >= 1 && e < endTimes.length) ? endTimes[e] : "09:45";
             return new String[]{start, end};
         }
+
+        // 3. Dạng tiết đơn lẻ: "7", "Ca 7", "1"
+        java.util.regex.Matcher mSingle = java.util.regex.Pattern.compile("(\\d+)").matcher(shift);
+        if (mSingle.find()) {
+            int t = Integer.parseInt(mSingle.group(1));
+            if (t == 1) return new String[]{"07:30", "09:45"};
+            if (t == 4) return new String[]{"10:00", "12:15"};
+            if (t == 7) return new String[]{"12:45", "15:00"};
+            if (t == 10) return new String[]{"15:15", "17:30"};
+            if (t == 13) return new String[]{"18:00", "20:15"};
+            String start = (t >= 1 && t < startTimes.length) ? startTimes[t] : "07:30";
+            int endIdx = Math.min(t + 2, endTimes.length - 1);
+            String end = (endIdx >= 1 && endIdx < endTimes.length) ? endTimes[endIdx] : "09:45";
+            return new String[]{start, end};
+        }
+
         return new String[]{"07:30", "09:45"};
     }
 
