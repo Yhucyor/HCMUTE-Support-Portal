@@ -198,8 +198,9 @@
                 }
             }
 
-            .bubble-animate-in {
-                animation: fadeInBubble 0.22s ease-out;
+            /* ẨN TRIỆT ĐỂ FLOATING CHATBOT WIDGET CỦA BẢN 1 TRONG PHIÊN CHAT TICKET */
+            #btn-open-ai-chat, #ai-chat-box {
+                display: none !important;
             }
         </style>
 
@@ -889,19 +890,19 @@
                     </div>
 
                     <!-- 3. THẺ TỆP & PHƯƠNG TIỆN ĐÃ CHIA SẺ TRONG ĐOẠN CHAT (Messenger Style Media & Files) -->
-                    <div th:if="${ticket.attachments != null and !#lists.isEmpty(ticket.attachments)}"
-                        class="card p-3 shadow-sm mb-3 border-0" style="border-radius: 16px;">
+                    <div id="sidebarSharedFilesCard" class="card p-3 shadow-sm mb-3 border-0" style="border-radius: 16px;"
+                        th:style="${(ticket.attachments == null or #lists.isEmpty(ticket.attachments)) ? 'display: none !important;' : ''}">
                         <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
                             <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
                                 <i class="bi bi-folder2-open text-primary"></i>
                                 Tệp Đã Chia Sẻ Trong Chat
                             </h6>
-                            <span
+                            <span id="sidebarSharedFilesCount"
                                 class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle rounded-pill small"
-                                th:text="${#lists.size(ticket.attachments)} + ' tệp'">3 tệp</span>
+                                th:text="${ticket.attachments != null ? #lists.size(ticket.attachments) + ' tệp' : '0 tệp'}">0 tệp</span>
                         </div>
 
-                        <div class="d-flex flex-column gap-2" style="max-height: 280px; overflow-y: auto;">
+                        <div id="sidebarSharedFilesList" class="d-flex flex-column gap-2" style="max-height: 280px; overflow-y: auto;">
                             <th:block th:each="att : ${ticket.attachments}">
                                 <div
                                     class="p-2 rounded-3 border bg-light d-flex align-items-center justify-content-between gap-2">
@@ -1830,6 +1831,77 @@
                 }
             }
 
+            function updateSidebarSharedFiles(attachments) {
+                const card = document.getElementById('sidebarSharedFilesCard');
+                const countBadge = document.getElementById('sidebarSharedFilesCount');
+                const listContainer = document.getElementById('sidebarSharedFilesList');
+                if (!card || !listContainer) return;
+
+                if (!attachments || attachments.length === 0) {
+                    card.style.setProperty('display', 'none', 'important');
+                    return;
+                }
+
+                card.style.display = '';
+                if (countBadge) {
+                    countBadge.textContent = attachments.length + ' tệp';
+                }
+
+                listContainer.innerHTML = attachments.map(att => {
+                    const fn = (att.fileName || '').toLowerCase();
+                    let iconHtml = '<i class="bi bi-file-earmark-text text-secondary fs-6"></i>';
+                    if (fn.endsWith('.pdf')) {
+                        iconHtml = '<i class="bi bi-file-earmark-pdf-fill text-danger fs-6"></i>';
+                    } else if (fn.endsWith('.docx') || fn.endsWith('.doc')) {
+                        iconHtml = '<i class="bi bi-file-earmark-word-fill text-primary fs-6"></i>';
+                    } else if (fn.endsWith('.xlsx') || fn.endsWith('.xls')) {
+                        iconHtml = '<i class="bi bi-file-earmark-excel-fill text-success fs-6"></i>';
+                    } else if (fn.endsWith('.zip') || fn.endsWith('.rar') || fn.endsWith('.7z')) {
+                        iconHtml = '<i class="bi bi-file-earmark-zip-fill text-warning fs-6"></i>';
+                    } else if (fn.endsWith('.png') || fn.endsWith('.jpg') || fn.endsWith('.jpeg') || fn.endsWith('.webp') || fn.endsWith('.gif')) {
+                        iconHtml = '<i class="bi bi-image-fill text-info fs-6"></i>';
+                    } else if (fn.endsWith('.md')) {
+                        iconHtml = '<i class="bi bi-filetype-md text-primary fs-6"></i>';
+                    } else if (fn.endsWith('.json')) {
+                        iconHtml = '<i class="bi bi-filetype-json text-warning fs-6"></i>';
+                    } else if (fn.endsWith('.txt')) {
+                        iconHtml = '<i class="bi bi-filetype-txt text-secondary fs-6"></i>';
+                    }
+
+                    const isPreviewable = fn.endsWith('.pdf') || fn.endsWith('.docx') || fn.endsWith('.xlsx') || fn.endsWith('.json') || fn.endsWith('.txt') || fn.endsWith('.md') || fn.endsWith('.png') || fn.endsWith('.jpg') || fn.endsWith('.jpeg') || fn.endsWith('.webp');
+                    const sizeStr = att.fileSize ? (att.fileSize / 1024).toFixed(1) + ' KB' : '';
+                    const fileUrl = att.fileUrl || ('/files/view/' + att.id);
+
+                    return `
+                    <div class="p-2 rounded-3 border bg-light d-flex align-items-center justify-content-between gap-2">
+                        <div class="d-flex align-items-center gap-2 overflow-hidden">
+                            <div class="rounded-2 p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px; background: #ffffff;">
+                                ${iconHtml}
+                            </div>
+                            <div class="overflow-hidden">
+                                <div class="fw-semibold text-dark text-truncate small" title="${escapeHtml(att.fileName)}">${escapeHtml(att.fileName)}</div>
+                                <small class="text-muted" style="font-size: 0.68rem;">${sizeStr}</small>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                            ${isPreviewable ? `
+                            <button type="button" class="btn btn-sm btn-outline-primary px-2 py-1 btn-preview-file"
+                                    style="font-size: 0.72rem; border-radius: 6px;"
+                                    data-id="${att.id}"
+                                    data-name="${escapeHtml(att.fileName)}"
+                                    data-url="${escapeHtml(fileUrl)}"
+                                    title="Xem nhanh">
+                                <i class="bi bi-eye"></i>
+                            </button>` : ''}
+                            <a href="/files/download/${att.id}" class="btn btn-sm btn-primary px-2 py-1" style="font-size: 0.72rem; border-radius: 6px;" title="Tải tệp về máy">
+                                <i class="bi bi-download"></i>
+                            </a>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+            }
+
             document.addEventListener('DOMContentLoaded', function () {
                 const chatStream = document.getElementById('chatStream');
                 if (chatStream) {
@@ -1991,6 +2063,7 @@
                         if (result && result.success && result.data) {
                             renderHistories(result.data.histories);
                             updateTicketMeta(result.data);
+                            updateSidebarSharedFiles(result.data.attachments);
                         } else {
                             showToast(result.message || 'Lỗi khi gửi tin nhắn', 'danger');
                         }
@@ -2040,6 +2113,7 @@
                         if (result && result.success && result.data) {
                             renderHistories(result.data.histories);
                             updateTicketMeta(result.data);
+                            updateSidebarSharedFiles(result.data.attachments);
                         }
                     } catch (e) {
                         // Im lặng bỏ qua khi mất kết nối tạm thời

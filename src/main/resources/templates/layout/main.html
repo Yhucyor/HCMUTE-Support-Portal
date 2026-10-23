@@ -136,8 +136,8 @@
         </div>
     </main>
 
-    <!-- Chatbot Widget: Giới hạn nghiêm ngặt, chỉ hiển thị cho người dùng đã đăng nhập -->
-    <div sec:authorize="isAuthenticated()" th:replace="~{ai/chat-widget :: chat-widget}"></div>
+    <!-- Trợ lý AI đã được chuyển thành mô-đun chính thức tại Navbar (/ai-chat) của Bản 2 -->
+    <!-- Đã loại bỏ floating chatbot button bản 1 -->
 
     <!-- Footer -->
     <div th:replace="~{layout/footer :: footer}"></div>
