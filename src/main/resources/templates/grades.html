@@ -376,6 +376,8 @@
                                     <span id="kpiCredits" class="font-headline text-headline-md font-bold text-on-surface"
                                           th:text="${summary != null ? summary.totalCredits : '--'}">--</span>
                                     <span class="font-body-md text-body-md text-secondary">/ 132 TC</span>
+                                    <span id="kpiCreditsPercent" class="text-xs font-semibold text-primary ml-1"
+                                          th:text="${summary != null && summary.totalCredits != null ? '(' + #numbers.formatInteger((summary.totalCredits * 100) / 132, 1) + '%)' : ''}"></span>
                                 </div>
                             </div>
                             <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
@@ -766,6 +768,20 @@
         return (g.totalScore != null ? (g.totalScore >= 5.0 || (g.totalScore >= 4.0 && isLegacyPassSemester(g.semester))) : true);
     }
 
+    // ── Safe DOM Element Updaters ─────────────────────────────────────────────
+    function setElText(id, text) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+    }
+    function setElHtml(id, html) {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = html;
+    }
+    function setElStyle(id, prop, val) {
+        const el = document.getElementById(id);
+        if (el) el.style[prop] = val;
+    }
+
     // ── Load Grades & Summary ─────────────────────────────────────────────────
     async function loadGradesData() {
         const studentId = document.body.dataset.studentId || '';
@@ -800,13 +816,25 @@
         }
 
         // Tự động populate danh sách Học kỳ vào dropdown filter
-        populateSemesterFilter();
+        try {
+            populateSemesterFilter();
+        } catch (e) {
+            console.warn('Lỗi populate filter:', e);
+        }
 
         // Cập nhật lại KPIs tính trực tiếp từ danh sách điểm thực tế (chỉ tính môn đã có điểm)
-        recalculateKPIsFromGrades(allGrades);
+        try {
+            recalculateKPIsFromGrades(allGrades);
+        } catch (e) {
+            console.warn('Lỗi recalculateKPIsFromGrades:', e);
+        }
 
         // Render views
-        applyFilters();
+        try {
+            applyFilters();
+        } catch (e) {
+            console.warn('Lỗi applyFilters:', e);
+        }
     }
 
     // ── Phân tích thông tin Năm học & Học kỳ từ chuỗi ───────────────────────
@@ -936,39 +964,37 @@
         if (!sum) return;
         if (sum.gpa4 != null) {
             const g4 = sum.gpa4.toFixed(2);
-            document.getElementById('kpiGpa4').textContent = g4;
-            document.getElementById('kpiGpa4Bar').style.width = Math.min(100, (sum.gpa4 / 4.0) * 100) + '%';
+            setElText('kpiGpa4', g4);
+            setElStyle('kpiGpa4Bar', 'width', Math.min(100, (sum.gpa4 / 4.0) * 100) + '%');
         }
         if (sum.academicStanding) {
-            document.getElementById('kpiStandingBadge').textContent = sum.academicStanding;
+            setElText('kpiStandingBadge', sum.academicStanding);
         }
         if (sum.academicYearLevel) {
-            const el1 = document.getElementById('kpiAcademicYearLevel');
-            const el2 = document.getElementById('headerAcademicYearLevel');
-            if (el1) el1.textContent = sum.academicYearLevel;
-            if (el2) el2.textContent = sum.academicYearLevel;
+            setElText('kpiAcademicYearLevel', sum.academicYearLevel);
+            setElText('headerAcademicYearLevel', sum.academicYearLevel);
         }
         if (sum.gpa10 != null) {
             const g10 = sum.gpa10.toFixed(2);
-            document.getElementById('kpiGpa10').textContent = g10;
-            document.getElementById('kpiGpa10Bar').style.width = Math.min(100, (sum.gpa10 / 10.0) * 100) + '%';
-            document.getElementById('kpiGpa10Rate').textContent = sum.gpa10 >= 8.0 ? 'Loại Giỏi' : sum.gpa10 >= 7.0 ? 'Loại Khá' : sum.gpa10 >= 5.0 ? 'Trung bình' : 'Cảnh báo';
+            setElText('kpiGpa10', g10);
+            setElStyle('kpiGpa10Bar', 'width', Math.min(100, (sum.gpa10 / 10.0) * 100) + '%');
+            setElText('kpiGpa10Rate', sum.gpa10 >= 8.0 ? 'Loại Giỏi' : sum.gpa10 >= 7.0 ? 'Loại Khá' : sum.gpa10 >= 5.0 ? 'Trung bình' : 'Cảnh báo');
         }
         if (sum.totalCredits != null) {
-            document.getElementById('kpiCredits').textContent = sum.totalCredits;
+            setElText('kpiCredits', sum.totalCredits);
             const pct = Math.min(100, Math.round((sum.totalCredits / 132) * 100));
-            document.getElementById('kpiCreditsPercent').textContent = pct + '%';
-            document.getElementById('kpiCreditsBar').style.width = pct + '%';
+            setElText('kpiCreditsPercent', pct + '%');
+            setElStyle('kpiCreditsBar', 'width', pct + '%');
         }
         if (sum.passedCoursesCount != null) {
-            document.getElementById('kpiPassedCount').innerHTML = `<span class="material-symbols-outlined text-base">check_circle</span> ${sum.passedCoursesCount} Đạt`;
+            setElHtml('kpiPassedCount', `<span class="material-symbols-outlined text-base">check_circle</span> ${sum.passedCoursesCount} Đạt`);
         }
         if (sum.failedCoursesCount != null) {
-            document.getElementById('kpiFailedCount').innerHTML = `<span class="material-symbols-outlined text-base">cancel</span> ${sum.failedCoursesCount} Nợ`;
+            setElHtml('kpiFailedCount', `<span class="material-symbols-outlined text-base">cancel</span> ${sum.failedCoursesCount} Nợ`);
             const totalC = (sum.passedCoursesCount || 0) + (sum.failedCoursesCount || 0);
             if (totalC > 0) {
                 const ratio = Math.round(((sum.passedCoursesCount || 0) / totalC) * 100);
-                document.getElementById('kpiPassedRatio').textContent = `Tỷ lệ hoàn thành: ${ratio}%`;
+                setElText('kpiPassedRatio', `Tỷ lệ hoàn thành: ${ratio}%`);
             }
         }
         if (sum.debtCredits != null) {
@@ -1091,26 +1117,30 @@
             reasons.push(`ĐTB tích lũy (${gpa4.toFixed(2)}) dưới ngưỡng quy định ${yearName} (< ${threshold.toFixed(2)})`);
         }
 
-        renderKPIs({
-            gpa4: gpa4,
-            gpa10: gpa10,
-            academicStanding: standing,
-            totalCredits: totalPassedCredits,
-            passedCoursesCount: passed,
-            failedCoursesCount: failed,
-            debtCredits: debtCredits,
-            academicYearLevel: yearLevel,
-            isAcademicWarning: isWarning,
-            warningReason: isWarning ? reasons.join('. ') : 'Bình thường - Không vi phạm quy chế cảnh báo'
-        });
+        try {
+            renderKPIs({
+                gpa4: gpa4,
+                gpa10: gpa10,
+                academicStanding: standing,
+                totalCredits: totalPassedCredits,
+                passedCoursesCount: passed,
+                failedCoursesCount: failed,
+                debtCredits: debtCredits,
+                academicYearLevel: yearLevel,
+                isAcademicWarning: isWarning,
+                warningReason: isWarning ? reasons.join('. ') : 'Bình thường - Không vi phạm quy chế cảnh báo'
+            });
+        } catch (err) {
+            console.warn('Lỗi khi render KPIs từ bảng điểm:', err);
+        }
     }
 
     // ── Apply Filters (Lọc dữ liệu tức thì) ──────────────────────────────────
     function applyFilters() {
-        const yearVal = document.getElementById('filterYear').value.trim();
-        const semVal = document.getElementById('filterSemester').value.trim();
-        const statusVal = document.getElementById('filterStatus').value;
-        const searchVal = document.getElementById('searchInput').value.trim().toLowerCase();
+        const yearVal = (document.getElementById('filterYear')?.value || '').trim();
+        const semVal = (document.getElementById('filterSemester')?.value || '').trim();
+        const statusVal = document.getElementById('filterStatus')?.value || 'ALL';
+        const searchVal = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
 
         const filtered = allGrades.filter(g => {
             const semInfo = parseSemesterInfo(g.semester);
@@ -1159,8 +1189,8 @@
 
         // Cập nhật nhãn thống kê
         const totalCreds = filtered.reduce((acc, c) => acc + (c.credits || 0), 0);
-        document.getElementById('filteredStatsLabel').textContent = `Hiển thị ${filtered.length} môn học (${totalCreds} tín chỉ)`;
-        document.getElementById('flatCountBadge').textContent = `${filtered.length} môn (${totalCreds} TC)`;
+        setElText('filteredStatsLabel', `Hiển thị ${filtered.length} môn học (${totalCreds} tín chỉ)`);
+        setElText('flatCountBadge', `${filtered.length} môn (${totalCreds} TC)`);
 
         // Render theo view mode đang chọn
         if (currentViewMode === 'grouped') {
@@ -1447,7 +1477,7 @@
         });
 
         const pctComplete = gradedTotal > 0 ? Math.round((passed / gradedTotal) * 100) : 0;
-        document.getElementById('chartCompletionRate').textContent = `${pctComplete}% (${passed}/${gradedTotal} môn có điểm${inProgressCount > 0 ? `, ${inProgressCount} đang học` : ''})`;
+        setElText('chartCompletionRate', `${pctComplete}% (${passed}/${gradedTotal} môn có điểm${inProgressCount > 0 ? `, ${inProgressCount} đang học` : ''})`);
 
         const letterKeys = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F'];
         grid.innerHTML = letterKeys.map(k => {
@@ -1502,7 +1532,7 @@
                 const gpa10 = semCreditsForGpa > 0 ? (sum10 / semCreditsForGpa).toFixed(2) : '--';
                 const gpa4 = semCreditsForGpa > 0 ? (sum4 / semCreditsForGpa).toFixed(2) : '--';
                 let rank = 'Trung bình';
-                if (scCredits > 0) {
+                if (semCreditsForGpa > 0) {
                     const num4 = parseFloat(gpa4);
                     if (num4 >= 3.6) rank = 'Xuất sắc';
                     else if (num4 >= 3.2) rank = 'Giỏi';
