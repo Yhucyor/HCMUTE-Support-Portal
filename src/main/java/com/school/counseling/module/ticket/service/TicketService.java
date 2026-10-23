@@ -24,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -76,12 +78,17 @@ public class TicketService {
             guestToken = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
         }
 
-        String priority = request.getPriority() != null ? request.getPriority().toUpperCase() : "MEDIUM";
-        if ("MEDIUM".equalsIgnoreCase(priority)) {
+        // Tự động suy diễn Mức độ ưu tiên và Hạn chót SLA từ Loại thủ tục học vụ
+        String priority = slaCalculatorService.resolvePriority(request.getTopicCategory());
+        LocalDateTime dueDate = slaCalculatorService.calculateDueDateByCategory(request.getTopicCategory());
+
+        // AI Triage hỗ trợ nâng hạng ưu tiên nếu phát hiện tình huống khẩn cấp bất thường
+        if (!"URGENT".equalsIgnoreCase(priority)) {
             try {
                 TicketTriageResponseDto triage = suggestTicketTriage(request.getTitle(), request.getDescription());
                 if (triage != null && ("URGENT".equalsIgnoreCase(triage.getPriority()) || "HIGH".equalsIgnoreCase(triage.getPriority()))) {
                     priority = triage.getPriority();
+                    dueDate = slaCalculatorService.calculateDueDate(priority);
                     log.info("AI Triage phát hiện mức độ cấp bách, tự động nâng cấp độ ưu tiên Ticket lên: {}", priority);
                 }
             } catch (Exception e) {
@@ -89,7 +96,6 @@ public class TicketService {
             }
         }
 
-        LocalDateTime dueDate = slaCalculatorService.calculateDueDate(priority);
         String ticketCode = generateTicketCode();
 
         Ticket ticket = Ticket.builder()
@@ -425,6 +431,73 @@ public class TicketService {
             return Collections.emptyList();
         }
         return ticketRepository.findSummaryByCreatorId(userId);
+    }
+
+    /**
+     * Lấy danh sách Ticket phân trang của sinh viên với các bộ lọc: trạng thái, đơn vị, từ khóa
+     */
+    public Page<TicketResponseDto> getMyTicketsPaged(Long userId, String status, Long departmentId, String keyword, Pageable pageable) {
+        if (userId == null) {
+            return Page.empty(pageable);
+        }
+        String normalizedStatus = (status == null || status.isBlank() || "ALL".equalsIgnoreCase(status)) ? null : status.toUpperCase();
+        String normalizedKeyword = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
+        Page<Ticket> page = ticketRepository.findMyTicketsPaged(userId, normalizedStatus, departmentId, normalizedKeyword, pageable);
+        return page.map(this::mapToSummaryResponseDto);
+    }
+
+    /**
+     * Đếm số lượng ticket của sinh viên theo các trạng thái phục vụ hiển thị Badges trên Tab
+     */
+    public Map<String, Long> getMyTicketStatusCounts(Long userId) {
+        Map<String, Long> counts = new HashMap<>();
+        if (userId == null) {
+            counts.put("total", 0L);
+            counts.put("pending", 0L);
+            counts.put("processing", 0L);
+            counts.put("waiting", 0L);
+            counts.put("resolved", 0L);
+            counts.put("closed", 0L);
+            return counts;
+        }
+        counts.put("total", ticketRepository.countMyTicketsTotal(userId));
+        counts.put("pending", ticketRepository.countMyTicketsPending(userId));
+        counts.put("processing", ticketRepository.countMyTicketsProcessing(userId));
+        counts.put("waiting", ticketRepository.countMyTicketsWaiting(userId));
+        counts.put("resolved", ticketRepository.countMyTicketsResolved(userId));
+        counts.put("closed", ticketRepository.countMyTicketsClosed(userId));
+        return counts;
+    }
+
+    /**
+     * Map gọn phục vụ hiển thị danh sách (không tải lịch sử hay tệp đính kèm nặng)
+     */
+    public TicketResponseDto mapToSummaryResponseDto(Ticket t) {
+        boolean isOverdue = slaCalculatorService.isOverdue(t.getDueDate(), t.getStatus());
+        boolean isDueSoon = slaCalculatorService.isDueSoon(t.getDueDate(), t.getStatus());
+
+        return TicketResponseDto.builder()
+                .id(t.getId())
+                .ticketCode(t.getTicketCode())
+                .title(t.getTitle())
+                .description(t.getDescription())
+                .departmentId(t.getDepartment() != null ? t.getDepartment().getId() : null)
+                .departmentName(t.getDepartment() != null ? t.getDepartment().getName() : "")
+                .creatorId(t.getCreator() != null ? t.getCreator().getId() : null)
+                .creatorName(t.getCreator() != null ? t.getCreator().getFullName() : (t.getGuestName() != null ? t.getGuestName() : ""))
+                .assignedStaffId(t.getAssignedTo() != null ? t.getAssignedTo().getId() : null)
+                .assignedStaffName(t.getAssignedTo() != null ? t.getAssignedTo().getFullName() : null)
+                .priority(t.getPriority())
+                .topicCategory(t.getTopicCategory())
+                .status(t.getStatus())
+                .dueDate(t.getDueDate())
+                .isOverdue(isOverdue)
+                .isDueSoon(isDueSoon)
+                .createdAt(t.getCreatedAt())
+                .resolvedAt(t.getResolvedAt())
+                .closedAt(t.getClosedAt())
+                .rating(t.getRating())
+                .build();
     }
 
     @Transactional
