@@ -62,7 +62,7 @@
 
             <div class="card-body p-3">
                 <h6 class="fw-bold text-dark mb-2" th:text="${post.title}">Tiêu đề bài viết</h6>
-                <p class="text-dark small mb-3" style="white-space: pre-line; line-height: 1.6;" th:text="${post.content}">Nội dung bài viết sinh viên gửi lên...</p>
+                <div class="text-dark small mb-3" style="line-height: 1.6;" th:utext="${post.content}">Nội dung bài viết sinh viên gửi lên...</div>
 
                 <!-- Attached Image if present -->
                 <div th:if="${post.attachments != null and !post.attachments.empty}" class="mb-3">
