@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="utf-8">
@@ -78,10 +78,6 @@
 
             <!-- Header Actions -->
             <div class="flex items-center gap-2 sm:gap-3">
-                <div class="hidden sm:flex items-center text-xs font-semibold text-slate-600 px-2 py-1 rounded cursor-pointer hover:bg-slate-100">
-                    <span>VI</span>
-                    <span class="material-symbols-outlined text-[16px]">expand_more</span>
-                </div>
 
                 <!-- Authenticated: Account Dropdown Menu -->
                 <div sec:authorize="isAuthenticated()" class="relative">

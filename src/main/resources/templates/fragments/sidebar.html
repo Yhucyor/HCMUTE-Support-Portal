@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
     <!-- Portal Sidebar Fragment -->
     <aside class="sidebar" th:fragment="sidebar(activeTab)">
@@ -8,6 +8,20 @@
             <span class="logo-text">QAUTE Portal</span>
         </div>
         <ul class="sidebar-menu">
+            <!-- Quản Trị Viên -->
+            <li sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/admin/dashboard}" style="color: #ff8a80; font-weight: 600;">
+                    <i class='bx bx-slider-alt'></i>
+                    <span>Trang Quản Trị</span>
+                </a>
+            </li>
+            <!-- Cán Bộ Xử Lý -->
+            <li sec:authorize="hasAnyRole('STAFF', 'ADMIN')">
+                <a th:href="@{/staff/tickets}" style="color: #90caf9;">
+                    <i class='bx bx-briefcase-alt-2'></i>
+                    <span>Bàn Cán Bộ</span>
+                </a>
+            </li>
             <li>
                 <a th:href="@{/academic/sync}" th:classappend="${activeTab == 'dashboard' or activeTab == 'academic'} ? 'active' : ''">
                     <i class='bx bxs-dashboard'></i>

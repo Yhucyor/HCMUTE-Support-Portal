@@ -94,10 +94,21 @@
                 <a class="font-bold text-[14px] text-[#003882] border-b-2 border-[#003882] transition-colors pb-1" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
             </nav>
             <div class="flex items-center gap-2 sm:gap-3">
-                <div class="hidden sm:flex items-center text-xs font-semibold text-slate-600 px-2 py-1 rounded cursor-pointer hover:bg-slate-100">
-                    <span>VI</span>
-                    <span class="material-symbols-outlined text-[16px]">expand_more</span>
+                <!-- Nút Trang Quản Lý Nhanh Cho Quản Trị Viên -->
+                <div sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/admin/dashboard}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md shadow-sm transition-all" title="Bảng Điều Hành Quản Trị">
+                        <span class="material-symbols-outlined text-[16px]">admin_panel_settings</span>
+                        <span>Trang Quản Lý</span>
+                    </a>
                 </div>
+                <!-- Nút Bàn Cán Bộ Cho Cán Bộ Tư Vấn -->
+                <div sec:authorize="hasRole('STAFF') and !hasRole('ADMIN')">
+                    <a th:href="@{/staff/tickets}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-md shadow-sm transition-all" title="Bàn Tiếp Nhận Ticket">
+                        <span class="material-symbols-outlined text-[16px]">support_agent</span>
+                        <span>Bàn Cán Bộ</span>
+                    </a>
+                </div>
+
                 <div sec:authorize="isAuthenticated()" class="relative">
                     <button id="ttAccountToggle"
                             class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95"
@@ -109,6 +120,25 @@
                         <span class="material-symbols-outlined text-[14px]">expand_more</span>
                     </button>
                     <div id="ttDropdownMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50" role="menu">
+                        <!-- Quản trị viên Quick Links -->
+                        <div sec:authorize="hasRole('ADMIN')">
+                            <a th:href="@{/admin/dashboard}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span><span>Bảng Quản Trị (Admin)</span>
+                            </a>
+                            <a th:href="@{/admin/users}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">manage_accounts</span><span>Quản lý người dùng</span>
+                            </a>
+                            <a th:href="@{/admin/departments}" class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">domain</span><span>Quản lý Khoa / Phòng</span>
+                            </a>
+                        </div>
+                        <div sec:authorize="hasAnyRole('STAFF', 'ADMIN')">
+                            <a th:href="@{/staff/tickets}" class="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-amber-600 hover:bg-amber-50 transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">support_agent</span><span>Bàn Cán Bộ xử lý</span>
+                            </a>
+                            <div class="border-t border-slate-200 my-1"></div>
+                        </div>
+
                         <a href="/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
                             <span class="material-symbols-outlined text-[18px]">person</span><span>Thông tin cá nhân</span>
                         </a>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
     <!-- Portal Topbar Fragment -->
     <header class="topbar" th:fragment="topbar">
@@ -14,6 +14,22 @@
                 <span class="badge">3</span>
             </div>
             
+            <!-- Admin / Staff Quick Action Buttons -->
+            <div sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/admin/dashboard}" class="btn-topbar-admin" title="Truy cập Bảng Quản Trị Hệ Thống"
+                   style="background: linear-gradient(135deg, #A51C30 0%, #8a1525 100%); color: #ffffff; padding: 6px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(165,28,48,0.25); transition: all 0.2s;">
+                    <i class='bx bx-slider-alt'></i>
+                    <span>Trang Quản Lý</span>
+                </a>
+            </div>
+            <div sec:authorize="hasRole('STAFF') and !hasRole('ADMIN')">
+                <a th:href="@{/staff/tickets}" class="btn-topbar-staff" title="Truy cập Bàn Cán Bộ Xử Lý Vé"
+                   style="background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); color: #ffffff; padding: 6px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(21,101,192,0.25); transition: all 0.2s;">
+                    <i class='bx bx-support'></i>
+                    <span>Bàn Cán Bộ</span>
+                </a>
+            </div>
+
             <!-- User Account Area with Dropdown -->
             <div class="user-account-area" th:if="${userAccountMenu != null}">
                 <div class="user-profile" id="userAccountToggle" 
@@ -40,14 +56,55 @@
                     <i class='bx bx-chevron-down' style="color: var(--text-gray);"></i>
                 </div>
                 
-                <!-- Dropdown Menu - Chỉ hiển thị cho STUDENT -->
+                <!-- Dropdown Menu -->
                 <div class="user-dropdown-menu" 
                      id="userDropdownMenu" 
                      role="menu" 
-                     aria-labelledby="userAccountToggle"
-                     th:if="${isStudent}">
+                     aria-labelledby="userAccountToggle">
                     
-                    <a href="/profile" 
+                    <!-- Mục dành riêng cho Quản Trị Viên -->
+                    <a th:href="@{/admin/dashboard}" 
+                       sec:authorize="hasRole('ADMIN')"
+                       class="dropdown-item" 
+                       role="menuitem"
+                       style="color: #A51C30; font-weight: 600;"
+                       tabindex="-1">
+                        <i class='bx bx-slider-alt'></i>
+                        <span>Bảng Quản Trị (Admin)</span>
+                    </a>
+                    
+                    <a th:href="@{/admin/users}" 
+                       sec:authorize="hasRole('ADMIN')"
+                       class="dropdown-item" 
+                       role="menuitem"
+                       tabindex="-1">
+                        <i class='bx bx-user-check'></i>
+                        <span>Quản Lý Người Dùng</span>
+                    </a>
+                    
+                    <a th:href="@{/admin/departments}" 
+                       sec:authorize="hasRole('ADMIN')"
+                       class="dropdown-item" 
+                       role="menuitem"
+                       tabindex="-1">
+                        <i class='bx bx-buildings'></i>
+                        <span>Quản Lý Khoa / Phòng Ban</span>
+                    </a>
+
+                    <!-- Mục dành cho Cán Bộ Tư Vấn & Admin -->
+                    <a th:href="@{/staff/tickets}" 
+                       sec:authorize="hasAnyRole('STAFF', 'ADMIN')"
+                       class="dropdown-item" 
+                       role="menuitem"
+                       style="color: #1565c0; font-weight: 600;"
+                       tabindex="-1">
+                        <i class='bx bx-support'></i>
+                        <span>Bàn Tiếp Nhận Ticket</span>
+                    </a>
+
+                    <div sec:authorize="hasAnyRole('STAFF', 'ADMIN')" style="height: 1px; background: #e2e8f0; margin: 4px 0;"></div>
+
+                    <a th:href="@{/profile}" 
                        class="dropdown-item" 
                        role="menuitem"
                        tabindex="-1">
@@ -55,51 +112,65 @@
                         <span>Thông tin cá nhân</span>
                     </a>
                     
-                    <a href="/academic/sync" 
-                       class="dropdown-item" 
-                       role="menuitem"
-                       tabindex="-1">
-                        <i class='bx bx-home'></i>
-                        <span>Tổng quan</span>
-                    </a>
-                    
-                    <a href="/academic/grades" 
-                       class="dropdown-item" 
-                       role="menuitem"
-                       tabindex="-1">
-                        <i class='bx bx-file'></i>
-                        <span>Bảng điểm</span>
-                    </a>
-                    
-                    <a href="/academic/timetable" 
-                       class="dropdown-item" 
-                       role="menuitem"
-                       tabindex="-1">
-                        <i class='bx bx-calendar'></i>
-                        <span>Thời khóa biểu</span>
-                    </a>
-                    
-                    <a href="/academic/curriculum" 
-                       class="dropdown-item" 
-                       role="menuitem"
-                       tabindex="-1">
-                        <i class='bx bx-book'></i>
-                        <span>Chương trình đào tạo</span>
-                    </a>
+                    <!-- Mục học vụ dành cho Sinh Viên -->
+                    <div th:if="${isStudent}">
+                        <a th:href="@{/academic/sync}" 
+                           class="dropdown-item" 
+                           role="menuitem"
+                           tabindex="-1">
+                            <i class='bx bx-home'></i>
+                            <span>Tổng quan học tập</span>
+                        </a>
+                        
+                        <a th:href="@{/academic/grades}" 
+                           class="dropdown-item" 
+                           role="menuitem"
+                           tabindex="-1">
+                            <i class='bx bx-file'></i>
+                            <span>Bảng điểm</span>
+                        </a>
+                        
+                        <a th:href="@{/academic/timetable}" 
+                           class="dropdown-item" 
+                           role="menuitem"
+                           tabindex="-1">
+                            <i class='bx bx-calendar'></i>
+                            <span>Thời khóa biểu</span>
+                        </a>
+                        
+                        <a th:href="@{/academic/curriculum}" 
+                           class="dropdown-item" 
+                           role="menuitem"
+                           tabindex="-1">
+                            <i class='bx bx-book'></i>
+                            <span>Chương trình đào tạo</span>
+                        </a>
+                    </div>
 
-                    <a href="/tickets/my-tickets" 
+                    <a th:href="@{/tickets/my-tickets}" 
                        class="dropdown-item" 
                        role="menuitem"
                        tabindex="-1">
                         <i class='bx bx-support'></i>
                         <span>Ticket hỗ trợ</span>
                     </a>
+
+                    <div style="height: 1px; background: #e2e8f0; margin: 4px 0;"></div>
+
+                    <a th:href="@{/auth/logout}" 
+                       class="dropdown-item text-danger" 
+                       role="menuitem"
+                       tabindex="-1"
+                       style="color: #dc2626;">
+                        <i class='bx bx-log-out'></i>
+                        <span>Đăng xuất</span>
+                    </a>
                 </div>
             </div>
             
             <!-- Fallback khi chưa đăng nhập -->
             <div th:unless="${userAccountMenu != null}">
-                <a href="/auth/login" class="login-btn">Đăng nhập</a>
+                <a th:href="@{/auth/login}" class="login-btn">Đăng nhập</a>
             </div>
         </div>
     </header>

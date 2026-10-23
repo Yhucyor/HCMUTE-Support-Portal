@@ -306,6 +306,19 @@
 
             <!-- Right Controls: Đăng Nhập / Dropdown Học Vụ & Người Dùng -->
             <div class="d-flex align-items-center gap-2 ms-auto">
+                <!-- Nút Trang Quản Lý Nhanh Cho Quản Trị Viên -->
+                <div sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/admin/dashboard}" class="btn btn-sm btn-danger rounded-pill px-3 py-1.5 fw-bold text-white shadow-sm d-inline-flex align-items-center" title="Bảng Điều Hành Quản Trị Hệ Thống">
+                        <i class="bi bi-sliders me-1.5"></i>Trang Quản Lý
+                    </a>
+                </div>
+                <!-- Nút Bàn Cán Bộ Nhanh Cho Cán Bộ Tư Vấn -->
+                <div sec:authorize="hasRole('STAFF') and !hasRole('ADMIN')">
+                    <a th:href="@{/staff/tickets}" class="btn btn-sm btn-primary rounded-pill px-3 py-1.5 fw-bold text-white shadow-sm d-inline-flex align-items-center" title="Bàn Tiếp Nhận & Xử Lý Ticket">
+                        <i class="bi bi-kanban me-1.5"></i>Bàn Cán Bộ
+                    </a>
+                </div>
+
                 <!-- Khách vãng lai (Chưa đăng nhập) -->
                 <div sec:authorize="isAnonymous()" class="d-flex align-items-center gap-2">
                     <a class="btn btn-outline-light btn-sm rounded-pill px-3 fw-semibold btn-nav-login" th:href="@{/auth/login}">
@@ -332,6 +345,29 @@
                                 <span sec:authorize="hasRole('STUDENT')" class="badge bg-primary">Sinh Viên HCMUTE</span>
                             </div>
                         </li>
+
+                        <!-- Admin & Staff Management Quick Links -->
+                        <li sec:authorize="hasRole('ADMIN')">
+                            <a class="dropdown-item py-2 fw-bold text-danger bg-danger-subtle rounded-1 mx-2 my-1" style="width: auto;" th:href="@{/admin/dashboard}">
+                                <i class="bi bi-speedometer2 me-2"></i>Bảng Quản Trị (Admin)
+                            </a>
+                        </li>
+                        <li sec:authorize="hasRole('ADMIN')">
+                            <a class="dropdown-item py-1.5" th:href="@{/admin/users}">
+                                <i class="bi bi-people me-2 text-primary"></i>Quản Lý Người Dùng
+                            </a>
+                        </li>
+                        <li sec:authorize="hasRole('ADMIN')">
+                            <a class="dropdown-item py-1.5" th:href="@{/admin/departments}">
+                                <i class="bi bi-buildings me-2 text-info"></i>Quản Lý Khoa / Phòng Ban
+                            </a>
+                        </li>
+                        <li sec:authorize="hasAnyRole('STAFF', 'ADMIN')">
+                            <a class="dropdown-item py-1.5 fw-semibold text-warning-emphasis" th:href="@{/staff/tickets}">
+                                <i class="bi bi-kanban me-2 text-warning"></i>Bàn Cán Bộ (Staff Desk)
+                            </a>
+                        </li>
+                        <li sec:authorize="hasAnyRole('STAFF', 'ADMIN')"><hr class="dropdown-divider my-1"></li>
 
                         <!-- 1. Hồ Sơ Cá Nhân (Bản 2 giữ nguyên) -->
                         <li>
