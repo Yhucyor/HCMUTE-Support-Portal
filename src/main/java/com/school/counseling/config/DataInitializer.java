@@ -48,6 +48,7 @@ public class DataInitializer implements CommandLineRunner {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final PostAttachmentRepository postAttachmentRepository;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     public DataInitializer(RoleRepository roleRepository,
                            DepartmentRepository departmentRepository,
@@ -58,7 +59,8 @@ public class DataInitializer implements CommandLineRunner {
                            ObjectMapper objectMapper,
                            PostRepository postRepository,
                            CommentRepository commentRepository,
-                           PostAttachmentRepository postAttachmentRepository) {
+                           PostAttachmentRepository postAttachmentRepository,
+                           org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
         this.roleRepository = roleRepository;
         this.departmentRepository = departmentRepository;
         this.userRepository = userRepository;
@@ -69,12 +71,16 @@ public class DataInitializer implements CommandLineRunner {
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.postAttachmentRepository = postAttachmentRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
     public void run(String... args) {
         try {
             log.info("Bắt đầu kiểm tra và khởi tạo dữ liệu mẫu hệ thống...");
+
+            // 0. Dọn dẹp tài khoản rác test (race_staff_1 -> race_staff_10)
+            cleanupMockRaceStaffUsers();
 
             // 1. Khởi tạo 3 Vai trò (Roles)
             Role roleStudent = initRole("ROLE_STUDENT", "Sinh viên trường ĐH Sư phạm Kỹ thuật TP.HCM");
@@ -684,6 +690,24 @@ public class DataInitializer implements CommandLineRunner {
             }
         } catch (Exception e) {
             log.error("Lỗi khi nạp 20 công văn chính thức từ dataset: ", e);
+        }
+    }
+
+    /**
+     * Dọn dẹp triệt để các tài khoản cán bộ giả lập từ bài test race condition (race_staff_1 -> race_staff_10).
+     */
+    private void cleanupMockRaceStaffUsers() {
+        try {
+            log.info("Kiểm tra và dọn dẹp các tài khoản cán bộ thử nghiệm race_staff_*...");
+            jdbcTemplate.update("UPDATE tickets SET assigned_to = NULL WHERE assigned_to IN (SELECT id FROM users WHERE username LIKE 'race_staff_%' OR email LIKE 'race_staff_%')");
+            jdbcTemplate.update("UPDATE ticket_histories SET actor_id = NULL WHERE actor_id IN (SELECT id FROM users WHERE username LIKE 'race_staff_%' OR email LIKE 'race_staff_%')");
+            jdbcTemplate.update("UPDATE ticket_comments SET author_id = NULL WHERE author_id IN (SELECT id FROM users WHERE username LIKE 'race_staff_%' OR email LIKE 'race_staff_%')");
+            int deleted = jdbcTemplate.update("DELETE FROM users WHERE username LIKE 'race_staff_%' OR email LIKE 'race_staff_%'");
+            if (deleted > 0) {
+                log.info("==> Đã xóa thành công {} tài khoản cán bộ test (race_staff_1 -> race_staff_10).", deleted);
+            }
+        } catch (Exception e) {
+            log.warn("Không thể xóa tài khoản test race_staff: {}", e.getMessage());
         }
     }
 }
