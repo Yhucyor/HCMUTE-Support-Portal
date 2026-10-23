@@ -5,6 +5,7 @@ import com.school.counseling.module.academic.dto.AcademicSummaryResponse;
 import com.school.counseling.module.academic.dto.CurriculumSummaryDto;
 import com.school.counseling.module.academic.dto.HcmuteSyncRequest;
 import com.school.counseling.module.academic.dto.HcmuteSyncResponse;
+import com.school.counseling.module.academic.dto.PortalAnnouncementDto;
 import com.school.counseling.module.academic.entity.CourseSchedule;
 import com.school.counseling.module.academic.entity.CurriculumSubject;
 import com.school.counseling.module.academic.entity.StudentGrade;
@@ -23,8 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import com.school.counseling.module.academic.service.HcmuteGradingEngine;
 
 @RestController
@@ -362,5 +362,37 @@ public class AcademicSyncApiController {
         } catch (Exception ignored) {}
 
         return SecurityUtils.getCurrentUsername().orElse("21110001");
+    }
+
+    @GetMapping("/announcements")
+    public ResponseEntity<List<PortalAnnouncementDto>> getAnnouncements(
+            @RequestParam(required = false) String studentId,
+            @RequestParam(required = false) String category) {
+        String resolvedId = resolveStudentId(studentId);
+        String portalUser = null;
+        String portalPass = null;
+
+        try {
+            Long userId = SecurityUtils.getCurrentUserId().orElse(null);
+            if (userId != null) {
+                portalUser = profileService.getProfile(userId).getPortalUsername();
+                portalPass = profileService.decodePortalPassword(userId);
+            }
+        } catch (Exception ignored) {}
+
+        if (portalUser == null || portalUser.isBlank()) {
+            portalUser = resolvedId;
+        }
+
+        List<PortalAnnouncementDto> list = crawlerService.getAnnouncements(portalUser, portalPass);
+
+        if (category != null && !category.isBlank() && !category.equalsIgnoreCase("Tất cả")) {
+            String catFilter = category.trim();
+            list = list.stream()
+                    .filter(a -> a.getCategory() != null && a.getCategory().equalsIgnoreCase(catFilter))
+                    .toList();
+        }
+
+        return ResponseEntity.ok(list);
     }
 }
