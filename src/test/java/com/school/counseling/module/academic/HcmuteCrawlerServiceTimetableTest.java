@@ -68,6 +68,19 @@ class HcmuteCrawlerServiceTimetableTest {
         assertEquals("15:30", t10_12[0]);
         assertEquals("17:45", t10_12[1]);
 
+        // HCMUTE Portal real API formats
+        String[] portal1 = HcmuteCrawlerService.calculateTimesFromShift("1 (07g30)");
+        assertEquals("07:30", portal1[0]);
+        assertEquals("09:45", portal1[1]);
+
+        String[] portal7 = HcmuteCrawlerService.calculateTimesFromShift("7 (12g45)");
+        assertEquals("12:45", portal7[0]);
+        assertEquals("15:00", portal7[1]);
+
+        String[] portal10 = HcmuteCrawlerService.calculateTimesFromShift("10 (15g15)");
+        assertEquals("15:15", portal10[0]);
+        assertEquals("17:30", portal10[1]);
+
         // Null or blank fallback
         String[] fallback = HcmuteCrawlerService.calculateTimesFromShift(null);
         assertEquals("07:30", fallback[0]);
@@ -103,6 +116,22 @@ class HcmuteCrawlerServiceTimetableTest {
             assertNotNull(s.getGroupCode(), "Nhóm học không được rỗng");
             assertNotNull(s.getCredits(), "Số tín chỉ không được rỗng");
             assertTrue(s.getCredits() > 0, "Số tín chỉ phải lớn hơn 0");
+            assertNotNull(s.getPhase(), "Đợt học không được rỗng: " + s.getCourseName());
+            assertNotNull(s.getWeeks(), "Tuần học không được rỗng: " + s.getCourseName());
         }
+    }
+
+    @Test
+    @DisplayName("determinePhase - Phân loại chính xác Đợt 1, Đợt 2 và Cả học kỳ")
+    void testDeterminePhase() {
+        assertEquals("Đợt 1", HcmuteCrawlerService.determinePhase(null, "Đợt 1"));
+        assertEquals("Đợt 2", HcmuteCrawlerService.determinePhase(null, "Đợt 2"));
+        assertEquals("Đợt 1", HcmuteCrawlerService.determinePhase("1-10", null));
+        assertEquals("Đợt 2", HcmuteCrawlerService.determinePhase("11-20", null));
+        assertEquals("Cả học kỳ", HcmuteCrawlerService.determinePhase("1-18", null));
+        assertEquals("Đợt 1", HcmuteCrawlerService.determinePhase("1234567890----------", null));
+        assertEquals("Đợt 2", HcmuteCrawlerService.determinePhase("----------1234567890", null));
+        assertEquals("Đợt 1", HcmuteCrawlerService.determinePhase("18/08/2026->06/10/2026)", null));
+        assertEquals("Đợt 2", HcmuteCrawlerService.determinePhase("03/11/2026->22/12/2026)", null));
     }
 }

@@ -5,6 +5,7 @@ import com.school.counseling.module.academic.dto.AcademicSummaryResponse;
 import com.school.counseling.module.academic.dto.CurriculumSummaryDto;
 import com.school.counseling.module.academic.dto.HcmuteSyncRequest;
 import com.school.counseling.module.academic.dto.HcmuteSyncResponse;
+import com.school.counseling.module.academic.dto.PortalAnnouncementDto;
 import com.school.counseling.module.academic.entity.CourseSchedule;
 import com.school.counseling.module.academic.entity.CurriculumSubject;
 import com.school.counseling.module.academic.entity.StudentGrade;
@@ -23,7 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.*;
+import com.school.counseling.module.academic.service.HcmuteGradingEngine;
 
 @RestController
 @RequestMapping("/api/academic")
@@ -134,6 +136,17 @@ public class AcademicSyncApiController {
             }
         }
 
+        if (list != null && list.size() > 1) {
+            list = new ArrayList<>(list);
+            list.sort((g1, g2) -> {
+                int cmp = HcmuteGradingEngine.compareSemestersDesc(g1.getSemester(), g2.getSemester());
+                if (cmp != 0) return cmp;
+                String name1 = g1.getCourseName() != null ? g1.getCourseName() : "";
+                String name2 = g2.getCourseName() != null ? g2.getCourseName() : "";
+                return name1.compareToIgnoreCase(name2);
+            });
+        }
+
         return ResponseEntity.ok(list);
     }
 
@@ -141,25 +154,32 @@ public class AcademicSyncApiController {
     public ResponseEntity<List<String>> getGradeSemesters(
             @RequestParam(required = false) String studentId) {
         String resolvedId = resolveStudentId(studentId);
-        List<String> semesters = gradeRepository.findDistinctSemestersByStudentId(resolvedId);
+        List<String> semesters = new ArrayList<>(gradeRepository.findDistinctSemestersByStudentId(resolvedId));
         if (semesters.isEmpty()) {
             String loginUser = SecurityUtils.getCurrentUsername().orElse("");
             if (!loginUser.isBlank() && !loginUser.equalsIgnoreCase(resolvedId)) {
-                semesters = gradeRepository.findDistinctSemestersByStudentId(loginUser);
+                semesters = new ArrayList<>(gradeRepository.findDistinctSemestersByStudentId(loginUser));
             }
         }
+        semesters.sort(HcmuteGradingEngine::compareSemestersDesc);
         return ResponseEntity.ok(semesters);
     }
 
     @GetMapping("/schedules")
     public ResponseEntity<List<CourseSchedule>> getSchedules(
             @RequestParam(required = false) String studentId,
-            @RequestParam(required = false) String semester) {
+            @RequestParam(required = false) String semester,
+            @RequestParam(required = false) String phase) {
         String resolvedId = resolveStudentId(studentId);
+        String normSem = normalizeSemester(semester);
 
-        List<CourseSchedule> list = (semester != null && !semester.isBlank())
-                ? scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(resolvedId, semester)
+        List<CourseSchedule> list = (normSem != null && !normSem.isBlank())
+                ? scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(resolvedId, normSem)
                 : scheduleRepository.findByStudentIdOrderByDayOfWeekAsc(resolvedId);
+
+        if (list.isEmpty() && semester != null && !semester.equalsIgnoreCase(normSem)) {
+            list = scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(resolvedId, semester);
+        }
 
         // Nếu DB chưa có nhưng sinh viên đã liên kết Portal trong Profile -> Tự động kéo dữ liệu thật từ Portal!
         if (list.isEmpty()) {
@@ -175,9 +195,12 @@ public class AcademicSyncApiController {
                                 .password(portalPass)
                                 .build());
                         if (res.isSuccess()) {
-                            list = (semester != null && !semester.isBlank())
-                                    ? scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(portalUser, semester)
+                            list = (normSem != null && !normSem.isBlank())
+                                    ? scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(portalUser, normSem)
                                     : scheduleRepository.findByStudentIdOrderByDayOfWeekAsc(portalUser);
+                            if (list.isEmpty() && semester != null && !semester.equalsIgnoreCase(normSem)) {
+                                list = scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(portalUser, semester);
+                            }
                         }
                     }
                 }
@@ -190,13 +213,116 @@ public class AcademicSyncApiController {
         if (list.isEmpty()) {
             String loginUser = SecurityUtils.getCurrentUsername().orElse("");
             if (!loginUser.isBlank() && !loginUser.equalsIgnoreCase(resolvedId)) {
-                list = (semester != null && !semester.isBlank())
-                        ? scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(loginUser, semester)
+                list = (normSem != null && !normSem.isBlank())
+                        ? scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(loginUser, normSem)
                         : scheduleRepository.findByStudentIdOrderByDayOfWeekAsc(loginUser);
+                if (list.isEmpty() && semester != null && !semester.equalsIgnoreCase(normSem)) {
+                    list = scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(loginUser, semester);
+                }
             }
         }
 
+        // Tự động chuẩn hóa thời gian và phân loại Đợt 1 / Đợt 2 cho các môn đã lưu trong DB
+        if (!list.isEmpty()) {
+            boolean updated = false;
+            for (CourseSchedule cs : list) {
+                if (cs.getShift() != null && !cs.getShift().isBlank()) {
+                    String[] times = HcmuteCrawlerService.calculateTimesFromShift(cs.getShift());
+                    if ("07:30".equals(cs.getStartTime()) && !"07:30".equals(times[0])) {
+                        cs.setStartTime(times[0]);
+                        cs.setEndTime(times[1]);
+                        updated = true;
+                    }
+                }
+            }
+
+            boolean hasMissingPhase = list.stream().anyMatch(cs -> cs.getPhase() == null || cs.getPhase().isBlank() || "Cả học kỳ".equalsIgnoreCase(cs.getPhase()));
+            if (hasMissingPhase) {
+                autoAssignPhases(list);
+                updated = true;
+            }
+
+            if (updated) {
+                scheduleRepository.saveAll(list);
+            }
+        }
+
+        // Lọc theo Đợt học nếu có yêu cầu
+        if (phase != null && !phase.isBlank() && !"ALL".equalsIgnoreCase(phase)) {
+            String filterPhase = ("DOT_1".equalsIgnoreCase(phase) || "Đợt 1".equalsIgnoreCase(phase)) ? "Đợt 1" : "Đợt 2";
+            list = list.stream()
+                    .filter(cs -> cs.getPhase() == null || cs.getPhase().equalsIgnoreCase(filterPhase) || "Cả học kỳ".equalsIgnoreCase(cs.getPhase()))
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
         return ResponseEntity.ok(list);
+    }
+
+    private void autoAssignPhases(List<CourseSchedule> list) {
+        Map<String, String> coursePhases = new HashMap<>();
+
+        // 1. Phân loại theo ngày/tháng trong chuỗi weeks nếu có (ví dụ 18/08/2026->06/10/2026 là Đợt 1, 03/11/2026->22/12/2026 là Đợt 2)
+        for (CourseSchedule cs : list) {
+            if (cs.getWeeks() != null && !cs.getWeeks().isBlank()) {
+                String p = HcmuteCrawlerService.determinePhase(cs.getWeeks(), null);
+                if (p != null && !p.equals("Cả học kỳ")) {
+                    coursePhases.put(cs.getCourseCode(), p);
+                }
+            }
+        }
+
+        // 2. Nhóm theo (dayOfWeek, startTime) để phát hiện các môn bị trùng giờ nếu chưa phân loại được
+        Map<String, List<String>> timeSlots = new LinkedHashMap<>();
+        for (CourseSchedule cs : list) {
+            String key = (cs.getDayOfWeek() != null ? cs.getDayOfWeek() : "") + "_" + (cs.getStartTime() != null ? cs.getStartTime() : "");
+            String code = cs.getCourseCode() != null ? cs.getCourseCode() : "";
+            if (!timeSlots.computeIfAbsent(key, k -> new ArrayList<>()).contains(code)) {
+                timeSlots.get(key).add(code);
+            }
+        }
+
+        for (Map.Entry<String, List<String>> entry : timeSlots.entrySet()) {
+            List<String> codes = entry.getValue();
+            if (codes.size() >= 2) {
+                String c1 = codes.get(0);
+                String c2 = codes.get(1);
+                if (!coursePhases.containsKey(c1) && !coursePhases.containsKey(c2)) {
+                    coursePhases.put(c1, "Đợt 1");
+                    coursePhases.put(c2, "Đợt 2");
+                } else if (coursePhases.containsKey(c1) && !coursePhases.containsKey(c2)) {
+                    coursePhases.put(c2, "Đợt 1".equals(coursePhases.get(c1)) ? "Đợt 2" : "Đợt 1");
+                } else if (!coursePhases.containsKey(c1) && coursePhases.containsKey(c2)) {
+                    coursePhases.put(c1, "Đợt 1".equals(coursePhases.get(c2)) ? "Đợt 2" : "Đợt 1");
+                }
+            }
+        }
+
+        for (CourseSchedule cs : list) {
+            String code = cs.getCourseCode() != null ? cs.getCourseCode() : "";
+            String p = coursePhases.get(code);
+            if (p != null) {
+                cs.setPhase(p);
+            } else if (cs.getPhase() == null || cs.getPhase().isBlank()) {
+                cs.setPhase("Đợt 1");
+            }
+            if (cs.getWeeks() == null || cs.getWeeks().isBlank()) {
+                cs.setWeeks("Đợt 2".equals(cs.getPhase()) ? "Tuần 11 - 20" : "Tuần 1 - 10");
+            }
+        }
+    }
+
+    private String normalizeSemester(String semester) {
+        if (semester == null || semester.isBlank()) return semester;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("^(?:HK0?(\\d)|Học kỳ (\\d)|HK(\\d))\\s*\\((.+)\\)$", java.util.regex.Pattern.CASE_INSENSITIVE).matcher(semester.trim());
+        if (m.find()) {
+            String termNum = m.group(1) != null ? m.group(1) : (m.group(2) != null ? m.group(2) : m.group(3));
+            String year = m.group(4);
+            if ("3".equals(termNum)) {
+                return "Học kỳ 3 (Hè) (" + year + ")";
+            }
+            return "Học kỳ " + termNum + " (" + year + ")";
+        }
+        return semester.trim();
     }
 
     @GetMapping("/curriculum")
@@ -236,5 +362,37 @@ public class AcademicSyncApiController {
         } catch (Exception ignored) {}
 
         return SecurityUtils.getCurrentUsername().orElse("21110001");
+    }
+
+    @GetMapping("/announcements")
+    public ResponseEntity<List<PortalAnnouncementDto>> getAnnouncements(
+            @RequestParam(required = false) String studentId,
+            @RequestParam(required = false) String category) {
+        String resolvedId = resolveStudentId(studentId);
+        String portalUser = null;
+        String portalPass = null;
+
+        try {
+            Long userId = SecurityUtils.getCurrentUserId().orElse(null);
+            if (userId != null) {
+                portalUser = profileService.getProfile(userId).getPortalUsername();
+                portalPass = profileService.decodePortalPassword(userId);
+            }
+        } catch (Exception ignored) {}
+
+        if (portalUser == null || portalUser.isBlank()) {
+            portalUser = resolvedId;
+        }
+
+        List<PortalAnnouncementDto> list = crawlerService.getAnnouncements(portalUser, portalPass);
+
+        if (category != null && !category.isBlank() && !category.equalsIgnoreCase("Tất cả")) {
+            String catFilter = category.trim();
+            list = list.stream()
+                    .filter(a -> a.getCategory() != null && a.getCategory().equalsIgnoreCase(catFilter))
+                    .toList();
+        }
+
+        return ResponseEntity.ok(list);
     }
 }

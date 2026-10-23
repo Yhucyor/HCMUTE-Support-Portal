@@ -52,15 +52,19 @@ def get_qdrant_client() -> QdrantClient: # them -> QdrantClient de tra ve
         logger.error(f"Failed to connect to Qdrant: {e}")
         raise ConnectionError(f"Cannot connect to Qdrant database: {e}")
 
-def ensure_collection(client: QdrantClient): # truyen vao client de tao collection
+def ensure_collection(client: QdrantClient, recreate: bool = False):
     existing_collection = [collection.name for collection in client.get_collections().collections]
     
-    if COLLECTION_NAME in existing_collection:
+    if not recreate and COLLECTION_NAME in existing_collection:
         logger.info(f"Collection '{COLLECTION_NAME}' already exists.")
         return
     
+    if recreate and COLLECTION_NAME in existing_collection:
+        logger.info(f"Recreating collection '{COLLECTION_NAME}'...")
+        client.delete_collection(COLLECTION_NAME)
+    
     logger.info(f"Creating collection '{COLLECTION_NAME}' with hybrid vectors (dense + sparse)...")
-    client.recreate_collection(
+    client.create_collection(
         collection_name=COLLECTION_NAME,
         vectors_config={
             "dense": VectorParams(

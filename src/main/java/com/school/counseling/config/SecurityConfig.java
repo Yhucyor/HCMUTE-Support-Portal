@@ -64,7 +64,6 @@ public class SecurityConfig {
                         // Static resources
                         .requestMatchers(
                                 "/", "/home", "/about", "/explore", "/admission", "/research",
-                                "/ai-chat", "/api/ai/**", "/api/v1/ai/**",
                                 "/academic/**", "/api/academic/**",
                                 "/grades", "/timetable", "/curriculum",
                                 "/faqs", "/faq", "/api/v1/faqs/**",
@@ -74,6 +73,9 @@ public class SecurityConfig {
                                 "/error",
                                 "/css/**", "/js/**", "/vendor/**", "/images/**", "/uploads/**", "/webjars/**", "/favicon.ico")
                         .permitAll()
+                        
+                        // AI Chat - YÊU CẦU ĐĂNG NHẬP để track user & apply rate limiting
+                        .requestMatchers("/ai/chat", "/ai/chat/**", "/ai-chat", "/ai-chat/**", "/api/ai/**").authenticated()
 
                         // Admin & Staff boundaries
                         .requestMatchers("/admin/**", "/api/admin/**", "/api/v1/admin/**").hasRole("ADMIN")

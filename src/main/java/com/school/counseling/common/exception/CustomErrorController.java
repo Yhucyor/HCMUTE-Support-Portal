@@ -45,6 +45,7 @@ public class CustomErrorController implements ErrorController {
             case 404 -> "Trang hoặc tài nguyên bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.";
             case 405 -> "Phương thức HTTP không được hỗ trợ trên địa chỉ này.";
             case 413 -> "Tệp tải lên vượt quá dung lượng tối đa cho phép.";
+            case 429 -> "Bạn đã vượt quá số lượt gửi yêu cầu cho phép. Vui lòng thử lại sau.";
             case 500 -> "Hệ thống đang gặp sự cố xử lý nội bộ. Đội ngũ kỹ thuật đang kiểm tra.";
             default -> (messageObj != null && !messageObj.toString().isBlank()) 
                     ? messageObj.toString() 

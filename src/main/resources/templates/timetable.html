@@ -172,7 +172,7 @@
     <!-- ═══════════════════════════ MAIN CONTENT ═══════════════════════════ -->
     <main class="w-full bg-background min-h-screen pt-[74px]">
         <div class="flex flex-col w-full">
-            <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-space-lg flex flex-col gap-space-lg">
+            <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-space-lg flex flex-col gap-space-lg">
 
                 <!-- Section 1: Breadcrumb & Title -->
                 <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md">
@@ -199,84 +199,80 @@
                             </a>
                         </div>
                     </div>
-                    <!-- Week Navigation Buttons -->
+                    <!-- Schedule Badge -->
                     <div class="flex flex-wrap items-center gap-space-sm self-start lg:self-end">
-                        <div class="flex items-center bg-surface-container-low rounded-lg p-1 shadow-sm border border-outline-variant/30">
-                            <button id="btnTodayNav" onclick="goToday()"
-                                    class="px-3 py-1.5 rounded-md font-label-md text-label-md text-primary font-semibold hover:bg-surface-container-lowest transition-colors flex items-center gap-1" type="button">
-                                <span class="material-symbols-outlined text-base">today</span> Hôm nay
-                            </button>
-                            <div class="w-px h-4 bg-outline-variant mx-1"></div>
-                            <button onclick="changeWeek(-1)" class="p-1.5 rounded-md text-secondary hover:text-on-surface hover:bg-surface-container-lowest transition-colors" type="button" title="Tuần trước">
-                                <span class="material-symbols-outlined text-lg">chevron_left</span>
-                            </button>
-                            <span id="weekLabel" class="font-label-md text-label-md font-semibold text-on-surface px-2">Tuần --</span>
-                            <button onclick="changeWeek(1)" class="p-1.5 rounded-md text-secondary hover:text-on-surface hover:bg-surface-container-lowest transition-colors" type="button" title="Tuần kế tiếp">
-                                <span class="material-symbols-outlined text-lg">chevron_right</span>
-                            </button>
+                        <div class="flex items-center gap-2 px-3.5 py-2 bg-surface-container-low rounded-lg border border-outline-variant/30 text-xs font-medium text-secondary shadow-2xs">
+                            <span class="material-symbols-outlined text-primary text-base">calendar_month</span>
+                            <span>Thời khóa biểu: <strong class="text-on-surface">Lịch học & Thời khóa biểu môn</strong></span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section 2: HCMUTE Portal Standard Filter Toolbar (Giao diện chuẩn Cổng trường HCMUTE) -->
+                <!-- Section 2: HCMUTE Portal Standard Filter Toolbar (Giao diện theo Đợt học chuẩn Cổng trường HCMUTE) -->
                 <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-5 shadow-sm border border-outline-variant/30 flex flex-col gap-4">
-                    <!-- Hàng trên: 3 Dropdown Outlined Floating-label (Năm học, Học kỳ, Tuần) chuẩn Portal -->
-                    <div class="flex flex-wrap items-center gap-3 sm:gap-4">
-                        <!-- 1. Năm học -->
-                        <fieldset class="border border-slate-300 rounded-md px-3 pb-1 pt-0 bg-white hover:border-slate-400 focus-within:border-primary transition-colors flex-1 sm:flex-initial min-w-[150px] sm:w-48 shadow-2xs">
-                            <legend class="text-[11px] text-slate-500 font-medium px-1 select-none">Năm học</legend>
-                            <select id="filterYear" onchange="onSemesterFilterChange()"
-                                    class="w-full bg-transparent text-[14px] text-slate-800 font-medium outline-none cursor-pointer py-1 border-0 focus:ring-0">
-                                <option value="2026-2027" selected>2026-2027</option>
-                                <option value="2025-2026">2025-2026</option>
-                                <option value="2024-2025">2024-2025</option>
-                                <option value="2023-2024">2023-2024</option>
-                            </select>
-                        </fieldset>
+                    <!-- Hàng trên: Năm học, Học kỳ và Chuyển Đợt học (Đợt 1 / Đợt 2 / Cả kỳ) -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <!-- 1. Năm học -->
+                            <fieldset class="border border-slate-300 rounded-md px-3 pb-1 pt-0 bg-white hover:border-slate-400 focus-within:border-primary transition-colors flex-1 sm:flex-initial min-w-[150px] sm:w-48 shadow-2xs">
+                                <legend class="text-[11px] text-slate-500 font-medium px-1 select-none">Năm học</legend>
+                                <select id="filterYear" onchange="onSemesterFilterChange()"
+                                        class="w-full bg-transparent text-[14px] text-slate-800 font-medium outline-none cursor-pointer py-1 border-0 focus:ring-0">
+                                    <option value="2026-2027" selected>2026-2027</option>
+                                    <option value="2025-2026">2025-2026</option>
+                                    <option value="2024-2025">2024-2025</option>
+                                    <option value="2023-2024">2023-2024</option>
+                                </select>
+                            </fieldset>
 
-                        <!-- 2. Học kỳ -->
-                        <fieldset class="border border-slate-300 rounded-md px-3 pb-1 pt-0 bg-white hover:border-slate-400 focus-within:border-primary transition-colors flex-1 sm:flex-initial min-w-[150px] sm:w-48 shadow-2xs">
-                            <legend class="text-[11px] text-slate-500 font-medium px-1 select-none">Học kỳ</legend>
-                            <select id="filterTerm" onchange="onSemesterFilterChange()"
-                                    class="w-full bg-transparent text-[14px] text-slate-800 font-medium outline-none cursor-pointer py-1 border-0 focus:ring-0">
-                                <option value="HK01" selected>Học kỳ 1</option>
-                                <option value="HK02">Học kỳ 2</option>
-                                <option value="HK03">Học kỳ 3 (Hè)</option>
-                            </select>
-                        </fieldset>
-
-                        <!-- 3. Tuần -->
-                        <fieldset class="border border-slate-300 rounded-md px-3 pb-1 pt-0 bg-white hover:border-slate-400 focus-within:border-primary transition-colors flex-1 sm:flex-initial min-w-[260px] sm:w-80 shadow-2xs">
-                            <legend class="text-[11px] text-slate-500 font-medium px-1 select-none">Tuần</legend>
-                            <select id="filterWeek" onchange="onWeekDropdownChange()"
-                                    class="w-full bg-transparent text-[14px] text-slate-800 font-medium outline-none cursor-pointer py-1 border-0 focus:ring-0">
-                                <!-- Khởi tạo động bởi JS theo tuần học thực tế -->
-                            </select>
-                        </fieldset>
-
-                        <!-- Nút Hiện tại giống Portal -->
-                        <button id="btnToday" onclick="goToday()"
-                                class="px-4 py-2.5 rounded-md font-label-md text-label-md text-primary font-semibold bg-surface-container-low hover:bg-surface-container transition-colors flex items-center gap-1.5 border border-outline-variant/30 shrink-0" type="button" title="Về tuần học hiện tại">
-                            <span class="material-symbols-outlined text-base">today</span> Hiện tại
-                        </button>
-                    </div>
-
-                    <!-- Hàng dưới: Chuyển chế độ xem, Tìm kiếm, Phạm vi ngày & Đồng bộ -->
-                    <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-outline-variant/20">
-                        <!-- View switcher: Tuần, Ngày, Danh sách -->
-                        <div class="inline-flex p-1 bg-surface-container-low rounded-lg">
-                            <button id="viewWeek" onclick="setView('week')"
-                                    class="px-3.5 py-1.5 rounded-md font-label-md text-label-md font-semibold bg-surface-container-lowest text-primary shadow-sm" type="button">Tuần</button>
-                            <button id="viewDay" onclick="setView('day')"
-                                    class="px-3.5 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors" type="button">Ngày</button>
-                            <button id="viewList" onclick="setView('list')"
-                                    class="px-3.5 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors" type="button">Danh sách</button>
+                            <!-- 2. Học kỳ -->
+                            <fieldset class="border border-slate-300 rounded-md px-3 pb-1 pt-0 bg-white hover:border-slate-400 focus-within:border-primary transition-colors flex-1 sm:flex-initial min-w-[150px] sm:w-48 shadow-2xs">
+                                <legend class="text-[11px] text-slate-500 font-medium px-1 select-none">Học kỳ</legend>
+                                <select id="filterTerm" onchange="onSemesterFilterChange()"
+                                        class="w-full bg-transparent text-[14px] text-slate-800 font-medium outline-none cursor-pointer py-1 border-0 focus:ring-0">
+                                    <option value="HK01" selected>Học kỳ 1</option>
+                                    <option value="HK02">Học kỳ 2</option>
+                                    <option value="HK03">Học kỳ 3 (Hè)</option>
+                                </select>
+                            </fieldset>
                         </div>
 
-                        <!-- Week range display -->
-                        <div class="hidden lg:flex items-center gap-2 text-secondary text-xs bg-surface-container-low px-3 py-1.5 rounded-lg">
-                            <span class="material-symbols-outlined text-sm text-primary">calendar_month</span>
-                            <span id="weekRangeLabel" class="font-medium text-on-surface">Đang tải tuần học...</span>
+                        <!-- 3. Phân loại Đợt học (Đợt 1 / Đợt 2 / Cả kỳ) -->
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-semibold text-secondary uppercase tracking-wider hidden sm:inline">Xem theo:</span>
+                            <div class="inline-flex p-1 bg-surface-container-low rounded-lg shrink-0 border border-outline-variant/30">
+                                <button id="phase1" onclick="setPhase('DOT_1')" type="button"
+                                        class="px-3.5 py-1.5 rounded-md font-label-md text-label-md font-semibold bg-surface-container-lowest text-primary shadow-sm transition-colors" title="Nửa đầu học kỳ (Tuần 1 - 10)">
+                                    <span class="inline-block w-2 h-2 rounded-full bg-amber-500 mr-1.5"></span>Đợt 1 (Tuần 1 - 10)
+                                </button>
+                                <button id="phase2" onclick="setPhase('DOT_2')" type="button"
+                                        class="px-3.5 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors" title="Nửa sau học kỳ (Tuần 11 - 20)">
+                                    <span class="inline-block w-2 h-2 rounded-full bg-purple-500 mr-1.5"></span>Đợt 2 (Tuần 11 - 20)
+                                </button>
+                                <button id="phaseAll" onclick="setPhase('ALL')" type="button"
+                                        class="px-3.5 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors" title="Xem tất cả đợt trong học kỳ">Cả kỳ</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hàng dưới: Chuyển chế độ xem (Hôm nay, Danh sách môn), Tìm kiếm, Chỉ báo trạng thái & Đồng bộ -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-outline-variant/20">
+                        <!-- View switcher: Hôm nay, Danh sách môn -->
+                        <div class="inline-flex p-1 bg-surface-container-low rounded-lg border border-outline-variant/30">
+                            <button id="viewDay" onclick="setView('day')"
+                                    class="px-4 py-1.5 rounded-md font-label-md text-label-md font-semibold bg-surface-container-lowest text-primary shadow-sm transition-colors flex items-center gap-1.5" type="button">
+                                <span class="material-symbols-outlined text-base">today</span> Hôm nay
+                            </button>
+                            <button id="viewList" onclick="setView('list')"
+                                    class="px-4 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors flex items-center gap-1.5" type="button">
+                                <span class="material-symbols-outlined text-base">format_list_bulleted</span> Danh sách môn
+                            </button>
+                        </div>
+
+                        <!-- Status text -->
+                        <div class="hidden lg:flex items-center gap-2 text-secondary text-xs bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant/20">
+                            <span class="material-symbols-outlined text-sm text-primary">event_repeat</span>
+                            <span id="scheduleStatusText" class="font-medium text-on-surface">Đang xem: Đợt 1 (Tuần 1 - 10) · Nửa đầu học kỳ</span>
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2.5 flex-1 justify-end">
@@ -393,97 +389,52 @@
                     </div>
                 </div>
 
-                <!-- Section 4: Weekly Calendar Grid -->
-                <div id="viewWeekContainer" class="w-full flex flex-col bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30">
-                    <!-- Day Header Row -->
-                    <div id="dayHeaderRow" class="grid grid-cols-8 bg-surface-container-low py-3.5 px-3 text-center select-none sticky z-20 shadow-[0_1px_3px_0_rgba(15,23,42,0.03)] border-b border-outline-variant/30 top-[74px]">
-                        <div class="flex items-center justify-center font-label-caps text-label-caps text-secondary font-bold uppercase tracking-wider">Thời gian</div>
-                        <!-- Day columns rendered by JS -->
-                    </div>
-
-                    <!-- Grid Body -->
-                    <div class="relative w-full overflow-x-auto min-h-[840px] bg-surface-container-lowest">
-                        <div class="grid grid-cols-8 divide-x divide-outline-variant/20 w-full min-w-[960px]">
-                            <!-- Time Labels Column -->
-                            <div class="flex flex-col bg-surface-container-lowest z-10 divide-y divide-outline-variant/10">
-                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">06:30</div>
-                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">07:30</div>
-                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">08:30</div>
-                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">09:30</div>
-                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">10:30</div>
-                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">11:30</div>
-                                <div class="h-14 flex items-center justify-center font-label-caps text-label-caps text-outline bg-surface-container-low/50 uppercase">Nghỉ trưa</div>
-                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">13:00</div>
-                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">14:00</div>
-                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">15:00</div>
-                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">16:00</div>
-                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">17:00</div>
-                                <div class="h-16 flex items-start justify-center pt-2 font-label-md text-label-md text-secondary">18:00</div>
+                <!-- Section 4: Lịch học Hôm nay (Day View) -->
+                <div id="viewDayContainer" class="bg-surface-container-lowest rounded-xl shadow-sm p-5 sm:p-6 border border-outline-variant/30 flex flex-col gap-5">
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant/20 pb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                                <span class="material-symbols-outlined text-2xl">event_available</span>
                             </div>
+                            <div>
+                                <h2 id="dayViewTitle" class="font-headline text-headline-sm font-bold text-on-surface">Đang tải lịch hôm nay...</h2>
+                                <p class="text-xs text-secondary mt-0.5">Lịch học trong ngày hôm nay theo thời gian thực</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="dayClassCountBadge" class="px-3.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">-- buổi học</span>
+                        </div>
+                    </div>
+                    <div id="dayViewList" class="space-y-3.5"></div>
+                </div>
 
-                            <!-- 7-day canvas (Mon-Sun) -->
-                            <div class="col-span-7 grid grid-cols-7 relative h-full divide-x divide-outline-variant/15" id="scheduleCanvas">
-                                <!-- Background cols + horizontal lines -->
-                                <div class="h-full bg-surface-container-low/5"></div>
-                                <div class="h-full bg-surface-container-low/5"></div>
-                                <div id="todayColBg" class="h-full bg-surface-container/25"></div>
-                                <div class="h-full bg-surface-container-low/5"></div>
-                                <div class="h-full bg-surface-container-low/5"></div>
-                                <div class="h-full bg-surface-container-low/5"></div>
-                                <div class="h-full bg-surface-container-low/15"></div>
-                                <!-- Horizontal hour lines -->
-                                <div class="absolute inset-0 pointer-events-none flex flex-col">
-                                    <div class="h-16 border-b border-outline-variant/10"></div>
-                                    <div class="h-16 border-b border-outline-variant/10 bg-surface-container-low/15"></div>
-                                    <div class="h-16 border-b border-outline-variant/10"></div>
-                                    <div class="h-16 border-b border-outline-variant/10 bg-surface-container-low/15"></div>
-                                    <div class="h-16 border-b border-outline-variant/10"></div>
-                                    <div class="h-16 border-b border-outline-variant/10 bg-surface-container-low/15"></div>
-                                    <div class="h-14 bg-surface-container-high/40 flex items-center justify-center font-label-caps text-label-caps text-secondary/70 border-y border-outline-variant/20">Khoảng nghỉ trưa (11:30 – 13:00)</div>
-                                    <div class="h-16 border-b border-outline-variant/10"></div>
-                                    <div class="h-16 border-b border-outline-variant/10 bg-surface-container-low/15"></div>
-                                    <div class="h-16 border-b border-outline-variant/10"></div>
-                                    <div class="h-16 border-b border-outline-variant/10 bg-surface-container-low/15"></div>
-                                    <div class="h-16 border-b border-outline-variant/10"></div>
-                                    <div class="h-16 bg-surface-container-low/15"></div>
-                                </div>
-                                <!-- Current time indicator -->
-                                <div id="currentTimeLine" class="absolute left-0 right-0 z-30 pointer-events-none items-center hidden">
-                                    <div id="currentTimeOffset" class="relative flex items-center">
-                                        <div class="w-2.5 h-2.5 rounded-full bg-error ring-4 ring-error-container -ml-1.5 shadow-sm"></div>
-                                        <div class="flex-1 h-0.5 bg-error"></div>
-                                        <span id="currentTimeLabel" class="absolute -top-5 left-2 bg-error text-on-error font-label-caps text-label-caps text-[9px] px-1.5 py-0.5 rounded shadow whitespace-nowrap"></span>
-                                    </div>
-                                    <div class="flex-1 h-px bg-error/30"></div>
-                                </div>
-                                <!-- Event cards container -->
-                                <div id="eventCards" class="absolute inset-0 pointer-events-none"></div>
+                <!-- Section 4b: Danh sách Môn học (List View) -->
+                <div id="viewListContainer" class="hidden bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-outline-variant/30">
+                    <div class="p-4 sm:p-5 border-b border-outline-variant/20 flex items-center justify-between flex-wrap gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-secondary-container flex items-center justify-center text-on-secondary-fixed">
+                                <span class="material-symbols-outlined text-xl">format_list_bulleted</span>
+                            </div>
+                            <div>
+                                <h2 class="font-headline text-headline-sm font-bold text-on-surface">Toàn bộ môn học trong học kỳ</h2>
+                                <p class="text-xs text-secondary mt-0.5">Sắp xếp theo thứ tự các thứ trong tuần (Thứ 2 &rarr; Chủ nhật)</p>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Section 4b: Day View -->
-                <div id="viewDayContainer" class="hidden bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
-                    <h2 id="dayViewTitle" class="font-headline text-headline-sm font-bold text-on-surface mb-4">--</h2>
-                    <div id="dayViewList" class="space-y-3"></div>
-                </div>
-
-                <!-- Section 4c: List View -->
-                <div id="viewListContainer" class="hidden bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left" id="listTable">
                             <thead>
-                                <tr class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps uppercase">
-                                    <th class="py-3 px-4 rounded-l-lg">Thứ</th>
-                                    <th class="py-3 px-4">Tiết</th>
+                                <tr class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps uppercase text-xs">
+                                    <th class="py-3 px-4">Thứ</th>
+                                    <th class="py-3 px-4">Tiết / Giờ học</th>
+                                    <th class="py-3 px-4">Đợt / Tuần</th>
                                     <th class="py-3 px-4">Mã môn</th>
                                     <th class="py-3 px-4">Tên môn học</th>
                                     <th class="py-3 px-4">Phòng học</th>
-                                    <th class="py-3 px-4 rounded-r-lg">Giảng viên</th>
+                                    <th class="py-3 px-4">Giảng viên</th>
                                 </tr>
                             </thead>
-                            <tbody id="listTableBody" class="divide-y divide-outline-variant/20 text-body-md"></tbody>
+                            <tbody id="listTableBody" class="divide-y divide-outline-variant/20 text-body-md text-sm"></tbody>
                         </table>
                     </div>
                 </div>
@@ -494,8 +445,10 @@
                         <span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary font-bold">Chú thích:</span>
                         <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded bg-primary"></span><span class="font-label-md text-label-md text-on-surface">Lý thuyết</span></div>
                         <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded bg-tertiary"></span><span class="font-label-md text-label-md text-on-surface">Thực hành / Lab</span></div>
-                        <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded bg-primary-container"></span><span class="font-label-md text-label-md text-on-surface">Đồ án chuyên đề</span></div>
+                        <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded bg-primary-container"></span><span class="font-label-md text-label-md text-on-surface">Đồ án</span></div>
                         <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded bg-error"></span><span class="font-label-md text-label-md text-on-surface">Đang diễn ra</span></div>
+                        <div class="flex items-center gap-1.5"><span class="px-1.5 py-0.5 rounded font-label-caps text-[10px] font-bold bg-amber-100 text-amber-800">Đợt 1</span><span class="font-label-md text-label-md text-on-surface">Tuần 1–10</span></div>
+                        <div class="flex items-center gap-1.5"><span class="px-1.5 py-0.5 rounded font-label-caps text-[10px] font-bold bg-purple-100 text-purple-800">Đợt 2</span><span class="font-label-md text-label-md text-on-surface">Tuần 11–20</span></div>
                     </div>
                     <div class="flex items-center gap-2 text-secondary max-w-lg">
                         <span class="material-symbols-outlined text-primary text-base shrink-0">info</span>
@@ -538,9 +491,17 @@
         13:'18:15', 14:'19:00', 15:'19:45'
     };
 
-    /** Parse "Tiết 1-3" hoặc "Tiết 7-9" → { startTime, endTime } */
+    /** Parse "Tiết 1-3", "Tiết 7-9" hoặc dạng Cổng trường HCMUTE "7 (12g45)", "1 (07g30)" → { startTime, endTime } */
     function parseShift(shift) {
         if (!shift) return { startTime: null, endTime: null };
+        const mPortal = shift.match(/(\d+)\s*\(\s*(\d{1,2})[gGhH:](\d{2})\s*\)/);
+        if (mPortal) {
+            const h = parseInt(mPortal[2]), m = parseInt(mPortal[3]);
+            const start = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+            const endMins = h * 60 + m + 135;
+            const end = `${String(Math.floor(endMins / 60)).padStart(2,'0')}:${String(endMins % 60).padStart(2,'0')}`;
+            return { startTime: start, endTime: end };
+        }
         const m = shift.match(/(\d+)\s*[-–]\s*(\d+)/);
         if (m) {
             const s = parseInt(m[1]), e = parseInt(m[2]);
@@ -554,442 +515,310 @@
         return { startTime: null, endTime: null };
     }
 
-    // Grid: 06:30 baseline, each h-16 (64px) = 1h, lunch break offset at 11:30
-    const ROW_HEIGHT = 64; // px per hour
-    const LUNCH_OFFSET = 56; // extra px for lunch bar
-    function timeToTop(timeStr) {
-        if (!timeStr) return 0;
-        const [h, m] = timeStr.split(':').map(Number);
-        const minutesFromBase = (h * 60 + m) - (6 * 60 + 30); // from 06:30
-        let px = (minutesFromBase / 60) * ROW_HEIGHT;
-        if (h >= 13) px += LUNCH_OFFSET; // shift down after lunch bar
-        return Math.max(0, px);
-    }
-    function timeDuration(start, end) {
-        if (!start || !end) return ROW_HEIGHT;
-        const [sh, sm] = start.split(':').map(Number);
-        const [eh, em] = end.split(':').map(Number);
-        const mins = (eh * 60 + em) - (sh * 60 + sm);
-        return Math.max(32, (mins / 60) * ROW_HEIGHT);
-    }
-
     // ── State ─────────────────────────────────────────────────────────────────
     let allSchedules = [];
-    let filteredSchedules = [];
-    let currentWeekOffset = 0;
-    let currentView = 'week';
+    let currentView = 'day'; // 'day' (Hôm nay), 'list' (Danh sách)
+    let currentPhase = 'DOT_1'; // 'DOT_1' (Đợt 1), 'DOT_2' (Đợt 2), 'ALL' (Cả kỳ)
 
-    // ── Week helpers ──────────────────────────────────────────────────────────
-    function getWeekStart(offset = 0) {
-        const now = new Date();
-        const day = now.getDay(); // 0=Sun
-        const monday = new Date(now);
-        monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + offset * 7);
-        monday.setHours(0,0,0,0);
-        return monday;
-    }
-    function formatDate(d) { return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`; }
-    function formatFullDate(d) { return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; }
-    function isSameDay(d1, d2) { return d1.getFullYear()===d2.getFullYear() && d1.getMonth()===d2.getMonth() && d1.getDate()===d2.getDate(); }
+    // ── Phase filter helpers (Đợt học HCMUTE) ─────────────────────────────────
+    function setPhase(phase) {
+        currentPhase = phase;
+        const p1 = document.getElementById('phase1');
+        const p2 = document.getElementById('phase2');
+        const pAll = document.getElementById('phaseAll');
+        const activeCls = 'px-3.5 py-1.5 rounded-md font-label-md text-label-md font-semibold bg-surface-container-lowest text-primary shadow-sm transition-colors';
+        const inactiveCls = 'px-3.5 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors';
 
-    // ── Dropdown Tuần theo chuẩn HCMUTE Portal ─────────────────────────────
-    function populateWeeksDropdown() {
-        const select = document.getElementById('filterWeek');
-        if (!select) return;
-        select.innerHTML = '';
+        if (p1) p1.className = phase === 'DOT_1' ? activeCls : inactiveCls;
+        if (p2) p2.className = phase === 'DOT_2' ? activeCls : inactiveCls;
+        if (pAll) pAll.className = phase === 'ALL' ? activeCls : inactiveCls;
 
-        const yearVal = document.getElementById('filterYear')?.value || '2026-2027';
-        const startYear = parseInt(yearVal.split('-')[0]) || 2026;
-        const termVal = document.getElementById('filterTerm')?.value || 'HK01';
-
-        // Điểm mốc bắt đầu học kỳ (HK1 bắt đầu cuối tháng 8 / đầu tháng 9)
-        let semStart;
-        if (termVal === 'HK01') {
-            semStart = new Date(startYear, 7, 31); // 31/08
-            const day = semStart.getDay();
-            semStart.setDate(semStart.getDate() - (day === 0 ? 6 : day - 1));
-        } else if (termVal === 'HK02') {
-            semStart = new Date(startYear + 1, 0, 18); // Giữa tháng 1
-            const day = semStart.getDay();
-            semStart.setDate(semStart.getDate() - (day === 0 ? 6 : day - 1));
-        } else {
-            semStart = new Date(startYear + 1, 5, 1); // Tháng 6 (Hè)
-            const day = semStart.getDay();
-            semStart.setDate(semStart.getDate() - (day === 0 ? 6 : day - 1));
-        }
-        semStart.setHours(0,0,0,0);
-
-        const currentMon = getWeekStart(0);
-        let selectedIndex = 0;
-
-        for (let w = 1; w <= 22; w++) {
-            const wMon = new Date(semStart);
-            wMon.setDate(semStart.getDate() + (w - 1) * 7);
-            const wSun = new Date(wMon);
-            wSun.setDate(wMon.getDate() + 6);
-
-            const opt = document.createElement('option');
-            const rangeStr = `${formatFullDate(wMon)}-${formatFullDate(wSun)}`;
-            opt.value = wMon.toISOString();
-            opt.textContent = `${rangeStr}`;
-
-            if (isSameDay(wMon, currentMon)) {
-                opt.selected = true;
-                selectedIndex = w - 1;
-            }
-            select.appendChild(opt);
+        const statusText = document.getElementById('scheduleStatusText');
+        if (statusText) {
+            statusText.textContent = phase === 'DOT_1'
+                ? 'Đang xem: Đợt 1 (Tuần 1 - 10) · Nửa đầu học kỳ'
+                : (phase === 'DOT_2' ? 'Đang xem: Đợt 2 (Tuần 11 - 20) · Nửa sau học kỳ' : 'Đang xem: Toàn bộ môn học trong kỳ');
         }
 
-        if (select.selectedIndex < 0 && select.options.length > 0) {
-            select.selectedIndex = 0;
-        }
+        updateKPIs();
+        if (currentView === 'day') renderDayView();
+        else if (currentView === 'list') renderListView();
     }
 
-    function onWeekDropdownChange() {
-        const select = document.getElementById('filterWeek');
-        if (!select || !select.value) return;
-        const selectedMon = new Date(select.value);
-        const todayMon = getWeekStart(0);
-        const diffWeeks = Math.round((selectedMon - todayMon) / (7 * 86400000));
-        currentWeekOffset = diffWeeks;
-        updateWeekUI(false);
+    function matchesPhase(s) {
+        if (!s) return false;
+        if (currentPhase === 'ALL') return true;
+        const p = (s.phase || '').trim();
+        if (!p || p === 'Cả học kỳ' || p.toLowerCase().includes('cả kỳ')) return true;
+        if (currentPhase === 'DOT_1') {
+            return p === 'Đợt 1' || p.toLowerCase().includes('đợt 1') || p.toLowerCase().includes('dot 1');
+        }
+        if (currentPhase === 'DOT_2') {
+            return p === 'Đợt 2' || p.toLowerCase().includes('đợt 2') || p.toLowerCase().includes('dot 2');
+        }
+        return true;
     }
 
     function onSemesterFilterChange() {
-        populateWeeksDropdown();
         const year = document.getElementById('filterYear')?.value || '2026-2027';
         const term = document.getElementById('filterTerm')?.value || 'HK01';
-        loadSchedule(`${term} (${year})`);
+        let termLabel = term === 'HK01' ? 'Học kỳ 1' : (term === 'HK02' ? 'Học kỳ 2' : 'Học kỳ 3 (Hè)');
+        loadSchedule(`${termLabel} (${year})`);
     }
 
-    function updateWeekUI(syncDropdown = true) {
-        const monday = getWeekStart(currentWeekOffset);
-        const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
-        const weekNum = getISOWeek(monday);
+    // ── Date range & Schedule Active Helpers ─────────────────────────────────
+    function parseDateRange(weeks) {
+        if (!weeks) return null;
+        const m = weeks.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s*->\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if (!m) return null;
+        return {
+            start: new Date(parseInt(m[3], 10), parseInt(m[2], 10) - 1, parseInt(m[1], 10), 0, 0, 0),
+            end: new Date(parseInt(m[6], 10), parseInt(m[5], 10) - 1, parseInt(m[4], 10), 23, 59, 59)
+        };
+    }
 
-        const weekLabel = document.getElementById('weekLabel');
-        if (weekLabel) weekLabel.textContent = `Tuần ${weekNum}`;
+    /** Kiểm tra xem môn học có thực sự diễn ra vào ngày dateObj hay không (xét thứ và khoảng ngày hiệu lực) */
+    function isScheduleActiveOnDate(s, dateObj, respectPhaseFilter = false) {
+        if (!s) return false;
+        const dow = (dateObj.getDay() + 6) % 7; // Mon=0 .. Sun=6
+        if ((DAY_MAP[s.dayOfWeek] ?? -1) !== dow) return false;
 
-        const weekRangeLabel = document.getElementById('weekRangeLabel');
-        if (weekRangeLabel) weekRangeLabel.textContent = `${formatFullDate(monday)} – ${formatFullDate(sunday)}`;
+        const range = parseDateRange(s.weeks);
+        if (range) {
+            const cur = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), 12, 0, 0);
+            return cur >= range.start && cur <= range.end;
+        }
+        // Trường hợp chuỗi tuần chung không có ngày tháng cụ thể (ví dụ: Tuần 1 - 10)
+        return respectPhaseFilter ? matchesPhase(s) : true;
+    }
 
-        // Đồng bộ giá trị được chọn trong dropdown Tuần
-        if (syncDropdown) {
-            const select = document.getElementById('filterWeek');
-            if (select) {
-                for (let i = 0; i < select.options.length; i++) {
-                    const optDate = new Date(select.options[i].value);
-                    if (isSameDay(optDate, monday)) {
-                        select.selectedIndex = i;
-                        break;
-                    }
-                }
-            }
+    // ── Day View (Hôm nay) ───────────────────────────────────────────────────
+    function renderDayView() {
+        const today = new Date();
+        const todayDow = (today.getDay() + 6) % 7; // Mon=0 .. Sun=6
+        const nowMins = today.getHours() * 60 + today.getMinutes();
+
+        const dayTitle = document.getElementById('dayViewTitle');
+        if (dayTitle) {
+            dayTitle.textContent = `${DAYS[todayDow]}, ngày ${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${today.getFullYear()}`;
         }
 
-        renderDayHeaders(monday);
-        renderEventCards(monday);
-        updateCurrentTimeLine(monday);
-    }
-
-    function getISOWeek(d) {
-        const jan4 = new Date(d.getFullYear(), 0, 4);
-        const startOfWeek1 = new Date(jan4);
-        startOfWeek1.setDate(jan4.getDate() - (jan4.getDay() || 7) + 1);
-        const diff = d - startOfWeek1;
-        return Math.floor(diff / 604800000) + 1;
-    }
-
-    function changeWeek(dir) {
-        currentWeekOffset += dir;
-        updateWeekUI(true);
-    }
-
-    function goToday() {
-        currentWeekOffset = 0;
-        updateWeekUI(true);
-    }
-
-    // ── Day Header ────────────────────────────────────────────────────────────
-    function renderDayHeaders(monday) {
-        const today = new Date(); today.setHours(0,0,0,0);
-        const row = document.getElementById('dayHeaderRow');
-        // Remove previously added day columns (keep first child = time column)
-        while (row.children.length > 1) row.removeChild(row.lastChild);
-        for (let i = 0; i < 7; i++) {
-            const d = new Date(monday); d.setDate(monday.getDate() + i);
-            const isToday = isSameDay(d, today);
-            const col = document.createElement('div');
-            col.className = 'flex flex-col items-center py-1' + (isToday ? ' bg-surface-container rounded-lg shadow-sm' : '');
-            col.innerHTML = `
-                <span class="font-label-md text-label-md ${isToday ? 'font-bold text-primary flex items-center gap-1' : 'font-medium text-secondary'}">
-                    ${DAYS[i]}${isToday ? '<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>' : ''}
-                </span>
-                <span class="font-title-md text-title-md font-bold ${isToday ? 'text-primary' : 'text-on-surface'}">${formatDate(d)}</span>
-                ${isToday ? '<span class="font-label-caps text-label-caps text-[9px] px-1.5 py-0.2 rounded-full bg-primary text-on-primary mt-0.5">HÔM NAY</span>' : ''}
-            `;
-            row.appendChild(col);
-        }
-        // Highlight today column background
-        const todayCol = document.getElementById('todayColBg');
-        const now = new Date(); now.setHours(0,0,0,0);
-        const diffDays = Math.floor((now - monday) / 86400000);
-        if (diffDays >= 0 && diffDays <= 6) {
-            todayCol.style.gridColumnStart = String(diffDays + 1);
-            todayCol.className = 'h-full bg-surface-container/25';
-        } else {
-            todayCol.className = 'h-full bg-surface-container-low/5';
-        }
-    }
-
-    // ── Event Cards ───────────────────────────────────────────────────────────
-    const CARD_COLORS = [
-        'bg-surface-container-low border-primary/20 text-primary',
-        'bg-surface-container border-secondary/20 text-secondary',
-        'bg-surface-container-lowest border-l-4 border-l-tertiary border-outline-variant/30 text-on-surface',
-        'bg-surface-container-low border-primary/20 text-primary',
-    ];
-    function renderEventCards(monday) {
-        const canvas = document.getElementById('eventCards');
-        canvas.innerHTML = '';
-        canvas.style.pointerEvents = 'auto';
-        const today = new Date(); today.setHours(0,0,0,0);
-        const now = new Date();
-
-        const search = document.getElementById('searchInput').value.toLowerCase();
-        const visible = allSchedules.filter(s => {
+        const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
+        const daySchedules = allSchedules.filter(s => {
+            // Xác thực chính xác theo ngày thực tế: vừa đúng thứ vừa nằm trong khoảng tuần học (weeks)
+            if (!isScheduleActiveOnDate(s, today, false)) return false;
             if (!search) return true;
             return (s.courseName||'').toLowerCase().includes(search) ||
                    (s.courseCode||'').toLowerCase().includes(search) ||
                    (s.room||'').toLowerCase().includes(search) ||
                    (s.lecturer||'').toLowerCase().includes(search);
-        });
+        }).sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
 
-        visible.forEach((s, idx) => {
-            const colIdx = DAY_MAP[s.dayOfWeek] ?? DAY_MAP[s.dayOfWeek];
-            if (colIdx === undefined) return;
-            const cardDate = new Date(monday); cardDate.setDate(monday.getDate() + colIdx);
-            const top = timeToTop(s.startTime);
-            const height = timeDuration(s.startTime, s.endTime);
-            const colPct = (colIdx / 7) * 100;
-            const widthPct = 100 / 7;
+        const countBadge = document.getElementById('dayClassCountBadge');
+        if (countBadge) countBadge.textContent = `${daySchedules.length} buổi học`;
 
-            // Status
-            let isActive = false, isDone = false;
-            if (isSameDay(cardDate, today)) {
-                const [sh, sm] = (s.startTime||'00:00').split(':').map(Number);
-                const [eh, em] = (s.endTime||'00:00').split(':').map(Number);
-                const startMins = sh*60+sm, endMins = eh*60+em, nowMins = now.getHours()*60+now.getMinutes();
-                if (nowMins >= startMins && nowMins < endMins) isActive = true;
-                if (nowMins >= endMins) isDone = true;
-            }
+        const container = document.getElementById('dayViewList');
+        if (!container) return;
 
-            const card = document.createElement('div');
-            card.className = `absolute p-1.5 z-10 group`;
-            card.style.cssText = `left:${colPct}%;width:${widthPct}%;top:${top}px;height:${height}px;`;
-
-            const isLab = (s.courseCode||'').toLowerCase().includes('lab') || (s.room||'').toLowerCase().includes('lab') || (s.courseName||'').toLowerCase().includes('thực hành');
-            const bgClass = isActive
-                ? 'bg-primary text-on-primary ring-2 ring-primary-container shadow-lg'
-                : isDone ? 'bg-surface-container-lowest/80 opacity-80 border border-outline-variant/30'
-                : isLab ? 'bg-surface-container-lowest border-l-4 border-l-tertiary border border-outline-variant/30'
-                : 'bg-surface-container-low border border-primary/20';
-
-            card.innerHTML = `
-                <div class="w-full h-full ${bgClass} rounded-xl p-2.5 flex flex-col justify-between shadow-sm cursor-pointer hover:shadow-md transition-all">
-                    <div>
-                        <div class="flex items-center justify-between gap-1 mb-1">
-                            <span class="px-1.5 py-0.5 rounded font-label-caps text-[10px] font-bold ${isActive ? 'bg-on-primary text-primary' : isDone ? 'bg-surface-container text-secondary' : isLab ? 'bg-tertiary-fixed text-on-tertiary-fixed' : 'bg-primary-fixed text-on-primary-fixed'}">
-                                ${s.courseCode||'--'}
-                            </span>
-                            ${isActive ? '<span class="flex items-center gap-1 font-label-caps text-[9px] bg-error text-on-error px-1.5 py-0.5 rounded-full font-bold"><span class="w-1.5 h-1.5 rounded-full bg-on-error animate-ping"></span>Đang học</span>' :
-                              isDone ? '<span class="font-label-caps text-[9px] bg-surface-container-high text-secondary px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><span class="material-symbols-outlined text-[10px]">check</span>Đã học</span>' :
-                              `<span class="font-label-caps text-[10px] text-secondary">${s.shift||''}</span>`}
-                        </div>
-                        <h2 class="font-label-md text-label-md font-bold ${isActive ? 'text-on-primary' : 'text-on-surface'} line-clamp-2 leading-tight">${s.courseName||'--'}</h2>
+        if (daySchedules.length === 0) {
+            container.innerHTML = `
+                <div class="py-12 px-4 text-center flex flex-col items-center justify-center bg-surface-container-low/40 rounded-2xl border border-dashed border-outline-variant/40">
+                    <div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-secondary mb-3">
+                        <span class="material-symbols-outlined text-3xl">celebration</span>
                     </div>
-                    <div class="flex flex-col gap-0.5 font-body-sm text-body-sm text-[11px]">
-                        <div class="flex items-center gap-1 font-semibold ${isActive ? 'text-on-primary' : 'text-primary'} truncate">
-                            <span class="material-symbols-outlined text-xs">meeting_room</span>${s.room||'--'}
-                        </div>
-                        <div class="truncate ${isActive ? 'text-on-primary/90' : 'text-secondary'}">${s.lecturer||''}</div>
-                        <div class="font-label-caps text-[10px] ${isActive ? 'text-on-primary/70' : 'text-outline'}">${s.startTime||''}${s.endTime ? ' – '+s.endTime : ''}</div>
-                    </div>
-                </div>
-                <!-- Hover Popover -->
-                <div class="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 pointer-events-auto absolute ${colIdx >= 4 ? 'right-full mr-2' : 'left-full ml-2'} top-0 w-72 bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-4 shadow-2xl z-50 flex flex-col gap-3">
-                    <div>
-                        <div class="flex items-center gap-1.5 mb-1">
-                            <span class="px-2 py-0.5 rounded font-label-caps text-label-caps font-bold bg-primary text-on-primary">${s.courseCode||'--'}</span>
-                            <span class="text-xs font-semibold text-secondary">${s.groupCode||''}</span>
-                        </div>
-                        <h3 class="font-title-md text-title-md font-bold text-on-surface">${s.courseName||'--'}</h3>
-                    </div>
-                    <div class="bg-surface-container-low rounded-xl p-2.5 flex flex-col gap-1.5 text-xs">
-                        <div class="flex items-center gap-2 text-on-surface">
-                            <span class="material-symbols-outlined text-primary text-sm">schedule</span>
-                            <span class="font-medium">${DAYS[colIdx]||''} · ${s.shift||''} (${s.startTime||''}${s.endTime?' – '+s.endTime:''})</span>
-                        </div>
-                        <div class="flex items-center gap-2 text-on-surface">
-                            <span class="material-symbols-outlined text-primary text-sm">location_on</span>
-                            <span>${s.room||'--'}</span>
-                        </div>
-                    </div>
-                    ${s.lecturer ? `<div class="flex items-center gap-2.5 p-2 rounded-xl bg-surface-container-low/60">
-                        <div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">${(s.lecturer||'').split(' ').filter(w=>w.length>1).slice(-2).map(w=>w[0]).join('')}</div>
-                        <div class="flex flex-col min-w-0">
-                            <span class="font-label-md text-label-md font-bold text-on-surface truncate">${s.lecturer}</span>
-                        </div>
-                    </div>` : ''}
+                    <h3 class="font-bold text-base text-on-surface">Hôm nay không có buổi học nào!</h3>
+                    <p class="text-xs text-secondary mt-1 max-w-md">Bạn có thể chuyển sang tab <strong>Danh sách môn</strong> để tra cứu toàn bộ môn học trong kỳ, hoặc chuẩn bị bài cho ngày học kế tiếp.</p>
                 </div>
             `;
-            canvas.appendChild(card);
-        });
-
-        // Sunday empty state
-        const sunHasClasses = visible.some(s => (DAY_MAP[s.dayOfWeek] ?? -1) === 6);
-        if (!sunHasClasses) {
-            const emptyDiv = document.createElement('div');
-            emptyDiv.className = 'absolute pointer-events-none flex items-center justify-center';
-            emptyDiv.style.cssText = `left:${(6/7)*100}%;width:${100/7}%;top:0;bottom:0;`;
-            emptyDiv.innerHTML = `<span class="font-label-caps text-label-caps text-outline tracking-wider rotate-90">Không có lịch học</span>`;
-            canvas.appendChild(emptyDiv);
-        }
-    }
-
-    // ── Current time line ─────────────────────────────────────────────────────
-    function updateCurrentTimeLine(monday) {
-        const today = new Date(); today.setHours(0,0,0,0);
-        const line = document.getElementById('currentTimeLine');
-        const diffDays = Math.floor((today - monday) / 86400000);
-        if (diffDays < 0 || diffDays > 6) { line.classList.add('hidden'); return; }
-        const now = new Date();
-        const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-        const top = timeToTop(timeStr);
-        line.classList.remove('hidden');
-        line.style.top = top + 'px';
-        line.style.display = 'flex';
-        const pctLeft = (diffDays / 7) * 100;
-        const offset = document.getElementById('currentTimeOffset');
-        offset.style.cssText = `position:absolute;left:${pctLeft}%;width:${100/7}%;display:flex;align-items:center;`;
-        document.getElementById('currentTimeLabel').textContent = `${timeStr} Hiện tại`;
-    }
-
-    // ── Day View ──────────────────────────────────────────────────────────────
-    function renderDayView() {
-        const today = new Date();
-        document.getElementById('dayViewTitle').textContent = `${DAYS[(today.getDay()||7)-1]}, ${formatDate(today)}/${today.getFullYear()}`;
-        const daySchedules = allSchedules.filter(s => (DAY_MAP[s.dayOfWeek] ?? -1) === (today.getDay()||7)-1);
-        const container = document.getElementById('dayViewList');
-        if (daySchedules.length === 0) {
-            container.innerHTML = '<p class="text-center text-secondary py-8 font-body-md text-body-md">Không có lịch học hôm nay</p>';
             return;
         }
-        container.innerHTML = daySchedules.sort((a,b) => (a.startTime||'').localeCompare(b.startTime||'')).map(s => `
-            <div class="flex items-start gap-4 p-4 bg-surface-container-low rounded-xl hover:bg-surface-container transition-colors">
-                <div class="shrink-0 text-center w-16">
-                    <div class="font-label-lg text-label-lg font-bold text-primary">${s.startTime||'--'}</div>
-                    <div class="font-body-sm text-body-sm text-secondary">${s.endTime||''}</div>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="px-2 py-0.5 rounded font-label-caps text-label-caps font-bold bg-primary text-on-primary text-[10px]">${s.courseCode||''}</span>
-                        <span class="font-label-md text-label-md font-bold text-on-surface truncate">${s.courseName||''}</span>
+
+        container.innerHTML = daySchedules.map(s => {
+            const [sh, sm] = (s.startTime||'00:00').split(':').map(Number);
+            const [eh, em] = (s.endTime||'00:00').split(':').map(Number);
+            const startMins = sh*60 + sm, endMins = eh*60 + em;
+            const isOngoing = nowMins >= startMins && nowMins < endMins;
+            const isDone = nowMins >= endMins;
+
+            const isLab = (s.courseCode||'').toLowerCase().includes('lab') || (s.room||'').toLowerCase().includes('lab') || (s.courseName||'').toLowerCase().includes('thực hành');
+
+            return `
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4.5 rounded-2xl border transition-all ${
+                    isOngoing ? 'bg-primary/5 border-primary shadow-md ring-1 ring-primary/30' :
+                    isDone ? 'bg-surface-container-low/50 border-outline-variant/20 opacity-75' :
+                    'bg-surface-container-lowest border-outline-variant/30 hover:border-primary/40 hover:shadow-xs'
+                }">
+                    <div class="flex items-start gap-4 min-w-0 flex-1">
+                        <div class="shrink-0 text-center w-24 py-2 px-2.5 rounded-xl ${
+                            isOngoing ? 'bg-primary text-on-primary shadow-sm' :
+                            isDone ? 'bg-surface-container text-secondary' :
+                            'bg-surface-container-low border border-outline-variant/30 text-on-surface'
+                        }">
+                            <div class="font-bold text-sm tracking-tight">${s.startTime || '--:--'}</div>
+                            <div class="text-[11px] opacity-75 mt-0.5">${s.endTime || '--:--'}</div>
+                            <div class="text-[10px] font-medium mt-1 pt-1 border-t ${isOngoing ? 'border-on-primary/20' : 'border-outline-variant/30'}">${s.shift || ''}</div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                                <span class="px-2 py-0.5 rounded font-label-caps text-[10px] font-bold ${
+                                    isLab ? 'bg-tertiary-fixed text-on-tertiary-fixed' : 'bg-primary-fixed text-on-primary-fixed'
+                                }">${s.courseCode || '--'}</span>
+                                ${s.groupCode ? `<span class="text-xs font-semibold text-secondary">Nhóm ${s.groupCode}</span>` : ''}
+                                ${s.phase ? `<span class="px-2 py-0.5 rounded font-label-caps text-[10px] font-bold ${
+                                    s.phase.includes('1') ? 'bg-amber-100 text-amber-800' : (s.phase.includes('2') ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-700')
+                                }">${s.phase}</span>` : ''}
+                                ${isOngoing ? '<span class="inline-flex items-center gap-1 text-[10px] font-bold text-error bg-error/10 px-2.5 py-0.5 rounded-full"><span class="w-2 h-2 rounded-full bg-error animate-ping"></span>Đang diễn ra</span>' : ''}
+                                ${isDone ? '<span class="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full"><span class="material-symbols-outlined text-[12px]">check</span>Đã học xong</span>' : ''}
+                            </div>
+                            <h3 class="font-bold text-base text-on-surface truncate">${s.courseName || '--'}</h3>
+                            <div class="flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-2 text-xs text-secondary">
+                                <span class="flex items-center gap-1.5 text-primary font-semibold">
+                                    <span class="material-symbols-outlined text-sm">meeting_room</span>Phòng: <strong>${s.room || '--'}</strong>
+                                </span>
+                                <span class="flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-sm">person</span>${s.lecturer || 'Giảng viên bộ môn'}
+                                </span>
+                                ${s.credits ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">award_star</span>${s.credits} tín chỉ</span>` : ''}
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-3 text-secondary font-body-sm text-body-sm">
-                        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">meeting_room</span>${s.room||'--'}</span>
-                        ${s.lecturer ? `<span class="truncate">${s.lecturer}</span>` : ''}
-                    </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
-    // ── List View ─────────────────────────────────────────────────────────────
+    // ── List View (Toàn bộ môn) ──────────────────────────────────────────────
     function renderListView() {
-        const search = document.getElementById('searchInput').value.toLowerCase();
-        const visible = allSchedules.filter(s => !search ||
+        const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
+        const visible = allSchedules.filter(s => matchesPhase(s) && (!search ||
             (s.courseName||'').toLowerCase().includes(search) ||
             (s.courseCode||'').toLowerCase().includes(search) ||
-            (s.room||'').toLowerCase().includes(search));
+            (s.room||'').toLowerCase().includes(search) ||
+            (s.lecturer||'').toLowerCase().includes(search)));
 
         const sorted = [...visible].sort((a,b) => (DAY_MAP[a.dayOfWeek]??9) - (DAY_MAP[b.dayOfWeek]??9) || (a.startTime||'').localeCompare(b.startTime||''));
-        document.getElementById('listTableBody').innerHTML = sorted.length === 0
-            ? '<tr><td colspan="6" class="py-8 text-center text-secondary font-body-md text-body-md">Chưa có lịch học</td></tr>'
-            : sorted.map(s => `
-                <tr class="hover:bg-surface-container-low transition-colors">
-                    <td class="py-3 px-4 font-label-md text-label-md font-medium text-on-surface">${s.dayOfWeek||'--'}</td>
-                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">${s.shift||''}</td>
-                    <td class="py-3 px-4"><span class="px-2 py-0.5 rounded font-label-caps text-label-caps font-bold bg-primary-fixed text-on-primary-fixed">${s.courseCode||'--'}</span></td>
-                    <td class="py-3 px-4 font-label-md text-label-md font-bold text-on-surface">${s.courseName||'--'}</td>
-                    <td class="py-3 px-4 font-body-sm text-body-sm text-primary font-medium">${s.room||'--'}</td>
-                    <td class="py-3 px-4 font-body-sm text-body-sm text-secondary">${s.lecturer||'--'}</td>
-                </tr>
-            `).join('');
+        const body = document.getElementById('listTableBody');
+        if (!body) return;
+
+        body.innerHTML = sorted.length === 0
+            ? '<tr><td colspan="7" class="py-12 text-center text-secondary font-body-md text-body-md">Chưa tìm thấy môn học nào phù hợp</td></tr>'
+            : sorted.map(s => {
+                const isLab = (s.courseCode||'').toLowerCase().includes('lab') || (s.room||'').toLowerCase().includes('lab') || (s.courseName||'').toLowerCase().includes('thực hành');
+                return `
+                    <tr class="hover:bg-surface-container-low transition-colors">
+                        <td class="py-3.5 px-4 font-label-md text-label-md font-bold text-on-surface">${s.dayOfWeek||'--'}</td>
+                        <td class="py-3.5 px-4">
+                            <div class="font-semibold text-xs text-primary">${s.startTime || ''} – ${s.endTime || ''}</div>
+                            <div class="text-[11px] text-secondary mt-0.5">${s.shift || ''}</div>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <span class="px-2 py-0.5 rounded font-label-caps text-[10px] font-bold ${
+                                s.phase && s.phase.includes('1') ? 'bg-amber-100 text-amber-800' : (s.phase && s.phase.includes('2') ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-700')
+                            }">${s.phase || 'Cả kỳ'}</span>
+                            ${s.weeks ? `<div class="text-[11px] text-secondary mt-0.5">${s.weeks}</div>` : ''}
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <span class="px-2 py-0.5 rounded font-label-caps text-label-caps font-bold ${isLab ? 'bg-tertiary-fixed text-on-tertiary-fixed' : 'bg-primary-fixed text-on-primary-fixed'}">${s.courseCode||'--'}</span>
+                            ${s.groupCode ? `<div class="text-[10px] text-secondary mt-0.5">Nhóm ${s.groupCode}</div>` : ''}
+                        </td>
+                        <td class="py-3.5 px-4 font-label-md text-label-md font-bold text-on-surface">${s.courseName||'--'}</td>
+                        <td class="py-3.5 px-4 font-body-sm text-body-sm text-primary font-bold">${s.room||'--'}</td>
+                        <td class="py-3.5 px-4 font-body-sm text-body-sm text-secondary">${s.lecturer||'--'}</td>
+                    </tr>
+                `;
+            }).join('');
     }
 
     // ── KPI cards ─────────────────────────────────────────────────────────────
     function updateKPIs() {
         const today = new Date();
-        const todayDayIdx = (today.getDay() || 7) - 1; // Mon=0
+        const todayDow = (today.getDay() + 6) % 7;
+        const activeSchedules = allSchedules.filter(s => matchesPhase(s));
+        // Lịch hôm nay: chỉ tính những môn thực sự có lịch học vào ngày hôm nay
+        const todaySchedules = allSchedules.filter(s => isScheduleActiveOnDate(s, today, false));
+        const subjects = new Set(activeSchedules.map(s => s.courseCode).filter(Boolean));
 
-        const todaySchedules = allSchedules.filter(s => (DAY_MAP[s.dayOfWeek] ?? -1) === todayDayIdx);
-        const subjects = new Set(allSchedules.map(s => s.courseCode).filter(Boolean));
+        const kpiTotal = document.getElementById('kpiTotal');
+        if (kpiTotal) kpiTotal.textContent = activeSchedules.length;
+        const kpiTotalBar = document.getElementById('kpiTotalBar');
+        if (kpiTotalBar) kpiTotalBar.style.width = Math.min(100, activeSchedules.length * 10) + '%';
+        const kpiSubjects = document.getElementById('kpiSubjects');
+        if (kpiSubjects) kpiSubjects.textContent = subjects.size;
+        const kpiToday = document.getElementById('kpiToday');
+        if (kpiToday) kpiToday.textContent = todaySchedules.length;
+        const todayLabel = document.getElementById('todayLabel');
+        if (todayLabel) todayLabel.textContent = `Hôm nay: ${DAYS[todayDow]} (${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')})`;
 
-        document.getElementById('kpiTotal').textContent = allSchedules.length;
-        document.getElementById('kpiTotalBar').style.width = Math.min(100, allSchedules.length * 10) + '%';
-        document.getElementById('kpiSubjects').textContent = subjects.size;
-        document.getElementById('kpiToday').textContent = todaySchedules.length;
-        document.getElementById('todayLabel').textContent = `Hôm nay: ${DAYS[todayDayIdx]} (${formatDate(today)})`;
+        const kpiCredits = document.getElementById('kpiCredits');
+        if (kpiCredits) kpiCredits.textContent = subjects.size * 3 + ' TC';
 
-        // Total credits (rough estimate from unique subjects × avg 3)
-        document.getElementById('kpiCredits').textContent = subjects.size * 3 + ' TC';
-
-        // Next class
+        // Buổi học kế tiếp: tìm ca học tiếp theo theo thời gian thực
         const nowMins = today.getHours() * 60 + today.getMinutes();
         const todaySorted = todaySchedules.sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
-        const next = todaySorted.find(s => {
+        let next = null;
+        let nextBadgeText = 'Hôm nay';
+
+        // 1. Kiểm tra các ca còn lại trong ngày hôm nay
+        for (const s of todaySorted) {
             const [h,m] = (s.startTime||'00:00').split(':').map(Number);
-            return h*60+m > nowMins;
-        });
+            if (h*60 + m > nowMins) {
+                next = s;
+                break;
+            }
+        }
+
+        // 2. Nếu hôm nay không còn ca nào (hoặc trống lịch hôm nay), quét tìm ngày học thực tế gần nhất trong tương lai (tối đa 60 ngày)
+        if (!next) {
+            for (let dayOffset = 1; dayOffset <= 60; dayOffset++) {
+                const targetDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + dayOffset, 12, 0, 0);
+                const matches = allSchedules.filter(s => isScheduleActiveOnDate(s, targetDate, false))
+                    .sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
+                if (matches.length > 0) {
+                    next = matches[0];
+                    const dow = (targetDate.getDay() + 6) % 7;
+                    const d = String(targetDate.getDate()).padStart(2, '0');
+                    const mo = String(targetDate.getMonth() + 1).padStart(2, '0');
+                    nextBadgeText = dayOffset === 1 ? 'Ngày mai' : `${DAYS[dow]} (${d}/${mo})`;
+                    break;
+                }
+            }
+        }
+
         if (next) {
             document.getElementById('nextTime').textContent = `${next.startTime} – ${next.endTime||''}`;
             document.getElementById('nextSubject').textContent = next.courseName||'--';
             document.getElementById('nextDetail').textContent = `${next.room||''}${next.lecturer ? ' · ' + next.lecturer : ''}`;
-            document.getElementById('nextBadge').textContent = 'Hôm nay';
+            document.getElementById('nextBadge').textContent = nextBadgeText;
         } else {
-            // check tomorrow
-            const tomorrowIdx = (todayDayIdx + 1) % 7;
-            const tomorrowFirst = allSchedules.filter(s => (DAY_MAP[s.dayOfWeek]??-1) === tomorrowIdx)
-                .sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''))[0];
-            if (tomorrowFirst) {
-                document.getElementById('nextTime').textContent = `${tomorrowFirst.startTime} – ${tomorrowFirst.endTime||''}`;
-                document.getElementById('nextSubject').textContent = tomorrowFirst.courseName||'--';
-                document.getElementById('nextDetail').textContent = `${tomorrowFirst.room||''}${tomorrowFirst.lecturer ? ' · '+tomorrowFirst.lecturer : ''}`;
-                document.getElementById('nextBadge').textContent = 'Ngày mai';
-            }
+            document.getElementById('nextTime').textContent = '--:--';
+            document.getElementById('nextSubject').textContent = 'Không có ca tiếp theo';
+            document.getElementById('nextDetail').textContent = 'Học kỳ đã hoàn thành hoặc chưa có lịch';
+            document.getElementById('nextBadge').textContent = 'Trống lịch';
         }
     }
 
     // ── View switcher ─────────────────────────────────────────────────────────
     function setView(view) {
         currentView = view;
-        document.getElementById('viewWeekContainer').classList.toggle('hidden', view !== 'week');
-        document.getElementById('viewDayContainer').classList.toggle('hidden', view !== 'day');
-        document.getElementById('viewListContainer').classList.toggle('hidden', view !== 'list');
-        ['viewWeek','viewDay','viewList'].forEach(id => {
-            const btn = document.getElementById(id);
-            const isActive = id === `view${view.charAt(0).toUpperCase()+view.slice(1)}`;
-            btn.className = isActive
-                ? 'px-3.5 py-1.5 rounded-md font-label-md text-label-md font-semibold bg-surface-container-lowest text-primary shadow-sm'
-                : 'px-3.5 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors';
-        });
+        const dayCont = document.getElementById('viewDayContainer');
+        const listCont = document.getElementById('viewListContainer');
+        if (dayCont) dayCont.classList.toggle('hidden', view !== 'day');
+        if (listCont) listCont.classList.toggle('hidden', view !== 'list');
+
+        const dayBtn = document.getElementById('viewDay');
+        const listBtn = document.getElementById('viewList');
+        const activeCls = 'px-4 py-1.5 rounded-md font-label-md text-label-md font-semibold bg-surface-container-lowest text-primary shadow-sm transition-colors flex items-center gap-1.5';
+        const inactiveCls = 'px-4 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors flex items-center gap-1.5';
+
+        if (dayBtn) dayBtn.className = view === 'day' ? activeCls : inactiveCls;
+        if (listBtn) listBtn.className = view === 'list' ? activeCls : inactiveCls;
+
         if (view === 'day') renderDayView();
-        if (view === 'list') renderListView();
+        else if (view === 'list') renderListView();
     }
 
     function filterSchedule() {
-        if (currentView === 'week') renderEventCards(getWeekStart(currentWeekOffset));
+        if (currentView === 'day') renderDayView();
         else if (currentView === 'list') renderListView();
     }
 
@@ -1009,24 +838,21 @@
             allSchedules = [];
         }
 
-        // Đảm bảo startTime/endTime luôn có giá trị hợp lệ để tính vị trí grid
         allSchedules.forEach(s => {
-            if (!s.startTime || !s.endTime) {
-                const parsed = parseShift(s.shift);
-                if (!s.startTime) s.startTime = parsed.startTime || '07:30';
-                if (!s.endTime) s.endTime = parsed.endTime || '09:45';
+            const parsed = parseShift(s.shift);
+            if (!s.startTime || !s.endTime || (parsed.startTime && s.startTime === '07:30' && parsed.startTime !== '07:30')) {
+                s.startTime = parsed.startTime || s.startTime || '07:30';
+                s.endTime = parsed.endTime || s.endTime || '09:45';
             }
         });
 
-        // Nếu sinh viên chưa có thời khóa biểu, hiển thị banner nhắc nhở
         const emptyAlert = document.getElementById('ttEmptyAlert');
         if (emptyAlert) {
             emptyAlert.classList.toggle('hidden', allSchedules.length > 0);
         }
 
         updateKPIs();
-        updateWeekUI(true);
-        if (currentView === 'list') renderListView();
+        setView(currentView);
     }
 
     // ── Kích hoạt đồng bộ thông minh từ Portal ────────────────────────────────
@@ -1042,7 +868,6 @@
             const portalLinked = document.body.dataset.portalLinked === 'true';
             const portalUser = document.body.dataset.portalUser || '';
 
-            // Nếu chưa liên kết Portal trong Profile
             if (!portalLinked) {
                 const confirmed = confirm('Bạn chưa liên kết tài khoản Cổng trường HCMUTE trong Hồ sơ cá nhân (Profile).\n\nNhấn "OK" để chuyển đến trang Profile để liên kết và lấy dữ liệu thật, hoặc nhấn "Cancel" để tiếp tục xem dữ liệu mô phỏng.');
                 if (confirmed) {
@@ -1064,7 +889,8 @@
             if (data && data.success) {
                 const year = document.getElementById('filterYear')?.value || '2026-2027';
                 const term = document.getElementById('filterTerm')?.value || 'HK01';
-                await loadSchedule(`${term} (${year})`);
+                let termLabel = term === 'HK01' ? 'Học kỳ 1' : (term === 'HK02' ? 'Học kỳ 2' : 'Học kỳ 3 (Hè)');
+                await loadSchedule(`${termLabel} (${year})`);
                 alert('✅ ' + (data.message || 'Đồng bộ thời khóa biểu trực tiếp từ HCMUTE Portal thành công!'));
             } else {
                 await loadSchedule();
@@ -1083,11 +909,8 @@
 
     // ── Init ──────────────────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
-        populateWeeksDropdown();
-        updateWeekUI(true);
+        setView('day');
         loadSchedule();
-        // Auto-refresh time line every minute
-        setInterval(() => updateCurrentTimeLine(getWeekStart(currentWeekOffset)), 60000);
     });
     </script>
 </body>

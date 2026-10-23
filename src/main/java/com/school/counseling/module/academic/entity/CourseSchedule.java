@@ -49,4 +49,10 @@ public class CourseSchedule extends BaseEntity {
 
     @Column(name = "credits")
     private Integer credits;
+
+    @Column(name = "phase", length = 30)
+    private String phase; // Đợt 1, Đợt 2, Cả học kỳ
+
+    @Column(name = "weeks", length = 100)
+    private String weeks; // Chuỗi tuần học từ Portal: 1-10, 11-20...
 }
