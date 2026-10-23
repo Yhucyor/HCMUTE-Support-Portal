@@ -8,41 +8,39 @@
     <!-- Portal Workspace Header -->
     <div th:replace="~{layout/portal-header :: portal-header('admin-dashboard')}"></div>
 
+    <!-- Tự động ẩn Chatbot AI Widget trên toàn bộ trang Admin để tránh đè lên thẻ CSAT -->
+    <style>
+        #btn-open-ai-chat, #ai-chat-box {
+            display: none !important;
+        }
+        .filter-toolbar-v2 {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+        }
+    </style>
+
     <!-- Toast Container góc phải -->
     <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090;"></div>
 
-    <!-- Header Section -->
-    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
-        <div>
-            <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge bg-danger px-2.5 py-1 text-uppercase fw-semibold" style="letter-spacing: 0.5px;">ADMIN WORKSPACE</span>
-                <span class="text-muted small">| SLA Engine Analytics</span>
-            </div>
-            <h3 class="fw-bold text-dark mb-0">Thống Kê Cam Kết SLA Toàn Trường</h3>
-            <p class="text-muted small mb-0 mt-1">Giám sát tiến độ tiếp nhận, xử lý yêu cầu và đo lường mức độ tuân thủ hạn chót SLA của tất cả Khoa / Phòng ban</p>
+    <!-- Header Section: Tinh giản, loại bỏ hoàn toàn các nút trùng lặp thanh điều hướng -->
+    <div class="mb-3">
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-danger px-2.5 py-1 text-uppercase fw-semibold" style="letter-spacing: 0.5px;">ADMIN WORKSPACE</span>
+            <span class="text-muted small">| SLA Engine Analytics</span>
         </div>
-
-        <!-- Quick Access Buttons & Filter -->
-        <div class="d-flex flex-wrap align-items-center gap-2">
-            <button type="button" class="btn btn-outline-danger btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#adminInternalMessageModal" onclick="loadAdminInternalMessages()">
-                <i class="bi bi-chat-left-text me-1"></i>Trao Đổi Với Cán Bộ & Khoa
-            </button>
-            <a th:href="@{/admin/users}" class="btn btn-outline-primary btn-sm fw-semibold">
-                <i class="bi bi-people me-1"></i>Quản Trị Người Dùng
-            </a>
-            <a th:href="@{/admin/departments}" class="btn btn-outline-secondary btn-sm fw-semibold">
-                <i class="bi bi-buildings me-1"></i>Danh Mục Khoa/Phòng
-            </a>
-        </div>
+        <h3 class="fw-bold text-dark mb-0">Thống Kê Cam Kết SLA Toàn Trường</h3>
+        <p class="text-muted small mb-0 mt-1">Giám sát tiến độ tiếp nhận, xử lý yêu cầu và đo lường mức độ tuân thủ hạn chót SLA của tất cả Khoa / Phòng ban</p>
     </div>
 
-    <!-- Filter Bar -->
-    <div class="card bg-white p-3 mb-4 shadow-sm border-0">
-        <form th:action="@{/admin/dashboard}" method="get" class="row g-2 align-items-center">
-            <div class="col-md-5 col-lg-4">
-                <label class="form-label small fw-semibold text-secondary mb-1">Đơn vị / Khoa chuyên môn</label>
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-light"><i class="bi bi-building"></i></span>
+    <!-- Thanh Lọc Ngang Gắn Liền (Compact Filter Bar) Tiết Kiệm Chiều Dọc -->
+    <div class="filter-toolbar-v2 mb-4">
+        <form th:action="@{/admin/dashboard}" method="get" class="d-flex flex-wrap align-items-center justify-content-between gap-2 m-0">
+            <div class="d-flex align-items-center gap-2 flex-grow-1 flex-wrap">
+                <div class="d-flex align-items-center gap-2" style="min-width: 280px; flex: 1;">
+                    <span class="small fw-bold text-secondary text-nowrap"><i class="bi bi-building me-1"></i>Đơn vị / Khoa:</span>
                     <select name="departmentId" class="form-select form-select-sm" onchange="this.form.submit()">
                         <option value="" th:selected="${selectedDepartmentId == null}">-- Toàn trường (Tất cả Khoa/Phòng) --</option>
                         <option th:each="dept : ${departments}" 
@@ -51,12 +49,9 @@
                                 th:selected="${selectedDepartmentId != null and selectedDepartmentId == dept.id}"></option>
                     </select>
                 </div>
-            </div>
 
-            <div class="col-md-4 col-lg-3">
-                <label class="form-label small fw-semibold text-secondary mb-1">Khoảng thời gian báo cáo</label>
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-light"><i class="bi bi-calendar3"></i></span>
+                <div class="d-flex align-items-center gap-2" style="min-width: 220px;">
+                    <span class="small fw-bold text-secondary text-nowrap"><i class="bi bi-calendar3 me-1"></i>Kỳ báo cáo:</span>
                     <select name="timeRange" class="form-select form-select-sm" onchange="this.form.submit()">
                         <option value="ALL" th:selected="${selectedTimeRange == 'ALL'}">Toàn bộ thời gian</option>
                         <option value="7_DAYS" th:selected="${selectedTimeRange == '7_DAYS'}">7 ngày gần nhất</option>
@@ -65,9 +60,12 @@
                 </div>
             </div>
 
-            <div class="col-md-3 col-lg-2 mt-auto">
-                <a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary btn-sm w-100">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i>Đặt lại bộ lọc
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-outline-danger btn-sm text-nowrap" data-bs-toggle="modal" data-bs-target="#adminInternalMessageModal" onclick="loadAdminInternalMessages()" title="Kênh trao đổi & chỉ đạo">
+                    <i class="bi bi-chat-left-text me-1"></i>Trao Đổi Nội Bộ
+                </button>
+                <a th:href="@{/admin/dashboard}" class="btn btn-light btn-sm border text-secondary text-nowrap" title="Xóa bộ lọc">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Đặt lại
                 </a>
             </div>
         </form>
@@ -97,7 +95,7 @@
                     <span class="badge bg-success-subtle text-success"><i class="bi bi-shield-check"></i></span>
                 </div>
                 <h2 class="fw-bold text-success mb-1" th:text="${stats.slaComplianceRate + '%'}">100%</h2>
-                <div class="progress mb-1" style="height: 6px;">
+                <div class="progress mb-1" style="height: 7px; background-color: #f1f5f9; border-radius: 9999px; overflow: hidden; border: 1px solid #e2e8f0;">
                     <div class="progress-bar bg-success" role="progressbar" 
                          th:style="'width: ' + ${stats.slaComplianceRate} + '%;'" 
                          th:aria-valuenow="${stats.slaComplianceRate}" aria-valuemin="0" aria-valuemax="100"></div>
@@ -210,6 +208,33 @@
                     <span class="badge bg-secondary mb-1">LOW (7 ngày)</span>
                     <div class="small text-muted">Hỏi thăm dò thông tin</div>
                     <div class="fs-4 fw-bold text-secondary" th:text="${stats.priorityStats.get('LOW')}">0</div>
+                </div>
+            </div>
+    <!-- Interactive Visual Charts: SLA Trends & Department Breakdown -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm bg-white p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-bar-chart-line-fill text-primary me-2"></i>Biểu Đồ Phân Bổ Tiến Độ SLA Theo Từng Khoa / Phòng Ban
+                    </h6>
+                    <span class="badge bg-light text-secondary border small">So sánh Đã xong vs Quá hạn</span>
+                </div>
+                <div style="height: 260px; position: relative;">
+                    <canvas id="slaDepartmentChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm bg-white p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-pie-chart-fill text-info me-2"></i>Cơ Cấu Mức Độ Ưu Tiên
+                    </h6>
+                    <span class="badge bg-info-subtle text-info border border-info small">SLA Tiers</span>
+                </div>
+                <div style="height: 260px; position: relative;" class="d-flex align-items-center justify-content-center">
+                    <canvas id="slaPriorityDoughnutChart"></canvas>
                 </div>
             </div>
         </div>
@@ -494,6 +519,96 @@
                 btn.textContent = 'Gửi Thông Điệp';
             }
         }
+        /*]]>*/
+    </script>
+
+    <!-- Chart.js 4.4.1 Library & Visual Rendering Logic -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. Biểu đồ SLA từng Khoa / Phòng ban
+            const deptStats = /*[[${stats.departmentStats}]]*/ [];
+            if (deptStats && deptStats.length > 0) {
+                const labels = deptStats.map(d => d.departmentName ? d.departmentName.replace('Khoa ', 'K.').replace('Phòng ', 'P.') : '');
+                const resolvedData = deptStats.map(d => d.resolvedTickets || 0);
+                const inProgressData = deptStats.map(d => d.inProgressTickets || 0);
+                const overdueData = deptStats.map(d => d.overdueTickets || 0);
+
+                const ctxDept = document.getElementById('slaDepartmentChart');
+                if (ctxDept) {
+                    new Chart(ctxDept, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: 'Đã giải quyết',
+                                    data: resolvedData,
+                                    backgroundColor: '#10b981',
+                                    borderRadius: 4
+                                },
+                                {
+                                    label: 'Đang xử lý',
+                                    data: inProgressData,
+                                    backgroundColor: '#0ea5e9',
+                                    borderRadius: 4
+                                },
+                                {
+                                    label: 'Quá hạn SLA',
+                                    data: overdueData,
+                                    backgroundColor: '#ef4444',
+                                    borderRadius: 4
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+                                tooltip: { mode: 'index', intersect: false }
+                            },
+                            scales: {
+                                x: { stacked: true, grid: { display: false } },
+                                y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // 2. Biểu đồ Tròn Mức độ Ưu tiên
+            const priorityStats = /*[[${stats.priorityStats}]]*/ {};
+            const ctxPriority = document.getElementById('slaPriorityDoughnutChart');
+            if (ctxPriority) {
+                const urgent = (priorityStats && priorityStats.URGENT) || 0;
+                const high = (priorityStats && priorityStats.HIGH) || 0;
+                const medium = (priorityStats && priorityStats.MEDIUM) || 0;
+                const low = (priorityStats && priorityStats.LOW) || 0;
+
+                new Chart(ctxPriority, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Khẩn cấp (24h)', 'Cao (48h)', 'Bình thường (72h)', 'Thấp (7d)'],
+                        datasets: [{
+                            data: [urgent, high, medium, low],
+                            backgroundColor: ['#dc2626', '#f59e0b', '#0284c7', '#94a3b8'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '65%',
+                        plugins: {
+                            legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
+                        }
+                    }
+                });
+            }
+        });
         /*]]>*/
     </script>
 
