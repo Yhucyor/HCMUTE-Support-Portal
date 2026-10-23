@@ -170,10 +170,15 @@ public class AcademicSyncApiController {
             @RequestParam(required = false) String studentId,
             @RequestParam(required = false) String semester) {
         String resolvedId = resolveStudentId(studentId);
+        String normSem = normalizeSemester(semester);
 
-        List<CourseSchedule> list = (semester != null && !semester.isBlank())
-                ? scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(resolvedId, semester)
+        List<CourseSchedule> list = (normSem != null && !normSem.isBlank())
+                ? scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(resolvedId, normSem)
                 : scheduleRepository.findByStudentIdOrderByDayOfWeekAsc(resolvedId);
+
+        if (list.isEmpty() && semester != null && !semester.equalsIgnoreCase(normSem)) {
+            list = scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(resolvedId, semester);
+        }
 
         // Nếu DB chưa có nhưng sinh viên đã liên kết Portal trong Profile -> Tự động kéo dữ liệu thật từ Portal!
         if (list.isEmpty()) {
@@ -189,9 +194,12 @@ public class AcademicSyncApiController {
                                 .password(portalPass)
                                 .build());
                         if (res.isSuccess()) {
-                            list = (semester != null && !semester.isBlank())
-                                    ? scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(portalUser, semester)
+                            list = (normSem != null && !normSem.isBlank())
+                                    ? scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(portalUser, normSem)
                                     : scheduleRepository.findByStudentIdOrderByDayOfWeekAsc(portalUser);
+                            if (list.isEmpty() && semester != null && !semester.equalsIgnoreCase(normSem)) {
+                                list = scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(portalUser, semester);
+                            }
                         }
                     }
                 }
@@ -204,13 +212,48 @@ public class AcademicSyncApiController {
         if (list.isEmpty()) {
             String loginUser = SecurityUtils.getCurrentUsername().orElse("");
             if (!loginUser.isBlank() && !loginUser.equalsIgnoreCase(resolvedId)) {
-                list = (semester != null && !semester.isBlank())
-                        ? scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(loginUser, semester)
+                list = (normSem != null && !normSem.isBlank())
+                        ? scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(loginUser, normSem)
                         : scheduleRepository.findByStudentIdOrderByDayOfWeekAsc(loginUser);
+                if (list.isEmpty() && semester != null && !semester.equalsIgnoreCase(normSem)) {
+                    list = scheduleRepository.findByStudentIdAndSemesterOrderByDayOfWeekAsc(loginUser, semester);
+                }
+            }
+        }
+
+        // Tự động chuẩn hóa thời gian các môn học đã lưu trong DB nếu trước đó bị gán nhầm 07:30
+        if (!list.isEmpty()) {
+            boolean updated = false;
+            for (CourseSchedule cs : list) {
+                if (cs.getShift() != null && !cs.getShift().isBlank()) {
+                    String[] times = HcmuteCrawlerService.calculateTimesFromShift(cs.getShift());
+                    if ("07:30".equals(cs.getStartTime()) && !"07:30".equals(times[0])) {
+                        cs.setStartTime(times[0]);
+                        cs.setEndTime(times[1]);
+                        updated = true;
+                    }
+                }
+            }
+            if (updated) {
+                scheduleRepository.saveAll(list);
             }
         }
 
         return ResponseEntity.ok(list);
+    }
+
+    private String normalizeSemester(String semester) {
+        if (semester == null || semester.isBlank()) return semester;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("^(?:HK0?(\\d)|Học kỳ (\\d)|HK(\\d))\\s*\\((.+)\\)$", java.util.regex.Pattern.CASE_INSENSITIVE).matcher(semester.trim());
+        if (m.find()) {
+            String termNum = m.group(1) != null ? m.group(1) : (m.group(2) != null ? m.group(2) : m.group(3));
+            String year = m.group(4);
+            if ("3".equals(termNum)) {
+                return "Học kỳ 3 (Hè) (" + year + ")";
+            }
+            return "Học kỳ " + termNum + " (" + year + ")";
+        }
+        return semester.trim();
     }
 
     @GetMapping("/curriculum")
