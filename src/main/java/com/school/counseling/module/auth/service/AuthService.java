@@ -39,6 +39,7 @@ public class AuthService {
     private final JwtTokenProvider tokenProvider;
     private final OtpService otpService;
     private final com.school.counseling.module.notification.service.EmailAsyncService emailAsyncService;
+    private final com.school.counseling.module.academic.service.HcmuteCrawlerService hcmuteCrawlerService;
 
     @Transactional
     public UserProfileDto register(RegisterRequest request) {
@@ -176,5 +177,97 @@ public class AuthService {
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         log.info("Password successfully reset for user: {}", user.getUsername());
+    }
+
+    @Transactional
+    public User loginWithHcmutePortal(String studentId, String password, jakarta.servlet.http.HttpServletRequest request) {
+        if (studentId == null || studentId.isBlank() || password == null || password.isBlank()) {
+            throw new AppException("Vui lòng nhập đầy đủ Mã số sinh viên và Mật khẩu Cổng đào tạo.");
+        }
+
+        studentId = studentId.trim();
+        password = password.trim();
+
+        // 1. Xác thực với Cổng đào tạo HCMUTE
+        com.fasterxml.jackson.databind.JsonNode authResult;
+        try {
+            authResult = hcmuteCrawlerService.authenticatePortal(studentId, password);
+        } catch (Exception e) {
+            log.warn("Đăng nhập HCMUTE Portal thất bại cho MSSV {}: {}", studentId, e.getMessage());
+            throw new AppException(e.getMessage() != null ? e.getMessage() : "Mã số sinh viên hoặc mật khẩu Cổng đào tạo không chính xác!");
+        }
+
+        String fullName = (authResult != null && authResult.hasNonNull("FullName"))
+                ? authResult.get("FullName").asText()
+                : "Sinh viên " + studentId;
+        String email = studentId.toLowerCase() + "@student.hcmute.edu.vn";
+        String encodedPortalPassword = java.util.Base64.getEncoder().encodeToString(password.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+
+        // 2. Tìm hoặc tự động tạo tài khoản trong DB
+        final String finalStudentId = studentId;
+        final String finalFullName = fullName;
+        User user = userRepository.findByUsername(studentId)
+                .or(() -> userRepository.findByEmail(email))
+                .orElseGet(() -> {
+                    Role studentRole = roleRepository.findByName("ROLE_STUDENT")
+                            .orElseGet(() -> roleRepository.save(Role.builder()
+                                    .name("ROLE_STUDENT")
+                                    .description("Sinh viên HCMUTE")
+                                    .build()));
+
+                    User newUser = User.builder()
+                            .username(finalStudentId)
+                            .passwordHash(passwordEncoder.encode(password))
+                            .fullName(finalFullName)
+                            .email(email)
+                            .role(studentRole)
+                            .status(UserStatus.ACTIVE)
+                            .avatarUrl("https://ui-avatars.com/api/?name=" + finalFullName.replace(" ", "+") + "&background=0D8ABC&color=fff")
+                            .portalUsername(finalStudentId)
+                            .portalPasswordEnc(encodedPortalPassword)
+                            .build();
+
+                    log.info("Tự động tạo tài khoản sinh viên từ Cổng Đào tạo HCMUTE: MSSV={}", finalStudentId);
+                    return userRepository.save(newUser);
+                });
+
+        if (user.getStatus() == UserStatus.LOCKED) {
+            throw new AppException("Tài khoản sinh viên đã bị tạm khóa do vi phạm quy định.");
+        }
+
+        // Tự kích hoạt nếu đang chờ
+        if (user.getStatus() == UserStatus.PENDING_ACTIVATION) {
+            user.setStatus(UserStatus.ACTIVE);
+        }
+        user.setPortalUsername(studentId);
+        user.setPortalPasswordEnc(encodedPortalPassword);
+        user = userRepository.save(user);
+
+        // 3. Khởi tạo Security Context đăng nhập phiên làm việc
+        UserPrincipal principal = UserPrincipal.create(user);
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        if (request != null) {
+            jakarta.servlet.http.HttpSession session = request.getSession(true);
+            session.setAttribute(
+                    org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
+                    SecurityContextHolder.getContext()
+            );
+        }
+
+        // 4. Kích hoạt đồng bộ dữ liệu học vụ (Điểm, TKB, CTĐT) chạy ngầm
+        final String sId = studentId;
+        final String pwd = password;
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                hcmuteCrawlerService.syncStudentData(new com.school.counseling.module.academic.dto.HcmuteSyncRequest(sId, pwd));
+            } catch (Exception ex) {
+                log.warn("Đồng bộ dữ liệu học vụ ngầm cho MSSV {} thất bại: {}", sId, ex.getMessage());
+            }
+        });
+
+        return user;
     }
 }
