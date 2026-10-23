@@ -1,198 +1,2290 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chi tiết Ticket #TK-1022</title>
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Boxicons -->
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <!-- Portal CSS -->
-    <link rel="stylesheet" th:href="@{/css/portal.css}">
-    <style>
-        .breadcrumb {
-            margin-bottom: 20px;
-            color: var(--text-gray);
-            font-size: 0.9rem;
-        }
-        .breadcrumb a { color: var(--crimson); text-decoration: none; }
-        
-        .ticket-layout {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-        }
-
-        .ticket-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            margin-bottom: 20px;
-        }
-
-        /* Discussion Thread */
-        .thread-message {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .thread-message:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-
-        .avatar {
-            width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
-        }
-
-        .message-content h4 { margin: 0 0 5px 0; color: var(--text-dark); }
-        .message-content span { font-size: 0.8rem; color: var(--text-gray); font-weight: normal; margin-left: 10px; }
-        .message-content p { color: var(--text-dark); line-height: 1.6; margin-bottom: 0; font-size: 0.95rem; }
-        
-        /* Reply Box */
-        .reply-box {
-            background: #fdf2f4;
-            border-radius: 8px;
-            padding: 15px;
-            border: 1px dashed var(--crimson);
-        }
-        .reply-box textarea {
-            width: 100%;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 10px;
-            font-family: 'Inter', sans-serif;
-            margin-bottom: 10px;
-            min-height: 100px;
-            resize: vertical;
-            box-sizing: border-box;
-        }
-        .reply-box textarea:focus {
-            outline: none;
-            border-color: var(--crimson);
-        }
-        .btn-primary { background: var(--crimson); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s;}
-        .btn-primary:hover { background: #8a1525; }
-
-        /* Sidebar info */
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; font-size: 0.95rem; }
-        .info-row span:first-child { color: var(--text-gray); }
-        .info-row span:last-child { font-weight: 600; color: var(--text-dark); }
-        
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
-        .badge-processing { background: #e3f2fd; color: #1565c0; }
-    </style>
+    <title th:text="'Chi Tiết Yêu Cầu #' + ${ticket.ticketCode} + ' - QAUTE Portal'">Chi Tiết Ticket</title>
 </head>
+
 <body>
+    <div th:fragment="content">
+        <style>
+            /* VIEWPORT-DOCKED CHAT LAYOUT */
+            .chat-window-card {
+                height: calc(100vh - 125px);
+                min-height: 540px;
+                display: flex;
+                flex-direction: column;
+                border-radius: 18px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+                border: 1px solid #e2e8f0;
+                background: #ffffff;
+                overflow: hidden;
+            }
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <i class='bx bx-menu menu-icon'></i>
-            <span class="logo-text">Portal</span>
-        </div>
-        <ul class="sidebar-menu">
-            <li><a th:href="@{/academic/sync}"><i class='bx bxs-dashboard'></i><span>Tổng quan</span></a></li>
-            <li><a th:href="@{/ai-chat}"><i class='bx bx-bot'></i><span>Trợ lý AI</span></a></li>
-            <li><a th:href="@{/tickets/my-tickets}" class="active"><i class='bx bx-support'></i><span>Yêu cầu hỗ trợ</span></a></li>
-            <li><a th:href="@{/feed}"><i class='bx bx-news'></i><span>Bảng tin chung</span></a></li>
-            <li><a th:href="@{/profile}"><i class='bx bx-user'></i><span>Hồ sơ cá nhân</span></a></li>
-        </ul>
-        <div class="sidebar-footer">
-            <a th:href="@{/}"><i class='bx bx-log-out'></i><span>Đăng xuất</span></a>
-        </div>
-    </aside>
+            .chat-header-bar {
+                flex-shrink: 0;
+                z-index: 5;
+            }
 
-    <div class="main-wrapper">
-        <!-- TOPBAR -->
-        <div th:replace="~{fragments/topbar :: topbar}"></div>
+            .chat-stream-viewport {
+                flex: 1 1 auto;
+                overflow-y: auto;
+                background: #f1f5f9;
+                padding: 1.25rem 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                scroll-behavior: smooth;
+            }
 
-        <main class="page-content">
-            <div class="breadcrumb">
-                <a th:href="@{/ticket}">Yêu cầu hỗ trợ</a> > Chi tiết Ticket #TK-1022
-            </div>
+            .chat-stream-viewport::-webkit-scrollbar {
+                width: 6px;
+            }
 
-            <div class="ticket-layout">
-                
-                <!-- Left: Thread -->
-                <div class="ticket-main">
-                    <div class="ticket-card">
-                        <h2 style="margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
-                            Hỏi về việc chuyển đổi môn học tương đương
-                        </h2>
-                        
-                        <!-- Thread Message (User) -->
-                        <div class="thread-message">
-                            <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=A51C30&color=fff" class="avatar">
-                            <div class="message-content">
-                                <h4>Nguyễn Văn A (Bạn) <span>20/09/2026 14:15</span></h4>
-                                <p>Kính chào phòng Đào tạo và Khoa CNTT,<br><br>
-                                Hiện tại em đang học CTĐT 150 tín chỉ. Em đã học môn "Cấu trúc dữ liệu và giải thuật" (3TC). Tuy nhiên CTĐT mới yêu cầu môn này là 4TC. Em muốn hỏi thủ tục làm đơn xin chuyển đổi học phần tương đương để không phải học lại môn này ạ.<br><br>
-                                Em xin cảm ơn.</p>
+            .chat-stream-viewport::-webkit-scrollbar-thumb {
+                background-color: #cbd5e1;
+                border-radius: 4px;
+            }
+
+            .chat-input-dock {
+                flex-shrink: 0;
+                background: #ffffff;
+                border-top: 1px solid #e2e8f0;
+                padding: 0.75rem 1rem;
+                z-index: 5;
+            }
+
+            .sidebar-sticky-scroll {
+                max-height: calc(100vh - 125px);
+                overflow-y: auto;
+                padding-right: 4px;
+            }
+
+            .sidebar-sticky-scroll::-webkit-scrollbar {
+                width: 5px;
+            }
+
+            .sidebar-sticky-scroll::-webkit-scrollbar-thumb {
+                background-color: #cbd5e1;
+                border-radius: 4px;
+            }
+
+            /* CHAT BUBBLES */
+            .chat-bubble-me {
+                background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+                color: #ffffff;
+                border-radius: 18px 18px 4px 18px;
+                box-shadow: 0 2px 8px rgba(13, 110, 253, 0.22);
+            }
+
+            .chat-bubble-other {
+                background: #ffffff;
+                color: #1e293b;
+                border: 1px solid #e2e8f0;
+                border-radius: 18px 18px 18px 4px;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            }
+
+            /* HIGH-CONTRAST BADGES (Fix Lỗi Trắng trên Nền Trắng) */
+            .chat-badge-req-me {
+                background: rgba(255, 255, 255, 0.22) !important;
+                color: #ffffff !important;
+                border: 1px solid rgba(255, 255, 255, 0.38) !important;
+                font-weight: 500;
+            }
+
+            .chat-badge-req-other {
+                background: #e0f2fe !important;
+                color: #0369a1 !important;
+                border: 1px solid #bae6fd !important;
+                font-weight: 500;
+            }
+
+            .chat-badge-sol-me {
+                background: rgba(255, 255, 255, 0.22) !important;
+                color: #ffffff !important;
+                border: 1px solid rgba(255, 255, 255, 0.38) !important;
+                font-weight: 500;
+            }
+
+            .chat-badge-sol-other {
+                background: #dcfce7 !important;
+                color: #15803d !important;
+                border: 1px solid #bbf7d0 !important;
+                font-weight: 500;
+            }
+
+            /* STANDALONE CLEAN IMAGE (Không bọc nền xanh lè) */
+            .chat-standalone-image {
+                max-width: 260px;
+                max-height: 260px;
+                object-fit: cover;
+                border-radius: 14px;
+                cursor: pointer;
+                border: 2px solid #ffffff;
+                box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+                transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+                background: #ffffff;
+            }
+
+            .chat-standalone-image:hover {
+                transform: scale(1.03);
+                box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+            }
+
+            /* Cán bộ phụ trách Interactive Card */
+            .staff-card-interactive {
+                cursor: pointer;
+                transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+                border: 1px solid #0f2e55;
+                background: #ffffff;
+            }
+
+            .staff-card-interactive:hover {
+                transform: translateY(-2px);
+                border-color: #3b82f6 !important;
+                box-shadow: 0 6px 16px rgba(59, 130, 246, 0.12) !important;
+                background: #f8faff !important;
+            }
+
+            .staff-card-interactive:hover .staff-name-text {
+                color: #0d6efd !important;
+                text-decoration: underline;
+            }
+
+            /* Chip xem trước file trước khi gửi */
+            .upload-preview-chip {
+                background: #ffffff;
+                border: 1px solid #cbd5e1;
+                border-radius: 10px;
+                padding: 4px 10px;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 0.8rem;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            }
+
+            /* docx-preview styling */
+            .docx-wrapper {
+                background: transparent !important;
+                padding: 0 !important;
+            }
+
+            .docx-wrapper>section.docx {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+                margin-bottom: 24px !important;
+                background: #ffffff !important;
+                border-radius: 4px;
+            }
+
+            @keyframes fadeInBubble {
+                from {
+                    opacity: 0;
+                    transform: translateY(6px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .bubble-animate-in {
+                animation: fadeInBubble 0.22s ease-out;
+            }
+        </style>
+
+        <div class="row g-4">
+            <!-- Main Content (Left Column) -->
+            <div class="col-lg-8">
+                <!-- CỬA SỔ TRAO ĐỔI TƯ VẤN (VIEWPORT-DOCKED MESSENGER CHAT WINDOW) -->
+                <div class="chat-window-card mb-4" id="chatWindowCard">
+                    <!-- 1. MESSENGER HEADER CHAT -->
+                    <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between chat-header-bar"
+                        id="chatHeaderBar">
+                        <div class="d-flex align-items-center gap-3 overflow-hidden">
+                            <!-- Avatar đối phương (Cán bộ phụ trách hoặc Phòng ban) -->
+                            <div class="position-relative flex-shrink-0" id="headerAvatarContainer">
+                                <div
+                                    th:if="${ticket.assignedStaffName != null and ticket.assignedStaffAvatarUrl != null}">
+                                    <img th:src="${ticket.assignedStaffAvatarUrl}"
+                                        class="rounded-circle border shadow-xs"
+                                        style="width: 46px; height: 46px; object-fit: cover;">
+                                </div>
+                                <div th:unless="${ticket.assignedStaffName != null and ticket.assignedStaffAvatarUrl != null}"
+                                    class="rounded-circle d-flex align-items-center justify-content-center text-white shadow-xs"
+                                    style="width: 46px; height: 46px; background: linear-gradient(135deg, #0084ff 0%, #0066cc 100%); font-size: 1.25rem;">
+                                    <i class="bi bi-chat-square-text-fill"></i>
+                                </div>
+                                <span
+                                    class="position-absolute bottom-0 end-0 p-1 bg-success border border-white rounded-circle"
+                                    style="width: 13px; height: 13px;" title="Kênh trực tuyến"></span>
+                            </div>
+
+                            <!-- Thông tin cuộc trò chuyện -->
+                            <div class="overflow-hidden">
+                                <div class="d-flex align-items-center gap-2">
+                                    <h5 class="fw-bold text-dark mb-0 text-truncate" th:text="${ticket.title}">Tiêu đề
+                                        yêu cầu</h5>
+                                </div>
+                                <small class="text-muted d-block text-truncate" style="font-size: 0.8rem;"
+                                    id="headerStaffSubtitle">
+                                    <span th:if="${ticket.assignedStaffName != null}" class="text-primary fw-semibold"
+                                        th:text="${ticket.assignedStaffName}">ThS. Cán bộ</span>
+                                    <span th:unless="${ticket.assignedStaffName != null}"
+                                        class="text-secondary fw-semibold" th:text="${ticket.departmentName}">Phòng Đào
+                                        tạo</span>
+                                    • Mã: <span class="fw-semibold text-dark"
+                                        th:text="${ticket.ticketCode}">TK-XXXX</span>
+                                    • <span th:text="${#temporals.format(ticket.createdAt, 'HH:mm dd/MM/yyyy')}">19:51
+                                        29/09</span>
+                                </small>
                             </div>
                         </div>
 
-                        <!-- Thread Message (Staff) -->
-                        <div class="thread-message">
-                            <img src="https://ui-avatars.com/api/?name=Trần+Thị+C&background=1565c0&color=fff" class="avatar">
-                            <div class="message-content">
-                                <h4>Cô Trần Thị C (Chuyên viên Khoa CNTT) <span>21/09/2026 08:30</span></h4>
-                                <p>Chào em,<br><br>
-                                Đối với trường hợp môn "Cấu trúc dữ liệu và giải thuật", do số tín chỉ chênh lệch là 1TC (tương đương 15 tiết), em bắt buộc phải đăng ký học bổ sung phần thực hành 1TC (Mã học phần: CTDL_TH). <br><br>
-                                Em hãy làm đơn theo Mẫu số 05/ĐT (tải trên website phòng Đào tạo), điền đầy đủ thông tin, xin chữ ký Cố vấn học tập và nộp trực tiếp tại Văn phòng Khoa (Tòa nhà A) vào sáng thứ 3 hoặc thứ 5 nhé.<br><br>
-                                Thân mến!</p>
+                        <!-- Trạng thái Header -->
+                        <div class="d-flex align-items-center gap-2 flex-shrink-0" id="headerStatusBadge">
+                            <span th:if="${ticket.status == 'OPEN'}"
+                                class="badge bg-warning bg-opacity-15 text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-2"><i
+                                    class="bi bi-hourglass-split me-1"></i>Chờ tiếp nhận</span>
+                            <span th:if="${ticket.status == 'IN_PROGRESS'}"
+                                class="badge bg-info bg-opacity-15 text-info-emphasis border border-info-subtle rounded-pill px-3 py-2"><i
+                                    class="bi bi-gear-fill me-1"></i>Đang xử lý</span>
+                            <span th:if="${ticket.status == 'WAITING_STUDENT'}"
+                                class="badge bg-secondary bg-opacity-15 text-secondary-emphasis border border-secondary-subtle rounded-pill px-3 py-2"><i
+                                    class="bi bi-person-fill-exclamation me-1"></i>Chờ bạn bổ sung</span>
+                            <span th:if="${ticket.status == 'RESOLVED'}"
+                                class="badge bg-success bg-opacity-15 text-success-emphasis border border-success-subtle rounded-pill px-3 py-2"><i
+                                    class="bi bi-check-circle-fill me-1"></i>Đã giải quyết</span>
+                            <span th:if="${ticket.status == 'CLOSED'}"
+                                class="badge bg-dark bg-opacity-15 text-dark-emphasis border border-dark-subtle rounded-pill px-3 py-2"><i
+                                    class="bi bi-lock-fill me-1"></i>Đã đóng</span>
+                        </div>
+                    </div>
+
+                    <!-- 2. MESSENGER CHAT STREAM (VÙNG DÒNG TIN NHẮN TỰ CUỘN ĐỘC LẬP) -->
+                    <div class="chat-stream-viewport" id="chatStream">
+
+                        <!-- Bắt đầu phiên trao đổi (Chat Intro) -->
+                        <div class="text-center my-2">
+                            <div class="d-inline-flex flex-column align-items-center p-3 rounded-4 bg-white shadow-xs border"
+                                style="max-width: 480px;">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center text-white mb-2 shadow-xs"
+                                    style="width: 48px; height: 48px; background: linear-gradient(135deg, #0084ff 0%, #0066cc 100%); font-size: 1.3rem;">
+                                    <i class="bi bi-chat-quote-fill"></i>
+                                </div>
+                                <h6 class="fw-bold text-dark mb-1" th:text="${ticket.title}">Tiêu đề yêu cầu</h6>
+                                <small class="text-muted" style="font-size: 0.78rem;">
+                                    Bắt đầu cuộc trao đổi trực tuyến • <span
+                                        th:text="${#temporals.format(ticket.createdAt, 'HH:mm dd/MM/yyyy')}">19:51
+                                        29/09/2026</span>
+                                </small>
                             </div>
                         </div>
+
+                        <!-- TIN NHẮN SỐ 1: YÊU CẦU BAN ĐẦU CỦA SINH VIÊN (Original Request) -->
+                        <div th:with="isCreatorMe=${(currentUserId != null and ticket.creatorId != null and currentUserId == ticket.creatorId) or (!isStaffOrAdmin and currentUserId != null)}"
+                            th:class="${isCreatorMe ? 'd-flex justify-content-end mb-2' : 'd-flex justify-content-start gap-2 mb-2'}">
+
+                            <!-- Avatar sinh viên (chỉ hiện khi người xem là Cán bộ) -->
+                            <div th:if="${!isCreatorMe}" class="flex-shrink-0 align-self-end mb-4">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-xs bg-info"
+                                    style="width: 36px; height: 36px; font-size: 0.85rem;"
+                                    th:title="${ticket.creatorName != null ? ticket.creatorName : 'Sinh viên'}">
+                                    <i class="bi bi-mortarboard-fill"></i>
+                                </div>
+                            </div>
+
+                            <!-- Bubble Wrapper -->
+                            <div style="max-width: 75%;">
+                                <!-- Tên người gửi (nếu là đối phương) -->
+                                <div th:if="${!isCreatorMe}" class="mb-1 d-flex align-items-center gap-1 ms-1">
+                                    <span class="fw-bold text-dark small"
+                                        th:text="${ticket.creatorName != null ? ticket.creatorName : 'Sinh viên'}">Sinh
+                                        viên</span>
+                                    <span class="badge bg-info-subtle text-info-emphasis rounded-pill px-2 py-0"
+                                        style="font-size: 0.68rem;">Người yêu cầu</span>
+                                </div>
+
+                                <!-- Bong bóng tin nhắn mở đầu -->
+                                <div class="p-3 shadow-xs position-relative"
+                                    th:classappend="${isCreatorMe ? 'chat-bubble-me' : 'chat-bubble-other'}">
+
+                                    <!-- Huy hiệu Yêu cầu ban đầu (Đã sửa triệt để lỗi Trắng trên nền Trắng) -->
+                                    <div class="badge mb-2 px-2.5 py-1 rounded-pill d-inline-flex align-items-center"
+                                        th:classappend="${isCreatorMe ? 'chat-badge-req-me' : 'chat-badge-req-other'}">
+                                        <i class="bi bi-pin-angle-fill me-1"></i> Yêu cầu ban đầu
+                                    </div>
+
+                                    <!-- Nội dung yêu cầu chi tiết (ticket.description) -->
+                                    <div style="white-space: pre-wrap; word-break: break-word; font-size: 0.93rem; line-height: 1.5;"
+                                        th:text="${ticket.description != null ? ticket.description : ticket.title}">
+                                        Nội dung chi tiết yêu cầu
+                                    </div>
+                                </div>
+
+                                <!-- HÌNH ẢNH BAN ĐẦU: HIỂN THỊ ĐỘC LẬP TRÀN VIỀN (KHÔNG BỌC NỀN XANH LÈ) -->
+                                <div th:if="${ticket.initialAttachments != null and !#lists.isEmpty(ticket.initialAttachments)}"
+                                    class="d-flex flex-wrap gap-2 mt-2"
+                                    th:classappend="${isCreatorMe ? 'justify-content-end' : 'justify-content-start'}">
+                                    <th:block th:each="att : ${ticket.initialAttachments}">
+                                        <div th:if="${att.fileName.toLowerCase().endsWith('.png') or att.fileName.toLowerCase().endsWith('.jpg') or att.fileName.toLowerCase().endsWith('.jpeg') or att.fileName.toLowerCase().endsWith('.webp') or att.fileName.toLowerCase().endsWith('.gif')}"
+                                            class="position-relative">
+                                            <img th:src="@{'/files/view/' + ${att.id}}" th:alt="${att.fileName}"
+                                                class="chat-standalone-image btn-preview-file" th:data-id="${att.id}"
+                                                th:data-name="${att.fileName}" th:data-url="${att.fileUrl}"
+                                                title="Nhấn để phóng to hình ảnh">
+                                        </div>
+                                    </th:block>
+                                </div>
+
+                                <!-- TỆP TÀI LIỆU BAN ĐẦU (PDF, DOCX, XLSX, ZIP...) -->
+                                <div th:if="${ticket.initialAttachments != null and !#lists.isEmpty(ticket.initialAttachments)}"
+                                    class="d-flex flex-column gap-2 mt-2"
+                                    th:classappend="${isCreatorMe ? 'align-items-end' : 'align-items-start'}">
+                                    <th:block th:each="att : ${ticket.initialAttachments}">
+                                        <div th:unless="${att.fileName.toLowerCase().endsWith('.png') or att.fileName.toLowerCase().endsWith('.jpg') or att.fileName.toLowerCase().endsWith('.jpeg') or att.fileName.toLowerCase().endsWith('.webp') or att.fileName.toLowerCase().endsWith('.gif')}"
+                                            class="p-2 rounded-3 d-flex flex-row align-items-center gap-2 bg-white border shadow-xs"
+                                            style="max-width: 320px; color: #1e293b;">
+
+                                            <!-- Icon loại tệp -->
+                                            <div class="rounded-3 p-2 d-flex align-items-center justify-content-center flex-shrink-0"
+                                                style="width: 38px; height: 38px;"
+                                                th:styleappend="${att.fileName.toLowerCase().endsWith('.pdf')} ? 'background: #fee2e2;' : (${att.fileName.toLowerCase().endsWith('.docx') or att.fileName.toLowerCase().endsWith('.doc')} ? 'background: #dbeafe;' : (${att.fileName.toLowerCase().endsWith('.xlsx') or att.fileName.toLowerCase().endsWith('.xls')} ? 'background: #dcfce7;' : (${att.fileName.toLowerCase().endsWith('.zip') or att.fileName.toLowerCase().endsWith('.rar') or att.fileName.toLowerCase().endsWith('.7z')} ? 'background: #fef3c7;' : (${att.fileName.toLowerCase().endsWith('.md')} ? 'background: #e0e7ff;' : (${att.fileName.toLowerCase().endsWith('.json')} ? 'background: #fef3c7;' : (${att.fileName.toLowerCase().endsWith('.txt')} ? 'background: #f1f5f9;' : 'background: #e2e8f0;'))))))">
+                                                <i th:if="${att.fileName.toLowerCase().endsWith('.pdf')}"
+                                                    class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+                                                <i th:if="${att.fileName.toLowerCase().endsWith('.docx') or att.fileName.toLowerCase().endsWith('.doc')}"
+                                                    class="bi bi-file-earmark-word-fill text-primary fs-5"></i>
+                                                <i th:if="${att.fileName.toLowerCase().endsWith('.xlsx') or att.fileName.toLowerCase().endsWith('.xls')}"
+                                                    class="bi bi-file-earmark-excel-fill text-success fs-5"></i>
+                                                <i th:if="${att.fileName.toLowerCase().endsWith('.zip') or att.fileName.toLowerCase().endsWith('.rar') or att.fileName.toLowerCase().endsWith('.7z')}"
+                                                    class="bi bi-file-earmark-zip-fill text-warning fs-5"></i>
+                                                <i th:if="${att.fileName.toLowerCase().endsWith('.md')}"
+                                                    class="bi bi-filetype-md text-primary fs-5"></i>
+                                                <i th:if="${att.fileName.toLowerCase().endsWith('.json')}"
+                                                    class="bi bi-filetype-json text-warning fs-5"></i>
+                                                <i th:if="${att.fileName.toLowerCase().endsWith('.txt')}"
+                                                    class="bi bi-filetype-txt text-secondary fs-5"></i>
+                                                <i th:unless="${att.fileName.toLowerCase().endsWith('.pdf') or att.fileName.toLowerCase().endsWith('.docx') or att.fileName.toLowerCase().endsWith('.doc') or att.fileName.toLowerCase().endsWith('.xlsx') or att.fileName.toLowerCase().endsWith('.xls') || att.fileName.toLowerCase().endsWith('.zip') || att.fileName.toLowerCase().endsWith('.rar') || att.fileName.toLowerCase().endsWith('.7z') || att.fileName.toLowerCase().endsWith('.md') || att.fileName.toLowerCase().endsWith('.json') || att.fileName.toLowerCase().endsWith('.txt')}"
+                                                    class="bi bi-file-earmark-arrow-down-fill text-secondary fs-5"></i>
+                                            </div>
+
+                                            <!-- Tên tệp & dung lượng -->
+                                            <div class="flex-grow-1 overflow-hidden" style="line-height: 1.25;">
+                                                <div class="fw-semibold text-truncate small text-dark"
+                                                    th:text="${att.fileName}" th:title="${att.fileName}">document.docx
+                                                </div>
+                                                <small class="text-muted" style="font-size: 0.7rem;"
+                                                    th:text="${att.fileSize != null ? #numbers.formatDecimal(att.fileSize / 1024.0, 1, 1) + ' KB' : ''}">196
+                                                    KB</small>
+                                            </div>
+
+                                            <!-- Nút Xem / Tải -->
+                                            <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                                                <button
+                                                    th:if="${att.fileName.toLowerCase().endsWith('.pdf') or att.fileName.toLowerCase().endsWith('.docx') or att.fileName.toLowerCase().endsWith('.xlsx') or att.fileName.toLowerCase().endsWith('.json') or att.fileName.toLowerCase().endsWith('.txt') or att.fileName.toLowerCase().endsWith('.md')}"
+                                                    type="button"
+                                                    class="btn btn-sm btn-outline-primary px-2 py-1 btn-preview-file"
+                                                    style="font-size: 0.72rem; border-radius: 6px;"
+                                                    th:data-id="${att.id}" th:data-name="${att.fileName}"
+                                                    th:data-url="${att.fileUrl}" title="Xem nhanh">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <a th:href="@{'/files/download/' + ${att.id}}"
+                                                    class="btn btn-sm btn-primary px-2 py-1"
+                                                    style="font-size: 0.72rem; border-radius: 6px;"
+                                                    title="Tải tệp về máy">
+                                                    <i class="bi bi-download"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </th:block>
+                                </div>
+
+                                <!-- Timestamp bên dưới bong bóng -->
+                                <div class="mt-1 d-flex align-items-center gap-1"
+                                    th:classappend="${isCreatorMe ? 'justify-content-end me-1' : 'ms-1'}">
+                                    <small class="text-muted" style="font-size: 0.72rem;"
+                                        th:text="${#temporals.format(ticket.createdAt, 'HH:mm dd/MM/yyyy')}">19:51
+                                        29/09</small>
+                                    <span th:if="${isCreatorMe}" class="text-primary small"
+                                        style="font-size: 0.72rem;"><i class="bi bi-check2-all"></i></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- VÒNG LẶP CÁC LƯỢT TRAO ĐỔI TIẾP THEO (TIN NHẮN MESSENGER CHUẨN) -->
+                        <th:block th:each="h : ${ticket.histories}"
+                            th:with="isSystemEvent=${h.actionNote != null and (h.actionNote == 'Cán bộ tiếp nhận xử lý yêu cầu' or #strings.contains(h.actionNote, 'Đóng yêu cầu'))},
+                                       isMe=${(h.actorId != null and currentUserId != null and h.actorId == currentUserId) or (currentUserId != null and ticket.creatorId != null and currentUserId == ticket.creatorId and h.actorName != null and (h.actorName == ticket.creatorName or #strings.contains(h.actorName, '(SV)'))) or (!isStaffOrAdmin and h.actorName != null and #strings.contains(h.actorName, '(SV)')) or (isStaffOrAdmin and h.actorName != null and (#strings.contains(h.actorName, 'Cán bộ') or #strings.contains(h.actorName, 'Tư Vấn')))}">
+
+                            <!-- Case 1: System Status Notification (Pill nhỏ nằm ở giữa) -->
+                            <div th:if="${isSystemEvent}" th:attr="data-history-id=${h.id}"
+                                class="d-flex justify-content-center my-1 bubble-animate-in">
+                                <div class="px-3 py-1 rounded-pill bg-white border shadow-xs text-secondary d-inline-flex align-items-center gap-1"
+                                    style="font-size: 0.78rem;">
+                                    <i th:if="${#strings.contains(h.actionNote, 'tiếp nhận')}"
+                                        class="bi bi-person-check-fill text-info"></i>
+                                    <i th:if="${#strings.contains(h.actionNote, 'Đóng')}"
+                                        class="bi bi-check2-all text-success"></i>
+                                    <strong class="text-dark" th:text="${h.actorName}">Người dùng</strong>
+                                    <span th:text="${h.actionNote}">hành động</span>
+                                    <span class="text-muted ms-1" style="font-size: 0.72rem;"
+                                        th:text="${#temporals.format(h.createdAt, 'HH:mm dd/MM')}">19:51</span>
+                                </div>
+                            </div>
+
+                            <!-- Case 2: Conversation Messages (Chat Bubble chuẩn Messenger) -->
+                            <div th:unless="${isSystemEvent}" th:attr="data-history-id=${h.id}"
+                                th:class="${isMe ? 'd-flex justify-content-end mb-2 bubble-animate-in' : 'd-flex justify-content-start gap-2 mb-2 bubble-animate-in'}">
+
+                                <!-- Counterpart Avatar (Bên trái khi đối phương nhắn) -->
+                                <div th:if="${!isMe}" class="flex-shrink-0 align-self-end mb-4">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-xs"
+                                        style="width: 36px; height: 36px; font-size: 0.85rem;"
+                                        th:classappend="${h.actorName != null and (#strings.contains(h.actorName, 'Tư Vấn') or #strings.contains(h.actorName, 'Cán bộ')) ? 'bg-primary' : 'bg-info'}"
+                                        th:title="${h.actorName}">
+                                        <i th:if="${h.actorName != null and (#strings.contains(h.actorName, 'Tư Vấn') or #strings.contains(h.actorName, 'Cán bộ'))}"
+                                            class="bi bi-person-badge"></i>
+                                        <i th:unless="${h.actorName != null and (#strings.contains(h.actorName, 'Tư Vấn') or #strings.contains(h.actorName, 'Cán bộ'))}"
+                                            class="bi bi-mortarboard-fill"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Bubble Wrapper -->
+                                <div style="max-width: 75%;">
+                                    <!-- Header tên người gửi (chỉ hiện cho đối phương) -->
+                                    <div th:if="${!isMe}" class="mb-1 d-flex align-items-center gap-1 ms-1">
+                                        <span class="fw-bold text-dark small" th:text="${h.actorName}">Cán bộ tư
+                                            vấn</span>
+                                        <span
+                                            th:if="${h.actorName != null and (#strings.contains(h.actorName, 'Tư Vấn') or #strings.contains(h.actorName, 'Cán bộ'))}"
+                                            class="badge bg-indigo-subtle text-indigo rounded-pill px-2 py-0"
+                                            style="font-size: 0.68rem; background: #e0e7ff; color: #4338ca;">Tư Vấn
+                                            Viên</span>
+                                        <span th:if="${h.actorName != null and #strings.contains(h.actorName, '(SV)')}"
+                                            class="badge bg-info-subtle text-info-emphasis rounded-pill px-2 py-0"
+                                            style="font-size: 0.68rem;">Sinh Viên</span>
+                                    </div>
+
+                                    <!-- Bong bóng chat chính (chỉ hiện khi có nội dung chữ hoặc giải pháp) -->
+                                    <div th:if="${(h.actionNote != null and !#strings.isEmpty(h.actionNote.trim())) or h.toStatus == 'RESOLVED'}"
+                                        class="p-3 shadow-xs position-relative"
+                                        th:classappend="${isMe ? 'chat-bubble-me' : 'chat-bubble-other'}">
+
+                                        <!-- Official Solution Banner (nếu là câu giải đáp chính thức) -->
+                                        <div th:if="${h.toStatus == 'RESOLVED'}"
+                                            class="badge mb-2 px-2.5 py-1 rounded-pill d-inline-flex align-items-center"
+                                            th:classappend="${isMe ? 'chat-badge-sol-me' : 'chat-badge-sol-other'}">
+                                            <i class="bi bi-lightbulb-fill text-warning me-1"></i> Giải Pháp Phản Hồi
+                                            Chính Thức
+                                        </div>
+
+                                        <!-- 1. Nội dung chữ tin nhắn -->
+                                        <div th:if="${h.actionNote != null and !#strings.isEmpty(h.actionNote.trim())}"
+                                            style="white-space: pre-wrap; word-break: break-word; font-size: 0.93rem; line-height: 1.5;"
+                                            th:text="${h.actionNote}">
+                                            Nội dung tin nhắn
+                                        </div>
+                                    </div>
+
+                                    <!-- 2. HÌNH ẢNH GỬI TRONG TIN NHẮN (Hiển thị ĐỘC LẬP - KHÔNG bọc trong bong bóng xanh lè) -->
+                                    <div th:if="${h.attachments != null and !#lists.isEmpty(h.attachments)}"
+                                        class="d-flex flex-wrap gap-2 mt-1"
+                                        th:classappend="${isMe ? 'justify-content-end' : 'justify-content-start'}">
+                                        <th:block th:each="att : ${h.attachments}">
+                                            <div th:if="${att.fileName.toLowerCase().endsWith('.png') or att.fileName.toLowerCase().endsWith('.jpg') or att.fileName.toLowerCase().endsWith('.jpeg') or att.fileName.toLowerCase().endsWith('.webp') or att.fileName.toLowerCase().endsWith('.gif')}"
+                                                class="position-relative">
+                                                <img th:src="@{'/files/view/' + ${att.id}}" th:alt="${att.fileName}"
+                                                    class="chat-standalone-image btn-preview-file"
+                                                    th:data-id="${att.id}" th:data-name="${att.fileName}"
+                                                    th:data-url="${att.fileUrl}" title="Nhấn để phóng to hình ảnh">
+                                            </div>
+                                        </th:block>
+                                    </div>
+
+                                    <!-- 3. FILE TÀI LIỆU & FILE NÉN (PDF, DOCX, XLSX, ZIP, RAR...) TRONG TIN NHẮN -->
+                                    <div th:if="${h.attachments != null and !#lists.isEmpty(h.attachments)}"
+                                        class="d-flex flex-column gap-2 mt-1"
+                                        th:classappend="${isMe ? 'align-items-end' : 'align-items-start'}">
+                                        <th:block th:each="att : ${h.attachments}">
+                                            <div th:unless="${att.fileName.toLowerCase().endsWith('.png') or att.fileName.toLowerCase().endsWith('.jpg') or att.fileName.toLowerCase().endsWith('.jpeg') or att.fileName.toLowerCase().endsWith('.webp') or att.fileName.toLowerCase().endsWith('.gif')}"
+                                                class="p-2 rounded-3 d-flex flex-row align-items-center gap-2 bg-white border shadow-xs"
+                                                style="max-width: 320px; color: #1e293b;">
+
+                                                <!-- Icon loại tệp -->
+                                                <div class="rounded-3 p-2 d-flex align-items-center justify-content-center flex-shrink-0"
+                                                    style="width: 38px; height: 38px;"
+                                                    th:styleappend="${att.fileName.toLowerCase().endsWith('.pdf')} ? 'background: #fee2e2;' : (${att.fileName.toLowerCase().endsWith('.docx') or att.fileName.toLowerCase().endsWith('.doc')} ? 'background: #dbeafe;' : (${att.fileName.toLowerCase().endsWith('.xlsx') or att.fileName.toLowerCase().endsWith('.xls')} ? 'background: #dcfce7;' : (${att.fileName.toLowerCase().endsWith('.zip') or att.fileName.toLowerCase().endsWith('.rar') or att.fileName.toLowerCase().endsWith('.7z')} ? 'background: #fef3c7;' : (${att.fileName.toLowerCase().endsWith('.md')} ? 'background: #e0e7ff;' : (${att.fileName.toLowerCase().endsWith('.json')} ? 'background: #fef3c7;' : (${att.fileName.toLowerCase().endsWith('.txt')} ? 'background: #f1f5f9;' : 'background: #e2e8f0;'))))))">
+                                                    <i th:if="${att.fileName.toLowerCase().endsWith('.pdf')}"
+                                                        class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+                                                    <i th:if="${att.fileName.toLowerCase().endsWith('.docx') or att.fileName.toLowerCase().endsWith('.doc')}"
+                                                        class="bi bi-file-earmark-word-fill text-primary fs-5"></i>
+                                                    <i th:if="${att.fileName.toLowerCase().endsWith('.xlsx') or att.fileName.toLowerCase().endsWith('.xls')}"
+                                                        class="bi bi-file-earmark-excel-fill text-success fs-5"></i>
+                                                    <i th:if="${att.fileName.toLowerCase().endsWith('.zip') or att.fileName.toLowerCase().endsWith('.rar') or att.fileName.toLowerCase().endsWith('.7z')}"
+                                                        class="bi bi-file-earmark-zip-fill text-warning fs-5"></i>
+                                                    <i th:if="${att.fileName.toLowerCase().endsWith('.md')}"
+                                                        class="bi bi-filetype-md text-primary fs-5"></i>
+                                                    <i th:if="${att.fileName.toLowerCase().endsWith('.json')}"
+                                                        class="bi bi-filetype-json text-warning fs-5"></i>
+                                                    <i th:if="${att.fileName.toLowerCase().endsWith('.txt')}"
+                                                        class="bi bi-filetype-txt text-secondary fs-5"></i>
+                                                    <i th:unless="${att.fileName.toLowerCase().endsWith('.pdf') or att.fileName.toLowerCase().endsWith('.docx') or att.fileName.toLowerCase().endsWith('.doc') or att.fileName.toLowerCase().endsWith('.xlsx') or att.fileName.toLowerCase().endsWith('.xls') || att.fileName.toLowerCase().endsWith('.zip') || att.fileName.toLowerCase().endsWith('.rar') || att.fileName.toLowerCase().endsWith('.7z') || att.fileName.toLowerCase().endsWith('.md') || att.fileName.toLowerCase().endsWith('.json') || att.fileName.toLowerCase().endsWith('.txt')}"
+                                                        class="bi bi-file-earmark-arrow-down-fill text-secondary fs-5"></i>
+                                                </div>
+
+                                                <!-- Tên tệp & dung lượng -->
+                                                <div class="flex-grow-1 overflow-hidden" style="line-height: 1.25;">
+                                                    <div class="fw-semibold text-truncate small text-dark"
+                                                        th:text="${att.fileName}" th:title="${att.fileName}">
+                                                        document.docx</div>
+                                                    <small class="text-muted" style="font-size: 0.7rem;"
+                                                        th:text="${att.fileSize != null ? #numbers.formatDecimal(att.fileSize / 1024.0, 1, 1) + ' KB' : ''}">196
+                                                        KB</small>
+                                                </div>
+
+                                                <!-- Nút thao tác Xem / Tải -->
+                                                <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                                                    <button
+                                                        th:if="${att.fileName.toLowerCase().endsWith('.pdf') or att.fileName.toLowerCase().endsWith('.docx') or att.fileName.toLowerCase().endsWith('.xlsx') or att.fileName.toLowerCase().endsWith('.json') or att.fileName.toLowerCase().endsWith('.txt') or att.fileName.toLowerCase().endsWith('.md')}"
+                                                        type="button"
+                                                        class="btn btn-sm btn-outline-primary px-2 py-1 btn-preview-file"
+                                                        style="font-size: 0.72rem; border-radius: 6px;"
+                                                        th:data-id="${att.id}" th:data-name="${att.fileName}"
+                                                        th:data-url="${att.fileUrl}" title="Xem nhanh">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <a th:href="@{'/files/download/' + ${att.id}}"
+                                                        class="btn btn-sm btn-primary px-2 py-1"
+                                                        style="font-size: 0.72rem; border-radius: 6px;"
+                                                        title="Tải tệp về máy">
+                                                        <i class="bi bi-download"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </th:block>
+                                    </div>
+
+                                    <!-- Timestamp Below Bubble -->
+                                    <div class="mt-1 d-flex align-items-center gap-1"
+                                        th:classappend="${isMe ? 'justify-content-end me-1' : 'ms-1'}">
+                                        <small class="text-muted" style="font-size: 0.72rem;"
+                                            th:text="${#temporals.format(h.createdAt, 'HH:mm dd/MM/yyyy')}">19:51
+                                            29/09</small>
+                                        <span th:if="${isMe}" class="text-primary small" style="font-size: 0.72rem;"><i
+                                                class="bi bi-check2-all"></i></span>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </th:block>
 
                     </div>
 
-                    <!-- Reply Box -->
-                    <div class="ticket-card reply-box">
-                        <h4 style="margin-top: 0; color: var(--crimson);">Gửi phản hồi cho Chuyên viên</h4>
-                        <textarea placeholder="Nhập câu trả lời hoặc thắc mắc thêm của bạn..."></textarea>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <button style="background:transparent; border:none; color:var(--text-gray); cursor:pointer; display:flex; align-items:center; gap:5px;"><i class='bx bx-paperclip' style="font-size: 1.2rem;"></i> Đính kèm file</button>
-                            <button class="btn-primary"><i class='bx bx-send'></i> Gửi phản hồi</button>
+                    <!-- Reply Form Dock (Messenger Viewport Input Bar - Tích hợp Upload Tệp & Hình Ảnh) -->
+                    <div id="chatReplyDock" class="chat-input-dock"
+                        th:style="${ticket.status == 'CLOSED' ? 'display: none !important;' : ''}">
+                        <form th:action="@{'/tickets/' + ${ticket.id} + '/reply'}" method="post"
+                            enctype="multipart/form-data" id="chatReplyForm">
+
+                            <!-- File Selection Preview Area (Hiển thị các tệp đã chọn trước khi gửi) -->
+                            <div id="fileSelectionPreview" class="d-none mb-2 p-2 bg-light rounded-3 border">
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <small class="text-muted fw-semibold" style="font-size: 0.75rem;">
+                                        <i class="bi bi-paperclip me-1 text-primary"></i>Tệp đính kèm đã chọn (<span
+                                            id="fileCountBadge">0</span>):
+                                    </small>
+                                    <button type="button"
+                                        class="btn btn-sm btn-link text-danger p-0 text-decoration-none small"
+                                        id="btnClearFiles" style="font-size: 0.75rem;">
+                                        <i class="bi bi-x-circle-fill me-1"></i>Hủy tất cả
+                                    </button>
+                                </div>
+                                <div id="fileChipsContainer" class="d-flex flex-wrap gap-2"></div>
+                            </div>
+
+                            <!-- Messenger Input Control -->
+                            <div class="d-flex align-items-end gap-2">
+                                <!-- Nút Kẹp Giấy Đính Kèm File / Tệp Nén (ZIP, RAR, PDF, DOCX...) -->
+                                <label for="chatFileInput"
+                                    class="btn btn-light rounded-circle shadow-xs border p-0 d-flex align-items-center justify-content-center text-secondary mb-0 flex-shrink-0"
+                                    style="width: 44px; height: 44px; cursor: pointer; transition: all 0.2s;"
+                                    title="Đính kèm tệp / tài liệu / ZIP / RAR">
+                                    <i class="bi bi-paperclip fs-5"></i>
+                                    <input type="file" id="chatFileInput" name="files" class="d-none" multiple
+                                        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar,.7z,.txt,.json,.md">
+                                </label>
+
+                                <!-- Nút Gửi Hình Ảnh Nhanh (🖼️) -->
+                                <label for="chatImageInput"
+                                    class="btn btn-light rounded-circle shadow-xs border p-0 d-flex align-items-center justify-content-center text-secondary mb-0 flex-shrink-0"
+                                    style="width: 44px; height: 44px; cursor: pointer; transition: all 0.2s;"
+                                    title="Chọn hình ảnh gửi nhanh">
+                                    <i class="bi bi-image fs-5 text-primary"></i>
+                                    <input type="file" id="chatImageInput" class="d-none" multiple accept="image/*">
+                                </label>
+
+                                <!-- Auto-resizing Text Input (Không bắt buộc nhập text khi gửi file/ảnh) -->
+                                <div class="flex-grow-1 position-relative">
+                                    <textarea id="replyContent" name="content" rows="1"
+                                        class="form-control px-3 py-2 rounded-4 border"
+                                        placeholder="Nhập tin nhắn phản hồi... (Enter hoặc Ctrl+Enter để gửi)"
+                                        style="resize: none; min-height: 44px; max-height: 120px; line-height: 1.5; font-size: 0.93rem; background: #f8fafc;"></textarea>
+                                </div>
+
+                                <!-- Send Button -->
+                                <button type="submit" id="btnSubmitReply"
+                                    class="btn btn-primary rounded-circle shadow-sm p-0 d-flex align-items-center justify-content-center mb-0 flex-shrink-0"
+                                    style="width: 44px; height: 44px; transition: transform 0.15s ease-in-out;"
+                                    onmouseover="this.style.transform='scale(1.06)'"
+                                    onmouseout="this.style.transform='scale(1)'" title="Gửi phản hồi">
+                                    <i class="bi bi-send-fill fs-6"></i>
+                                </button>
+                            </div>
+
+                            <!-- Micro Hint -->
+                            <div class="d-flex justify-content-between mt-2 px-1">
+                                <small class="text-muted" style="font-size: 0.72rem;">
+                                    <i class="bi bi-keyboard me-1"></i><strong>Enter</strong> để gửi • <strong>Shift +
+                                        Enter</strong> xuống dòng
+                                </small>
+                                <small class="text-muted" style="font-size: 0.72rem;">
+                                    <i class="bi bi-shield-check text-success me-1"></i>Hỗ trợ tệp: PDF, Word, Excel,
+                                    Markdown (.md), Text, JSON, Ảnh
+                                </small>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- When Ticket is Closed -->
+                    <div id="chatClosedNotice" class="p-4 bg-light border-top text-center text-muted small"
+                        th:style="${ticket.status != 'CLOSED' ? 'display: none !important;' : ''}">
+                        <div
+                            class="d-inline-flex align-items-center gap-2 px-3 py-2 bg-white rounded-pill border shadow-xs">
+                            <i class="bi bi-lock-fill text-secondary"></i>
+                            <span>Phiên trao đổi đã hoàn tất và đóng lại. Cảm ơn bạn đã phản hồi!</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ========================================== -->
+                <!-- CSAT CUSTOMER SATISFACTION EVALUATION CARD -->
+                <!-- ========================================== -->
+                <div id="csatSection" class="card shadow-sm border-0 mb-4 overflow-hidden"
+                    th:if="${ticket.rating != null or ticket.status == 'RESOLVED' or ticket.status == 'CLOSED' or !isStaffOrAdmin}"
+                    style="border-radius: 16px;">
+                    <div class="card-header border-0 py-3 px-4 d-flex align-items-center justify-content-between"
+                        style="background: linear-gradient(135deg, #1e293b, #0f172a); color: #fff;">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center"
+                                style="width: 32px; height: 32px;">
+                                <i class="bi bi-star-fill fs-6"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-white font-serif">Khảo Sát Hài Lòng Dịch Vụ Tư Vấn (CSAT)
+                                </h6>
+                                <small class="text-white-50" style="font-size: 0.75rem;">Ý kiến của bạn là cơ sở nâng
+                                    cao chất lượng hỗ trợ học vụ</small>
+                            </div>
+                        </div>
+                        <span th:if="${ticket.rating != null}" class="badge bg-warning text-dark fw-bold px-2 py-1"
+                            id="csatHeaderRatedBadge">Đã Đánh Giá</span>
+                        <span
+                            th:if="${ticket.rating == null and (ticket.status == 'RESOLVED' or ticket.status == 'CLOSED')}"
+                            class="badge bg-danger-subtle text-danger border border-danger-subtle fw-semibold px-2 py-1"
+                            id="csatHeaderPendingBadge">Chờ Đánh Giá</span>
+                    </div>
+
+                    <div class="card-body p-4 bg-white">
+                        <!-- Case A: Đã có điểm đánh giá CSAT -->
+                        <div th:if="${ticket.rating != null}" id="csatRatedDisplay">
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 p-3 rounded-3"
+                                style="background: #fffbeb; border: 1px solid #fde68a;">
+                                <div>
+                                    <span class="badge bg-warning text-dark fw-bold mb-1">
+                                        <i class="bi bi-check-circle-fill me-1"></i>ĐÃ GHI NHẬN ĐÁNH GIÁ
+                                    </span>
+                                    <h5 class="fw-bold text-dark mb-1">Cảm ơn bạn đã phản hồi chất lượng phục vụ!</h5>
+                                    <p class="small text-muted mb-0">Đánh giá này đã được gửi trực tiếp đến đơn vị phụ
+                                        trách và lưu vào hồ sơ chất lượng.</p>
+                                </div>
+                                <div class="text-md-end text-start">
+                                    <div class="fs-3 text-warning mb-1" style="letter-spacing: 2px;">
+                                        <span th:each="i : ${#numbers.sequence(1, ticket.rating)}">★</span>
+                                        <span th:each="i : ${#numbers.sequence(ticket.rating + 1, 5)}"
+                                            th:if="${ticket.rating < 5}" class="text-secondary opacity-25">★</span>
+                                    </div>
+                                    <span class="badge bg-white text-dark border border-warning fw-bold fs-6"
+                                        th:text="${ticket.rating} + ' / 5 sao'">5 / 5 sao</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Case B: Chưa đánh giá (Form đánh giá dành cho Sinh Viên / Khách) -->
+                        <div th:if="${ticket.rating == null}" id="csatFormContainer">
+                            <!-- Nếu là Cán bộ/Admin xem vé chưa đánh giá -->
+                            <div th:if="${isStaffOrAdmin}" class="text-muted small py-2 text-center">
+                                <i class="bi bi-hourglass-split me-1 text-warning"></i>Người gửi yêu cầu chưa thực hiện
+                                chấm điểm độ hài lòng (CSAT) cho phiên tư vấn này.
+                            </div>
+
+                            <!-- Nếu là Sinh Viên / Người tạo vé -->
+                            <div th:if="${!isStaffOrAdmin}">
+                                <p class="text-secondary mb-3 small">
+                                    Sau khi được Thầy/Cô giải đáp thắc mắc, bạn có hài lòng với câu trả lời và thái độ
+                                    hỗ trợ không? Hãy chấm điểm bên dưới:
+                                </p>
+
+                                <form id="studentCsatForm" th:action="@{'/tickets/' + ${ticket.id} + '/rate'}"
+                                    method="post">
+                                    <input type="hidden" name="rating" id="studentSelectedRating" value="5">
+
+                                    <!-- Star selector -->
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold text-dark mb-2">1. Mức độ hài lòng của
+                                            bạn:</label>
+                                        <div class="d-inline-flex flex-wrap gap-2 align-items-center p-2 rounded-3 bg-light border"
+                                            id="studentStarContainer">
+                                            <div class="d-flex gap-1" style="cursor: pointer;">
+                                                <i class="bi bi-star-fill text-warning fs-3 student-star" data-val="1"
+                                                    title="1 sao - Không hài lòng"></i>
+                                                <i class="bi bi-star-fill text-warning fs-3 student-star" data-val="2"
+                                                    title="2 sao - Chưa hài lòng"></i>
+                                                <i class="bi bi-star-fill text-warning fs-3 student-star" data-val="3"
+                                                    title="3 sao - Bình thường"></i>
+                                                <i class="bi bi-star-fill text-warning fs-3 student-star" data-val="4"
+                                                    title="4 sao - Hài lòng"></i>
+                                                <i class="bi bi-star-fill text-warning fs-3 student-star" data-val="5"
+                                                    title="5 sao - Rất hài lòng"></i>
+                                            </div>
+                                            <span class="badge bg-white text-primary border fw-bold ms-2 py-2 px-3"
+                                                id="studentRatingText" style="font-size: 0.85rem;">
+                                                5 sao - Rất hài lòng
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Feedback textarea -->
+                                    <div class="mb-3">
+                                        <label for="studentCsatFeedback"
+                                            class="form-label small fw-bold text-dark mb-1">2. Ý kiến đóng góp thêm (Tùy
+                                            chọn):</label>
+                                        <textarea name="feedback" id="studentCsatFeedback" rows="2" class="form-control"
+                                            placeholder="Chia sẻ lý do bạn hài lòng hoặc điều Thầy/Cô cần cải thiện thêm..."></textarea>
+                                    </div>
+
+                                    <!-- Submit buttons -->
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <button type="button"
+                                            class="btn btn-warning fw-bold text-dark px-4 py-2 shadow-xs"
+                                            id="btnSubmitStudentCsat" onclick="submitStudentCsatAjax(false)">
+                                            <span id="csatSpinner" class="spinner-border spinner-border-sm me-1 d-none"
+                                                role="status"></span>
+                                            <i class="bi bi-star-fill me-1" id="csatBtnIcon"></i>Gửi Đánh Giá CSAT
+                                        </button>
+                                        <button th:if="${ticket.status == 'RESOLVED'}" type="button"
+                                            class="btn btn-success fw-bold px-3 py-2 shadow-xs" id="btnSubmitAndClose"
+                                            onclick="submitStudentCsatAjax(true)">
+                                            <i class="bi bi-check2-circle me-1"></i>Hài Lòng & Đóng Yêu Cầu
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right: Meta Info -->
-                <div class="ticket-sidebar">
-                    <div class="ticket-card">
-                        <h3 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">Thông tin Yêu cầu</h3>
-                        <div class="info-row">
-                            <span>Mã số:</span> <span>#TK-1022</span>
+            </div>
+
+            <!-- Sidebar Info (Right Column) - Tinh Gọn Trọng Tâm -->
+            <div class="col-lg-4">
+                <div class="sidebar-sticky-scroll">
+
+                    <!-- Thẻ Thông Tin Phụ Trách & Xử Lý -->
+                    <div class="card p-3 shadow-sm mb-3 border-0" style="border-radius: 16px;">
+                        <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
+                            <h6 class="fw-bold text-dark mb-0">Thông Tin Phụ Trách</h6>
+                            <span class="badge bg-light text-secondary border fw-normal" style="font-size: 0.72rem;">SLA
+                                Chi Tiết</span>
                         </div>
-                        <div class="info-row">
-                            <span>Trạng thái:</span> <span class="badge badge-processing">Đang xử lý</span>
+
+                        <!-- 1. Mã yêu cầu -->
+                        <div
+                            class="d-flex align-items-center justify-content-between p-2 rounded-3 bg-light border mb-3">
+                            <span class="small text-muted fw-semibold">Mã yêu cầu:</span>
+                            <code
+                                class="fw-bold fs-6 text-primary py-1 px-2 rounded bg-white border border-primary-subtle"
+                                th:text="${ticket.ticketCode}">TK-XXXX</code>
                         </div>
-                        <div class="info-row">
-                            <span>Phòng ban:</span> <span>Khoa CNTT</span>
-                        </div>
-                        <div class="info-row">
-                            <span>Phân loại:</span> <span>Học vụ</span>
-                        </div>
-                        <div class="info-row">
-                            <span>Mức độ ưu tiên:</span> <span style="color: #e65100;">Bình thường</span>
-                        </div>
-                        <div class="info-row" style="border-bottom: none; margin-bottom: 0;">
-                            <span>Ngày tạo:</span> <span>20/09/2026</span>
+
+                        <!-- 2. CÁN BỘ PHỤ TRÁCH (TRỌNG TÂM - Có Avatar + Tên + Hover effect + Click mở Modal) -->
+                        <div class="mb-3" id="assignedStaffCardSection">
+                            <small class="text-muted fw-semibold d-block mb-1">Cán bộ phụ trách:</small>
+
+                            <!-- Khi đã có cán bộ tiếp nhận -->
+                            <div th:if="${ticket.assignedStaffName != null}"
+                                class="staff-card-interactive p-3 rounded-3 d-flex align-items-center gap-3 shadow-xs"
+                                onclick="openStaffModal()"
+                                title="Nhấn để xem danh thiếp và thông tin liên hệ của Cán bộ">
+                                <!-- Avatar cán bộ -->
+                                <div class="position-relative flex-shrink-0">
+                                    <img th:if="${ticket.assignedStaffAvatarUrl != null}"
+                                        th:src="${ticket.assignedStaffAvatarUrl}"
+                                        class="rounded-circle border shadow-xs"
+                                        style="width: 48px; height: 48px; object-fit: cover;" alt="Avatar">
+                                    <div th:unless="${ticket.assignedStaffAvatarUrl != null}"
+                                        class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-xs"
+                                        style="width: 48px; height: 48px; background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); font-size: 1.25rem;"
+                                        th:text="${#strings.substring(ticket.assignedStaffName, 0, 1)}">S</div>
+                                    <span
+                                        class="position-absolute bottom-0 end-0 p-1 bg-success border border-white rounded-circle"
+                                        style="width: 12px; height: 12px;" title="Đang trực tuyến"></span>
+                                </div>
+
+                                <!-- Thông tin cán bộ -->
+                                <div class="flex-grow-1 overflow-hidden">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <span class="fw-bold text-dark text-truncate staff-name-text"
+                                            th:text="${ticket.assignedStaffName}">ThS. Phạm Thị Thu Sương</span>
+                                        <i class="bi bi-patch-check-fill text-primary small"
+                                            title="Cán bộ xác minh"></i>
+                                    </div>
+                                    <small class="text-muted d-block text-truncate" style="font-size: 0.78rem;"
+                                        th:text="${ticket.assignedStaffRole != null ? ticket.assignedStaffRole : 'Cán bộ tư vấn • ' + ticket.departmentName}">Cán
+                                        bộ tư vấn</small>
+                                    <span
+                                        class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle rounded-pill mt-1"
+                                        style="font-size: 0.7rem;">
+                                        <i class="bi bi-person-lines-fill me-1"></i>Xem danh thiếp liên hệ
+                                    </span>
+                                </div>
+                                <i class="bi bi-chevron-right text-muted"></i>
+                            </div>
+
+                            <!-- Khi chưa có cán bộ tiếp nhận -->
+                            <div th:unless="${ticket.assignedStaffName != null}"
+                                class="p-3 rounded-3 border bg-light d-flex align-items-center gap-3">
+                                <div class="rounded-circle bg-secondary bg-opacity-25 text-secondary d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 44px; height: 44px;">
+                                    <i class="bi bi-person-dash fs-5"></i>
+                                </div>
+                                <div>
+                                    <strong class="d-block text-dark small">Chưa có cán bộ tiếp nhận</strong>
+                                    <small class="text-muted" style="font-size: 0.75rem;">Yêu cầu đang nằm trong hàng
+                                        đợi tự động...</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="ticket-card" style="text-align: center; background: #fafafa;">
-                        <i class='bx bx-info-circle' style="font-size: 2rem; color: var(--text-gray); margin-bottom: 10px;"></i>
-                        <p style="font-size: 0.85rem; color: var(--text-gray); margin: 0;">Thời gian phản hồi trung bình của Phòng ban là từ <strong>1 - 3 ngày làm việc</strong>.</p>
+
+                    <!-- 3. THẺ TỆP & PHƯƠNG TIỆN ĐÃ CHIA SẺ TRONG ĐOẠN CHAT (Messenger Style Media & Files) -->
+                    <div th:if="${ticket.attachments != null and !#lists.isEmpty(ticket.attachments)}"
+                        class="card p-3 shadow-sm mb-3 border-0" style="border-radius: 16px;">
+                        <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
+                            <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                                <i class="bi bi-folder2-open text-primary"></i>
+                                Tệp Đã Chia Sẻ Trong Chat
+                            </h6>
+                            <span
+                                class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle rounded-pill small"
+                                th:text="${#lists.size(ticket.attachments)} + ' tệp'">3 tệp</span>
+                        </div>
+
+                        <div class="d-flex flex-column gap-2" style="max-height: 280px; overflow-y: auto;">
+                            <th:block th:each="att : ${ticket.attachments}">
+                                <div
+                                    class="p-2 rounded-3 border bg-light d-flex align-items-center justify-content-between gap-2">
+                                    <div class="d-flex align-items-center gap-2 overflow-hidden">
+                                        <div class="rounded-2 p-1 d-flex align-items-center justify-content-center flex-shrink-0"
+                                            style="width: 32px; height: 32px; background: #ffffff;">
+                                            <i th:if="${att.fileName.toLowerCase().endsWith('.pdf')}"
+                                                class="bi bi-file-earmark-pdf-fill text-danger fs-6"></i>
+                                            <i th:if="${att.fileName.toLowerCase().endsWith('.docx') or att.fileName.toLowerCase().endsWith('.doc')}"
+                                                class="bi bi-file-earmark-word-fill text-primary fs-6"></i>
+                                            <i th:if="${att.fileName.toLowerCase().endsWith('.xlsx') or att.fileName.toLowerCase().endsWith('.xls')}"
+                                                class="bi bi-file-earmark-excel-fill text-success fs-6"></i>
+                                            <i th:if="${att.fileName.toLowerCase().endsWith('.zip') or att.fileName.toLowerCase().endsWith('.rar') or att.fileName.toLowerCase().endsWith('.7z')}"
+                                                class="bi bi-file-earmark-zip-fill text-warning fs-6"></i>
+                                            <i th:if="${att.fileName.toLowerCase().endsWith('.png') or att.fileName.toLowerCase().endsWith('.jpg') or att.fileName.toLowerCase().endsWith('.jpeg') or att.fileName.toLowerCase().endsWith('.webp') or att.fileName.toLowerCase().endsWith('.gif')}"
+                                                class="bi bi-image-fill text-info fs-6"></i>
+                                            <i th:if="${att.fileName.toLowerCase().endsWith('.md')}"
+                                                class="bi bi-filetype-md text-primary fs-6"></i>
+                                            <i th:if="${att.fileName.toLowerCase().endsWith('.json')}"
+                                                class="bi bi-filetype-json text-warning fs-6"></i>
+                                            <i th:if="${att.fileName.toLowerCase().endsWith('.txt')}"
+                                                class="bi bi-filetype-txt text-secondary fs-6"></i>
+                                            <i th:unless="${att.fileName.toLowerCase().endsWith('.pdf') or att.fileName.toLowerCase().endsWith('.docx') or att.fileName.toLowerCase().endsWith('.doc') or att.fileName.toLowerCase().endsWith('.xlsx') or att.fileName.toLowerCase().endsWith('.xls') || att.fileName.toLowerCase().endsWith('.zip') || att.fileName.toLowerCase().endsWith('.rar') || att.fileName.toLowerCase().endsWith('.7z') || att.fileName.toLowerCase().endsWith('.png') || att.fileName.toLowerCase().endsWith('.jpg') || att.fileName.toLowerCase().endsWith('.jpeg') || att.fileName.toLowerCase().endsWith('.webp') || att.fileName.toLowerCase().endsWith('.gif') || att.fileName.toLowerCase().endsWith('.md') || att.fileName.toLowerCase().endsWith('.json') || att.fileName.toLowerCase().endsWith('.txt')}"
+                                                class="bi bi-file-earmark-text text-secondary fs-6"></i>
+                                        </div>
+                                        <div class="overflow-hidden">
+                                            <div class="fw-semibold text-dark text-truncate small"
+                                                th:text="${att.fileName}" th:title="${att.fileName}">document.pdf</div>
+                                            <small class="text-muted" style="font-size: 0.68rem;"
+                                                th:text="${att.fileSize != null ? #numbers.formatDecimal(att.fileSize / 1024.0, 1, 1) + ' KB' : ''}">196
+                                                KB</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                                        <button
+                                            th:if="${att.fileName.toLowerCase().endsWith('.pdf') or att.fileName.toLowerCase().endsWith('.docx') or att.fileName.toLowerCase().endsWith('.xlsx') or att.fileName.toLowerCase().endsWith('.json') or att.fileName.toLowerCase().endsWith('.txt') or att.fileName.toLowerCase().endsWith('.md') or att.fileName.toLowerCase().endsWith('.png') or att.fileName.toLowerCase().endsWith('.jpg') or att.fileName.toLowerCase().endsWith('.jpeg') or att.fileName.toLowerCase().endsWith('.webp')}"
+                                            type="button"
+                                            class="btn btn-sm btn-outline-primary px-2 py-1 btn-preview-file"
+                                            style="font-size: 0.72rem; border-radius: 6px;" th:data-id="${att.id}"
+                                            th:data-name="${att.fileName}" th:data-url="${att.fileUrl}"
+                                            title="Xem nhanh">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <a th:href="@{'/files/download/' + ${att.id}}"
+                                            class="btn btn-sm btn-primary px-2 py-1"
+                                            style="font-size: 0.72rem; border-radius: 6px;" title="Tải tệp về máy">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </th:block>
+                        </div>
+                    </div>
+
+                    <!-- Thẻ Hiển Thị Điểm CSAT Đã Đánh Giá (Sidebar) -->
+                    <div th:if="${ticket.rating != null}" id="sidebarCsatRatedCard"
+                        class="card p-3 shadow-sm mb-3 border-0 bg-white"
+                        style="border-radius: 16px; border-left: 4px solid #f59e0b !important;">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <h6 class="fw-bold text-dark mb-0 font-serif"><i
+                                    class="bi bi-star-fill text-warning me-1.5"></i>Đánh Giá Dịch Vụ</h6>
+                            <span class="badge bg-warning-subtle text-dark border border-warning"
+                                th:text="${ticket.rating} + ' / 5 sao'">5 / 5 sao</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-1 text-warning fs-5 my-1">
+                            <span th:each="i : ${#numbers.sequence(1, ticket.rating)}">★</span>
+                            <span th:each="i : ${#numbers.sequence(ticket.rating + 1, 5)}" th:if="${ticket.rating < 5}"
+                                class="text-secondary opacity-25">★</span>
+                        </div>
+                        <small class="text-muted" style="font-size: 0.75rem;">Độ hài lòng của người học đối với buổi tư
+                            vấn này.</small>
+                    </div>
+
+                    <!-- Thẻ Nhắc Nhở Đánh Giá CSAT Cho Sinh Viên (Sidebar) -->
+                    <div th:if="${ticket.rating == null and (ticket.status == 'RESOLVED' or ticket.status == 'CLOSED') and !isStaffOrAdmin}"
+                        id="sidebarCsatPromptCard"
+                        class="card p-3 shadow-sm border-warning bg-warning bg-opacity-10 mb-3"
+                        style="border-radius: 16px; border-left: 4px solid #f59e0b !important;">
+                        <h6 class="fw-bold text-dark mb-1"><i
+                                class="bi bi-patch-question-fill text-warning me-1"></i>Đánh Giá Chất Lượng (CSAT)</h6>
+                        <p class="small text-muted mb-2" style="font-size: 0.78rem;">Bạn có hài lòng với câu trả lời của
+                            Thầy/Cô? Hãy chấm điểm để giúp nhà trường nâng cao chất lượng hỗ trợ.</p>
+                        <a href="#csatSection"
+                            class="btn btn-warning btn-sm w-100 fw-bold py-2 rounded-3 shadow-xs text-dark">
+                            <i class="bi bi-star-fill me-1"></i>Chấm Điểm Đánh Giá Ngay
+                        </a>
+                    </div>
+
+                    <!-- Action Box for Staff & Admin: Complete/Resolve & Close Ticket -->
+                    <div sec:authorize="hasAnyRole('STAFF', 'ADMIN')" th:if="${ticket.status != 'CLOSED'}"
+                        class="card p-3 shadow-sm border-0 bg-white mb-3"
+                        style="border-radius: 16px; border-left: 4px solid #0d6efd !important;">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <h6 class="fw-bold text-dark mb-0 font-serif"><i
+                                    class="bi bi-shield-check text-primary me-1.5"></i>Tác Vụ Cán Bộ & Quản Trị</h6>
+                            <span
+                                class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25"
+                                style="font-size: 0.68rem;">Xử Lý Vé</span>
+                        </div>
+                        <p class="small text-muted mb-3" style="font-size: 0.78rem;">Đánh dấu hoàn tất phương án giải
+                            đáp hoặc đóng phiên hỗ trợ học vụ này.</p>
+
+                        <div class="d-flex flex-column gap-2">
+                            <!-- Nút Đã giải quyết (chỉ hiện khi chưa RESOLVED) -->
+                            <button th:if="${ticket.status != 'RESOLVED'}" type="button"
+                                class="btn btn-success btn-sm w-100 fw-semibold py-2 rounded-3 shadow-xs"
+                                data-bs-toggle="modal" data-bs-target="#resolveTicketModal">
+                                <i class="bi bi-check2-circle me-1"></i>Hoàn Tất Giải Quyết (RESOLVED)
+                            </button>
+
+                            <!-- Nút Đóng Ticket -->
+                            <form th:action="@{'/tickets/' + ${ticket.id} + '/close'}" method="post" class="m-0"
+                                onsubmit="return confirm('Bạn có chắc chắn muốn đóng yêu cầu tư vấn này? Vé sẽ được chuyển sang trạng thái CLOSED.');">
+                                <button type="submit"
+                                    class="btn btn-outline-danger btn-sm w-100 fw-semibold py-2 rounded-3 shadow-xs">
+                                    <i class="bi bi-lock-fill me-1"></i>Đóng Ticket Trực Tiếp (CLOSED)
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Action Box for Staff: Human-in-the-loop Promote to FAQ -->
+                    <div sec:authorize="hasAnyRole('STAFF', 'ADMIN')"
+                        th:if="${ticket.status == 'RESOLVED' or ticket.status == 'CLOSED'}"
+                        class="card p-3 shadow-sm border-0 bg-white mb-3"
+                        style="border-radius: 16px; border-left: 4px solid #10b981 !important;">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <h6 class="fw-bold text-dark mb-0 font-serif"><i
+                                    class="bi bi-robot text-danger me-1.5"></i>Vòng Lặp Tri Thức AI</h6>
+                            <span
+                                class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25"
+                                style="font-size: 0.68rem;">Human-in-the-loop</span>
+                        </div>
+                        <p class="small text-muted mb-3" style="font-size: 0.78rem;">Giải đáp này có giá trị tham khảo
+                            cao? Hãy nạp câu hỏi và phương án xử lý vào Kho Tri Thức AI để Chatbot tự học trả lời các
+                            sinh viên khác.</p>
+                        <button type="button" id="btn-promote-to-faq" th:data-ticket-id="${ticket.id}"
+                            class="btn btn-outline-success btn-sm w-100 fw-semibold py-2 rounded-3 shadow-xs">
+                            <i class="bi bi-lightbulb-fill text-warning me-1"></i>Thêm Vào Kho FAQ Tri Thức AI
+                        </button>
+                    </div>
+
+                    <script th:inline="javascript">
+                        document.addEventListener('DOMContentLoaded', () => {
+                            const btnPromote = document.getElementById('btn-promote-to-faq');
+                            if (btnPromote) {
+                                btnPromote.addEventListener('click', async () => {
+                                    const ticketId = btnPromote.getAttribute('data-ticket-id');
+                                    btnPromote.disabled = true;
+                                    btnPromote.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang vector hóa...';
+
+                                    try {
+                                        const res = await fetch('/api/v1/ai/promote-ticket-to-faq', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ ticketId: parseInt(ticketId) })
+                                        });
+                                        const data = await res.json();
+                                        if (data.success) {
+                                            btnPromote.className = 'btn btn-success btn-sm w-100 fw-semibold py-2 rounded-3 disabled';
+                                            btnPromote.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Đã Nạp Vào Kho Tri Thức AI!';
+                                            alert('Chúc mừng! Câu hỏi và giải đáp từ Ticket này đã được nạp thành công vào hệ thống Vector AI RAG.');
+                                        } else {
+                                            alert(data.message || 'Lỗi khi nạp vào FAQ');
+                                            btnPromote.disabled = false;
+                                            btnPromote.innerHTML = '<i class="bi bi-lightbulb-fill text-warning me-1"></i>Thêm Vào Kho FAQ Tri Thức AI';
+                                        }
+                                    } catch (e) {
+                                        alert('Lỗi kết nối máy chủ: ' + e.message);
+                                        btnPromote.disabled = false;
+                                        btnPromote.innerHTML = '<i class="bi bi-lightbulb-fill text-warning me-1"></i>Thêm Vào Kho FAQ Tri Thức AI';
+                                    }
+                                });
+                            }
+                        });
+                    </script>
+                </div> <!-- close sidebar-sticky-scroll -->
+            </div>
+        </div>
+
+        <!-- MODAL: XÁC NHẬN GIẢI QUYẾT YÊU CẦU DÀNH CHO CÁN BỘ / ADMIN -->
+        <div sec:authorize="hasAnyRole('STAFF', 'ADMIN')" class="modal fade" id="resolveTicketModal" tabindex="-1"
+            aria-labelledby="resolveModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+                    <form th:action="@{'/staff/tickets/' + ${ticket.id} + '/resolve'}" method="post">
+                        <div class="modal-header bg-success text-white py-3 px-4">
+                            <h6 class="modal-title fw-bold" id="resolveModalLabel"><i
+                                    class="bi bi-patch-check-fill me-2"></i>Xác Nhận Đã Giải Quyết Yêu Cầu</h6>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4 bg-white">
+                            <div class="alert alert-success bg-success bg-opacity-10 border-0 py-2 px-3 small text-success-emphasis mb-3"
+                                style="border-radius: 10px;">
+                                <i class="bi bi-info-circle me-1"></i>Phương án giải quyết này sẽ được gửi thông báo
+                                Email đến sinh viên và lưu vào lịch sử vé chính thức.
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-dark">Phương án giải quyết / Ghi chú
+                                    phản hồi chính thức:</label>
+                                <textarea name="note" class="form-control" rows="4"
+                                    placeholder="Nhập tóm tắt kết quả xử lý hoặc hướng dẫn hoàn tất cho sinh viên..."
+                                    required style="border-radius: 10px; font-size: 0.9rem;"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light py-2 px-4 border-top">
+                            <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3"
+                                data-bs-dismiss="modal">Hủy bỏ</button>
+                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-4 fw-semibold"><i
+                                    class="bi bi-check-lg me-1"></i>Xác Nhận Hoàn Tất</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL 1: LIÊN HỆ CÁN BỘ PHỤ TRÁCH (STAFF CONTACT PROFILE CARD) -->
+        <div class="modal fade" id="staffContactModal" tabindex="-1" aria-labelledby="staffContactModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg overflow-hidden" style="border-radius: 20px;">
+                    <!-- Header Profile Cover Banner -->
+                    <div class="position-relative p-4 text-white"
+                        style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
+                        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                            data-bs-dismiss="modal" aria-label="Close"></button>
+                        <div class="d-flex align-items-center gap-3">
+                            <!-- Avatar lớn 80x80px -->
+                            <div class="position-relative">
+                                <img th:if="${ticket.assignedStaffAvatarUrl != null}"
+                                    th:src="${ticket.assignedStaffAvatarUrl}"
+                                    class="rounded-circle border border-3 border-white shadow"
+                                    style="width: 80px; height: 80px; object-fit: cover;" alt="Avatar">
+                                <div th:unless="${ticket.assignedStaffAvatarUrl != null}"
+                                    class="rounded-circle text-primary bg-white d-flex align-items-center justify-content-center fw-bold shadow border border-3 border-white"
+                                    style="width: 80px; height: 80px; font-size: 2.2rem;"
+                                    th:text="${ticket.assignedStaffName != null ? #strings.substring(ticket.assignedStaffName, 0, 1) : 'S'}">
+                                    S</div>
+                                <span
+                                    class="position-absolute bottom-0 end-0 p-2 bg-success border border-2 border-white rounded-circle"
+                                    title="Sẵn sàng hỗ trợ"></span>
+                            </div>
+                            <div class="overflow-hidden">
+                                <h5 class="fw-bold mb-1 text-white text-truncate" id="staffContactModalLabel"
+                                    th:text="${ticket.assignedStaffName != null ? ticket.assignedStaffName : 'Chưa phân công cán bộ'}">
+                                    ThS. Phạm Thị Thu Sương</h5>
+                                <span class="badge bg-white text-primary fw-semibold rounded-pill px-3 py-1 small shadow-xs" style="color: #0d6efd !important; background-color: #ffffff !important;"
+                                    th:text="${ticket.assignedStaffRole == 'ROLE_ADMIN' ? 'Quản Trị Viên (Admin)' : (ticket.assignedStaffRole == 'ROLE_STAFF' ? 'Cán Bộ Tư Vấn (Staff)' : (ticket.assignedStaffRole != null and !ticket.assignedStaffRole.isEmpty() ? ticket.assignedStaffRole : 'Cán Bộ Tư Vấn Chuyên Trách'))}">
+                                    Quản Trị Viên (Admin)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Body: Contact Details -->
+                    <div class="modal-body p-4 bg-white">
+                        <div class="mb-3 text-muted small">
+                            <i class="bi bi-building me-1 text-primary"></i>Đơn vị công tác:
+                            <strong class="text-dark" th:text="${ticket.departmentName}">Phòng Đào tạo & Công tác Sinh
+                                viên</strong>
+                        </div>
+
+                        <!-- Email công vụ -->
+                        <div class="p-3 rounded-3 border bg-light mb-3">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="small text-muted"><i class="bi bi-envelope-at text-primary me-1"></i>Email
+                                    công vụ:</span>
+                                <button type="button"
+                                    class="btn btn-sm btn-link p-0 text-decoration-none small text-primary"
+                                    th:attr="onclick=|copyToClipboard('${ticket.assignedStaffEmail != null ? ticket.assignedStaffEmail : 'ctsv@hcmute.edu.vn'}', this)|">
+                                    <i class="bi bi-clipboard me-1"></i><span>Sao chép</span>
+                                </button>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <code class="fs-6 fw-bold text-dark"
+                                    th:text="${ticket.assignedStaffEmail != null ? ticket.assignedStaffEmail : 'ctsv@hcmute.edu.vn'}">email@hcmute.edu.vn</code>
+                                <a th:href="'mailto:' + ${ticket.assignedStaffEmail != null ? ticket.assignedStaffEmail : 'ctsv@hcmute.edu.vn'}"
+                                    class="btn btn-sm btn-outline-primary px-3 py-1 rounded-pill"
+                                    title="Mở ứng dụng gửi mail">
+                                    <i class="bi bi-send me-1"></i>Gửi Mail
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Số điện thoại / Số máy nội bộ -->
+                        <div class="p-3 rounded-3 border bg-light mb-3">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="small text-muted"><i class="bi bi-telephone text-success me-1"></i>Số điện
+                                    thoại bàn / Nội bộ:</span>
+                                <button type="button"
+                                    class="btn btn-sm btn-link p-0 text-decoration-none small text-success"
+                                    th:attr="onclick=|copyToClipboard('${ticket.assignedStaffPhone != null ? ticket.assignedStaffPhone : '028.3722.1223'}', this)|">
+                                    <i class="bi bi-clipboard me-1"></i><span>Sao chép</span>
+                                </button>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <strong class="fs-6 text-dark"
+                                    th:text="${ticket.assignedStaffPhone != null ? ticket.assignedStaffPhone : '(028) 3722 1223 (Ext: 8123)'}">(028)
+                                    3722 1223</strong>
+                                <a th:href="'tel:' + ${ticket.assignedStaffPhone != null ? ticket.assignedStaffPhone : '02837221223'}"
+                                    class="btn btn-sm btn-outline-success px-3 py-1 rounded-pill"
+                                    title="Bấm gọi ngay trên điện thoại">
+                                    <i class="bi bi-telephone-outbound me-1"></i>Gọi Ngay
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Giờ làm việc & Địa điểm tiếp nhận -->
+                        <div class="p-3 rounded-3 border bg-light mb-2 small">
+                            <div class="mb-2">
+                                <i class="bi bi-geo-alt-fill text-danger me-1"></i><strong>Văn phòng trực:</strong> Tòa
+                                nhà Trung tâm (A1) - Trường ĐH Sư phạm Kỹ thuật TP.HCM
+                            </div>
+                            <div>
+                                <i class="bi bi-clock-history text-secondary me-1"></i><strong>Giờ tiếp sinh
+                                    viên:</strong> Thứ 2 - Thứ 6 (Sáng: 07:30 - 11:30 | Chiều: 13:00 - 16:30)
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="modal-footer bg-light border-top py-2 px-4 d-flex justify-content-end">
+                        <button type="button" class="btn btn-secondary btn-sm px-4 rounded-pill"
+                            data-bs-dismiss="modal">Đóng</button>
                     </div>
                 </div>
-
             </div>
-        </main>
+        </div>
+
+        <!-- MODAL 2: XEM NHANH TỆP TIN ĐA ĐỊNH DẠNG (QUICK PREVIEW MODAL) -->
+        <div class="modal fade" id="quickPreviewModal" tabindex="-1" aria-labelledby="quickPreviewModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content shadow-lg border-0" style="border-radius: 16px;">
+                    <div class="modal-header py-3 px-4 bg-light border-bottom">
+                        <div class="d-flex align-items-center gap-2 overflow-hidden">
+                            <i class="bi bi-file-earmark-text text-primary fs-5"></i>
+                            <h6 class="modal-title fw-bold text-dark text-truncate mb-0" id="quickPreviewModalLabel">Xem
+                                Nhanh Tệp Đính Kèm</h6>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 ms-auto">
+                            <a id="btnPreviewOpenNewTab" href="#" target="_blank"
+                                class="btn btn-sm btn-outline-secondary" title="Mở trong tab mới">
+                                <i class="bi bi-box-arrow-up-right me-1"></i>Mở Tab Mới
+                            </a>
+                            <a id="btnPreviewDownload" href="#" class="btn btn-sm btn-primary" title="Tải về máy tính">
+                                <i class="bi bi-download me-1"></i>Tải Về
+                            </a>
+                            <button type="button" class="btn-close ms-2" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                    </div>
+                    <div class="modal-body p-0 position-relative d-flex align-items-center justify-content-center"
+                        style="min-height: 480px; background: #0f172a;">
+                        <!-- Loading Spinner -->
+                        <div id="previewLoading" class="text-center text-white py-5">
+                            <div class="spinner-border text-primary mb-2" role="status"></div>
+                            <div class="small text-secondary">Đang tải nội dung tệp tin...</div>
+                        </div>
+
+                        <!-- PDF Viewer -->
+                        <iframe id="previewPdfIframe" class="w-100 d-none" style="height: 75vh; border: none;"></iframe>
+
+                        <!-- Image Viewer -->
+                        <div id="previewImageContainer" class="p-3 text-center d-none w-100"
+                            style="max-height: 75vh; overflow: auto;">
+                            <img id="previewImage" src="" alt="Xem trước ảnh" class="img-fluid rounded shadow"
+                                style="max-height: 72vh; object-fit: contain;">
+                        </div>
+
+                        <!-- Word (.docx) Viewer -->
+                        <div id="previewWordContainer" class="p-4 w-100 d-none"
+                            style="height: 75vh; overflow-y: auto; background: #e2e8f0;">
+                            <div id="wordRenderArea" class="bg-white shadow-sm p-4 mx-auto rounded"
+                                style="max-width: 850px; min-height: 100%;"></div>
+                        </div>
+
+                        <!-- Excel (.xlsx) Viewer -->
+                        <div id="previewExcelContainer" class="p-3 w-100 d-none bg-white"
+                            style="height: 75vh; overflow: auto;">
+                            <div id="excelRenderArea" class="table-responsive"></div>
+                        </div>
+
+                        <!-- Markdown (.md) Viewer -->
+                        <div id="previewMarkdownContainer" class="p-4 w-100 d-none bg-white"
+                            style="height: 75vh; overflow-y: auto;">
+                            <div id="markdownRenderArea" class="markdown-body p-3 mx-auto"
+                                style="max-width: 850px; color: #1e293b; line-height: 1.6;"></div>
+                        </div>
+
+                        <!-- Code / JSON / Text Viewer -->
+                        <div id="previewCodeContainer" class="p-3 w-100 d-none"
+                            style="max-height: 75vh; overflow: auto;">
+                            <pre
+                                class="m-0"><code id="previewCodeContent" class="text-light small" style="font-family: 'Consolas', 'Courier New', monospace; white-space: pre-wrap; word-break: break-all;"></code></pre>
+                        </div>
+
+                        <!-- Fallback / Unsupported / Archive formats (ZIP, RAR...) -->
+                        <div id="previewFallbackContainer" class="text-center p-5 text-white d-none">
+                            <div class="mb-3"><i id="previewFallbackIcon"
+                                    class="bi bi-file-earmark-arrow-down fs-1 text-primary"></i></div>
+                            <h6 id="previewFallbackTitle" class="fw-bold mb-2">Định dạng này không hỗ trợ xem trực tiếp
+                                trên trình duyệt</h6>
+                            <p id="previewFallbackMsg" class="small text-secondary mb-4">Vui lòng tải tệp về máy tính để
+                                mở bằng ứng dụng tương ứng.</p>
+                            <a id="btnFallbackDownload" href="#" class="btn btn-primary px-4 py-2 fw-semibold">
+                                <i class="bi bi-download me-1"></i>Tải Tệp Về Ngay
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CDN Libraries: JSZip (BẮT BUỘC cho docx-preview), docx-preview cho Word, xlsx cho Excel, marked cho Markdown -->
+        <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.3/dist/docx-preview.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+
+        <!-- Custom Scripts -->
+        <script th:inline="javascript">
+            // ─── 1. MỞ MODAL THÔNG TIN LIÊN HỆ CÁN BỘ PHỤ TRÁCH ───────────────────────────
+            function openStaffModal() {
+                const modalEl = document.getElementById('staffContactModal');
+                if (modalEl) {
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                }
+            }
+
+            // Sao chép nhanh văn bản vào clipboard với hiệu ứng phản hồi
+            function copyToClipboard(text, btnEl) {
+                if (!text) return;
+                navigator.clipboard.writeText(text).then(() => {
+                    const span = btnEl.querySelector('span');
+                    const originalText = span ? span.textContent : 'Sao chép';
+                    if (span) span.textContent = 'Đã chép! ✓';
+                    btnEl.classList.add('fw-bold');
+                    setTimeout(() => {
+                        if (span) span.textContent = originalText;
+                        btnEl.classList.remove('fw-bold');
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Không thể sao chép:', err);
+                });
+            }
+
+            // ─── 2. MỞ MODAL XEM NHANH TỆP TIN (QUICK PREVIEW) ───────────────────────────
+            function openPreviewModal(attachmentId, fileName, fileUrl) {
+                const modalEl = document.getElementById('quickPreviewModal');
+                if (!modalEl) return;
+                const modal = new bootstrap.Modal(modalEl);
+
+                const titleEl = document.getElementById('quickPreviewModalLabel');
+                const btnOpenNewTab = document.getElementById('btnPreviewOpenNewTab');
+                const btnDownload = document.getElementById('btnPreviewDownload');
+                const btnFallbackDownload = document.getElementById('btnFallbackDownload');
+
+                const loadingEl = document.getElementById('previewLoading');
+                const pdfIframe = document.getElementById('previewPdfIframe');
+                const imageContainer = document.getElementById('previewImageContainer');
+                const imageEl = document.getElementById('previewImage');
+                const wordContainer = document.getElementById('previewWordContainer');
+                const wordRenderArea = document.getElementById('wordRenderArea');
+                const excelContainer = document.getElementById('previewExcelContainer');
+                const excelRenderArea = document.getElementById('excelRenderArea');
+                const markdownContainer = document.getElementById('previewMarkdownContainer');
+                const markdownRenderArea = document.getElementById('markdownRenderArea');
+                const codeContainer = document.getElementById('previewCodeContainer');
+                const codeContent = document.getElementById('previewCodeContent');
+                const fallbackContainer = document.getElementById('previewFallbackContainer');
+                const fallbackTitle = document.getElementById('previewFallbackTitle');
+                const fallbackMsg = document.getElementById('previewFallbackMsg');
+                const fallbackIcon = document.getElementById('previewFallbackIcon');
+
+                function showFallback(title, message, iconClass) {
+                    loadingEl.classList.add('d-none');
+                    fallbackContainer.classList.remove('d-none');
+                    if (title) fallbackTitle.textContent = title;
+                    if (message) fallbackMsg.textContent = message;
+                    if (iconClass && fallbackIcon) fallbackIcon.className = iconClass;
+                }
+
+                // Reset visibility
+                loadingEl.classList.remove('d-none');
+                pdfIframe.classList.add('d-none');
+                imageContainer.classList.add('d-none');
+                wordContainer.classList.add('d-none');
+                excelContainer.classList.add('d-none');
+                if (markdownContainer) markdownContainer.classList.add('d-none');
+                codeContainer.classList.add('d-none');
+                fallbackContainer.classList.add('d-none');
+
+                // Reset text fallback
+                fallbackTitle.textContent = 'Định dạng này không hỗ trợ xem trực tiếp trên trình duyệt';
+                fallbackMsg.textContent = 'Vui lòng tải tệp về máy tính để mở bằng ứng dụng tương ứng.';
+                if (fallbackIcon) fallbackIcon.className = 'bi bi-file-earmark-arrow-down fs-1 text-primary';
+
+                // URLs
+                const viewUrl = '/files/view/' + attachmentId;
+                const downloadUrl = '/files/download/' + attachmentId;
+
+                titleEl.textContent = fileName || 'Xem Nhanh Tệp';
+                btnOpenNewTab.href = viewUrl;
+                btnDownload.href = downloadUrl;
+                btnFallbackDownload.href = downloadUrl;
+
+                const lowerName = (fileName || '').toLowerCase();
+
+                if (lowerName.endsWith('.pdf')) {
+                    pdfIframe.src = viewUrl;
+                    loadingEl.classList.add('d-none');
+                    pdfIframe.classList.remove('d-none');
+                } else if (lowerName.endsWith('.png') || lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg') || lowerName.endsWith('.webp') || lowerName.endsWith('.gif') || lowerName.endsWith('.svg') || lowerName.endsWith('.bmp')) {
+                    imageEl.onload = function () {
+                        loadingEl.classList.add('d-none');
+                        imageContainer.classList.remove('d-none');
+                    };
+                    imageEl.onerror = function () {
+                        showFallback('Không thể tải hình ảnh', 'Tệp ảnh không tồn tại hoặc định dạng tệp không được hỗ trợ.');
+                    };
+                    imageEl.src = viewUrl;
+                } else if (lowerName.endsWith('.docx')) {
+                    fetch(viewUrl)
+                        .then(res => {
+                            if (!res.ok) throw new Error('Không thể tải tệp từ máy chủ (Mã lỗi: ' + res.status + ')');
+                            return res.blob();
+                        })
+                        .then(blob => {
+                            loadingEl.classList.add('d-none');
+                            wordContainer.classList.remove('d-none');
+                            wordRenderArea.innerHTML = '';
+                            if (window.docx && docx.renderAsync) {
+                                docx.renderAsync(blob, wordRenderArea, null, {
+                                    inWrapper: true,
+                                    ignoreWidth: false,
+                                    ignoreHeight: false,
+                                    breakPages: true
+                                }).catch(err => {
+                                    console.warn('docx-preview render error:', err);
+                                    wordContainer.classList.add('d-none');
+                                    showFallback('Không thể hiển thị tài liệu Word', 'Tệp Word này có định dạng đặc thù hoặc chứa macro. Vui lòng tải về máy tính để xem.');
+                                });
+                            } else {
+                                wordContainer.classList.add('d-none');
+                                showFallback('Thư viện đọc Word chưa sẵn sàng', 'Trình duyệt chưa tải kịp công cụ giải nén tài liệu. Vui lòng thử lại hoặc tải về máy tính.');
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Fetch docx error:', err);
+                            showFallback('Lỗi khi tải tài liệu', err.message || 'Không thể đọc được tệp tin.');
+                        });
+                } else if (lowerName.endsWith('.doc')) {
+                    showFallback('Tài liệu Word đời cũ (.doc)', 'Định dạng .doc (Word 97-2003) không hỗ trợ đọc trực tiếp qua trình duyệt web. Vui lòng tải về máy tính hoặc chuyển đổi tệp sang chuẩn .docx.');
+                } else if (lowerName.endsWith('.xlsx') || lowerName.endsWith('.xls') || lowerName.endsWith('.csv')) {
+                    fetch(viewUrl)
+                        .then(res => {
+                            if (!res.ok) throw new Error('Không thể tải tệp từ máy chủ (Mã lỗi: ' + res.status + ')');
+                            return res.arrayBuffer();
+                        })
+                        .then(buffer => {
+                            loadingEl.classList.add('d-none');
+                            excelContainer.classList.remove('d-none');
+                            excelRenderArea.innerHTML = '';
+                            if (window.XLSX) {
+                                const workbook = XLSX.read(buffer, { type: 'array' });
+                                const firstSheetName = workbook.SheetNames[0];
+                                const html = XLSX.utils.sheet_to_html(workbook.Sheets[firstSheetName]);
+                                excelRenderArea.innerHTML = html;
+                                const tbl = excelRenderArea.querySelector('table');
+                                if (tbl) tbl.className = 'table table-bordered table-striped table-hover table-sm small align-middle mb-0';
+                            } else {
+                                excelContainer.classList.add('d-none');
+                                showFallback('Không thể đọc bảng tính Excel', 'Vui lòng tải tệp về máy tính để xem chi tiết.');
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Fetch excel error:', err);
+                            showFallback('Lỗi khi tải bảng tính Excel', err.message || 'Không thể đọc được tệp tin.');
+                        });
+                } else if (lowerName.endsWith('.zip') || lowerName.endsWith('.rar') || lowerName.endsWith('.7z') || lowerName.endsWith('.tar') || lowerName.endsWith('.gz')) {
+                    showFallback('Tệp Nén Lưu Trữ (' + lowerName.split('.').pop().toUpperCase() + ')', 'Tệp tin nén chứa nhiều thư mục con. Vui lòng tải tệp về máy tính để giải nén bằng WinRAR, 7-Zip hoặc File Explorer.', 'bi bi-file-earmark-zip-fill fs-1 text-warning');
+                } else if (lowerName.endsWith('.md')) {
+                    fetch(viewUrl)
+                        .then(res => {
+                            if (!res.ok) throw new Error('Không thể tải tệp từ máy chủ (Mã lỗi: ' + res.status + ')');
+                            return res.text();
+                        })
+                        .then(text => {
+                            loadingEl.classList.add('d-none');
+                            if (markdownContainer) markdownContainer.classList.remove('d-none');
+                            if (markdownRenderArea) {
+                                if (window.marked && marked.parse) {
+                                    markdownRenderArea.innerHTML = marked.parse(text);
+                                } else {
+                                    markdownRenderArea.innerText = text;
+                                }
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Fetch markdown error:', err);
+                            showFallback('Lỗi khi tải tệp Markdown', err.message || 'Không thể đọc được tệp tin.');
+                        });
+                } else if (lowerName.endsWith('.json') || lowerName.endsWith('.txt') || lowerName.endsWith('.log')) {
+                    fetch(viewUrl)
+                        .then(res => {
+                            if (!res.ok) throw new Error('Không thể tải tệp từ máy chủ (Mã lỗi: ' + res.status + ')');
+                            return res.text();
+                        })
+                        .then(text => {
+                            loadingEl.classList.add('d-none');
+                            codeContainer.classList.remove('d-none');
+                            if (lowerName.endsWith('.json')) {
+                                try {
+                                    const parsed = JSON.parse(text);
+                                    codeContent.textContent = JSON.stringify(parsed, null, 2);
+                                } catch (e) {
+                                    codeContent.textContent = text;
+                                }
+                            } else {
+                                codeContent.textContent = text;
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Fetch code error:', err);
+                            showFallback('Lỗi khi tải tệp văn bản', err.message || 'Không thể đọc được tệp tin.');
+                        });
+                } else {
+                    showFallback('Định dạng này không hỗ trợ xem trực tiếp trên trình duyệt', 'Vui lòng tải tệp về máy tính để mở bằng ứng dụng tương ứng.');
+                }
+
+                modal.show();
+            }
+
+            // Bắt sự kiện click mở Quick Preview
+            document.addEventListener('click', function (e) {
+                const btn = e.target.closest('.btn-preview-file');
+                if (btn) {
+                    const id = btn.getAttribute('data-id');
+                    const name = btn.getAttribute('data-name');
+                    const url = btn.getAttribute('data-url');
+                    openPreviewModal(id, name, url);
+                }
+            });
+
+            // Dọn dẹp DOM khi đóng modal xem nhanh
+            const previewModalElement = document.getElementById('quickPreviewModal');
+            if (previewModalElement) {
+                previewModalElement.addEventListener('hidden.bs.modal', function () {
+                    const pdfIframe = document.getElementById('previewPdfIframe');
+                    const imageEl = document.getElementById('previewImage');
+                    const wordRenderArea = document.getElementById('wordRenderArea');
+                    const excelRenderArea = document.getElementById('excelRenderArea');
+                    const markdownContainer = document.getElementById('previewMarkdownContainer');
+                    const markdownRenderArea = document.getElementById('markdownRenderArea');
+                    if (pdfIframe) pdfIframe.src = 'about:blank';
+                    if (imageEl) imageEl.src = '';
+                    if (wordRenderArea) wordRenderArea.innerHTML = '';
+                    if (excelRenderArea) excelRenderArea.innerHTML = '';
+                    if (markdownContainer) markdownContainer.classList.add('d-none');
+                    if (markdownRenderArea) markdownRenderArea.innerHTML = '';
+                });
+            }
+
+            // ─── 3. QUẢN LÝ KHUNG CHAT REALTIME (AJAX + POLLING 2.5S + ZERO REFRESH) ───────
+            const currentTicketId = /*[[${ticket.id}]]*/ 0;
+            const currentUserId = /*[[${currentUserId}]]*/ null;
+            const ticketCreatorId = /*[[${ticket.creatorId}]]*/ null;
+            const ticketCreatorName = /*[[${ticket.creatorName}]]*/ '';
+            const isStaffOrAdmin = /*[[${isStaffOrAdmin}]]*/ false;
+
+            // Bộ nhớ tạm lưu các History ID đã hiển thị trong DOM
+            const renderedHistoryIds = new Set();
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function formatTime(dtStr) {
+                if (!dtStr) return '';
+                try {
+                    const d = new Date(dtStr);
+                    if (isNaN(d.getTime())) return dtStr;
+                    const hh = String(d.getHours()).padStart(2, '0');
+                    const mm = String(d.getMinutes()).padStart(2, '0');
+                    const dd = String(d.getDate()).padStart(2, '0');
+                    const MM = String(d.getMonth() + 1).padStart(2, '0');
+                    const yyyy = d.getFullYear();
+                    return `${hh}:${mm} ${dd}/${MM}/${yyyy}`;
+                } catch (e) {
+                    return dtStr;
+                }
+            }
+
+            function showToast(message, type = 'info') {
+                let container = document.getElementById('chatToastContainer');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'chatToastContainer';
+                    container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                    container.style.zIndex = '1090';
+                    document.body.appendChild(container);
+                }
+                const toastEl = document.createElement('div');
+                toastEl.className = 'toast align-items-center border-0 shadow-lg mb-2 show bg-white';
+                toastEl.style.borderRadius = '12px';
+                const icon = type === 'success'
+                    ? '<i class="bi bi-check-circle-fill text-success fs-5 me-2"></i>'
+                    : (type === 'danger' || type === 'error' ? '<i class="bi bi-exclamation-triangle-fill text-danger fs-5 me-2"></i>' : '<i class="bi bi-info-circle-fill text-primary fs-5 me-2"></i>');
+                toastEl.innerHTML = `
+                <div class="d-flex p-3 align-items-center">
+                    ${icon}
+                    <div class="toast-body text-dark fw-semibold small flex-grow-1 p-0 pe-2">${message}</div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+                container.appendChild(toastEl);
+                setTimeout(() => {
+                    toastEl.classList.remove('show');
+                    setTimeout(() => toastEl.remove(), 400);
+                }, 3500);
+            }
+
+            function renderDocCard(att) {
+                const fn = (att.fileName || '').toLowerCase();
+                let bg = '#e2e8f0';
+                let icon = 'bi-file-earmark-arrow-down-fill text-secondary';
+                if (fn.endsWith('.pdf')) { bg = '#fee2e2'; icon = 'bi-file-earmark-pdf-fill text-danger'; }
+                else if (fn.endsWith('.docx') || fn.endsWith('.doc')) { bg = '#dbeafe'; icon = 'bi-file-earmark-word-fill text-primary'; }
+                else if (fn.endsWith('.xlsx') || fn.endsWith('.xls')) { bg = '#dcfce7'; icon = 'bi-file-earmark-excel-fill text-success'; }
+                else if (fn.endsWith('.zip') || fn.endsWith('.rar') || fn.endsWith('.7z')) { bg = '#fef3c7'; icon = 'bi-file-earmark-zip-fill text-warning'; }
+                else if (fn.endsWith('.md')) { bg = '#e0e7ff'; icon = 'bi-filetype-md text-primary'; }
+                else if (fn.endsWith('.json')) { bg = '#fef3c7'; icon = 'bi-filetype-json text-warning'; }
+                else if (fn.endsWith('.txt')) { bg = '#f1f5f9'; icon = 'bi-filetype-txt text-secondary'; }
+
+                const isPreviewable = fn.endsWith('.pdf') || fn.endsWith('.docx') || fn.endsWith('.xlsx') || fn.endsWith('.json') || fn.endsWith('.txt') || fn.endsWith('.md') || fn.endsWith('.log');
+                const sizeStr = att.fileSize ? (att.fileSize / 1024).toFixed(1) + ' KB' : '';
+
+                return `
+                <div class="p-2 rounded-3 d-flex flex-row align-items-center gap-2 bg-white border shadow-xs" style="max-width: 320px; color: #1e293b;">
+                    <div class="rounded-3 p-2 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; background: ${bg};">
+                        <i class="bi ${icon} fs-5"></i>
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden" style="line-height: 1.25;">
+                        <div class="fw-semibold text-truncate small text-dark" title="${escapeHtml(att.fileName)}">${escapeHtml(att.fileName)}</div>
+                        <small class="text-muted" style="font-size: 0.7rem;">${sizeStr}</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                        ${isPreviewable ? `
+                        <button type="button" class="btn btn-sm btn-outline-primary px-2 py-1 btn-preview-file"
+                                style="font-size: 0.72rem; border-radius: 6px;"
+                                data-id="${att.id}"
+                                data-name="${escapeHtml(att.fileName)}"
+                                data-url="${escapeHtml(att.fileUrl || ('/files/view/' + att.id))}"
+                                title="Xem nhanh">
+                            <i class="bi bi-eye"></i>
+                        </button>` : ''}
+                        <a href="/files/download/${att.id}" class="btn btn-sm btn-primary px-2 py-1" style="font-size: 0.72rem; border-radius: 6px;" title="Tải tệp về máy">
+                            <i class="bi bi-download"></i>
+                        </a>
+                    </div>
+                </div>
+            `;
+            }
+
+            function renderHistories(histories) {
+                const chatStream = document.getElementById('chatStream');
+                if (!chatStream || !histories || histories.length === 0) return;
+
+                let addedCount = 0;
+                histories.forEach(h => {
+                    if (!h || !h.id) return;
+                    const hidStr = String(h.id);
+                    if (renderedHistoryIds.has(hidStr)) return;
+                    renderedHistoryIds.add(hidStr);
+                    addedCount++;
+
+                    const actorName = h.actorName || '';
+                    const isMe = (h.actorId && currentUserId && h.actorId === currentUserId) ||
+                        (currentUserId && ticketCreatorId && currentUserId === ticketCreatorId && actorName && (actorName === ticketCreatorName || actorName.includes('(SV)'))) ||
+                        (!isStaffOrAdmin && actorName && actorName.includes('(SV)')) ||
+                        (isStaffOrAdmin && actorName && (actorName.includes('Cán bộ') || actorName.includes('Tư Vấn') || actorName.includes('Admin')));
+
+                    const hasAttachments = h.attachments && h.attachments.length > 0;
+                    const isSystem = !hasAttachments && (
+                        (h.fromStatus && h.toStatus && !h.actionNote) ||
+                        (h.actionNote && (h.actionNote.includes('tiếp nhận') || h.actionNote.includes('Đóng') || h.actionNote.includes('Chuyển đổi') || h.actionNote.includes('trạng thái')))
+                    );
+
+                    if (isSystem) {
+                        const div = document.createElement('div');
+                        div.setAttribute('data-history-id', h.id);
+                        div.className = 'd-flex justify-content-center my-1 bubble-animate-in';
+                        div.innerHTML = `
+                        <div class="px-3 py-1 rounded-pill bg-white border shadow-xs text-secondary d-inline-flex align-items-center gap-1" style="font-size: 0.78rem;">
+                            ${h.actionNote && h.actionNote.includes('tiếp nhận') ? '<i class="bi bi-person-check-fill text-info"></i>' : '<i class="bi bi-check2-all text-success"></i>'}
+                            <strong class="text-dark">${escapeHtml(actorName || 'Hệ thống')}</strong>
+                            <span>${escapeHtml(h.actionNote || '')}</span>
+                            <span class="text-muted ms-1" style="font-size: 0.72rem;">${formatTime(h.createdAt)}</span>
+                        </div>
+                    `;
+                        chatStream.appendChild(div);
+                    } else {
+                        const attachments = h.attachments || [];
+                        const isImageAttachment = (a) => {
+                            if (!a) return false;
+                            const fn = (a.fileName || '').toLowerCase();
+                            const ft = (a.fileType || '').toUpperCase();
+                            return ft === 'IMAGE' || fn.endsWith('.png') || fn.endsWith('.jpg') || fn.endsWith('.jpeg') || fn.endsWith('.webp') || fn.endsWith('.gif') || fn.endsWith('.svg') || fn.endsWith('.bmp') || fn.endsWith('.jfif');
+                        };
+                        const imageAtts = attachments.filter(isImageAttachment);
+                        const docAtts = attachments.filter(a => !isImageAttachment(a));
+
+                        let imgsHtml = '';
+                        if (imageAtts.length > 0) {
+                            imgsHtml = `
+                            <div class="d-flex flex-wrap gap-2 mt-1 ${isMe ? 'justify-content-end' : 'justify-content-start'}">
+                                ${imageAtts.map(att => {
+                                    const imgSrc = att.fileUrl || ('/files/view/' + att.id);
+                                    return `
+                                    <div class="position-relative">
+                                        <img src="${imgSrc}"
+                                             alt="${escapeHtml(att.fileName)}"
+                                             class="chat-standalone-image btn-preview-file"
+                                             data-id="${att.id}"
+                                             data-name="${escapeHtml(att.fileName)}"
+                                             data-url="${imgSrc}"
+                                             onload="const cs = document.getElementById('chatStream'); if(cs) cs.scrollTop = cs.scrollHeight;"
+                                             title="Nhấn để phóng to hình ảnh">
+                                    </div>`;
+                                }).join('')}
+                            </div>
+                        `;
+                        }
+
+                        let docsHtml = '';
+                        if (docAtts.length > 0) {
+                            docsHtml = `
+                            <div class="d-flex flex-column gap-2 mt-1 ${isMe ? 'align-items-end' : 'align-items-start'}">
+                                ${docAtts.map(att => renderDocCard(att)).join('')}
+                            </div>
+                        `;
+                        }
+
+                        const hasText = h.actionNote && h.actionNote.trim().length > 0;
+                        const isResolved = h.toStatus === 'RESOLVED';
+
+                        if (isMe) {
+                            const div = document.createElement('div');
+                            div.setAttribute('data-history-id', h.id);
+                            div.className = 'd-flex justify-content-end mb-2 bubble-animate-in';
+                            div.innerHTML = `
+                            <div style="max-width: 75%;">
+                                ${hasText ? `
+                                <div class="p-3 shadow-xs position-relative chat-bubble-me">
+                                    <div style="white-space: pre-wrap; word-break: break-word; font-size: 0.93rem; line-height: 1.5;">${escapeHtml(h.actionNote)}</div>
+                                </div>` : ''}
+                                ${imgsHtml}
+                                ${docsHtml}
+                                <div class="mt-1 d-flex align-items-center gap-1 justify-content-end me-1">
+                                    <small class="text-muted" style="font-size: 0.72rem;">${formatTime(h.createdAt)}</small>
+                                    <span class="text-primary small" style="font-size: 0.72rem;"><i class="bi bi-check2-all"></i></span>
+                                </div>
+                            </div>
+                        `;
+                            chatStream.appendChild(div);
+                        } else {
+                            const isStaff = actorName.includes('Cán bộ') || actorName.includes('Tư Vấn') || actorName.includes('Admin');
+                            const isStudent = actorName.includes('(SV)');
+                            const roleBadge = isStaff ? '<span class="badge bg-indigo-subtle text-indigo rounded-pill px-2 py-0" style="font-size: 0.68rem; background: #e0e7ff; color: #4338ca;">Tư Vấn Viên</span>' : (isStudent ? '<span class="badge bg-info-subtle text-info-emphasis rounded-pill px-2 py-0" style="font-size: 0.68rem;">Sinh Viên</span>' : '');
+                            const avatarBg = isStaff ? 'bg-primary' : 'bg-info';
+                            const avatarIcon = isStaff ? 'bi-person-badge' : 'bi-mortarboard-fill';
+
+                            const div = document.createElement('div');
+                            div.setAttribute('data-history-id', h.id);
+                            div.className = 'd-flex justify-content-start gap-2 mb-2 bubble-animate-in';
+                            div.innerHTML = `
+                            <div class="flex-shrink-0 align-self-end mb-4">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-xs ${avatarBg}" style="width: 36px; height: 36px; font-size: 0.85rem;" title="${escapeHtml(actorName || 'Cán bộ')}">
+                                    <i class="bi ${avatarIcon}"></i>
+                                </div>
+                            </div>
+                            <div style="max-width: 75%;">
+                                <div class="mb-1 d-flex align-items-center gap-1 ms-1">
+                                    <span class="fw-bold text-dark small">${escapeHtml(actorName || 'Cán bộ tư vấn')}</span>
+                                    ${roleBadge}
+                                </div>
+                                ${hasText || isResolved ? `
+                                <div class="p-3 shadow-xs position-relative chat-bubble-other">
+                                    ${isResolved ? `<div class="badge mb-2 px-2.5 py-1 rounded-pill d-inline-flex align-items-center chat-badge-sol-other"><i class="bi bi-shield-check me-1"></i>PHƯƠNG ÁN XỬ LÝ CHÍNH THỨC</div>` : ''}
+                                    <div style="white-space: pre-wrap; word-break: break-word; font-size: 0.93rem; line-height: 1.5;">${escapeHtml(h.actionNote)}</div>
+                                </div>` : ''}
+                                ${imgsHtml}
+                                ${docsHtml}
+                                <div class="mt-1 d-flex align-items-center gap-1 ms-1">
+                                    <small class="text-muted" style="font-size: 0.72rem;">${formatTime(h.createdAt)}</small>
+                                </div>
+                            </div>
+                        `;
+                            chatStream.appendChild(div);
+                        }
+                    }
+                });
+
+                if (addedCount > 0) {
+                    chatStream.scrollTop = chatStream.scrollHeight;
+                }
+            }
+
+            function updateTicketMeta(ticketData) {
+                if (!ticketData) return;
+
+                // 1. Cập nhật thẻ Cán bộ phụ trách nếu vừa có người tiếp nhận
+                const assignedSection = document.getElementById('assignedStaffCardSection');
+                if (assignedSection && ticketData.assignedStaffName) {
+                    const currentNameEl = assignedSection.querySelector('.staff-name-text');
+                    if (!currentNameEl || currentNameEl.textContent !== ticketData.assignedStaffName) {
+                        const avatarContent = ticketData.assignedStaffAvatarUrl
+                            ? `<img src="${ticketData.assignedStaffAvatarUrl}" class="rounded-circle border shadow-xs" style="width: 48px; height: 48px; object-fit: cover;" alt="Avatar">`
+                            : `<div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-xs" style="width: 48px; height: 48px; background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); font-size: 1.25rem;">${escapeHtml(ticketData.assignedStaffName.substring(0, 1))}</div>`;
+
+                        assignedSection.innerHTML = `
+                        <small class="text-muted fw-semibold d-block mb-1">Cán bộ phụ trách:</small>
+                        <div class="staff-card-interactive p-3 rounded-3 d-flex align-items-center gap-3 shadow-xs"
+                             onclick="openStaffModal()"
+                             title="Nhấn để xem danh thiếp và thông tin liên hệ của Cán bộ">
+                            <div class="position-relative flex-shrink-0">
+                                ${avatarContent}
+                                <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-white rounded-circle" style="width: 12px; height: 12px;" title="Đang trực tuyến"></span>
+                            </div>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="d-flex align-items-center gap-1">
+                                    <span class="fw-bold text-dark text-truncate staff-name-text">${escapeHtml(ticketData.assignedStaffName)}</span>
+                                    <i class="bi bi-patch-check-fill text-primary small" title="Cán bộ xác minh"></i>
+                                </div>
+                                <small class="text-muted d-block text-truncate" style="font-size: 0.78rem;">${escapeHtml(ticketData.assignedStaffRole || 'Cán bộ tư vấn • ' + (ticketData.departmentName || ''))}</small>
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle rounded-pill mt-1" style="font-size: 0.7rem;">
+                                    <i class="bi bi-person-lines-fill me-1"></i>Xem danh thiếp liên hệ
+                                </span>
+                            </div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </div>
+                    `;
+                    }
+                }
+
+                // 2. Cập nhật Badge trạng thái trên Chat Header
+                const statusBadgeContainer = document.getElementById('headerStatusBadge');
+                if (statusBadgeContainer && ticketData.status) {
+                    let badgeHtml = '';
+                    if (ticketData.status === 'OPEN') {
+                        badgeHtml = `<span class="badge bg-warning bg-opacity-15 text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-2"><i class="bi bi-hourglass-split me-1"></i>Chờ tiếp nhận</span>`;
+                    } else if (ticketData.status === 'IN_PROGRESS') {
+                        badgeHtml = `<span class="badge bg-info bg-opacity-15 text-info-emphasis border border-info-subtle rounded-pill px-3 py-2"><i class="bi bi-gear-fill me-1"></i>Đang xử lý</span>`;
+                    } else if (ticketData.status === 'WAITING_STUDENT') {
+                        badgeHtml = `<span class="badge bg-secondary bg-opacity-15 text-secondary-emphasis border border-secondary-subtle rounded-pill px-3 py-2"><i class="bi bi-person-fill-exclamation me-1"></i>Chờ bạn bổ sung</span>`;
+                    } else if (ticketData.status === 'RESOLVED') {
+                        badgeHtml = `<span class="badge bg-success bg-opacity-15 text-success-emphasis border border-success-subtle rounded-pill px-3 py-2"><i class="bi bi-check-circle-fill me-1"></i>Đã giải quyết</span>`;
+                    } else if (ticketData.status === 'CLOSED') {
+                        badgeHtml = `<span class="badge bg-dark bg-opacity-15 text-dark-emphasis border border-dark-subtle rounded-pill px-3 py-2"><i class="bi bi-lock-fill me-1"></i>Đã đóng</span>`;
+                    }
+                    if (badgeHtml) {
+                        statusBadgeContainer.innerHTML = badgeHtml;
+                    }
+                }
+
+                // 3. Cập nhật Realtime ẩn/hiện dock nhập tin nhắn khi Ticket chuyển sang CLOSED
+                const chatDock = document.getElementById('chatReplyDock');
+                const closedNotice = document.getElementById('chatClosedNotice');
+                if (ticketData.status === 'CLOSED') {
+                    if (chatDock) chatDock.style.setProperty('display', 'none', 'important');
+                    if (closedNotice) closedNotice.style.setProperty('display', 'block', 'important');
+                } else {
+                    if (chatDock) chatDock.style.display = '';
+                    if (closedNotice) closedNotice.style.setProperty('display', 'none', 'important');
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const chatStream = document.getElementById('chatStream');
+                if (chatStream) {
+                    chatStream.scrollTop = chatStream.scrollHeight;
+                }
+
+                // Ghi nhận các ID tin nhắn đã render sẵn từ Thymeleaf
+                document.querySelectorAll('#chatStream [data-history-id]').forEach(el => {
+                    const hid = el.getAttribute('data-history-id');
+                    if (hid) renderedHistoryIds.add(String(hid));
+                });
+
+                const fileInput = document.getElementById('chatFileInput');
+                const imageInput = document.getElementById('chatImageInput');
+                const filePreview = document.getElementById('fileSelectionPreview');
+                const fileChipsContainer = document.getElementById('fileChipsContainer');
+                const fileCountBadge = document.getElementById('fileCountBadge');
+                const btnClearFiles = document.getElementById('btnClearFiles');
+                const replyContent = document.getElementById('replyContent');
+                const chatForm = document.getElementById('chatReplyForm');
+                const btnSubmit = document.getElementById('btnSubmitReply');
+
+                // Hợp nhất DataTransfer để quản lý file chọn từ cả 2 nút
+                let dt = new DataTransfer();
+
+                function updatePreview() {
+                    if (dt.files.length === 0) {
+                        if (filePreview) filePreview.classList.add('d-none');
+                        if (fileChipsContainer) fileChipsContainer.innerHTML = '';
+                        if (fileInput) fileInput.files = dt.files;
+                        return;
+                    }
+
+                    if (fileCountBadge) fileCountBadge.textContent = dt.files.length;
+                    if (fileChipsContainer) fileChipsContainer.innerHTML = '';
+
+                    Array.from(dt.files).forEach((file, index) => {
+                        const chip = document.createElement('div');
+                        chip.className = 'upload-preview-chip';
+
+                        const isImg = file.type.startsWith('image/');
+                        const sizeStr = (file.size / 1024).toFixed(1) + ' KB';
+
+                        let iconOrThumb = '';
+                        if (isImg) {
+                            const thumbUrl = URL.createObjectURL(file);
+                            iconOrThumb = `<img src="${thumbUrl}" style="width: 26px; height: 26px; object-fit: cover; border-radius: 4px;">`;
+                        } else if (file.name.endsWith('.pdf')) {
+                            iconOrThumb = `<i class="bi bi-file-earmark-pdf-fill text-danger fs-6"></i>`;
+                        } else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
+                            iconOrThumb = `<i class="bi bi-file-earmark-word-fill text-primary fs-6"></i>`;
+                        } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+                            iconOrThumb = `<i class="bi bi-file-earmark-excel-fill text-success fs-6"></i>`;
+                        } else if (file.name.endsWith('.zip') || file.name.endsWith('.rar') || file.name.endsWith('.7z')) {
+                            iconOrThumb = `<i class="bi bi-file-earmark-zip-fill text-warning fs-6"></i>`;
+                        } else if (file.name.endsWith('.md')) {
+                            iconOrThumb = `<i class="bi bi-filetype-md text-primary fs-6"></i>`;
+                        } else if (file.name.endsWith('.json')) {
+                            iconOrThumb = `<i class="bi bi-filetype-json text-warning fs-6"></i>`;
+                        } else if (file.name.endsWith('.txt')) {
+                            iconOrThumb = `<i class="bi bi-filetype-txt text-secondary fs-6"></i>`;
+                        } else {
+                            iconOrThumb = `<i class="bi bi-file-earmark-text text-secondary fs-6"></i>`;
+                        }
+
+                        chip.innerHTML = `
+                        ${iconOrThumb}
+                        <span class="text-truncate" style="max-width: 140px;" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span>
+                        <small class="text-muted">(${sizeStr})</small>
+                        <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-1 text-decoration-none" data-index="${index}" title="Xóa tệp này">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </button>
+                    `;
+                        fileChipsContainer.appendChild(chip);
+                    });
+
+                    if (filePreview) filePreview.classList.remove('d-none');
+                    if (fileInput) fileInput.files = dt.files;
+                }
+
+                // Khi chọn từ nút Kẹp giấy
+                if (fileInput) {
+                    fileInput.addEventListener('change', function () {
+                        for (let i = 0; i < this.files.length; i++) {
+                            dt.items.add(this.files[i]);
+                        }
+                        updatePreview();
+                    });
+                }
+
+                // Khi chọn từ nút Ảnh
+                if (imageInput) {
+                    imageInput.addEventListener('change', function () {
+                        for (let i = 0; i < this.files.length; i++) {
+                            dt.items.add(this.files[i]);
+                        }
+                        updatePreview();
+                        this.value = '';
+                    });
+                }
+
+                // Xóa riêng lẻ từng file trong preview chip
+                if (fileChipsContainer) {
+                    fileChipsContainer.addEventListener('click', function (e) {
+                        const btn = e.target.closest('button[data-index]');
+                        if (btn) {
+                            const idx = parseInt(btn.getAttribute('data-index'), 10);
+                            const newDt = new DataTransfer();
+                            for (let i = 0; i < dt.files.length; i++) {
+                                if (i !== idx) newDt.items.add(dt.files[i]);
+                            }
+                            dt = newDt;
+                            updatePreview();
+                        }
+                    });
+                }
+
+                // Nút Hủy tất cả
+                if (btnClearFiles) {
+                    btnClearFiles.addEventListener('click', function () {
+                        dt = new DataTransfer();
+                        updatePreview();
+                    });
+                }
+
+                // Gửi tin nhắn qua AJAX (Zero Refresh)
+                async function submitMessage() {
+                    const text = replyContent ? replyContent.value.trim() : '';
+                    if (!text && dt.files.length === 0) {
+                        return;
+                    }
+
+                    const originalBtnHtml = btnSubmit ? btnSubmit.innerHTML : '';
+                    if (btnSubmit) {
+                        btnSubmit.disabled = true;
+                        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                    }
+
+                    const formData = new FormData();
+                    formData.append('content', text);
+                    for (let i = 0; i < dt.files.length; i++) {
+                        formData.append('files', dt.files[i]);
+                    }
+
+                    // Reset ngay input UI để tạo cảm giác phản hồi tức thì
+                    if (replyContent) {
+                        replyContent.value = '';
+                        replyContent.style.height = 'auto';
+                    }
+                    dt = new DataTransfer();
+                    updatePreview();
+
+                    try {
+                        const res = await fetch('/api/v1/tickets/' + currentTicketId + '/reply', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const result = await res.json();
+                        if (result && result.success && result.data) {
+                            renderHistories(result.data.histories);
+                            updateTicketMeta(result.data);
+                        } else {
+                            showToast(result.message || 'Lỗi khi gửi tin nhắn', 'danger');
+                        }
+                    } catch (err) {
+                        console.error('Lỗi gửi tin nhắn:', err);
+                        showToast('Không thể kết nối máy chủ để gửi tin nhắn', 'danger');
+                    } finally {
+                        if (btnSubmit) {
+                            btnSubmit.disabled = false;
+                            btnSubmit.innerHTML = originalBtnHtml;
+                        }
+                        if (replyContent) replyContent.focus();
+                    }
+                }
+
+                if (chatForm) {
+                    chatForm.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        submitMessage();
+                    });
+                }
+
+                // Phím tắt Enter / Ctrl + Enter để gửi nhanh & Tự co giãn textarea
+                if (replyContent) {
+                    replyContent.addEventListener('input', function () {
+                        this.style.height = 'auto';
+                        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+                    });
+
+                    replyContent.addEventListener('keydown', function (e) {
+                        if ((e.key === 'Enter' && !e.shiftKey) || ((e.ctrlKey || e.metaKey) && e.key === 'Enter')) {
+                            e.preventDefault();
+                            submitMessage();
+                        }
+                    });
+                }
+
+                // Real-time Polling: Cập nhật tin nhắn đối phương tự động mỗi 2.5 giây
+                let isPolling = false;
+                async function pollTicketUpdates() {
+                    if (isPolling || !currentTicketId) return;
+                    isPolling = true;
+                    try {
+                        const res = await fetch('/api/v1/tickets/' + currentTicketId);
+                        if (!res.ok) return;
+                        const result = await res.json();
+                        if (result && result.success && result.data) {
+                            renderHistories(result.data.histories);
+                            updateTicketMeta(result.data);
+                        }
+                    } catch (e) {
+                        // Im lặng bỏ qua khi mất kết nối tạm thời
+                    } finally {
+                        isPolling = false;
+                    }
+                }
+
+                const pollTimer = setInterval(pollTicketUpdates, 2500);
+
+                // Khi tab được active lại, poll ngay lập tức
+                document.addEventListener('visibilitychange', function () {
+                    if (!document.hidden) {
+                        pollTicketUpdates();
+                    }
+                });
+
+                // ==========================================
+                // CSAT STAR RATING INTERACTION & AJAX SUBMIT
+                // ==========================================
+                const studentRatingLabels = {
+                    1: '1 sao - Không hài lòng',
+                    2: '2 sao - Chưa hài lòng',
+                    3: '3 sao - Bình thường',
+                    4: '4 sao - Hài lòng',
+                    5: '5 sao - Rất hài lòng'
+                };
+
+                let currentStudentRating = 5;
+                const starElements = document.querySelectorAll('.student-star');
+                const studentRatingInput = document.getElementById('studentSelectedRating');
+                const studentRatingText = document.getElementById('studentRatingText');
+
+                function updateStudentStarsVisual(rating) {
+                    starElements.forEach(star => {
+                        const val = parseInt(star.getAttribute('data-val'));
+                        if (val <= rating) {
+                            star.className = 'bi bi-star-fill text-warning fs-3 student-star';
+                        } else {
+                            star.className = 'bi bi-star text-secondary opacity-50 fs-3 student-star';
+                        }
+                    });
+                    if (studentRatingText) {
+                        studentRatingText.textContent = studentRatingLabels[rating] || (rating + ' sao');
+                    }
+                }
+
+                starElements.forEach(star => {
+                    star.addEventListener('mouseenter', function () {
+                        const hoverVal = parseInt(this.getAttribute('data-val'));
+                        updateStudentStarsVisual(hoverVal);
+                    });
+
+                    star.addEventListener('mouseleave', function () {
+                        updateStudentStarsVisual(currentStudentRating);
+                    });
+
+                    star.addEventListener('click', function () {
+                        currentStudentRating = parseInt(this.getAttribute('data-val'));
+                        if (studentRatingInput) studentRatingInput.value = currentStudentRating;
+                        updateStudentStarsVisual(currentStudentRating);
+                    });
+                });
+
+                // Global handler for submitting CSAT rating
+                window.submitStudentCsatAjax = async function (shouldClose) {
+                    const btnRate = document.getElementById('btnSubmitStudentCsat');
+                    const btnClose = document.getElementById('btnSubmitAndClose');
+                    const spinner = document.getElementById('csatSpinner');
+                    const icon = document.getElementById('csatBtnIcon');
+                    const feedbackInput = document.getElementById('studentCsatFeedback');
+                    const feedback = feedbackInput ? feedbackInput.value.trim() : '';
+
+                    if (btnRate) btnRate.disabled = true;
+                    if (btnClose) btnClose.disabled = true;
+                    if (spinner) spinner.classList.remove('d-none');
+                    if (icon) icon.classList.add('d-none');
+
+                    try {
+                        const endpoint = shouldClose
+                            ? `/api/v1/tickets/${currentTicketId}/close`
+                            : `/api/v1/tickets/${currentTicketId}/rate`;
+
+                        const params = new URLSearchParams();
+                        params.append('rating', currentStudentRating);
+                        if (feedback) params.append('feedback', feedback);
+
+                        const res = await fetch(endpoint, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: params.toString()
+                        });
+
+                        const result = await res.json();
+                        if (res.ok && result && result.success) {
+                            showToast(result.message || 'Cảm ơn bạn đã gửi đánh giá hài lòng (CSAT)!', 'success');
+
+                            // 1. Cập nhật giao diện CSAT Box sang trạng thái "Đã ghi nhận"
+                            const csatFormBox = document.getElementById('csatFormContainer');
+                            if (csatFormBox) {
+                                let starsHtml = '';
+                                for (let i = 1; i <= 5; i++) {
+                                    if (i <= currentStudentRating) {
+                                        starsHtml += '★';
+                                    } else {
+                                        starsHtml += '<span class="text-secondary opacity-25">★</span>';
+                                    }
+                                }
+                                csatFormBox.innerHTML = `
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 p-3 rounded-3" style="background: #fffbeb; border: 1px solid #fde68a;">
+                                    <div>
+                                        <span class="badge bg-warning text-dark fw-bold mb-1">
+                                            <i class="bi bi-check-circle-fill me-1"></i>ĐÃ GHI NHẬN ĐÁNH GIÁ
+                                        </span>
+                                        <h5 class="fw-bold text-dark mb-1">Cảm ơn bạn đã phản hồi chất lượng phục vụ!</h5>
+                                        <p class="small text-muted mb-0">Đánh giá này đã được gửi trực tiếp đến đơn vị phụ trách và lưu vào hồ sơ chất lượng.</p>
+                                    </div>
+                                    <div class="text-md-end text-start">
+                                        <div class="fs-3 text-warning mb-1" style="letter-spacing: 2px;">
+                                            ${starsHtml}
+                                        </div>
+                                        <span class="badge bg-white text-dark border border-warning fw-bold fs-6">${currentStudentRating} / 5 sao</span>
+                                    </div>
+                                </div>
+                            `;
+                            }
+
+                            // Cập nhật header badge của CSAT
+                            const csatHeaderBadge = document.getElementById('csatHeaderPendingBadge');
+                            if (csatHeaderBadge) {
+                                csatHeaderBadge.className = 'badge bg-warning text-dark fw-bold px-2 py-1';
+                                csatHeaderBadge.id = 'csatHeaderRatedBadge';
+                                csatHeaderBadge.textContent = 'Đã Đánh Giá';
+                            }
+
+                            // 2. Nếu đóng ticket, cập nhật trạng thái UI
+                            if (shouldClose || (result.data && result.data.status === 'CLOSED')) {
+                                const chatInputWrapper = document.getElementById('chatInputWrapper');
+                                if (chatInputWrapper) chatInputWrapper.style.display = 'none';
+                                const chatClosedNotice = document.getElementById('chatClosedNotice');
+                                if (chatClosedNotice) chatClosedNotice.style.setProperty('display', 'block', 'important');
+                                const statusBadge = document.getElementById('ticketStatusBadge');
+                                if (statusBadge) {
+                                    statusBadge.className = 'badge bg-dark rounded-pill px-3 py-1.5 shadow-xs';
+                                    statusBadge.textContent = 'Đã đóng';
+                                }
+                            }
+
+                            // 3. Cập nhật thẻ nhắc nhở bên sidebar (nếu có)
+                            const sidebarPrompt = document.getElementById('sidebarCsatPromptCard');
+                            if (sidebarPrompt) {
+                                let starsHtml = '';
+                                for (let i = 1; i <= 5; i++) {
+                                    if (i <= currentStudentRating) {
+                                        starsHtml += '★';
+                                    } else {
+                                        starsHtml += '<span class="text-secondary opacity-25">★</span>';
+                                    }
+                                }
+                                sidebarPrompt.outerHTML = `
+                                <div id="sidebarCsatRatedCard" class="card p-3 shadow-sm mb-3 border-0 bg-white" style="border-radius: 16px; border-left: 4px solid #f59e0b !important;">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <h6 class="fw-bold text-dark mb-0 font-serif"><i class="bi bi-star-fill text-warning me-1.5"></i>Đánh Giá Dịch Vụ</h6>
+                                        <span class="badge bg-warning-subtle text-dark border border-warning">${currentStudentRating} / 5 sao</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1 text-warning fs-5 my-1">
+                                        ${starsHtml}
+                                    </div>
+                                    <small class="text-muted" style="font-size: 0.75rem;">Độ hài lòng của người học đối với buổi tư vấn này.</small>
+                                </div>
+                            `;
+                            }
+
+                            // 4. Cập nhật timeline histories
+                            if (result.data && result.data.histories) {
+                                renderHistories(result.data.histories);
+                            }
+                        } else {
+                            showToast(result.message || 'Có lỗi xảy ra khi gửi đánh giá CSAT', 'danger');
+                        }
+                    } catch (e) {
+                        console.error('Lỗi gửi CSAT:', e);
+                        showToast('Không thể kết nối máy chủ để gửi đánh giá', 'danger');
+                    } finally {
+                        if (btnRate) btnRate.disabled = false;
+                        if (btnClose) btnClose.disabled = false;
+                        if (spinner) spinner.classList.add('d-none');
+                        if (icon) icon.classList.remove('d-none');
+                    }
+                };
+            });
+        </script>
     </div>
-
-<!-- User Account Menu Script -->
-<script th:src="@{/js/user-account-menu.js}"></script>
 </body>
+
 </html>

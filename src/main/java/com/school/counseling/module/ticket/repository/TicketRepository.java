@@ -322,12 +322,12 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     @Query(value = """
         SELECT t FROM Ticket t
-        LEFT JOIN FETCH t.department d
-        LEFT JOIN FETCH t.creator c
-        LEFT JOIN FETCH t.assignedTo a
+        LEFT JOIN FETCH t.department
+        LEFT JOIN FETCH t.creator
+        LEFT JOIN FETCH t.assignedTo
         WHERE (:userId IS NULL OR t.creator.id = :userId)
           AND (:status IS NULL OR :status = 'ALL' OR t.status = :status OR (:status = 'WAITING' AND (t.status = 'WAITING_FOR_STUDENT' OR t.hasStudentReply = true)))
-          AND (:departmentId IS NULL OR d.id = :departmentId)
+          AND (:departmentId IS NULL OR t.department.id = :departmentId)
           AND (:keyword IS NULL OR LOWER(t.ticketCode) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(t.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(t.topicCategory) LIKE LOWER(CONCAT('%', :keyword, '%')))
           AND t.isDeleted = false
     """,
