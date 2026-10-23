@@ -8,14 +8,16 @@ import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 @Getter
 @AllArgsConstructor
 @Builder
-public class UserPrincipal implements UserDetails {
+public class UserPrincipal implements UserDetails, OAuth2User {
 
     private final Long id;
     private final String username;
@@ -30,8 +32,13 @@ public class UserPrincipal implements UserDetails {
     private final String departmentName;
     private final UserStatus status;
     private final Collection<? extends GrantedAuthority> authorities;
+    private final Map<String, Object> attributes;
 
     public static UserPrincipal create(User user) {
+        return create(user, Collections.emptyMap());
+    }
+
+    public static UserPrincipal create(User user, Map<String, Object> attributes) {
         String roleName = user.getRole() != null ? user.getRole().getName() : "ROLE_STUDENT";
         GrantedAuthority authority = new SimpleGrantedAuthority(roleName);
 
@@ -53,6 +60,7 @@ public class UserPrincipal implements UserDetails {
                 .departmentName(deptName)
                 .status(user.getStatus())
                 .authorities(Collections.singletonList(authority))
+                .attributes(attributes != null ? attributes : Collections.emptyMap())
                 .build();
     }
 
@@ -89,5 +97,15 @@ public class UserPrincipal implements UserDetails {
     @Override
     public boolean isEnabled() {
         return status == UserStatus.ACTIVE;
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return attributes != null ? attributes : Collections.emptyMap();
+    }
+
+    @Override
+    public String getName() {
+        return username != null ? username : email;
     }
 }
