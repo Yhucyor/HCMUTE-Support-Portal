@@ -322,8 +322,8 @@
                                     </div>
 
                                     <!-- Nội dung yêu cầu chi tiết (ticket.description) -->
-                                    <div style="white-space: pre-wrap; word-break: break-word; font-size: 0.93rem; line-height: 1.5;"
-                                        th:text="${ticket.description != null ? ticket.description : ticket.title}">
+                                    <div style="word-break: break-word; font-size: 0.93rem; line-height: 1.5;"
+                                        th:utext="${ticket.description != null ? ticket.description : ticket.title}">
                                         Nội dung chi tiết yêu cầu
                                     </div>
                                 </div>
@@ -487,8 +487,8 @@
 
                                         <!-- 1. Nội dung chữ tin nhắn -->
                                         <div th:if="${h.actionNote != null and !#strings.isEmpty(h.actionNote.trim())}"
-                                            style="white-space: pre-wrap; word-break: break-word; font-size: 0.93rem; line-height: 1.5;"
-                                            th:text="${h.actionNote}">
+                                            style="word-break: break-word; font-size: 0.93rem; line-height: 1.5;"
+                                            th:utext="${h.actionNote}">
                                             Nội dung tin nhắn
                                         </div>
                                     </div>

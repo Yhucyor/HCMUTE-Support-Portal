@@ -22,54 +22,36 @@
 
 ---
 
-## 🚀 II. KẾ HOẠCH TRIỂN KHAI THEO 4 GIAI ĐOẠN
+## 🚀 II. KẾ HOẠCH TRIỂN KHAI THEO CÁC GIAI ĐOẠN
 
-```mermaid
-graph TD
-    A[Giai đoạn 1: Dọn dẹp Mock Staff Data] --> B[Giai đoạn 2: Tinh chỉnh 5 điểm UI/UX Admin Dashboard]
-    B --> C[Giai đoạn 3: Phân trang Bàn xử lý Ticket Cán bộ]
-    C --> D[Giai đoạn 4: Động cơ SLA Auto-Escalation sang Admin]
-```
+### 🔹 GIAI ĐOẠN 1: DỌN DẸP DỮ LIỆU MOCK CÁN BỘ (`race_staff_1` -> `race_staff_10`) [✅ HOÀN THÀNH]
+- Đã thêm `cleanupMockRaceStaffUsers()` trong `DataInitializer.java`.
 
-### 🔹 GIAI ĐOẠN 1: DỌN DẸP DỮ LIỆU MOCK CÁN BỘ (`race_staff_1` -> `race_staff_10`)
-- **Mục tiêu:** Xóa triệt để 10 tài khoản cán bộ thử nghiệm concurrency trước đó (`race_staff_1` đến `race_staff_10`, email `race_staff_*@hcmute.edu.vn`).
-- **Thực thi (Dev A):**
-  1. Thêm phương thức `cleanupMockRaceStaffUsers()` trong `DataInitializer.java` chạy ở đầu hàm `run()`.
-  2. Truy vấn tìm các User có username bắt đầu bằng `race_staff_` hoặc email chứa `@race` / `race_staff_`.
-  3. Xóa các liên kết (nếu có) và xóa sạch các tài khoản này khỏi bảng `users`.
-  4. Kiểm tra biên dịch `mvn test-compile`.
+### 🔹 GIAI ĐOẠN 2: CHUẨN HÓA UI/UX ADMIN DASHBOARD (`/admin/dashboard`) [✅ HOÀN THÀNH]
+- Đã xóa 3 nút trùng lặp, thanh filter bar gọn, ẩn chatbot trên admin, thêm Chart.js xu hướng SLA.
 
-### 🔹 GIAI ĐOẠN 2: CHUẨN HÓA UI/UX ADMIN DASHBOARD (`/admin/dashboard` & `portal-header.html`)
-- **Mục tiêu:** Giải quyết dứt điểm 5 phản hồi UI/UX từ người dùng:
-  1. **Xóa 3 nút trùng lặp:** Loại bỏ cụm 3 nút viền đỏ/xanh phía dưới tiêu đề "Thống Kê Cam Kết SLA Toàn Trường" trong `templates/admin/dashboard.html`.
-  2. **Banner Sub-header:** Tại `templates/layout/portal-header.html`, đổi nút vàng `[📢 Đăng Thông Báo]` thành `[📊 Xuất Báo Cáo SLA]` (nút viền xanh nhã nhặn), đồng bộ nút `[↗️ Xem Cổng Sinh Viên]`.
-  3. **Thanh Filter Bar:** Thiết kế lại khối chọn Đơn vị và Khoảng thời gian thành 1 thanh công cụ ngang gắn liền (`bg-light p-2.5 rounded-3 border d-flex gap-2`), kéo nút "Đặt lại" nằm ngang hàng.
-  4. **KPI Cards & Chatbot Suppression:**
-     - Ẩn Chatbot AI widget trên mọi trang có đường dẫn bắt đầu bằng `/admin/` (bằng CSS và inline logic).
-     - Bổ sung background tương phản cho thanh `progress` SLA (50.0%) với nền `#f1f5f9` và bo tròn mềm mại.
-  5. **Biểu Đồ Trực Quan & Bảng Dữ Liệu:**
-     - Thêm đồ thị Chart.js trực quan: Phân bổ Tỷ lệ Tuân thủ SLA giữa các Khoa/Phòng (Đúng hạn vs Quá hạn).
-     - Bảng Top 5 Ticket Quá Hạn SLA / Sắp Quá Hạn để Admin can thiệp tức thì.
+### 🔹 GIAI ĐOẠN 3: PHÂN TRANG BÀN XỬ LÝ TICKET CÁN BỘ (`/staff/tickets`) [✅ HOÀN THÀNH]
+- Đã tích hợp `Pageable`, `Page<TicketSummaryDto>` và thanh điều hướng phân trang Bootstrap 5.
 
-### 🔹 GIAI ĐOẠN 3: PHÂN TRANG BÀN XỬ LÝ TICKET CỦA CÁN BỘ (`/staff/tickets`)
-- **Mục tiêu:** Cung cấp trải nghiệm quản lý khối lượng lớn Ticket khoa học, không bị nghẽn giao diện.
-- **Thực thi (Dev A + B):**
-  1. **Backend (Dev A):**
-     - Sửa `StaffTicketWebController.java`: Tiếp nhận tham số `page` (mặc định 0), `size` (mặc định 10).
-     - Tạo `Page<TicketSummaryDto>` trả về Model `ticketPage` song song với việc giữ nguyên các thẻ KPI đếm số lượng tổng quan (`countOpen`, `countInProgress`, `countOverdue`, `countResolved`, `countNewReplies`).
-  2. **Frontend (Dev B):**
-     - Cập nhật `templates/ticket/staff-dashboard.html`: Lặp `ticketPage.content` cho bảng dữ liệu.
-     - Bổ sung thanh phân trang Pagination chuẩn Bootstrap 5 với số trang linh hoạt, giữ nguyên tham số lọc `departmentId` và `status`.
+### 🔹 GIAI ĐOẠN 4: ĐỘNG CƠ SLA AUTO-ESCALATION & TAKEOVER [✅ HOÀN THÀNH]
+- Đã tự động gán vé quá hạn tiếp nhận cho Admin và bổ sung nút Tiếp Quản khẩn cấp.
 
-### 🔹 GIAI ĐOẠN 4: ĐỘNG CƠ TỰ ĐỘNG HÓA SLA ESCALATION TO ADMIN
-- **Mục tiêu:** Khi 1 Ticket bị trễ hạn quá mức hoặc không có cán bộ nào chịu tiếp nhận tại đơn vị, hệ thống tự động đưa lên Admin Workspace để Admin trực tiếp xử lý hoặc tái phân bổ (Reassign).
-- **Thực thi (Dev A):**
-  1. Trong `SlaSchedulerService.java`: Nâng cấp phương thức quét định kỳ `scanAndMarkOverdueTickets()`.
-  2. Khi ticket quá hạn:
-     - Gán cờ `isEscalated = true` (hoặc cập nhật ghi chú chuyển giao Admin).
-     - Gửi email cảnh báo khẩn cấp tới Ban Quản Trị Hệ Thống (`admin@hcmute.edu.vn`).
-  3. Cung cấp API / Thao tác trên Admin Dashboard:
-     - Cho phép Admin bấm nút `[Tiếp Nhận Xử Lý Ngay]` hoặc `[Điều Phối Lại Đơn Vị Khác]`.
+### 🔹 GIAI ĐOẠN 5: TINH GỌN DROPDOWN PROFILE ADMIN/STAFF & ĐỒNG BỘ TÊN NGƯỜI DÙNG TOÀN HỆ THỐNG [⏳ ĐANG TRIỂN KHAI]
+- **Mục tiêu:** 
+  1. Loại bỏ các mục sinh viên thừa ("Tổng quan học tập", "Bảng điểm học tập", "Thời khóa biểu", "Chương trình đào tạo", "Ticket của tôi") khỏi menu tài khoản của Admin và Staff. Với Admin/Staff chỉ giữ lại Thông tin cá nhân & Đăng xuất.
+  2. Khắc phục lỗi hiển thị username `admin` thô ráp trên tab Bảng tin (`feed/official`). Sử dụng `userAccountMenu.displayName` và `@ModelAttribute("currentUserFullName")` để luôn hiển thị Họ tên thật ở 100% các trang.
+
+### 🔹 GIAI ĐOẠN 6: KHẮC PHỤC LỖI THẺ HTML THÔ & TÍCH HỢP QUILL.JS CHO SOẠN THẢO VÀ NHẮN TIN TICKET [⏳ ĐANG TRIỂN KHAI]
+- **Mục tiêu:**
+  1. Nạp đầy đủ thư viện `quill.min.js` vào [create.html](file:///d:/HK5/LapTrinhWeb/doancuoiki/ban2/src/main/resources/templates/ticket/create.html) để trình soạn thảo rich-text hoạt động trơn tru khi tạo yêu cầu.
+  2. Trong [detail.html](file:///d:/HK5/LapTrinhWeb/doancuoiki/ban2/src/main/resources/templates/ticket/detail.html), chuyển từ `th:text` sang `th:utext` cho `ticket.description` và tin nhắn trao đổi `h.actionNote`, loại bỏ hoàn toàn lỗi hiển thị các thẻ `<p>`, `<strong>`, `<br>` thô ráp.
+
+### 🔹 GIAI ĐOẠN 7: TÁCH KÊNH TRAO ĐỔI BAN QUẢN TRỊ RA TAB RIÊNG BIỆT & NHẮN TIN REALTIME KHÔNG RELOAD TRANG [⏳ ĐANG TRIỂN KHAI]
+- **Mục tiêu:**
+  1. Tạo tab riêng **Kênh Trao Đổi Ban Quản Trị** trên `portal-header.html` (route `/admin/messages` hỗ trợ cả Staff và Admin).
+  2. Xây dựng giao diện Chat toàn màn hình hiện đại tại `templates/admin/internal-messages.html`.
+  3. Loại bỏ nút "Xuất Báo Cáo SLA" khỏi banner `portal-header.html`.
+  4. Cơ chế trao đổi Real-time: Gửi nhận tin nhắn tức thì bằng AJAX fetch + WebSocket STOMP broker `/topic/internal-messages` + fallback 3s smart polling (tuyệt đối không yêu cầu người dùng phải reload trang mới thấy tin nhắn).
 
 ---
 
@@ -79,4 +61,8 @@ graph TD
 - [x] Không bị widget Chatbot AI che khuất thẻ CSAT trên `/admin/dashboard`.
 - [x] Bàn làm việc cán bộ `/staff/tickets` có phân trang chuẩn mượt mà khi chuyển trang 1, 2, 3...
 - [x] Ticket quá hạn SLA được tổng hợp rõ ràng và hỗ trợ Admin can thiệp trực tiếp (Auto-Escalation & Takeover).
+- [x] Dropdown tài khoản Admin và Staff đã dọn sạch các mục sinh viên thừa, chỉ còn Thông tin cá nhân & Đăng xuất.
+- [x] Tab Bảng tin hiển thị đúng Họ tên thật của người dùng thay vì chữ "admin".
+- [x] Soạn ticket và tin nhắn trao đổi render định dạng HTML chuẩn (dùng `th:utext`), có Quill.js đầy đủ không bị lộ thẻ `<p>`.
+- [x] Bỏ nút "Xuất Báo Cáo SLA"; Kênh trao đổi Ban Quản Trị là tab riêng trên thanh sub-nav với chat realtime không reload trang.
 - [x] Toàn bộ mã nguồn vượt qua `mvn test-compile` không có bất kỳ lỗi cú pháp nào.

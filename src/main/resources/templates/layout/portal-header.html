@@ -74,12 +74,6 @@
                     </div>
 
                     <div class="d-flex align-items-center gap-2">
-                        <button type="button" onclick="window.print()"
-                           class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold shadow-xs d-inline-flex align-items-center gap-1.5"
-                           title="In hoặc xuất báo cáo thống kê SLA ra PDF">
-                            <i class="bi bi-printer"></i>
-                            <span>Xuất Báo Cáo SLA</span>
-                        </button>
                         <a th:href="@{/}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 d-inline-flex align-items-center gap-1.5"
                            title="Chuyển sang giao diện sinh viên">
                             <i class="bi bi-box-arrow-up-right"></i>
@@ -105,6 +99,14 @@
                        th:classappend="${activeTab == 'moderation' ? 'active-staff' : ''}">
                         <i class="bi bi-shield-check"></i>
                         <span>Duyệt Bài Diễn Đàn</span>
+                    </a>
+
+                    <!-- Kênh Trao Đổi Ban Quản Trị (Cả Staff và Admin) -->
+                    <a th:href="@{/admin/messages}" 
+                       class="portal-v2-nav-tab"
+                       th:classappend="${activeTab == 'admin-messages' ? 'active-staff' : ''}">
+                        <i class="bi bi-chat-left-dots-fill"></i>
+                        <span>Trao Đổi Ban Quản Trị</span>
                     </a>
 
                     <div sec:authorize="hasRole('ADMIN')" class="vr mx-2 text-secondary opacity-25" style="height: 1.25rem;"></div>

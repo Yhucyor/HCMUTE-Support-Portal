@@ -78,6 +78,7 @@ public class SecurityConfig {
                         .requestMatchers("/ai/chat", "/ai/chat/**", "/ai-chat", "/ai-chat/**", "/api/ai/**").authenticated()
 
                         // Admin & Staff boundaries
+                        .requestMatchers("/admin/messages", "/admin/messages/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/admin/**", "/api/admin/**", "/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/staff/**", "/api/v1/staff/**", "/api/v1/internal-messages/**").hasAnyRole("STAFF", "ADMIN")
                         // All other requests require authentication

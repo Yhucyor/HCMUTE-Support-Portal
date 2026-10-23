@@ -19,9 +19,9 @@
         
         <!-- Filter & Action Buttons -->
         <div class="d-flex align-items-center gap-2 flex-wrap">
-            <button type="button" class="btn btn-outline-primary btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#internalMessageModal" onclick="loadInternalMessages()">
-                <i class="bi bi-chat-left-dots me-1"></i>Kênh Trao Đổi Ban Quản Trị
-            </button>
+            <a th:href="@{/admin/messages}" class="btn btn-outline-primary btn-sm fw-semibold">
+                <i class="bi bi-chat-left-dots-fill me-1"></i>Kênh Trao Đổi Ban Quản Trị
+            </a>
 
             <form th:action="@{/staff/tickets}" method="get" class="d-flex align-items-center gap-2 m-0">
                 <select th:if="${isAdmin and allDepartments != null}" 

@@ -301,7 +301,7 @@
             <div sec:authorize="isAuthenticated()" class="hcmute-dropdown-wrapper">
                 <button type="button" class="hcmute-user-toggle" id="hcmuteUserDropdownBtn" onclick="toggleHcmuteUserMenu(event)">
                     <i class="bi bi-person-circle"></i>
-                    <span th:text="${currentUser != null ? currentUser.fullName : (currentUserFullName != null ? currentUserFullName : (principal != null ? principal.fullName : #authentication.name))}">Họ Tên</span>
+                    <span th:text="${userAccountMenu != null and userAccountMenu.fullName != null ? userAccountMenu.fullName : (currentUserFullName != null ? currentUserFullName : (currentUser != null ? currentUser.fullName : #authentication.name))}">Họ Tên</span>
                     <i class="bi bi-chevron-down" style="font-size: 0.75rem;"></i>
                 </button>
 
@@ -348,33 +348,35 @@
                         <div class="hcmute-dropdown-divider"></div>
                     </div>
 
-                    <!-- Hồ Sơ Cá Nhân -->
+                    <!-- Hồ Sơ Cá Nhân (Dùng chung cho mọi đối tượng) -->
                     <a th:href="@{/profile}" class="hcmute-dropdown-item">
                         <i class="bi bi-person-gear"></i>
                         <span>Thông tin cá nhân</span>
                     </a>
 
-                    <!-- Sinh Viên & Học Vụ Cá Nhân -->
-                    <a th:href="@{/academic/sync}" class="hcmute-dropdown-item">
-                        <i class="bi bi-mortarboard"></i>
-                        <span>Tổng quan học tập</span>
-                    </a>
-                    <a th:href="@{/academic/grades}" class="hcmute-dropdown-item">
-                        <i class="bi bi-award"></i>
-                        <span>Bảng điểm học tập</span>
-                    </a>
-                    <a th:href="@{/academic/timetable}" class="hcmute-dropdown-item">
-                        <i class="bi bi-calendar3"></i>
-                        <span>Thời khóa biểu</span>
-                    </a>
-                    <a th:href="@{/academic/curriculum}" class="hcmute-dropdown-item">
-                        <i class="bi bi-book"></i>
-                        <span>Chương trình đào tạo</span>
-                    </a>
-                    <a th:href="@{/tickets/my-tickets}" class="hcmute-dropdown-item">
-                        <i class="bi bi-ticket-perforated"></i>
-                        <span>Ticket của tôi</span>
-                    </a>
+                    <!-- Sinh Viên & Học Vụ Cá Nhân: CHỈ HIỂN THỊ CHO SINH VIÊN (Admin và Staff không bị rác menu) -->
+                    <div sec:authorize="hasRole('STUDENT')">
+                        <a th:href="@{/academic/sync}" class="hcmute-dropdown-item">
+                            <i class="bi bi-mortarboard"></i>
+                            <span>Tổng quan học tập</span>
+                        </a>
+                        <a th:href="@{/academic/grades}" class="hcmute-dropdown-item">
+                            <i class="bi bi-award"></i>
+                            <span>Bảng điểm học tập</span>
+                        </a>
+                        <a th:href="@{/academic/timetable}" class="hcmute-dropdown-item">
+                            <i class="bi bi-calendar3"></i>
+                            <span>Thời khóa biểu</span>
+                        </a>
+                        <a th:href="@{/academic/curriculum}" class="hcmute-dropdown-item">
+                            <i class="bi bi-book"></i>
+                            <span>Chương trình đào tạo</span>
+                        </a>
+                        <a th:href="@{/tickets/my-tickets}" class="hcmute-dropdown-item">
+                            <i class="bi bi-ticket-perforated"></i>
+                            <span>Ticket của tôi</span>
+                        </a>
+                    </div>
 
                     <div class="hcmute-dropdown-divider"></div>
 

@@ -25,11 +25,16 @@ public class InternalMessageService {
     private final InternalStaffAdminMessageRepository messageRepository;
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
+    private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
-    public InternalMessageService(InternalStaffAdminMessageRepository messageRepository, UserRepository userRepository, DepartmentRepository departmentRepository) {
+    public InternalMessageService(InternalStaffAdminMessageRepository messageRepository, 
+                                  UserRepository userRepository, 
+                                  DepartmentRepository departmentRepository,
+                                  org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate) {
         this.messageRepository = messageRepository;
         this.userRepository = userRepository;
         this.departmentRepository = departmentRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Transactional
@@ -62,7 +67,18 @@ public class InternalMessageService {
         message = messageRepository.save(message);
         log.info("Gửi tin nhắn nội bộ thành công: ID={}, Sender={}, Dept={}", message.getId(), sender.getFullName(), department != null ? department.getName() : "All");
 
-        return mapToDto(message);
+        InternalMessageDto dto = mapToDto(message);
+
+        // Phát sóng thời gian thực qua WebSocket STOMP tới tất cả Cán bộ & Admin đang trực tuyến
+        if (messagingTemplate != null) {
+            try {
+                messagingTemplate.convertAndSend("/topic/internal-messages", dto);
+            } catch (Exception ex) {
+                log.warn("Không thể broadcast qua WebSocket STOMP: {}", ex.getMessage());
+            }
+        }
+
+        return dto;
     }
 
     public List<InternalMessageDto> getMessages(Long departmentId) {
