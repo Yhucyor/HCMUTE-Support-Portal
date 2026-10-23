@@ -4,100 +4,134 @@
 <head></head>
 
 <body>
+    <!-- ========================================================================= -->
+    <!-- CLEAN VERSION 2 ADMIN & STAFF WORKSPACE SUB-BANNER                        -->
+    <!-- ========================================================================= -->
     <div th:fragment="portal-header(activeTab)" class="mb-4">
-        <!-- Header Banner -->
-        <div class="card border-0 shadow-sm rounded-3 overflow-hidden text-white"
-            style="background: linear-gradient(135deg, #1f242d 0%, #2c323f 100%); border-left: 5px solid var(--crimson) !important;">
-            <div class="card-body p-4">
+        <style>
+            .portal-v2-banner {
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 16px;
+                box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+                overflow: hidden;
+                border-top: 4px solid #003882;
+            }
+            .portal-v2-nav-tab {
+                font-size: 0.82rem;
+                font-weight: 600;
+                color: #475569;
+                padding: 0.45rem 1rem;
+                border-radius: 9999px;
+                text-decoration: none;
+                transition: all 0.2s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                white-space: nowrap;
+            }
+            .portal-v2-nav-tab:hover {
+                background: #f1f5f9;
+                color: #003882;
+            }
+            .portal-v2-nav-tab.active-staff {
+                background: #003882 !important;
+                color: #ffffff !important;
+                box-shadow: 0 2px 8px rgba(0, 56, 130, 0.28);
+            }
+            .portal-v2-nav-tab.active-admin {
+                background: #dc2626 !important;
+                color: #ffffff !important;
+                box-shadow: 0 2px 8px rgba(220, 38, 38, 0.28);
+            }
+        </style>
+
+        <div class="portal-v2-banner">
+            <!-- Top Info Header -->
+            <div class="p-3 p-md-4">
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="d-flex align-items-center justify-content-center bg-white bg-opacity-10 rounded-3 p-3 shadow-xs"
-                            style="width: 52px; height: 52px;">
-                            <i class="bi bi-shield-shaded text-warning fs-3"></i>
+                        <div class="d-flex align-items-center justify-content-center rounded-3 shadow-xs"
+                             style="width: 50px; height: 50px; background: #eff6ff; border: 1px solid #bfdbfe; color: #003882;">
+                            <i class="bi bi-shield-shaded fs-3"></i>
                         </div>
                         <div>
                             <div class="d-flex align-items-center gap-2 mb-1">
-                                <span class="badge bg-danger bg-opacity-75 px-2 py-1 small text-uppercase">Bàn Làm Việc
-                                    Cán Bộ</span>
-                                <span
-                                    class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 small">SLA
-                                    Active 24/7</span>
+                                <span class="badge px-2 py-1 small fw-semibold" style="background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;">
+                                    ĐIỀU HÀNH &amp; QUẢN TRỊ
+                                </span>
+                                <span class="badge px-2 py-1 small fw-semibold" style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0;">
+                                    <i class="bi bi-activity me-1"></i>SLA ACTIVE 24/7
+                                </span>
                             </div>
-                            <h4 class="fw-bold mb-0 text-white font-serif" style="letter-spacing: 0.5px;">Trung Tâm Điều
-                                Hành & Xử Lý Yêu Cầu</h4>
-                            <small class="text-white-50">Cổng tiếp nhận hỗ trợ học vụ trường Đại học Công Nghệ Kỹ thuật
-                                TP.HCM</small>
+                            <h4 class="fw-bold mb-0" style="color: #003882; letter-spacing: -0.01em;">
+                                Trung Tâm Điều Hành &amp; Xử Lý Yêu Cầu
+                            </h4>
+                            <small class="text-secondary">
+                                Cổng tiếp nhận hỗ trợ học vụ &amp; điều phối dịch vụ sinh viên trường ĐH Sư phạm Kỹ thuật TP.HCM (HCMUTE)
+                            </small>
                         </div>
                     </div>
 
                     <div class="d-flex align-items-center gap-2">
                         <a th:href="@{/feed/official/create}"
-                            class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-xs">
-                            <i class="bi bi-megaphone-fill me-1"></i>Đăng Thông Báo
+                           class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-xs d-inline-flex align-items-center gap-1.5">
+                            <i class="bi bi-megaphone-fill"></i>
+                            <span>Đăng Thông Báo</span>
                         </a>
-                        <a th:href="@{/}" class="btn btn-outline-light btn-sm rounded-pill px-3">
-                            <i class="bi bi-box-arrow-up-right me-1"></i>Xem Cổng Sinh Viên
+                        <a th:href="@{/}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 d-inline-flex align-items-center gap-1.5">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                            <span>Xem Cổng Sinh Viên</span>
                         </a>
                     </div>
                 </div>
             </div>
 
-            <!-- Navigation Tabs Bar -->
-            <div class="px-4 py-2 bg-black bg-opacity-25 border-top border-white border-opacity-10 overflow-auto">
-                <ul class="nav nav-pills gap-2 flex-nowrap small fw-semibold">
+            <!-- Clean Tab Navigation Bar -->
+            <div class="px-3 px-md-4 py-2 border-top overflow-auto" style="background: #f8fafc; border-color: #f1f5f9 !important;">
+                <nav class="d-flex align-items-center gap-1.5 flex-nowrap">
                     <!-- Staff Tabs -->
-                    <li class="nav-item">
-                        <a class="nav-link py-2 px-3 rounded-pill text-white-50"
-                            th:classappend="${activeTab == 'tickets' ? 'active bg-danger text-white shadow-xs' : 'hover-white'}"
-                            th:href="@{/staff/tickets}">
-                            <i class="bi bi-kanban me-1"></i>Bàn Xử Lý Ticket
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link py-2 px-3 rounded-pill text-white-50"
-                            th:classappend="${activeTab == 'moderation' ? 'active bg-danger text-white shadow-xs' : 'hover-white'}"
-                            th:href="@{/moderation/posts}">
-                            <i class="bi bi-shield-check me-1"></i>Duyệt Bài Diễn Đàn
-                        </a>
-                    </li>
+                    <a th:href="@{/staff/tickets}" 
+                       class="portal-v2-nav-tab"
+                       th:classappend="${activeTab == 'tickets' ? 'active-staff' : ''}">
+                        <i class="bi bi-kanban"></i>
+                        <span>Bàn Xử Lý Ticket</span>
+                    </a>
 
-                    <!-- Admin Tabs -->
-                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
-                        <a class="nav-link py-2 px-3 rounded-pill text-white-50"
-                            th:classappend="${activeTab == 'admin-dashboard' ? 'active bg-danger text-white shadow-xs' : 'hover-white'}"
-                            th:href="@{/admin/dashboard}">
-                            <i class="bi bi-speedometer2 me-1"></i>SLA Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
-                        <a class="nav-link py-2 px-3 rounded-pill text-white-50"
-                            th:classappend="${activeTab == 'admin-users' ? 'active bg-danger text-white shadow-xs' : 'hover-white'}"
-                            th:href="@{/admin/users}">
-                            <i class="bi bi-people me-1"></i>Quản Trị Người Dùng
-                        </a>
-                    </li>
-                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
-                        <a class="nav-link py-2 px-3 rounded-pill text-white-50"
-                            th:classappend="${activeTab == 'admin-depts' ? 'active bg-danger text-white shadow-xs' : 'hover-white'}"
-                            th:href="@{/admin/departments}">
-                            <i class="bi bi-buildings me-1"></i>Quản Lý Đơn Vị
-                        </a>
-                    </li>
-                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
-                        <a class="nav-link py-2 px-3 rounded-pill text-white-50"
-                            th:classappend="${activeTab == 'admin-docs' ? 'active bg-danger text-white shadow-xs' : 'hover-white'}"
-                            th:href="@{/admin/knowledge/documents}">
-                            <i class="bi bi-file-earmark-pdf me-1"></i>Kho Công Văn AI
-                        </a>
-                    </li>
-                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
-                        <a class="nav-link py-2 px-3 rounded-pill text-white-50"
-                            th:classappend="${activeTab == 'admin-visualizer' ? 'active bg-danger text-white shadow-xs' : 'hover-white'}"
-                            th:href="@{/admin/knowledge/visualizer}">
-                            <i class="bi bi-diagram-3 me-1"></i>3D Vector Space
-                        </a>
-                    </li>
-                </ul>
+                    <a th:href="@{/moderation/posts}" 
+                       class="portal-v2-nav-tab"
+                       th:classappend="${activeTab == 'moderation' ? 'active-staff' : ''}">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Duyệt Bài Diễn Đàn</span>
+                    </a>
+
+                    <div sec:authorize="hasRole('ADMIN')" class="vr mx-2 text-secondary opacity-25" style="height: 1.25rem;"></div>
+
+                    <!-- Admin Only Tabs -->
+                    <a sec:authorize="hasRole('ADMIN')" 
+                       th:href="@{/admin/dashboard}" 
+                       class="portal-v2-nav-tab"
+                       th:classappend="${activeTab == 'admin-dashboard' ? 'active-admin' : ''}">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>SLA Dashboard</span>
+                    </a>
+
+                    <a sec:authorize="hasRole('ADMIN')" 
+                       th:href="@{/admin/users}" 
+                       class="portal-v2-nav-tab"
+                       th:classappend="${activeTab == 'admin-users' ? 'active-admin' : ''}">
+                        <i class="bi bi-people"></i>
+                        <span>Quản Trị Người Dùng</span>
+                    </a>
+
+                    <a sec:authorize="hasRole('ADMIN')" 
+                       th:href="@{/admin/departments}" 
+                       class="portal-v2-nav-tab"
+                       th:classappend="${activeTab == 'admin-depts' ? 'active-admin' : ''}">
+                        <i class="bi bi-buildings"></i>
+                        <span>Quản Lý Đơn Vị</span>
+                    </a>
+                </nav>
             </div>
         </div>
     </div>

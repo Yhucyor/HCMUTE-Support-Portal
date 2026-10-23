@@ -14,35 +14,8 @@
 </head>
 <body class="bg-[#f8fafc] font-sans text-slate-800 antialiased min-h-screen flex flex-col justify-between">
 
-    <!-- 1. TOP GLOBAL HEADER (Chuẩn nhận diện bản 2) -->
-    <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
-        <div class="w-full px-4 sm:px-6 lg:px-8 h-[74px] flex items-center justify-between">
-            <a class="flex items-center gap-3 group py-1.5" th:href="@{/}">
-                <img alt="HCMUTE Logo" class="h-12 w-auto object-contain transition-transform group-hover:scale-105" 
-                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKSHNb9YZP8QFQKzZ-_B_glnPE615kLoTh0DIZM9-id7Eb1Z7EZXRKcjBeCckK7VOaTPGdnMs7Cl7qdtjr1Mry3Y7d1U0S8maxw8fAHipOBnT-HFyaVBuqc6xe0fMZJf4fPlHw6UIkL0vHJV2kfl-tnjJgobCtm7Cy-KazrUCaEZefkxCcT9HC_-zWiT9twVqKg6xymALE7_hrVpAjI-XYdTFsbm3wyDRY8PxAR-vjOB00BqpW9wX9dVryQuIfZgdSA">
-                <div class="flex flex-col text-[#003882]">
-                    <span class="font-bold text-sm sm:text-base tracking-tight leading-tight text-[#003882]">Trường Đại học Sư phạm Kỹ thuật Tp. Hồ Chí Minh</span>
-                    <span class="font-normal text-[11px] sm:text-xs text-[#003882] tracking-normal leading-normal">HCMC University of Technology and Education</span>
-                </div>
-            </a>
-
-            <!-- Nav Items -->
-            <nav class="hidden xl:flex items-center space-x-7">
-                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/}">Trang chủ</a>
-                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/feed/forum}">Diễn đàn</a>
-                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/ai-chat}">Hỗ trợ AI</a>
-                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/faqs}">Tra cứu FAQ</a>
-                <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
-            </nav>
-
-            <!-- Actions -->
-            <div class="flex items-center gap-3">
-                <a th:href="@{/auth/login}" class="px-4 py-2 bg-[#991b1e] hover:bg-[#831518] text-white text-xs font-semibold rounded-md shadow-sm transition-all">
-                    Đăng nhập
-                </a>
-            </div>
-        </div>
-    </header>
+    <!-- 1. TOP GLOBAL HEADER -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
 
     <!-- 2. MAIN ERROR CONTENT -->
     <main class="flex-1 flex items-center justify-center px-4 pt-28 pb-12">
