@@ -621,6 +621,28 @@
         if (p2) p2.className = phase === 'DOT_2' ? activeCls : inactiveCls;
         if (pAll) pAll.className = phase === 'ALL' ? activeCls : inactiveCls;
 
+        // Tự động nhảy tuần dropdown nếu tuần hiện tại không nằm trong đợt được chọn
+        const select = document.getElementById('filterWeek');
+        if (select && select.options.length > 0) {
+            const currentOpt = select.options[select.selectedIndex];
+            const wNum = currentOpt ? parseInt(currentOpt.dataset.week || (select.selectedIndex + 1)) : 1;
+            if (phase === 'DOT_1' && wNum > 10) {
+                select.selectedIndex = 0; // Tuần 1 (cuối tháng 8 / đầu tháng 9)
+                onWeekDropdownChange();
+                return;
+            } else if (phase === 'DOT_2' && wNum <= 10) {
+                // Nhảy đến Tuần 11 trở đi (tháng 11)
+                let targetIdx = Math.min(10, select.options.length - 1);
+                for (let i = 0; i < select.options.length; i++) {
+                    const w = parseInt(select.options[i].dataset.week || (i + 1));
+                    if (w >= 11) { targetIdx = i; break; }
+                }
+                select.selectedIndex = targetIdx;
+                onWeekDropdownChange();
+                return;
+            }
+        }
+
         if (!skipRender) {
             updateKPIs();
             if (currentView === 'week') renderEventCards(getWeekStart(currentWeekOffset));
@@ -640,6 +662,63 @@
         if (currentPhase === 'DOT_2') {
             return p === 'Đợt 2' || p.toLowerCase().includes('đợt 2') || p.toLowerCase().includes('dot 2');
         }
+        return true;
+    }
+
+    // ── Kiểm tra môn học có đang diễn ra trong tuần cụ thể [monday, sunday] ──
+    function isScheduleActiveInWeek(s, monday, sunday) {
+        if (!s) return false;
+        if (currentPhase === 'ALL') return true;
+
+        // 1. Kiểm tra chính xác theo khoảng ngày bắt đầu - kết thúc trong chuỗi s.weeks (vd: "18/08/2026->06/10/2026)")
+        if (s.weeks) {
+            const mRange = s.weeks.match(/(\d{2})\/(\d{2})\/(\d{4})\s*(?:->|[-–])\s*(\d{2})\/(\d{2})\/(\d{4})/);
+            if (mRange) {
+                const startD = new Date(parseInt(mRange[3]), parseInt(mRange[2]) - 1, parseInt(mRange[1]));
+                startD.setHours(0, 0, 0, 0);
+                const endD = new Date(parseInt(mRange[6]), parseInt(mRange[5]) - 1, parseInt(mRange[4]));
+                endD.setHours(23, 59, 59, 999);
+                return monday <= endD && sunday >= startD;
+            }
+
+            // Ngày đơn lẻ: vd 15/10/2026
+            const mSingle = s.weeks.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+            if (mSingle) {
+                const d = new Date(parseInt(mSingle[3]), parseInt(mSingle[2]) - 1, parseInt(mSingle[1]));
+                d.setHours(0, 0, 0, 0);
+                return d >= monday && d <= sunday;
+            }
+        }
+
+        // 2. Tính số tuần từ dropdown tuần
+        const select = document.getElementById('filterWeek');
+        let weekIndex = 1;
+        if (select && select.selectedIndex >= 0) {
+            const opt = select.options[select.selectedIndex];
+            weekIndex = opt ? parseInt(opt.dataset.week || (select.selectedIndex + 1)) : 1;
+        }
+
+        if (s.weeks) {
+            // Dạng khoảng tuần: "1-10", "11-20"
+            const mWeekRange = s.weeks.match(/^(\d+)\s*[-–]\s*(\d+)$/);
+            if (mWeekRange) {
+                const wStart = parseInt(mWeekRange[1]);
+                const wEnd = parseInt(mWeekRange[2]);
+                return weekIndex >= wStart && weekIndex <= wEnd;
+            }
+
+            // Dạng chuỗi bitmask vị trí tuần: "1234567890----------"
+            if (/^[\d\-]+$/.test(s.weeks.trim())) {
+                const ch = s.weeks.trim().charAt(weekIndex - 1);
+                if (ch && ch !== '-') return true;
+                if (ch === '-') return false;
+            }
+        }
+
+        // 3. Fallback theo phase: Đợt 1 (tuần 1-10), Đợt 2 (tuần 11-20)
+        const p = (s.phase || '').trim();
+        if (p === 'Đợt 1' || p.toLowerCase().includes('đợt 1')) return weekIndex <= 10;
+        if (p === 'Đợt 2' || p.toLowerCase().includes('đợt 2')) return weekIndex > 10;
         return true;
     }
 
@@ -838,10 +917,13 @@
         canvas.style.pointerEvents = 'auto';
         const today = new Date(); today.setHours(0,0,0,0);
         const now = new Date();
+        const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+        sunday.setHours(23, 59, 59, 999);
 
         const search = document.getElementById('searchInput').value.toLowerCase();
         const visible = allSchedules.filter(s => {
             if (!matchesPhase(s)) return false;
+            if (!isScheduleActiveInWeek(s, monday, sunday)) return false;
             if (!search) return true;
             return (s.courseName||'').toLowerCase().includes(search) ||
                    (s.courseCode||'').toLowerCase().includes(search) ||
@@ -998,8 +1080,10 @@
     // ── Day View ──────────────────────────────────────────────────────────────
     function renderDayView() {
         const today = new Date();
+        const todayMon = getWeekStart(0);
+        const todaySun = new Date(todayMon); todaySun.setDate(todayMon.getDate() + 6); todaySun.setHours(23, 59, 59, 999);
         document.getElementById('dayViewTitle').textContent = `${DAYS[(today.getDay()||7)-1]}, ${formatDate(today)}/${today.getFullYear()}`;
-        const daySchedules = allSchedules.filter(s => matchesPhase(s) && (DAY_MAP[s.dayOfWeek] ?? -1) === (today.getDay()||7)-1);
+        const daySchedules = allSchedules.filter(s => matchesPhase(s) && isScheduleActiveInWeek(s, todayMon, todaySun) && (DAY_MAP[s.dayOfWeek] ?? -1) === (today.getDay()||7)-1);
         const container = document.getElementById('dayViewList');
         if (daySchedules.length === 0) {
             container.innerHTML = '<p class="text-center text-secondary py-8 font-body-md text-body-md">Không có lịch học hôm nay</p>';
@@ -1057,8 +1141,10 @@
     function updateKPIs() {
         const today = new Date();
         const todayDayIdx = (today.getDay() || 7) - 1; // Mon=0
+        const monday = getWeekStart(currentWeekOffset);
+        const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6); sunday.setHours(23, 59, 59, 999);
 
-        const activeSchedules = allSchedules.filter(s => matchesPhase(s));
+        const activeSchedules = allSchedules.filter(s => matchesPhase(s) && isScheduleActiveInWeek(s, monday, sunday));
         const todaySchedules = activeSchedules.filter(s => (DAY_MAP[s.dayOfWeek] ?? -1) === todayDayIdx);
         const subjects = new Set(activeSchedules.map(s => s.courseCode).filter(Boolean));
 
