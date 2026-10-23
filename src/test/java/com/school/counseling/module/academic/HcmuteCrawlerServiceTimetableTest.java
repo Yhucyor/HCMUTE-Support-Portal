@@ -131,5 +131,7 @@ class HcmuteCrawlerServiceTimetableTest {
         assertEquals("Cả học kỳ", HcmuteCrawlerService.determinePhase("1-18", null));
         assertEquals("Đợt 1", HcmuteCrawlerService.determinePhase("1234567890----------", null));
         assertEquals("Đợt 2", HcmuteCrawlerService.determinePhase("----------1234567890", null));
+        assertEquals("Đợt 1", HcmuteCrawlerService.determinePhase("18/08/2026->06/10/2026)", null));
+        assertEquals("Đợt 2", HcmuteCrawlerService.determinePhase("03/11/2026->22/12/2026)", null));
     }
 }

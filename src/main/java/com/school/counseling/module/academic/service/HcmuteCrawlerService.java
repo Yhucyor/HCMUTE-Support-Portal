@@ -1346,8 +1346,20 @@ public class HcmuteCrawlerService {
         }
         if (tuanHoc != null && !tuanHoc.isBlank()) {
             String t = tuanHoc.trim();
-            // Dạng khoảng tuần: "1-10", "11-20", "1-18"
-            java.util.regex.Matcher mRange = java.util.regex.Pattern.compile("(\\d+)\\s*[-–]\\s*(\\d+)").matcher(t);
+            // 1. Dạng ngày/tháng trong tuần học: dd/MM/yyyy->dd/MM/yyyy
+            java.util.regex.Matcher mDate = java.util.regex.Pattern.compile("(\\d{2})/(\\d{2})/\\d{4}").matcher(t);
+            if (mDate.find()) {
+                int month = Integer.parseInt(mDate.group(2));
+                // Học kỳ 1 (tháng 8-10: Đợt 1, tháng 11-1: Đợt 2) | Học kỳ 2 (tháng 1-3: Đợt 1, tháng 4-6: Đợt 2)
+                if ((month >= 8 && month <= 10) || (month >= 2 && month <= 3)) {
+                    return "Đợt 1";
+                }
+                if (month >= 11 || month == 1 || (month >= 4 && month <= 7)) {
+                    return "Đợt 2";
+                }
+            }
+            // 2. Dạng khoảng tuần: "1-10", "11-20", "1-18"
+            java.util.regex.Matcher mRange = java.util.regex.Pattern.compile("^\\s*(\\d+)\\s*[-–]\\s*(\\d+)\\s*$").matcher(t);
             if (mRange.find()) {
                 int start = Integer.parseInt(mRange.group(1));
                 int end = Integer.parseInt(mRange.group(2));
@@ -1355,8 +1367,8 @@ public class HcmuteCrawlerService {
                 if (start >= 10) return "Đợt 2";
                 return "Cả học kỳ";
             }
-            // Dạng chuỗi vị trí tuần (vd: "1234567890----------" hoặc "----------1234567890")
-            if (t.contains("-") || t.matches(".*\\d.*")) {
+            // 3. Dạng chuỗi vị trí tuần (vd: "1234567890----------" hoặc "----------1234567890")
+            if (t.matches("^[\\d\\-]+$")) {
                 int firstDigit = -1;
                 int lastDigit = -1;
                 for (int i = 0; i < t.length(); i++) {

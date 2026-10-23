@@ -236,7 +236,7 @@ public class AcademicSyncApiController {
                 }
             }
 
-            boolean hasMissingPhase = list.stream().anyMatch(cs -> cs.getPhase() == null || cs.getPhase().isBlank());
+            boolean hasMissingPhase = list.stream().anyMatch(cs -> cs.getPhase() == null || cs.getPhase().isBlank() || "Cả học kỳ".equalsIgnoreCase(cs.getPhase()));
             if (hasMissingPhase) {
                 autoAssignPhases(list);
                 updated = true;
@@ -259,7 +259,19 @@ public class AcademicSyncApiController {
     }
 
     private void autoAssignPhases(List<CourseSchedule> list) {
-        // Nhóm theo (dayOfWeek, startTime) để phát hiện các môn bị trùng giờ
+        Map<String, String> coursePhases = new HashMap<>();
+
+        // 1. Phân loại theo ngày/tháng trong chuỗi weeks nếu có (ví dụ 18/08/2026->06/10/2026 là Đợt 1, 03/11/2026->22/12/2026 là Đợt 2)
+        for (CourseSchedule cs : list) {
+            if (cs.getWeeks() != null && !cs.getWeeks().isBlank()) {
+                String p = HcmuteCrawlerService.determinePhase(cs.getWeeks(), null);
+                if (p != null && !p.equals("Cả học kỳ")) {
+                    coursePhases.put(cs.getCourseCode(), p);
+                }
+            }
+        }
+
+        // 2. Nhóm theo (dayOfWeek, startTime) để phát hiện các môn bị trùng giờ nếu chưa phân loại được
         Map<String, List<String>> timeSlots = new LinkedHashMap<>();
         for (CourseSchedule cs : list) {
             String key = (cs.getDayOfWeek() != null ? cs.getDayOfWeek() : "") + "_" + (cs.getStartTime() != null ? cs.getStartTime() : "");
@@ -269,8 +281,6 @@ public class AcademicSyncApiController {
             }
         }
 
-        // Đánh dấu môn thuộc Đợt 1 hay Đợt 2
-        Map<String, String> coursePhases = new HashMap<>();
         for (Map.Entry<String, List<String>> entry : timeSlots.entrySet()) {
             List<String> codes = entry.getValue();
             if (codes.size() >= 2) {
@@ -288,13 +298,15 @@ public class AcademicSyncApiController {
         }
 
         for (CourseSchedule cs : list) {
-            if (cs.getPhase() == null || cs.getPhase().isBlank()) {
-                String code = cs.getCourseCode() != null ? cs.getCourseCode() : "";
-                String p = coursePhases.getOrDefault(code, "Đợt 1");
+            String code = cs.getCourseCode() != null ? cs.getCourseCode() : "";
+            String p = coursePhases.get(code);
+            if (p != null) {
                 cs.setPhase(p);
-                if (cs.getWeeks() == null || cs.getWeeks().isBlank()) {
-                    cs.setWeeks("Đợt 2".equals(p) ? "Tuần 11 - 20" : "Tuần 1 - 10");
-                }
+            } else if (cs.getPhase() == null || cs.getPhase().isBlank()) {
+                cs.setPhase("Đợt 1");
+            }
+            if (cs.getWeeks() == null || cs.getWeeks().isBlank()) {
+                cs.setWeeks("Đợt 2".equals(cs.getPhase()) ? "Tuần 11 - 20" : "Tuần 1 - 10");
             }
         }
     }
