@@ -688,10 +688,22 @@
 
     function isConditionalSubject(g) {
         if (!g) return false;
-        const code = (g.courseCode || '').toUpperCase();
-        const name = (g.courseName || '').toLowerCase();
+        const code = (g.courseCode || '').toUpperCase().trim();
+        const name = (g.courseName || '').toLowerCase().trim();
         return code.startsWith('PHED') || code.startsWith('MILT') || code.startsWith('GDTC') || code.startsWith('GDQP')
-            || name.includes('thể chất') || name.includes('thể dục') || name.includes('quốc phòng') || name.includes('an ninh');
+            || (code.startsWith('LLCT') && code.includes('QP'))
+            || name.includes('thể chất') || name.includes('thể dục') || name.includes('quốc phòng') || name.includes('an ninh')
+            || name.includes('bóng đá') || name.includes('bóng chuyền') || name.includes('bóng bàn') || name.includes('bơi lội')
+            || name.includes('cầu lông') || name.includes('võ ') || name.includes('điền kinh');
+    }
+
+    // Kiểm tra học phần có tham gia tính GPA hay không (loại trừ GDTC, GDQP, và các môn chỉ đạt P/R/I/X)
+    function isCountedInGpa(g) {
+        if (!hasGradeResult(g)) return false;
+        if (isConditionalSubject(g)) return false;
+        const letter = (g.gradeLetter || '').trim().toUpperCase();
+        if (letter === 'P' || letter === 'R' || letter === 'I' || letter === 'X') return false;
+        return true;
     }
 
     function isLegacyPassSemester(semester) {
@@ -1227,10 +1239,10 @@
             semGrades.sort((a, b) => (a.courseCode || '').localeCompare(b.courseCode || ''));
 
             // Tính thống kê học kỳ: chỉ tính môn đã có điểm tổng kết cuối cùng
-            let semCredits = 0;
-            let semScore10 = 0;
-            let semScore4 = 0;
-            let semCreditsScored = 0;
+            let semCredits = 0;              // Tổng tín chỉ đăng ký học kỳ
+            let semScore10 = 0;              // Tổng (điểm 10 * TC) môn tính GPA
+            let semScore4 = 0;               // Tổng (điểm 4 * TC) môn tính GPA
+            let semCreditsForGpa = 0;        // Số tín chỉ tính GPA (loại trừ GDTC, GDQP, P, R)
             let semPassed = 0;
             let semGradedCount = 0;
             let semInProgressCount = 0;
@@ -1248,18 +1260,21 @@
                 semGradedCount++;
                 if (isCoursePassed(g) === true) semPassed++;
 
-                const g4 = getGrade4(g);
-                if (g.totalScore != null && cred > 0) {
-                    semScore10 += g.totalScore * cred;
-                    semCreditsScored += cred;
-                }
-                if (g4 != null && cred > 0) {
-                    semScore4 += g4 * cred;
+                // Môn điều kiện (GDTC, GDQP) và điểm P, R KHÔNG tính vào GPA học kỳ
+                if (isCountedInGpa(g) && cred > 0) {
+                    const g4 = getGrade4(g);
+                    if (g.totalScore != null) {
+                        semScore10 += g.totalScore * cred;
+                    }
+                    if (g4 != null) {
+                        semScore4 += g4 * cred;
+                    }
+                    semCreditsForGpa += cred;
                 }
             });
 
-            const semGpa10 = semCreditsScored > 0 ? (semScore10 / semCreditsScored).toFixed(2) : '--';
-            const semGpa4 = semCreditsScored > 0 ? (semScore4 / semCreditsScored).toFixed(2) : '--';
+            const semGpa10 = semCreditsForGpa > 0 ? (semScore10 / semCreditsForGpa).toFixed(2) : '--';
+            const semGpa4 = semCreditsForGpa > 0 ? (semScore4 / semCreditsForGpa).toFixed(2) : '--';
 
             html += `
                 <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden transition-all duration-200">
@@ -1382,6 +1397,7 @@
                 </td>
                 <td class="py-3 px-4 font-label-md text-label-md font-bold text-on-surface">
                     ${g.courseName||'--'}
+                    ${isConditionalSubject(g) ? '<span class="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200" title="Môn điều kiện, không tính vào GPA">Môn điều kiện</span>' : ''}
                 </td>
                 <td class="py-3 px-2 text-center font-body-md font-semibold text-on-surface">${g.credits != null ? g.credits : '--'}</td>
                 <td class="py-3 px-2 text-center font-body-md text-secondary">${mid}</td>
@@ -1470,19 +1486,21 @@
         if (progBody) {
             progBody.innerHTML = sortedSems.map(s => {
                 const list = semGroups[s];
-                let creds = 0, passedCreds = 0, sum10 = 0, sum4 = 0, scCredits = 0;
+                let creds = 0, passedCreds = 0, sum10 = 0, sum4 = 0, semCreditsForGpa = 0;
                 list.forEach(g => {
                     const c = g.credits || 0;
                     creds += c;
                     if (isCoursePassed(g)) passedCreds += c;
-                    if (g.totalScore != null && c > 0) {
-                        sum10 += g.totalScore * c;
-                        sum4 += getGrade4(g) * c;
-                        scCredits += c;
+                    // Loại trừ GDTC, GDQP khỏi GPA học kỳ trong bảng tiến độ
+                    if (isCountedInGpa(g) && c > 0) {
+                        const g4 = getGrade4(g);
+                        if (g.totalScore != null) sum10 += g.totalScore * c;
+                        if (g4 != null) sum4 += g4 * c;
+                        semCreditsForGpa += c;
                     }
                 });
-                const gpa10 = scCredits > 0 ? (sum10 / scCredits).toFixed(2) : '--';
-                const gpa4 = scCredits > 0 ? (sum4 / scCredits).toFixed(2) : '--';
+                const gpa10 = semCreditsForGpa > 0 ? (sum10 / semCreditsForGpa).toFixed(2) : '--';
+                const gpa4 = semCreditsForGpa > 0 ? (sum4 / semCreditsForGpa).toFixed(2) : '--';
                 let rank = 'Trung bình';
                 if (scCredits > 0) {
                     const num4 = parseFloat(gpa4);

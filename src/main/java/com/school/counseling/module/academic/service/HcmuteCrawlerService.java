@@ -870,9 +870,11 @@ public class HcmuteCrawlerService {
                 if (hasFinalResult && cr > 0) {
                     HcmuteGradingEngine.GradeConversion conv = HcmuteGradingEngine.convertGrade(
                             g.getTotalScore(), g.getGradeLetter(), g.getSemester(), g.getCourseCode(), g.getCourseName());
-                    latestSemRegisteredCredits += cr;
-                    if (!conv.isPassed()) {
-                        latestSemFailedCredits += cr;
+                    if (conv.isCountedInGpa()) {
+                        latestSemRegisteredCredits += cr;
+                        if (!conv.isPassed()) {
+                            latestSemFailedCredits += cr;
+                        }
                     }
                 }
             }
@@ -919,7 +921,9 @@ public class HcmuteCrawlerService {
             } else {
                 // Môn chưa đạt (và chưa được trả nợ thành công ở các lần học khác)
                 failedCoursesCount++;
-                debtCredits += credits;
+                if (!HcmuteGradingEngine.isConditionalSubject(g.getCourseCode(), g.getCourseName())) {
+                    debtCredits += credits;
+                }
             }
         }
 
