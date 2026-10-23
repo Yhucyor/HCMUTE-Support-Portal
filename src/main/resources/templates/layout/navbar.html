@@ -300,13 +300,6 @@
 
         <!-- 3. RIGHT ACTIONS & USER ACCOUNT -->
         <div class="hcmute-topbar-actions">
-            <!-- Nút Đỏ "Trang Quản Lý" dành riêng cho Quản Trị Viên -->
-            <div sec:authorize="hasRole('ADMIN')">
-                <a th:href="@{/admin/dashboard}" class="btn-topbar-admin-red" title="Truy cập Bảng Quản Trị Hệ Thống">
-                    <i class="bi bi-sliders"></i>
-                    <span>Trang Quản Lý</span>
-                </a>
-            </div>
 
             <!-- Nút Xanh "Bàn Cán Bộ" dành riêng cho Cán Bộ Tư Vấn -->
             <div sec:authorize="hasRole('STAFF') and !hasRole('ADMIN')">
