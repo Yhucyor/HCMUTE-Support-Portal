@@ -71,6 +71,7 @@ public class SecurityConfig {
                                 "/auth/**", "/api/v1/auth/**",
                                 "/oauth2/**", "/login/oauth2/**",
                                 "/error",
+                                "/files/**", "/image", "/documents/**", "/videos/**",
                                 "/css/**", "/js/**", "/vendor/**", "/images/**", "/uploads/**", "/webjars/**", "/favicon.ico")
                         .permitAll()
                         

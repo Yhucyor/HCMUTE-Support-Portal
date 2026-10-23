@@ -1,6 +1,7 @@
 package com.school.counseling.module.admin.controller;
 
 import com.school.counseling.common.dto.ApiResponse;
+import com.school.counseling.common.util.SecurityUtils;
 import com.school.counseling.module.admin.dto.AdminSlaDashboardDto;
 import com.school.counseling.module.admin.service.AdminDashboardService;
 import com.school.counseling.module.auth.entity.Department;
