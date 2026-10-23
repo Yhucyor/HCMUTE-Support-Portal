@@ -568,6 +568,32 @@
         loadSchedule(`${termLabel} (${year})`);
     }
 
+    // ── Date range & Schedule Active Helpers ─────────────────────────────────
+    function parseDateRange(weeks) {
+        if (!weeks) return null;
+        const m = weeks.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s*->\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if (!m) return null;
+        return {
+            start: new Date(parseInt(m[3], 10), parseInt(m[2], 10) - 1, parseInt(m[1], 10), 0, 0, 0),
+            end: new Date(parseInt(m[6], 10), parseInt(m[5], 10) - 1, parseInt(m[4], 10), 23, 59, 59)
+        };
+    }
+
+    /** Kiểm tra xem môn học có thực sự diễn ra vào ngày dateObj hay không (xét thứ và khoảng ngày hiệu lực) */
+    function isScheduleActiveOnDate(s, dateObj, respectPhaseFilter = false) {
+        if (!s) return false;
+        const dow = (dateObj.getDay() + 6) % 7; // Mon=0 .. Sun=6
+        if ((DAY_MAP[s.dayOfWeek] ?? -1) !== dow) return false;
+
+        const range = parseDateRange(s.weeks);
+        if (range) {
+            const cur = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), 12, 0, 0);
+            return cur >= range.start && cur <= range.end;
+        }
+        // Trường hợp chuỗi tuần chung không có ngày tháng cụ thể (ví dụ: Tuần 1 - 10)
+        return respectPhaseFilter ? matchesPhase(s) : true;
+    }
+
     // ── Day View (Hôm nay) ───────────────────────────────────────────────────
     function renderDayView() {
         const today = new Date();
@@ -581,8 +607,8 @@
 
         const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
         const daySchedules = allSchedules.filter(s => {
-            if (!matchesPhase(s)) return false;
-            if ((DAY_MAP[s.dayOfWeek] ?? -1) !== todayDow) return false;
+            // Xác thực chính xác theo ngày thực tế: vừa đúng thứ vừa nằm trong khoảng tuần học (weeks)
+            if (!isScheduleActiveOnDate(s, today, false)) return false;
             if (!search) return true;
             return (s.courseName||'').toLowerCase().includes(search) ||
                    (s.courseCode||'').toLowerCase().includes(search) ||
@@ -710,7 +736,8 @@
         const today = new Date();
         const todayDow = (today.getDay() + 6) % 7;
         const activeSchedules = allSchedules.filter(s => matchesPhase(s));
-        const todaySchedules = activeSchedules.filter(s => (DAY_MAP[s.dayOfWeek] ?? -1) === todayDow);
+        // Lịch hôm nay: chỉ tính những môn thực sự có lịch học vào ngày hôm nay
+        const todaySchedules = allSchedules.filter(s => isScheduleActiveOnDate(s, today, false));
         const subjects = new Set(activeSchedules.map(s => s.courseCode).filter(Boolean));
 
         const kpiTotal = document.getElementById('kpiTotal');
@@ -727,33 +754,48 @@
         const kpiCredits = document.getElementById('kpiCredits');
         if (kpiCredits) kpiCredits.textContent = subjects.size * 3 + ' TC';
 
-        // Next class
+        // Buổi học kế tiếp: tìm ca học tiếp theo theo thời gian thực
         const nowMins = today.getHours() * 60 + today.getMinutes();
         const todaySorted = todaySchedules.sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
-        const next = todaySorted.find(s => {
+        let next = null;
+        let nextBadgeText = 'Hôm nay';
+
+        // 1. Kiểm tra các ca còn lại trong ngày hôm nay
+        for (const s of todaySorted) {
             const [h,m] = (s.startTime||'00:00').split(':').map(Number);
-            return h*60+m > nowMins;
-        });
+            if (h*60 + m > nowMins) {
+                next = s;
+                break;
+            }
+        }
+
+        // 2. Nếu hôm nay không còn ca nào (hoặc trống lịch hôm nay), quét tìm ngày học thực tế gần nhất trong tương lai (tối đa 60 ngày)
+        if (!next) {
+            for (let dayOffset = 1; dayOffset <= 60; dayOffset++) {
+                const targetDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + dayOffset, 12, 0, 0);
+                const matches = allSchedules.filter(s => isScheduleActiveOnDate(s, targetDate, false))
+                    .sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
+                if (matches.length > 0) {
+                    next = matches[0];
+                    const dow = (targetDate.getDay() + 6) % 7;
+                    const d = String(targetDate.getDate()).padStart(2, '0');
+                    const mo = String(targetDate.getMonth() + 1).padStart(2, '0');
+                    nextBadgeText = dayOffset === 1 ? 'Ngày mai' : `${DAYS[dow]} (${d}/${mo})`;
+                    break;
+                }
+            }
+        }
+
         if (next) {
             document.getElementById('nextTime').textContent = `${next.startTime} – ${next.endTime||''}`;
             document.getElementById('nextSubject').textContent = next.courseName||'--';
             document.getElementById('nextDetail').textContent = `${next.room||''}${next.lecturer ? ' · ' + next.lecturer : ''}`;
-            document.getElementById('nextBadge').textContent = 'Hôm nay';
+            document.getElementById('nextBadge').textContent = nextBadgeText;
         } else {
-            const tomorrowIdx = (todayDow + 1) % 7;
-            const tomorrowFirst = activeSchedules.filter(s => (DAY_MAP[s.dayOfWeek]??-1) === tomorrowIdx)
-                .sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''))[0];
-            if (tomorrowFirst) {
-                document.getElementById('nextTime').textContent = `${tomorrowFirst.startTime} – ${tomorrowFirst.endTime||''}`;
-                document.getElementById('nextSubject').textContent = tomorrowFirst.courseName||'--';
-                document.getElementById('nextDetail').textContent = `${tomorrowFirst.room||''}${tomorrowFirst.lecturer ? ' · '+tomorrowFirst.lecturer : ''}`;
-                document.getElementById('nextBadge').textContent = 'Ngày mai';
-            } else {
-                document.getElementById('nextTime').textContent = '--:--';
-                document.getElementById('nextSubject').textContent = 'Không có ca tiếp theo';
-                document.getElementById('nextDetail').textContent = '';
-                document.getElementById('nextBadge').textContent = 'Trống lịch';
-            }
+            document.getElementById('nextTime').textContent = '--:--';
+            document.getElementById('nextSubject').textContent = 'Không có ca tiếp theo';
+            document.getElementById('nextDetail').textContent = 'Học kỳ đã hoàn thành hoặc chưa có lịch';
+            document.getElementById('nextBadge').textContent = 'Trống lịch';
         }
     }
 
