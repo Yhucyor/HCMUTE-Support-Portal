@@ -62,6 +62,27 @@ public class AuthWebController {
         return "login";
     }
 
+    @PostMapping("/portal-login")
+    public String handlePortalLogin(@RequestParam("studentId") String studentId,
+                                    @RequestParam("portalPassword") String portalPassword,
+                                    HttpServletRequest request,
+                                    RedirectAttributes redirectAttributes) {
+        try {
+            authService.loginWithHcmutePortal(studentId, portalPassword, request);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Đăng nhập thành công qua Cổng Đào tạo HCMUTE! Hệ thống đang đồng bộ dữ liệu học vụ của bạn.");
+            return "redirect:/home";
+        } catch (AppException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:/auth/login";
+        } catch (Exception ex) {
+            log.error("Portal login failed", ex);
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Đăng nhập qua Cổng Đào tạo thất bại: " + ex.getMessage());
+            return "redirect:/auth/login";
+        }
+    }
+
     @GetMapping("/register")
     public String registerPage(HttpServletRequest request, Model model) {
         request.getSession(true);

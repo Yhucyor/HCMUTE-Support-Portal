@@ -217,13 +217,13 @@
 
                 <!-- Social Auth: Google & Microsoft -->
                 <div class="grid grid-cols-2 gap-3">
-                    <button type="button" onclick="alert('Đăng nhập Google Workspace tích hợp qua Single Sign-On (SSO) trường.')" class="flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 transition text-xs font-semibold text-slate-700 shadow-sm">
+                    <a th:href="@{/oauth2/authorization/google}" class="flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 transition text-xs font-semibold text-slate-700 shadow-sm">
                         <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"></path><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"></path><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z"></path><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2-6.4-4.8L1.9 16.4C3.7 20.4 7.5 23 12 23z"></path></svg>
-                        Google Workspace
-                    </button>
-                    <button type="button" onclick="alert('Đăng nhập Microsoft 365 (@hcmute.edu.vn) tích hợp qua Azure AD.')" class="flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 transition text-xs font-semibold text-slate-700 shadow-sm">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#F25022" d="M1 1h10v10H1z"></path><path fill="#7FBA00" d="M13 1h10v10H13z"></path><path fill="#00A4EF" d="M1 13h10v10H1z"></path><path fill="#FFB900" d="M13 13h10v10H13z"></path></svg>
-                        Microsoft 365
+                        Google
+                    </a>
+                    <button type="button" onclick="openPortalModal()" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-blue-200 bg-blue-50/70 hover:bg-blue-100 hover:border-blue-300 transition text-xs font-semibold text-blue-800 shadow-sm">
+                        <svg class="w-4 h-4 text-blue-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
+                        <span class="truncate">Cổng Đào tạo UTE</span>
                     </button>
                 </div>
 
@@ -283,5 +283,56 @@
             }
         }
     </script>
+
+    <!-- Modal: Đăng nhập Cổng Đào tạo HCMUTE -->
+    <div id="portalModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">Cổng Đào tạo HCMUTE</h3>
+                        <p class="text-[11px] text-slate-400">Xác thực tài khoản online.hcmute.edu.vn</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closePortalModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <form th:action="@{/auth/portal-login}" method="post" class="mt-4 space-y-3.5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Mã số sinh viên (MSSV)</label>
+                    <input type="text" name="studentId" required placeholder="Ví dụ: 21110xxx hoặc demo" 
+                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Mật khẩu Cổng đào tạo</label>
+                    <input type="password" name="portalPassword" required placeholder="Mật khẩu xem điểm / ĐKMH trường" 
+                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
+                </div>
+                <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-800 flex items-start gap-2">
+                    <svg class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Hệ thống tự động kích hoạt tài khoản và đồng bộ Thời khóa biểu, Điểm số, Bảng điểm của bạn. (Demo: <strong>demo</strong> / <strong>123456demo</strong>).</span>
+                </div>
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" onclick="closePortalModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition">Hủy</button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/20 transition">Xác thực &amp; Đăng nhập</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openPortalModal() {
+            document.getElementById('portalModal').classList.remove('hidden');
+        }
+        function closePortalModal() {
+            document.getElementById('portalModal').classList.add('hidden');
+        }
+    </script>
+
 </body>
 </html>
