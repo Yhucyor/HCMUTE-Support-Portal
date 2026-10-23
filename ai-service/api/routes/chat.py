@@ -50,6 +50,7 @@ class ChatRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=MAX_QUERY_LENGTH, description="User's question")
     session_id: Optional[str] = Field(None, description="Session ID for conversation tracking")
     provider: Optional[str] = Field("ollama", description="LLM provider: 'ollama' or 'gemini'")
+    history: Optional[list] = Field(default_factory=list, description="Recent conversation history")
 
 class ChatResponse(BaseModel):
     """Chat response model"""
@@ -81,6 +82,30 @@ async def chat_endpoint(request: ChatRequest, req: Request):
     logger.info(f"Session {session_id}: Received question: {question} (Provider: {provider})")
     
     try:
+        import math
+        import re
+
+        # Nhận diện câu chào hỏi, cảm ơn, xã giao cơ bản
+        def is_casual(q: str) -> bool:
+            clean = re.sub(r"[^\w\s]", "", q.lower()).strip()
+            patterns = [
+                r"^(h+i+|h+e+l+o+|h+e+l+l+o+|a+l+o+|h+e+y+|y+o+)$",
+                r"^(xin chào|chào|chào bạn|chao|chao ban|hi bạn|hi ban)$",
+                r"^(bạn là ai|ban la ai|who are you|bạn tên gì|ban ten gi)$",
+                r"^(cảm ơn|cảm ơn bạn|cam on|thanks|thank you|tks)$",
+                r"^(tạm biệt|tam biet|bye|bye bye|gbye)$",
+                r"^(ok|oke|okie|ừ|uh|dạ|da|vâng|vang)$"
+            ]
+            return any(re.match(p, clean) for p in patterns)
+
+        if is_casual(question):
+            return ChatResponse(
+                answer="Hi bạn nè! ✨ Mình là Trợ lý AI học vụ của HCMUTE Student Portal. Mình có thể hỗ trợ bạn giải đáp mọi thông tin về học phí, quy chế học vụ, đăng ký môn học và các thủ tục tại trường. Bạn cần mình giải đáp vấn đề gì hôm nay? 😊",
+                sources=[],
+                session_id=session_id,
+                provider=provider
+            )
+
         # Get BM25 and Reranker from startup
         bm25 = get_bm25()
         reranker = get_reranker()
@@ -92,9 +117,24 @@ async def chat_endpoint(request: ChatRequest, req: Request):
                 detail="Hệ thống chưa sẵn sàng. Vui lòng thử lại sau."
             )
         
-        # Step 1: Hybrid retrieval (Dense + BM25)
-        logger.info(f"Session {session_id}: Running hybrid retrieval...")
-        documents = hybrid_retrieve(question, bm25)
+        history = request.history or []
+        search_query = question
+
+        # Step 0: Multi-turn Contextual Query Rewriting (Query Condensation)
+        if history and len(history) > 0:
+            try:
+                from retrieval.query_rewriter import rewrite_query
+                rewritten = rewrite_query(question, history)
+                if rewritten and rewritten.strip():
+                    search_query = rewritten.strip()
+                    logger.info(f"Session {session_id}: Rewrote query from '{question}' -> '{search_query}'")
+            except Exception as e:
+                logger.warning(f"Session {session_id}: Query rewriting failed ({e}), keeping original question.")
+                search_query = question
+
+        # Step 1: Hybrid retrieval (Dense + BM25) với search_query độc lập
+        logger.info(f"Session {session_id}: Running hybrid retrieval with search query: '{search_query}'...")
+        documents = hybrid_retrieve(search_query, bm25)
         
         if not documents:
             logger.warning(f"Session {session_id}: No documents retrieved")
@@ -107,33 +147,64 @@ async def chat_endpoint(request: ChatRequest, req: Request):
         
         logger.info(f"Session {session_id}: Retrieved {len(documents)} documents from hybrid search")
         
-        # Step 2: Reranking (if available)
+        # Step 2: Reranking (if available) với search_query độc lập
         if reranker is not None:
-            logger.info(f"Session {session_id}: Reranking documents...")
-            documents = reranker.rerank(question, documents, top_k=RERRANKING_TOP_K)
+            logger.info(f"Session {session_id}: Reranking documents with query: '{search_query}'...")
+            documents = reranker.rerank(search_query, documents, top_k=RERRANKING_TOP_K)
             logger.info(f"Session {session_id}: After reranking: {len(documents)} documents")
         else:
             logger.warning(f"Session {session_id}: Reranker not available, using hybrid scores only")
             documents = documents[:RERRANKING_TOP_K]  # Cut to top K
         
-        # Step 3: Build context and generate answer
+        # Step 3: Build context and generate answer (kèm history cho câu trả lời tự nhiên, liền mạch)
         context = "\n\n".join(
             f"[{i+1}] {doc.text}\n(Nguồn: {doc.metadata})" 
             for i, doc in enumerate(documents)
         )
         logger.info(f"Session {session_id}: Retrieved {len(documents)} documents")
         
-        answer = generate_answer(context, question, provider=provider)
+        answer = generate_answer(context, question, provider=provider, history=history)
         logger.info(f"Session {session_id}: Generated answer successfully via {provider}")
-        
-        sources = [
-            {
-                "text": doc.text[:200] + "..." if len(doc.text) > 200 else doc.text,
-                "metadata": doc.metadata,
-                "score": doc.score
-            }
-            for doc in documents
-        ]
+
+        def clean_source_title(meta: dict) -> str:
+            raw_title = meta.get("title") or meta.get("source") or "Văn bản quy định HCMUTE"
+            if raw_title.lower().endswith(".pdf"):
+                raw_title = raw_title[:-4]
+            cleaned = re.sub(r"^\d+[\.\-_]\s*", "", raw_title)
+            return cleaned.strip() or "Văn bản quy định HCMUTE"
+
+        def normalize_score(raw_score) -> float:
+            if raw_score is None:
+                return 0.85
+            try:
+                val = 1.0 / (1.0 + math.exp(-float(raw_score) / 2.0))
+                return round(min(0.98, max(0.40, val)), 2)
+            except Exception:
+                return 0.85
+
+        # Khử trùng lặp nguồn (Deduplication) và lọc theo ngưỡng chất lượng (Relevance Threshold)
+        seen_titles = set()
+        sources = []
+        for doc in documents:
+            title = clean_source_title(doc.metadata or {})
+            if not title or title.lower() in seen_titles:
+                continue
+
+            score = normalize_score(doc.score)
+            # Chỉ hiển thị nguồn có liên quan thực sự (trên 68%)
+            if score < 0.68:
+                continue
+
+            seen_titles.add(title.lower())
+            sources.append({
+                "text": doc.text[:250] + "..." if len(doc.text) > 250 else doc.text,
+                "title": title,
+                "source": (doc.metadata or {}).get("source") or title,
+                "page_number": (doc.metadata or {}).get("page"),
+                "document_type": (doc.metadata or {}).get("type"),
+                "score": score,
+                "metadata": doc.metadata
+            })
         
         if session_id not in sessions:
             sessions[session_id] = []

@@ -11,8 +11,8 @@ public class AiConfig {
     @Bean
     public RestTemplate restTemplate() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(1500);
-        factory.setReadTimeout(5000);
+        factory.setConnectTimeout(5000);  // 5s kết nối
+        factory.setReadTimeout(60000);    // 60s đợi LLM RAG sinh câu trả lời
         return new RestTemplate(factory);
     }
 }
