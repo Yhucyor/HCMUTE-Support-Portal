@@ -1214,13 +1214,10 @@
                             </span>
                         </div>
 
-                        <!-- Category Filters -->
-                        <div class="flex items-center gap-1 bg-surface-container-low p-1 rounded-lg mb-space-md overflow-x-auto" id="announcementFilters">
-                            <button onclick="filterAnnouncements('ALL', this)" class="ann-filter-btn flex-1 py-1 px-2 text-center font-label-md text-xs rounded bg-surface-container-lowest shadow-xs text-primary font-semibold transition-all shrink-0">Tất cả</button>
-                            <button onclick="filterAnnouncements('Học vụ', this)" class="ann-filter-btn flex-1 py-1 px-2 text-center font-label-md text-xs rounded text-on-surface-variant hover:text-on-surface transition-all shrink-0">Học vụ</button>
-                            <button onclick="filterAnnouncements('Học bổng', this)" class="ann-filter-btn flex-1 py-1 px-2 text-center font-label-md text-xs rounded text-on-surface-variant hover:text-on-surface transition-all shrink-0">Học bổng</button>
-                            <button onclick="filterAnnouncements('Lịch thi', this)" class="ann-filter-btn flex-1 py-1 px-2 text-center font-label-md text-xs rounded text-on-surface-variant hover:text-on-surface transition-all shrink-0">Lịch thi</button>
-                            <button onclick="filterAnnouncements('Công tác SV', this)" class="ann-filter-btn flex-1 py-1 px-2 text-center font-label-md text-xs rounded text-on-surface-variant hover:text-on-surface transition-all shrink-0">Công tác SV</button>
+                        <!-- Category Filters: Chỉ gồm Tất cả và Công tác SV -->
+                        <div class="flex items-center gap-1 bg-surface-container-low p-1 rounded-lg mb-space-md" id="announcementFilters">
+                            <button onclick="filterAnnouncements('ALL', this)" class="ann-filter-btn flex-1 py-1.5 px-3 text-center font-label-md text-xs rounded bg-surface-container-lowest shadow-xs text-primary font-bold transition-all cursor-pointer">Tất cả</button>
+                            <button onclick="filterAnnouncements('Công tác SV', this)" class="ann-filter-btn flex-1 py-1.5 px-3 text-center font-label-md text-xs rounded text-on-surface-variant hover:text-on-surface transition-all cursor-pointer font-medium">Công tác SV</button>
                         </div>
 
                         <!-- Announcement List -->
@@ -2059,10 +2056,10 @@
             currentAnnCategory = category;
             const buttons = document.querySelectorAll('.ann-filter-btn');
             buttons.forEach(b => {
-                b.className = 'ann-filter-btn flex-1 py-1 px-2 text-center font-label-md text-xs rounded text-on-surface-variant hover:text-on-surface transition-all shrink-0 cursor-pointer';
+                b.className = 'ann-filter-btn flex-1 py-1.5 px-3 text-center font-label-md text-xs rounded text-on-surface-variant hover:text-on-surface transition-all cursor-pointer font-medium';
             });
             if (btn) {
-                btn.className = 'ann-filter-btn flex-1 py-1 px-2 text-center font-label-md text-xs rounded bg-surface-container-lowest shadow-xs text-primary font-semibold transition-all shrink-0 cursor-pointer';
+                btn.className = 'ann-filter-btn flex-1 py-1.5 px-3 text-center font-label-md text-xs rounded bg-surface-container-lowest shadow-xs text-primary font-bold transition-all cursor-pointer';
             }
 
             const items = document.querySelectorAll('#announcementList .ann-item');
@@ -2070,8 +2067,12 @@
             const maxVisible = isAnnExpanded ? 50 : 6;
 
             items.forEach(item => {
-                const cat = item.dataset.category || '';
-                const match = (category === 'ALL' || cat.toLowerCase().includes(category.toLowerCase()));
+                const cat = (item.dataset.category || '').toLowerCase();
+                const sender = (item.dataset.sender || '').toLowerCase();
+                let match = (category === 'ALL');
+                if (category === 'Công tác SV') {
+                    match = cat.includes('công tác') || cat.includes('sv') || sender.includes('qlsv');
+                }
                 if (match && visibleCount < maxVisible) {
                     item.classList.remove('hidden');
                     visibleCount++;
