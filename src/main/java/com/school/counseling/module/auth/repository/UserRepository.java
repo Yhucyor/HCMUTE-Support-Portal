@@ -59,4 +59,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("status") com.school.counseling.module.auth.entity.UserStatus status,
             org.springframework.data.domain.Pageable pageable
     );
+
+    boolean existsByEmailAndIdNot(String email, Long id);
 }
