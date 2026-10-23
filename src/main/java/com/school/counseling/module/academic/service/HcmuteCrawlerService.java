@@ -655,6 +655,11 @@ public class HcmuteCrawlerService {
                         int credits = s.hasNonNull("SoTinChi") ? s.get("SoTinChi").asInt(3)
                                 : (s.hasNonNull("STC") ? s.get("STC").asInt(3) : 3);
 
+                        String tuanHoc = s.hasNonNull("TuanHoc") ? s.get("TuanHoc").asText().trim() : "";
+                        String rawDot = s.hasNonNull("Dot") ? s.get("Dot").asText().trim()
+                                : (s.hasNonNull("DotHoc") ? s.get("DotHoc").asText().trim() : "");
+                        String phase = determinePhase(tuanHoc, rawDot);
+
                         list.add(CourseSchedule.builder()
                                 .studentId(studentId)
                                 .courseCode(courseCode)
@@ -668,6 +673,8 @@ public class HcmuteCrawlerService {
                                 .semester(formatSemesterLabel(currentTerm, currentYear))
                                 .groupCode(groupCode)
                                 .credits(credits)
+                                .phase(phase)
+                                .weeks(!tuanHoc.isBlank() ? tuanHoc : (phase.equals("Đợt 2") ? "Tuần 11 - 20" : "Tuần 1 - 10"))
                                 .build());
                     }
                 }
@@ -1331,6 +1338,44 @@ public class HcmuteCrawlerService {
         return new String[]{"07:30", "09:45"};
     }
 
+    public static String determinePhase(String tuanHoc, String rawDot) {
+        if (rawDot != null && !rawDot.isBlank()) {
+            String d = rawDot.trim().toLowerCase(Locale.ROOT);
+            if (d.contains("1") || d.contains("đợt 1") || d.contains("dot 1")) return "Đợt 1";
+            if (d.contains("2") || d.contains("đợt 2") || d.contains("dot 2")) return "Đợt 2";
+        }
+        if (tuanHoc != null && !tuanHoc.isBlank()) {
+            String t = tuanHoc.trim();
+            // Dạng khoảng tuần: "1-10", "11-20", "1-18"
+            java.util.regex.Matcher mRange = java.util.regex.Pattern.compile("(\\d+)\\s*[-–]\\s*(\\d+)").matcher(t);
+            if (mRange.find()) {
+                int start = Integer.parseInt(mRange.group(1));
+                int end = Integer.parseInt(mRange.group(2));
+                if (end <= 10) return "Đợt 1";
+                if (start >= 10) return "Đợt 2";
+                return "Cả học kỳ";
+            }
+            // Dạng chuỗi vị trí tuần (vd: "1234567890----------" hoặc "----------1234567890")
+            if (t.contains("-") || t.matches(".*\\d.*")) {
+                int firstDigit = -1;
+                int lastDigit = -1;
+                for (int i = 0; i < t.length(); i++) {
+                    char c = t.charAt(i);
+                    if (Character.isDigit(c)) {
+                        if (firstDigit == -1) firstDigit = i + 1;
+                        lastDigit = i + 1;
+                    }
+                }
+                if (firstDigit != -1) {
+                    if (lastDigit <= 10) return "Đợt 1";
+                    if (firstDigit >= 10) return "Đợt 2";
+                    return "Cả học kỳ";
+                }
+            }
+        }
+        return "Đợt 1";
+    }
+
     private List<CourseSchedule> generateDemoSchedules(String studentId) {
         List<CourseSchedule> list = new ArrayList<>();
         String semester = "HK01 (2024-2025)";
@@ -1348,6 +1393,8 @@ public class HcmuteCrawlerService {
                 .semester(semester)
                 .groupCode("01CLC")
                 .credits(3)
+                .phase("Đợt 1")
+                .weeks("Tuần 1 - 10")
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -1363,6 +1410,8 @@ public class HcmuteCrawlerService {
                 .semester(semester)
                 .groupCode("02CLC")
                 .credits(3)
+                .phase("Đợt 1")
+                .weeks("Tuần 1 - 10")
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -1378,6 +1427,8 @@ public class HcmuteCrawlerService {
                 .semester(semester)
                 .groupCode("01")
                 .credits(3)
+                .phase("Đợt 1")
+                .weeks("Tuần 1 - 10")
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -1393,6 +1444,8 @@ public class HcmuteCrawlerService {
                 .semester(semester)
                 .groupCode("03")
                 .credits(3)
+                .phase("Đợt 2")
+                .weeks("Tuần 11 - 20")
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -1408,6 +1461,8 @@ public class HcmuteCrawlerService {
                 .semester(semester)
                 .groupCode("01CLC")
                 .credits(3)
+                .phase("Đợt 2")
+                .weeks("Tuần 11 - 20")
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -1423,6 +1478,8 @@ public class HcmuteCrawlerService {
                 .semester(semester)
                 .groupCode("02")
                 .credits(3)
+                .phase("Đợt 2")
+                .weeks("Tuần 11 - 20")
                 .build());
 
         return list;

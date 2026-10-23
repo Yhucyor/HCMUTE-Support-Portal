@@ -168,7 +168,8 @@ public class AcademicSyncApiController {
     @GetMapping("/schedules")
     public ResponseEntity<List<CourseSchedule>> getSchedules(
             @RequestParam(required = false) String studentId,
-            @RequestParam(required = false) String semester) {
+            @RequestParam(required = false) String semester,
+            @RequestParam(required = false) String phase) {
         String resolvedId = resolveStudentId(studentId);
         String normSem = normalizeSemester(semester);
 
@@ -221,7 +222,7 @@ public class AcademicSyncApiController {
             }
         }
 
-        // Tự động chuẩn hóa thời gian các môn học đã lưu trong DB nếu trước đó bị gán nhầm 07:30
+        // Tự động chuẩn hóa thời gian và phân loại Đợt 1 / Đợt 2 cho các môn đã lưu trong DB
         if (!list.isEmpty()) {
             boolean updated = false;
             for (CourseSchedule cs : list) {
@@ -234,12 +235,68 @@ public class AcademicSyncApiController {
                     }
                 }
             }
+
+            boolean hasMissingPhase = list.stream().anyMatch(cs -> cs.getPhase() == null || cs.getPhase().isBlank());
+            if (hasMissingPhase) {
+                autoAssignPhases(list);
+                updated = true;
+            }
+
             if (updated) {
                 scheduleRepository.saveAll(list);
             }
         }
 
+        // Lọc theo Đợt học nếu có yêu cầu
+        if (phase != null && !phase.isBlank() && !"ALL".equalsIgnoreCase(phase)) {
+            String filterPhase = ("DOT_1".equalsIgnoreCase(phase) || "Đợt 1".equalsIgnoreCase(phase)) ? "Đợt 1" : "Đợt 2";
+            list = list.stream()
+                    .filter(cs -> cs.getPhase() == null || cs.getPhase().equalsIgnoreCase(filterPhase) || "Cả học kỳ".equalsIgnoreCase(cs.getPhase()))
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
         return ResponseEntity.ok(list);
+    }
+
+    private void autoAssignPhases(List<CourseSchedule> list) {
+        // Nhóm theo (dayOfWeek, startTime) để phát hiện các môn bị trùng giờ
+        Map<String, List<String>> timeSlots = new LinkedHashMap<>();
+        for (CourseSchedule cs : list) {
+            String key = (cs.getDayOfWeek() != null ? cs.getDayOfWeek() : "") + "_" + (cs.getStartTime() != null ? cs.getStartTime() : "");
+            String code = cs.getCourseCode() != null ? cs.getCourseCode() : "";
+            if (!timeSlots.computeIfAbsent(key, k -> new ArrayList<>()).contains(code)) {
+                timeSlots.get(key).add(code);
+            }
+        }
+
+        // Đánh dấu môn thuộc Đợt 1 hay Đợt 2
+        Map<String, String> coursePhases = new HashMap<>();
+        for (Map.Entry<String, List<String>> entry : timeSlots.entrySet()) {
+            List<String> codes = entry.getValue();
+            if (codes.size() >= 2) {
+                String c1 = codes.get(0);
+                String c2 = codes.get(1);
+                if (!coursePhases.containsKey(c1) && !coursePhases.containsKey(c2)) {
+                    coursePhases.put(c1, "Đợt 1");
+                    coursePhases.put(c2, "Đợt 2");
+                } else if (coursePhases.containsKey(c1) && !coursePhases.containsKey(c2)) {
+                    coursePhases.put(c2, "Đợt 1".equals(coursePhases.get(c1)) ? "Đợt 2" : "Đợt 1");
+                } else if (!coursePhases.containsKey(c1) && coursePhases.containsKey(c2)) {
+                    coursePhases.put(c1, "Đợt 1".equals(coursePhases.get(c2)) ? "Đợt 2" : "Đợt 1");
+                }
+            }
+        }
+
+        for (CourseSchedule cs : list) {
+            if (cs.getPhase() == null || cs.getPhase().isBlank()) {
+                String code = cs.getCourseCode() != null ? cs.getCourseCode() : "";
+                String p = coursePhases.getOrDefault(code, "Đợt 1");
+                cs.setPhase(p);
+                if (cs.getWeeks() == null || cs.getWeeks().isBlank()) {
+                    cs.setWeeks("Đợt 2".equals(p) ? "Tuần 11 - 20" : "Tuần 1 - 10");
+                }
+            }
+        }
     }
 
     private String normalizeSemester(String semester) {

@@ -116,6 +116,20 @@ class HcmuteCrawlerServiceTimetableTest {
             assertNotNull(s.getGroupCode(), "Nhóm học không được rỗng");
             assertNotNull(s.getCredits(), "Số tín chỉ không được rỗng");
             assertTrue(s.getCredits() > 0, "Số tín chỉ phải lớn hơn 0");
+            assertNotNull(s.getPhase(), "Đợt học không được rỗng: " + s.getCourseName());
+            assertNotNull(s.getWeeks(), "Tuần học không được rỗng: " + s.getCourseName());
         }
+    }
+
+    @Test
+    @DisplayName("determinePhase - Phân loại chính xác Đợt 1, Đợt 2 và Cả học kỳ")
+    void testDeterminePhase() {
+        assertEquals("Đợt 1", HcmuteCrawlerService.determinePhase(null, "Đợt 1"));
+        assertEquals("Đợt 2", HcmuteCrawlerService.determinePhase(null, "Đợt 2"));
+        assertEquals("Đợt 1", HcmuteCrawlerService.determinePhase("1-10", null));
+        assertEquals("Đợt 2", HcmuteCrawlerService.determinePhase("11-20", null));
+        assertEquals("Cả học kỳ", HcmuteCrawlerService.determinePhase("1-18", null));
+        assertEquals("Đợt 1", HcmuteCrawlerService.determinePhase("1234567890----------", null));
+        assertEquals("Đợt 2", HcmuteCrawlerService.determinePhase("----------1234567890", null));
     }
 }
