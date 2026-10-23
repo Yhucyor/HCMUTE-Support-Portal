@@ -74,7 +74,14 @@ public class HcmuteGradingEngine {
             String codeUpper = courseCode.trim().toUpperCase(Locale.ROOT);
             if (codeUpper.startsWith("PHED") || codeUpper.startsWith("MILT")
                     || codeUpper.startsWith("GDTC") || codeUpper.startsWith("GDQP")
-                    || codeUpper.startsWith("LLCT") && codeUpper.contains("QP")) {
+                    || codeUpper.startsWith("LLCT") && codeUpper.contains("QP")
+                    || codeUpper.startsWith("KARA") || codeUpper.startsWith("VOLL")
+                    || codeUpper.startsWith("BASK") || codeUpper.startsWith("SWIM")
+                    || codeUpper.startsWith("FOOT") || codeUpper.startsWith("BADM")
+                    || codeUpper.startsWith("TABL") || codeUpper.startsWith("TENN")
+                    || codeUpper.startsWith("ATHL") || codeUpper.startsWith("TAEK")
+                    || codeUpper.startsWith("VOVI") || codeUpper.startsWith("AERO")
+                    || codeUpper.startsWith("CHSS")) {
                 return true;
             }
         }
@@ -85,7 +92,10 @@ public class HcmuteGradingEngine {
                     || nameLower.contains("bóng đá") || nameLower.contains("bóng chuyền")
                     || nameLower.contains("bóng bàn") || nameLower.contains("bơi lội")
                     || nameLower.contains("cầu lông") || nameLower.contains("võ ")
-                    || nameLower.contains("điền kinh")) {
+                    || nameLower.contains("điền kinh") || nameLower.contains("karate")
+                    || nameLower.contains("không thủ") || nameLower.contains("kháng thủ")
+                    || nameLower.contains("bóng rổ") || nameLower.contains("taekwondo")
+                    || nameLower.contains("vovinam")) {
                 return true;
             }
         }

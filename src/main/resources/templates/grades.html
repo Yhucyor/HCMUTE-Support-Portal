@@ -694,9 +694,15 @@
         const name = (g.courseName || '').toLowerCase().trim();
         return code.startsWith('PHED') || code.startsWith('MILT') || code.startsWith('GDTC') || code.startsWith('GDQP')
             || (code.startsWith('LLCT') && code.includes('QP'))
+            || code.startsWith('KARA') || code.startsWith('VOLL') || code.startsWith('BASK') || code.startsWith('SWIM')
+            || code.startsWith('FOOT') || code.startsWith('BADM') || code.startsWith('TABL') || code.startsWith('TENN')
+            || code.startsWith('ATHL') || code.startsWith('TAEK') || code.startsWith('VOVI') || code.startsWith('AERO')
+            || code.startsWith('CHSS')
             || name.includes('thể chất') || name.includes('thể dục') || name.includes('quốc phòng') || name.includes('an ninh')
             || name.includes('bóng đá') || name.includes('bóng chuyền') || name.includes('bóng bàn') || name.includes('bơi lội')
-            || name.includes('cầu lông') || name.includes('võ ') || name.includes('điền kinh');
+            || name.includes('cầu lông') || name.includes('võ ') || name.includes('điền kinh')
+            || name.includes('karate') || name.includes('kháng thủ') || name.includes('không thủ')
+            || name.includes('bóng rổ') || name.includes('taekwondo') || name.includes('vovinam');
     }
 
     // Kiểm tra học phần có tham gia tính GPA hay không (loại trừ GDTC, GDQP, và các môn chỉ đạt P/R/I/X)
@@ -705,6 +711,15 @@
         if (isConditionalSubject(g)) return false;
         const letter = (g.gradeLetter || '').trim().toUpperCase();
         if (letter === 'P' || letter === 'R' || letter === 'I' || letter === 'X') return false;
+        return true;
+    }
+
+    // Kiểm tra học phần có được tính vào tín chỉ tích lũy (CPA / CTĐT) hay không
+    function isCountedInAccumulatedCredits(g) {
+        if (!isCoursePassed(g)) return false;
+        if (isConditionalSubject(g)) return false;
+        const letter = (g.gradeLetter || '').trim().toUpperCase();
+        if (letter === 'P' || letter === 'I' || letter === 'X') return false;
         return true;
     }
 
@@ -1048,9 +1063,8 @@
         });
 
         let totalPassedCredits = 0;
-        let sumScore10 = 0;
-        let sumScore4 = 0;
-        let countCreditsWithScore = 0;
+        let sumScore10 = 0, creditsForGpa10 = 0;
+        let sumScore4 = 0, creditsForGpa4 = 0;
         let passed = 0, failed = 0, debtCredits = 0;
 
         bestMap.forEach(g => {
@@ -1060,18 +1074,19 @@
 
             if (isPass === true) {
                 passed++;
-                if (!isCond) {
+                if (isCountedInAccumulatedCredits(g)) {
                     totalPassedCredits += credits;
                 }
-                const g4 = getGrade4(g);
-                if (!isCond && credits > 0) {
+                if (isCountedInGpa(g) && credits > 0) {
+                    const g4 = getGrade4(g);
                     if (g.totalScore != null) {
                         sumScore10 += g.totalScore * credits;
+                        creditsForGpa10 += credits;
                     }
                     if (g4 != null) {
                         sumScore4 += g4 * credits;
+                        creditsForGpa4 += credits;
                     }
-                    countCreditsWithScore += credits;
                 }
             } else {
                 failed++;
@@ -1081,8 +1096,9 @@
             }
         });
 
-        const gpa10 = countCreditsWithScore > 0 ? (sumScore10 / countCreditsWithScore) : 0;
-        const gpa4 = countCreditsWithScore > 0 ? (sumScore4 / countCreditsWithScore) : 0;
+        const gpa10 = creditsForGpa10 > 0 ? (sumScore10 / creditsForGpa10) : (academicSummary?.gpa10 || 0);
+        const gpa4 = creditsForGpa4 > 0 ? (sumScore4 / creditsForGpa4) : (academicSummary?.gpa4 || 0);
+        const finalPassedCredits = totalPassedCredits > 0 ? totalPassedCredits : (academicSummary?.totalCredits || 0);
 
         let standing = 'Kém';
         if (gpa4 >= 3.6) standing = 'Xuất sắc';
@@ -1094,10 +1110,10 @@
 
         // Trình độ năm đào tạo theo Quyết định 3116/QĐ-ĐHSPKT (2025)
         let yearLevel = 'Năm thứ nhất';
-        if (totalPassedCredits > 149) yearLevel = 'Năm thứ năm';
-        else if (totalPassedCredits >= 108) yearLevel = 'Năm thứ tư';
-        else if (totalPassedCredits >= 72) yearLevel = 'Năm thứ ba';
-        else if (totalPassedCredits >= 36) yearLevel = 'Năm thứ hai';
+        if (finalPassedCredits > 149) yearLevel = 'Năm thứ năm';
+        else if (finalPassedCredits >= 108) yearLevel = 'Năm thứ tư';
+        else if (finalPassedCredits >= 72) yearLevel = 'Năm thứ ba';
+        else if (finalPassedCredits >= 36) yearLevel = 'Năm thứ hai';
 
         // Đánh giá Cảnh báo học tập (Mục 4.2)
         let isWarning = false;
@@ -1108,11 +1124,11 @@
         }
         let threshold = 1.20;
         let yearName = 'Năm 1';
-        if (totalPassedCredits >= 108) { threshold = 1.80; yearName = 'Năm 4 trở lên'; }
-        else if (totalPassedCredits >= 72) { threshold = 1.60; yearName = 'Năm 3'; }
-        else if (totalPassedCredits >= 36) { threshold = 1.40; yearName = 'Năm 2'; }
+        if (finalPassedCredits >= 108) { threshold = 1.80; yearName = 'Năm 4 trở lên'; }
+        else if (finalPassedCredits >= 72) { threshold = 1.60; yearName = 'Năm 3'; }
+        else if (finalPassedCredits >= 36) { threshold = 1.40; yearName = 'Năm 2'; }
 
-        if (countCreditsWithScore > 0 && gpa4 < threshold) {
+        if (creditsForGpa4 > 0 && gpa4 < threshold) {
             isWarning = true;
             reasons.push(`ĐTB tích lũy (${gpa4.toFixed(2)}) dưới ngưỡng quy định ${yearName} (< ${threshold.toFixed(2)})`);
         }
