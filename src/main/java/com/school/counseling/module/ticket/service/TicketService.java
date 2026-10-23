@@ -69,11 +69,17 @@ public class TicketService {
         if (creatorId != null) {
             creator = userRepository.findById(creatorId).orElse(null);
         } else {
-            if (request.getGuestEmail() == null || request.getGuestEmail().isBlank()) {
+            String email = request.getGuestEmail() != null ? request.getGuestEmail().trim() : null;
+            if (email == null || email.isBlank()) {
                 throw new IllegalArgumentException("Vui lòng nhập địa chỉ email hợp lệ để nhận mã tra cứu và thông báo xử lý yêu cầu.");
             }
-            if (request.getGuestName() == null || request.getGuestName().isBlank()) {
+            request.setGuestEmail(email);
+
+            String name = request.getGuestName() != null ? request.getGuestName().trim() : null;
+            if (name == null || name.isBlank()) {
                 request.setGuestName("Khách vãng lai");
+            } else {
+                request.setGuestName(name);
             }
             guestToken = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
         }
@@ -413,6 +419,11 @@ public class TicketService {
     }
 
     public List<TicketSummaryDto> getTicketSummaryByDepartment(Long departmentId, String status) {
+        if ("OVERDUE".equalsIgnoreCase(status)) {
+            return ticketRepository.findSummaryByDepartmentId(departmentId).stream()
+                    .filter(TicketSummaryDto::isOverdue)
+                    .toList();
+        }
         if (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status)) {
             return ticketRepository.findSummaryByDepartmentIdAndStatus(departmentId, status);
         }
@@ -420,6 +431,11 @@ public class TicketService {
     }
 
     public List<TicketSummaryDto> getAllTicketSummaries(String status) {
+        if ("OVERDUE".equalsIgnoreCase(status)) {
+            return ticketRepository.findAllSummaries().stream()
+                    .filter(TicketSummaryDto::isOverdue)
+                    .toList();
+        }
         if (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status)) {
             return ticketRepository.findAllSummariesByStatus(status);
         }
