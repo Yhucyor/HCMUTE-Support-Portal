@@ -74,9 +74,9 @@ graph TD
 ---
 
 ## 📝 III. TIÊU CHÍ HOÀN THÀNH (ACCEPTANCE CRITERIA)
-- [ ] Không còn bất kỳ tài khoản nào mang tiền tố `race_staff_` trong danh sách Người dùng (`/admin/users`).
-- [ ] Giao diện Admin Dashboard sạch sẽ, không còn nút trùng lặp, thanh filter bar thẳng hàng gọn gàng.
-- [ ] Không bị widget Chatbot AI che khuất thẻ CSAT trên `/admin/dashboard`.
-- [ ] Bàn làm việc cán bộ `/staff/tickets` có phân trang chuẩn mượt mà khi chuyển trang 1, 2, 3...
-- [ ] Ticket quá hạn SLA được tổng hợp rõ ràng và hỗ trợ Admin can thiệp trực tiếp.
-- [ ] Toàn bộ mã nguồn vượt qua `mvn test-compile` không có bất kỳ lỗi cú pháp nào.
+- [x] Không còn bất kỳ tài khoản nào mang tiền tố `race_staff_` trong danh sách Người dùng (`/admin/users`).
+- [x] Giao diện Admin Dashboard sạch sẽ, không còn nút trùng lặp, thanh filter bar thẳng hàng gọn gàng.
+- [x] Không bị widget Chatbot AI che khuất thẻ CSAT trên `/admin/dashboard`.
+- [x] Bàn làm việc cán bộ `/staff/tickets` có phân trang chuẩn mượt mà khi chuyển trang 1, 2, 3...
+- [x] Ticket quá hạn SLA được tổng hợp rõ ràng và hỗ trợ Admin can thiệp trực tiếp (Auto-Escalation & Takeover).
+- [x] Toàn bộ mã nguồn vượt qua `mvn test-compile` không có bất kỳ lỗi cú pháp nào.

@@ -150,10 +150,18 @@
                         </td>
                         <td class="text-end">
                             <div class="d-inline-flex align-items-center gap-1">
-                                <!-- Nút Claim -->
+                                <!-- Nút Claim (Nếu OPEN) -->
                                 <form th:if="${t.status == 'OPEN'}" th:action="@{'/staff/tickets/' + ${t.id} + '/claim'}" method="post" class="m-0">
                                     <button type="submit" class="btn btn-primary btn-sm fw-semibold">
                                         <i class="bi bi-hand-index-thumb me-1"></i>Tiếp nhận
+                                    </button>
+                                </form>
+
+                                <!-- Nút Admin Can Thiệp Tiếp Quản (Nếu OVERDUE và tài khoản là Admin) -->
+                                <form th:if="${(t.status == 'OVERDUE' or t.isOverdue()) and isAdmin}" th:action="@{'/staff/tickets/' + ${t.id} + '/takeover'}" method="post" class="m-0"
+                                      onsubmit="return confirm('Xác nhận Quản trị viên (Admin) tiếp quản xử lý Ticket quá hạn này?');">
+                                    <button type="submit" class="btn btn-danger btn-sm fw-semibold" title="Admin tiếp quản xử lý khẩn cấp">
+                                        <i class="bi bi-shield-exclamation me-1"></i>Tiếp Quản
                                     </button>
                                 </form>
 

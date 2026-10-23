@@ -146,4 +146,20 @@ public class StaffTicketWebController {
         redirectAttributes.addFlashAttribute("successMessage", "Đã đánh dấu hoàn tất yêu cầu #" + ticket.getTicketCode());
         return "redirect:/tickets/detail/" + ticketId;
     }
+
+    /**
+     * Quản trị viên (Admin) can thiệp khẩn cấp tiếp quản vé quá hạn SLA từ các đơn vị.
+     */
+    @PostMapping("/{ticketId}/takeover")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String handleAdminTakeover(@PathVariable Long ticketId, RedirectAttributes redirectAttributes) {
+        Long adminId = SecurityUtils.getCurrentUserId().orElse(null);
+        try {
+            ticketService.adminTakeoverTicket(ticketId, adminId);
+            redirectAttributes.addFlashAttribute("successMessage", "Quản trị viên đã tiếp quản xử lý Ticket quá hạn thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể tiếp quản vé: " + e.getMessage());
+        }
+        return "redirect:/staff/tickets?status=IN_PROGRESS";
+    }
 }

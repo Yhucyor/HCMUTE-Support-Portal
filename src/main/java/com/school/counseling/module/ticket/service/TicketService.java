@@ -238,6 +238,35 @@ public class TicketService {
         return mapToDetailDto(ticket);
     }
 
+    /**
+     * Quản trị viên (Admin) can thiệp khẩn cấp tiếp quản vé bị quá hạn SLA từ các đơn vị.
+     */
+    @Transactional
+    public TicketResponseDto adminTakeoverTicket(Long ticketId, Long adminId) {
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin", "id", adminId));
+
+        Ticket ticket = ticketRepository.findByIdWithRelations(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+
+        String oldStatus = ticket.getStatus();
+        String oldAssignee = ticket.getAssignedTo() != null ? ticket.getAssignedTo().getFullName() : "Chưa có cán bộ";
+
+        ticket.setAssignedTo(admin);
+        ticket.setStatus("IN_PROGRESS");
+        if (ticket.getDueDate() == null || ticket.getDueDate().isBefore(LocalDateTime.now())) {
+            ticket.setDueDate(LocalDateTime.now().plusHours(24));
+        }
+
+        ticketRepository.save(ticket);
+
+        saveHistory(ticket, admin, admin.getFullName(), oldStatus, "IN_PROGRESS",
+                String.format("Quản trị viên (Admin %s) can thiệp tiếp quản vé từ [%s] do yêu cầu quá hạn SLA.", admin.getFullName(), oldAssignee));
+
+        log.info("Admin ID={} đã can thiệp tiếp quản Ticket Code={} thành công", adminId, ticket.getTicketCode());
+        return mapToDetailDto(ticket);
+    }
+
     @Transactional
     public TicketResponseDto replyTicket(Long ticketId, TicketReplyRequest request, Long responderId, List<MultipartFile> files) {
         Ticket ticket = ticketRepository.findByIdWithRelations(ticketId)

@@ -367,9 +367,17 @@
                             </div>
                         </td>
                         <td class="text-end pe-3">
-                            <a th:href="@{'/tickets/detail/' + ${t.id}}" class="btn btn-outline-primary btn-sm">
-                                <i class="bi bi-arrow-right-short fs-6"></i>Kiểm Tra
-                            </a>
+                            <div class="d-inline-flex align-items-center gap-1">
+                                <form th:action="@{'/staff/tickets/' + ${t.id} + '/takeover'}" method="post" class="m-0"
+                                      onsubmit="return confirm('Xác nhận Quản trị viên (Admin) tiếp quản xử lý Ticket quá hạn này?');">
+                                    <button type="submit" class="btn btn-danger btn-sm fw-semibold" title="Tiếp quản xử lý khẩn">
+                                        <i class="bi bi-shield-exclamation me-1"></i>Tiếp Quản
+                                    </button>
+                                </form>
+                                <a th:href="@{'/tickets/detail/' + ${t.id}}" class="btn btn-outline-secondary btn-sm" title="Xem chi tiết ticket">
+                                    <i class="bi bi-arrow-right-short fs-6"></i>Chi Tiết
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
