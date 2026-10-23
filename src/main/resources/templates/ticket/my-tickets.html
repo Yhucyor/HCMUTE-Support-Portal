@@ -192,7 +192,7 @@
                         <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#e0e7ff] text-[#1e40af]"
                               id="total-badge" th:text="${(totalCount != null ? totalCount : 0) + ' yêu cầu'}">0 yêu cầu</span>
                     </div>
-                    <p class="text-xs sm:text-sm text-[#64748b]">Theo dõi tiến độ giải quyết và cam kết thời gian xử lý (SLA) từ các Khoa/Phòng chức năng.</p>
+                    <p class="text-xs sm:text-sm text-[#64748b]">Theo dõi tiến độ giải quyết các yêu cầu hỗ trợ học vụ từ các Khoa/Phòng chức năng.</p>
                 </div>
 
                 <!-- Header Action Buttons -->
@@ -369,21 +369,21 @@
 
                 <!-- 4. Bảng Dữ Liệu Ticket 6 Cột Chuẩn Spring Data -->
                 <div class="overflow-x-auto w-full" id="table-container">
-                    <table class="w-full text-left border-collapse min-w-[1000px]">
+                    <table class="w-full text-left border-collapse min-w-[950px]">
                         <thead>
                             <tr class="border-b border-[#e2e8f0] bg-[#f8fafc] text-[11px] font-bold uppercase tracking-wider text-[#64748b]">
                                 <th class="py-3.5 px-5 min-w-[340px]" scope="col">Mã &amp; Tiêu đề thủ tục</th>
-                                <th class="py-3.5 px-5 w-48" scope="col">Đơn vị tiếp nhận</th>
+                                <th class="py-3.5 px-5 w-52" scope="col">Đơn vị tiếp nhận</th>
                                 <th class="py-3.5 px-5 w-44" scope="col">Trạng thái</th>
-                                <th class="py-3.5 px-5 w-36" scope="col">Mức độ ưu tiên</th>
-                                <th class="py-3.5 px-5 w-52" scope="col">Hạn xử lý (SLA)</th>
+                                <th class="py-3.5 px-5 w-44" scope="col">Thời gian gửi</th>
+                                <th class="py-3.5 px-5 w-44" scope="col">Cập nhật gần nhất</th>
                                 <th class="py-3.5 px-5 w-24 text-right" scope="col">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-[#f1f5f9] text-xs" id="ticket-table-body">
                             <!-- RENDER TICKETS TỪ DATABASE QUA SPRING DATA PAGE -->
                             <th:block th:if="${tickets != null and !tickets.isEmpty()}">
-                                <tr th:each="t : ${tickets.content}" class="ticket-row h-[76px] hover:bg-blue-50/40 transition-colors group">
+                                <tr th:each="t : ${tickets.content}" class="ticket-row h-[72px] hover:bg-blue-50/40 transition-colors group">
                                     <!-- Cột 1: Mã, Tiêu đề & Loại thủ tục -->
                                     <td class="py-4 px-5">
                                         <div class="flex flex-col gap-1 max-w-md">
@@ -393,7 +393,7 @@
                                             <div class="flex items-center gap-2 text-[#64748b] text-xs">
                                                 <span class="font-mono text-[#003882] font-semibold" th:text="${t.ticketCode}">TKT-2026-00001</span>
                                                 <span th:if="${t.topicCategory != null}">&bull;</span>
-                                                <span class="text-slate-500 font-medium truncate max-w-[200px]" th:if="${t.topicCategory != null}" th:text="${t.topicCategory}">Đơn xin hoãn thi</span>
+                                                <span class="text-slate-500 font-medium truncate max-w-[220px]" th:if="${t.topicCategory != null}" th:text="${t.topicCategory}">Đơn xin hoãn thi</span>
                                             </div>
                                         </div>
                                     </td>
@@ -425,47 +425,19 @@
                                         </span>
                                     </td>
 
-                                    <!-- Cột 4: Mức độ ưu tiên (Read-only Badge do hệ thống gán) -->
+                                    <!-- Cột 4: Thời gian gửi -->
                                     <td class="py-4 px-5 whitespace-nowrap">
-                                        <span th:if="${t.priority == 'URGENT'}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-                                            <span class="w-2 h-2 rounded-full bg-rose-600 animate-pulse-dot"></span>Khẩn cấp
-                                        </span>
-                                        <span th:if="${t.priority == 'HIGH'}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200">
-                                            <span class="w-2 h-2 rounded-full bg-orange-500"></span>Cao
-                                        </span>
-                                        <span th:if="${t.priority == 'MEDIUM' or t.priority == null}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                                            <span class="w-2 h-2 rounded-full bg-amber-500"></span>Trung bình
-                                        </span>
-                                        <span th:if="${t.priority == 'LOW'}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                                            <span class="w-2 h-2 rounded-full bg-slate-400"></span>Thấp
-                                        </span>
+                                        <div class="flex items-center gap-1.5 text-xs text-[#334155]">
+                                            <span class="material-symbols-outlined text-sm text-[#94a3b8]">calendar_today</span>
+                                            <span class="font-medium" th:text="${#temporals.format(t.createdAt, 'dd/MM/yyyy HH:mm')}">19/10/2026 08:30</span>
+                                        </div>
                                     </td>
 
-                                    <!-- Cột 5: Hạn xử lý (SLA) & Đếm ngược -->
+                                    <!-- Cột 5: Cập nhật gần nhất -->
                                     <td class="py-4 px-5 whitespace-nowrap">
-                                        <div class="flex flex-col gap-0.5">
-                                            <div class="flex items-center gap-1.5 text-xs text-[#0f172a]">
-                                                <span class="text-[#64748b]">Tạo:</span>
-                                                <span class="font-medium" th:text="${#temporals.format(t.createdAt, 'dd/MM/yyyy HH:mm')}">19/10/2026 08:30</span>
-                                            </div>
-                                            <div class="flex items-center gap-1.5 text-xs">
-                                                <span class="text-[#64748b]">Hạn:</span>
-                                                <span class="font-medium" th:text="${#temporals.format(t.dueDate, 'dd/MM/yyyy HH:mm')}">20/10/2026 08:30</span>
-                                            </div>
-                                            <div class="pt-0.5">
-                                                <span th:if="${t.overdue}" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700">
-                                                    <span class="material-symbols-outlined text-[12px]">warning</span>Quá hạn SLA
-                                                </span>
-                                                <span th:if="${!t.overdue and t.dueSoon}" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">
-                                                    <span class="material-symbols-outlined text-[12px]">schedule</span>Sắp hết hạn
-                                                </span>
-                                                <span th:if="${!t.overdue and !t.dueSoon and t.status != 'RESOLVED' and t.status != 'CLOSED'}" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700">
-                                                    <span class="material-symbols-outlined text-[12px]">verified</span>Đúng hạn
-                                                </span>
-                                                <span th:if="${t.status == 'RESOLVED' or t.status == 'CLOSED'}" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600">
-                                                    <span class="material-symbols-outlined text-[12px]">task_alt</span>Đã hoàn tất
-                                                </span>
-                                            </div>
+                                        <div class="flex items-center gap-1.5 text-xs text-[#334155]">
+                                            <span class="material-symbols-outlined text-sm text-[#94a3b8]">update</span>
+                                            <span class="font-medium" th:text="${#temporals.format(t.updatedAt != null ? t.updatedAt : t.createdAt, 'dd/MM/yyyy HH:mm')}">20/10/2026 14:15</span>
                                         </div>
                                     </td>
 
