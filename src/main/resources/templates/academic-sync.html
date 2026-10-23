@@ -181,9 +181,9 @@
 
         /* Container */
         .page-container {
-            max-width: 1200px;
+            max-width: 100%;
             margin: 28px auto 0;
-            padding: 0 24px;
+            padding: 0;
         }
 
         /* Banner Header */
@@ -976,7 +976,7 @@
          DASHBOARD OVERVIEW (Academic Horizon Design)
     ═══════════════════════════════════════════ -->
     <div class="pt-[74px] bg-surface">
-      <div class="p-space-md lg:p-space-xl space-y-space-lg max-w-[1536px] mx-auto w-full">
+      <div class="py-6 px-4 sm:px-6 lg:px-8 space-y-space-lg max-w-7xl mx-auto w-full">
 
         <!-- Breadcrumb -->
         <div class="flex items-center gap-2 text-secondary font-body text-body-md pt-space-sm">
@@ -989,6 +989,31 @@
         <div>
             <h1 class="font-headline text-headline-sm font-bold text-on-surface">Tổng quan học vụ</h1>
             <p class="font-body text-body-md text-on-surface-variant mt-1">Theo dõi tiến độ học tập, lịch học và các hoạt động sinh viên tại HCMUTE</p>
+        </div>
+
+        <!-- Academic Warning Alert Banner (Quy chế HCMUTE 2025) -->
+        <div id="dash-warning-banner"
+             th:classappend="${summary != null && summary.isAcademicWarning} ? '' : 'hidden'"
+             class="p-4 rounded-xl bg-rose-50 border-2 border-rose-300 text-rose-900 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all">
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl bg-rose-200 text-rose-700 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-2xl">warning</span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="font-headline text-headline-sm font-bold text-rose-800 text-sm sm:text-base">CẢNH BÁO HỌC TẬP (HCMUTE 2025)</h3>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-600 text-white uppercase tracking-wider">Cần chú ý</span>
+                    </div>
+                    <p id="dash-warning-reason" class="text-xs text-rose-700 mt-1"
+                       th:text="${summary != null && summary.warningReason != null ? summary.warningReason : 'Sinh viên thuộc diện cảnh báo học tập theo quy chế đào tạo HCMUTE.'}">
+                       Sinh viên thuộc diện cảnh báo học tập theo quy chế đào tạo HCMUTE.
+                    </p>
+                    <p class="text-[11px] text-rose-600 mt-0.5">Sinh viên nên liên hệ Cố vấn học tập (CVHT) hoặc gửi Ticket để được hướng dẫn cải thiện điểm số và trả nợ tín chỉ kịp thời.</p>
+                </div>
+            </div>
+            <a href="/tickets/create" class="px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shrink-0 flex items-center gap-1.5 transition-colors self-stretch sm:self-auto justify-center">
+                <span class="material-symbols-outlined text-sm">support_agent</span> Gửi Ticket tư vấn
+            </a>
         </div>
 
         <!-- 4 KPI Cards -->
@@ -1020,7 +1045,11 @@
                             </div>
                         </div>
                     </div>
-                    <span id="dash-credits-pct" class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-caps text-label-caps shrink-0">--%</span>
+                    <div class="flex flex-col items-end gap-1 shrink-0">
+                        <span id="dash-credits-pct" class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-caps text-label-caps">--%</span>
+                        <span id="dash-year-level" class="text-[11px] text-primary font-semibold"
+                              th:text="${summary != null && summary.academicYearLevel != null ? summary.academicYearLevel : 'Năm 1'}">Năm 1</span>
+                    </div>
                 </div>
                 <div class="w-full bg-surface-container h-1.5 rounded-full mt-2 overflow-hidden">
                     <div id="dash-credits-bar" class="bg-primary h-full rounded-full transition-all duration-500" style="width:0%"></div>
@@ -1172,48 +1201,65 @@
                         </a>
                     </div>
                 </div>
-                <!-- Thông báo -->
-                <div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
-                    <div class="flex items-center justify-between pb-space-sm">
-                        <div class="flex items-center gap-space-xs">
-                            <span class="material-symbols-outlined text-primary text-2xl">campaign</span>
-                            <h2 class="font-title-md text-title-md text-on-surface">Thông báo mới nhất</h2>
+                <!-- Thông báo từ Cổng trường HCMUTE -->
+                <div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col justify-between" id="announcementWidget">
+                    <div>
+                        <div class="flex items-center justify-between pb-space-sm border-b border-outline-variant/20 mb-3">
+                            <div class="flex items-center gap-space-xs">
+                                <span class="material-symbols-outlined text-primary text-2xl">campaign</span>
+                                <h2 class="font-title-md text-title-md text-on-surface font-bold">Thông báo mới nhất</h2>
+                            </div>
+                            <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 shadow-2xs">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Portal HCMUTE
+                            </span>
+                        </div>
+
+                        <!-- Category Filters: Chỉ gồm Tất cả và Công tác SV -->
+                        <div class="flex items-center gap-1 bg-surface-container-low p-1 rounded-lg mb-space-md" id="announcementFilters">
+                            <button onclick="filterAnnouncements('ALL', this)" class="ann-filter-btn flex-1 py-1.5 px-3 text-center font-label-md text-xs rounded bg-surface-container-lowest shadow-xs text-primary font-bold transition-all cursor-pointer">Tất cả</button>
+                            <button onclick="filterAnnouncements('Công tác SV', this)" class="ann-filter-btn flex-1 py-1.5 px-3 text-center font-label-md text-xs rounded text-on-surface-variant hover:text-on-surface transition-all cursor-pointer font-medium">Công tác SV</button>
+                        </div>
+
+                        <!-- Announcement List -->
+                        <div class="space-y-2.5 max-h-[380px] overflow-y-auto pr-1" id="announcementList">
+                            <!-- Rendered by Thymeleaf if available, dynamically refreshed by JS -->
+                            <div th:each="a, iterStat : ${announcements}"
+                                 th:data-category="${a.category}"
+                                 th:data-title="${a.title}"
+                                 th:data-date="${a.publishDate}"
+                                 th:data-sender="${a.sender}"
+                                 th:data-content="${a.contentHtml}"
+                                 onclick="openAnnouncementModal(this)"
+                                 class="ann-item block p-3 rounded-xl border border-outline-variant/30 hover:border-primary/40 hover:bg-surface-container-low transition-all cursor-pointer relative pl-5.5 group bg-white shadow-2xs"
+                                 th:classappend="${iterStat.index >= 6} ? 'hidden' : ''">
+                                <span class="absolute left-2.5 top-4 w-2 h-2 rounded-full"
+                                      th:classappend="${a.category == 'Học vụ' ? 'bg-primary' : (a.category == 'Học bổng' ? 'bg-purple-500' : (a.category == 'Lịch thi' ? 'bg-amber-500' : 'bg-emerald-500'))}"></span>
+                                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                    <span class="px-2 py-0.5 rounded font-label-caps text-[10px] font-bold"
+                                          th:classappend="${a.category == 'Học vụ' ? 'bg-primary-fixed text-on-primary-fixed-variant' : (a.category == 'Học bổng' ? 'bg-purple-100 text-purple-800' : (a.category == 'Lịch thi' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'))}"
+                                          th:text="${a.category}">Học vụ</span>
+                                    <span class="font-body text-[11px] text-secondary" th:text="${a.publishDate}">23/10/2026</span>
+                                    <span th:if="${a.isPinned}" class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-red-100 text-red-700 flex items-center gap-0.5">
+                                        <span class="material-symbols-outlined text-[11px]">push_pin</span> Ghim
+                                    </span>
+                                </div>
+                                <p class="font-label-md text-sm text-on-surface font-semibold group-hover:text-primary transition-colors line-clamp-2 leading-snug"
+                                   th:text="${a.title}">Tiêu đề thông báo</p>
+                                <div class="mt-1 flex items-center justify-between text-[11px] text-secondary">
+                                    <span class="truncate max-w-[200px]" th:text="${a.sender}">Phòng Đào tạo</span>
+                                    <span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center">Chi tiết &rarr;</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-1 bg-surface-container-low p-1 rounded-lg mb-space-md">
-                        <button class="flex-1 py-1 text-center font-label-md text-label-md rounded bg-surface-container-lowest shadow-xs text-primary font-semibold">Tất cả</button>
-                        <button class="flex-1 py-1 text-center font-label-md text-label-md rounded text-on-surface-variant hover:text-on-surface">Học vụ</button>
-                        <button class="flex-1 py-1 text-center font-label-md text-label-md rounded text-on-surface-variant hover:text-on-surface">Học bổng</button>
-                    </div>
-                    <div class="space-y-space-sm">
-                        <a class="block p-space-sm rounded-lg hover:bg-surface-container-low transition-colors relative pl-6" href="#">
-                            <span class="absolute left-2 top-3 w-2 h-2 rounded-full bg-primary"></span>
-                            <div class="flex items-center gap-2 mb-0.5">
-                                <span class="px-1.5 py-0.5 rounded bg-primary-fixed text-on-primary-fixed-variant font-label-caps text-label-caps">Học vụ</span>
-                                <span class="font-body text-body-sm text-outline">24/03/2026</span>
-                            </div>
-                            <p class="font-label-md text-label-md text-on-surface font-medium hover:text-primary transition-colors line-clamp-2">Thông báo lịch đăng ký môn học Giai đoạn 2 HK2 (2025-2026)</p>
-                        </a>
-                        <a class="block p-space-sm rounded-lg hover:bg-surface-container-low transition-colors relative pl-6" href="#">
-                            <span class="absolute left-2 top-3 w-2 h-2 rounded-full bg-primary"></span>
-                            <div class="flex items-center gap-2 mb-0.5">
-                                <span class="px-1.5 py-0.5 rounded bg-secondary-container text-on-secondary-container font-label-caps text-label-caps">Học bổng</span>
-                                <span class="font-body text-body-sm text-outline">22/03/2026</span>
-                            </div>
-                            <p class="font-label-md text-label-md text-on-surface font-medium hover:text-primary transition-colors line-clamp-2">Chương trình học bổng Doanh nghiệp tài trợ Khoa CNTT năm 2026</p>
-                        </a>
-                        <a class="block p-space-sm rounded-lg hover:bg-surface-container-low transition-colors relative pl-6 opacity-75" href="#">
-                            <span class="absolute left-2 top-3 w-2 h-2 rounded-full bg-outline-variant"></span>
-                            <div class="flex items-center gap-2 mb-0.5">
-                                <span class="px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-caps text-label-caps">Lịch thi</span>
-                                <span class="font-body text-body-sm text-outline">20/03/2026</span>
-                            </div>
-                            <p class="font-label-md text-label-md text-on-surface hover:text-primary transition-colors line-clamp-2">Công bố lịch thi giữa kỳ bổ sung đợt 1</p>
-                        </a>
-                    </div>
-                    <div class="pt-space-md">
-                        <a class="inline-flex items-center gap-1 font-label-md text-label-md text-primary hover:text-tertiary transition-colors" href="#">
-                            Xem tất cả thông báo <span class="material-symbols-outlined text-sm">arrow_forward</span>
+
+                    <!-- Footer Link -->
+                    <div class="pt-3 border-t border-outline-variant/20 mt-3 flex items-center justify-between">
+                        <button onclick="toggleExpandAnnouncements()" id="btnExpandAnn" type="button" class="inline-flex items-center gap-1 font-label-md text-xs text-primary hover:text-tertiary transition-colors font-semibold">
+                            <span id="expandAnnText">Xem thêm thông báo</span> <span class="material-symbols-outlined text-sm" id="expandAnnIcon">expand_more</span>
+                        </button>
+                        <a href="https://online.hcmute.edu.vn" target="_blank" rel="noopener noreferrer" class="text-[11px] text-secondary hover:text-primary transition-colors flex items-center gap-0.5">
+                            Cổng trường <span class="material-symbols-outlined text-[13px]">open_in_new</span>
                         </a>
                     </div>
                 </div>
@@ -1231,7 +1277,7 @@
     </div><!-- /dashboard overview -->
 
     <!-- Old sync content wrapped in matching container -->
-    <div class="max-w-[1536px] mx-auto w-full px-space-md lg:px-space-xl pb-16">
+    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pb-16">
 
     <div class="page-container">
 
@@ -1290,8 +1336,8 @@
                         <div class="form-input-wrapper">
                             <i class='bx bx-key'></i>
                             <input type="password" id="password" class="form-control"
-                                   th:placeholder="${portalLinked} ? '••••••• (đã lưu sẵn)' : 'Mật khẩu tài khoản sinh viên'"
-                                   th:required="${!portalLinked}">
+                                   th:placeholder="${portalLinked == true} ? '••••••• (đã lưu sẵn)' : 'Mật khẩu tài khoản sinh viên'"
+                                   th:required="${portalLinked != true}">
                         </div>
                     </div>
 
@@ -1325,6 +1371,7 @@
                             <span><i class='bx bx-book-bookmark'></i> <strong id="p-major">Kỹ thuật Phần mềm</strong></span>
                             <span><i class='bx bx-buildings'></i> <span id="p-faculty">Khoa CNTT</span></span>
                             <span><i class='bx bx-group'></i> Lớp: <span id="p-class">21110CL1A</span></span>
+                            <span><i class='bx bx-time'></i> Trình độ: <strong id="p-yearLevel" style="color:var(--primary);">Năm thứ nhất</strong></span>
                         </div>
                     </div>
                 </div>
@@ -1354,7 +1401,7 @@
                     <div class="kpi-info">
                         <h3 id="stat-credits">--</h3>
                         <p>Tín chỉ tích lũy</p>
-                        <small>Tiến độ CTĐT</small>
+                        <small id="stat-yearLevel">Trình độ: Năm thứ nhất</small>
                     </div>
                 </div>
 
@@ -1374,7 +1421,7 @@
                     <div class="kpi-info">
                         <h3 id="stat-passedCount">--</h3>
                         <p>Môn học đã hoàn thành</p>
-                        <small>Nợ môn: <strong id="stat-failedCount" style="color:var(--rose);">0</strong></small>
+                        <small>Nợ môn: <strong id="stat-failedCount" style="color:var(--rose);">0</strong> (<span id="stat-debtCredits">0</span> TC nợ)</small>
                     </div>
                 </div>
             </div>
@@ -1755,6 +1802,16 @@
             document.getElementById('stat-passedCount').innerText = s.passedCoursesCount;
             document.getElementById('stat-failedCount').innerText = s.failedCoursesCount;
             document.getElementById('stat-syncMode').innerText = s.syncStatus === 'LIVE_PORTAL' ? 'Cổng online trực tiếp' : 'Bộ mô phỏng HCMUTE';
+            if (s.academicYearLevel) {
+                const yEl = document.getElementById('stat-yearLevel');
+                const pyEl = document.getElementById('p-yearLevel');
+                if (yEl) yEl.innerText = 'Trình độ: ' + s.academicYearLevel;
+                if (pyEl) pyEl.innerText = s.academicYearLevel;
+            }
+            if (s.debtCredits != null) {
+                const dEl = document.getElementById('stat-debtCredits');
+                if (dEl) dEl.innerText = s.debtCredits;
+            }
         }
 
         // Render Grades Table
@@ -1930,10 +1987,22 @@
                     const cr = document.getElementById('dash-credits');
                     const crPct = document.getElementById('dash-credits-pct');
                     const crBar = document.getElementById('dash-credits-bar');
+                    const yr = document.getElementById('dash-year-level');
+                    const warnBanner = document.getElementById('dash-warning-banner');
+                    const warnReason = document.getElementById('dash-warning-reason');
                     const donutPct = document.getElementById('dash-donut-pct');
                     const donutLabel = document.getElementById('dash-donut-label');
                     const donutCircle = document.getElementById('dash-donut-circle');
                     if (g4) g4.textContent = s.gpa4 != null ? s.gpa4.toFixed(2) : '--';
+                    if (yr && s.academicYearLevel) yr.textContent = s.academicYearLevel;
+                    if (warnBanner) {
+                        if (s.isAcademicWarning) {
+                            warnBanner.classList.remove('hidden');
+                            if (warnReason && s.warningReason) warnReason.textContent = s.warningReason;
+                        } else {
+                            warnBanner.classList.add('hidden');
+                        }
+                    }
                     if (s.totalCredits != null) {
                         const total = 120, pct = Math.round(s.totalCredits / total * 100);
                         if (cr) cr.textContent = s.totalCredits;
@@ -1944,6 +2013,109 @@
                         if (donutCircle) donutCircle.setAttribute('stroke-dashoffset', String(264 - (264 * pct / 100)));
                     }
                 }).catch(() => {});
+        });
+    </script>
+
+    <!-- Announcement Detail Modal -->
+    <div id="announcementModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl overflow-hidden flex flex-col max-h-[85vh] border border-slate-200 animate-in fade-in zoom-in duration-200">
+            <!-- Header -->
+            <div class="flex items-start justify-between gap-3 pb-4 border-b border-slate-100">
+                <div class="space-y-1.5 flex-1 pr-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span id="modalAnnCategory" class="px-2 py-0.5 rounded text-[11px] font-bold bg-primary-fixed text-on-primary-fixed-variant">Học vụ</span>
+                        <span id="modalAnnDate" class="text-xs text-slate-500 font-medium">23/10/2026</span>
+                        <span id="modalAnnSender" class="text-xs text-slate-600 font-semibold bg-slate-100 px-2 py-0.5 rounded">PDT_Vũ Văn Việt</span>
+                    </div>
+                    <h3 id="modalAnnTitle" class="text-lg font-bold text-slate-900 leading-snug">Tiêu đề thông báo</h3>
+                </div>
+                <button onclick="closeAnnouncementModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center shrink-0 transition-colors cursor-pointer">
+                    <span class="material-symbols-outlined text-lg">close</span>
+                </button>
+            </div>
+            <!-- Body -->
+            <div id="modalAnnContent" class="py-4 text-sm text-slate-700 leading-relaxed overflow-y-auto max-h-[50vh] space-y-3">
+                <!-- Nội dung thông báo HTML -->
+            </div>
+            <!-- Footer -->
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-xs text-slate-400">Được đồng bộ từ Hệ thống Cổng đào tạo HCMUTE</span>
+                <button onclick="closeAnnouncementModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors cursor-pointer">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcement Script -->
+    <script>
+        let currentAnnCategory = 'ALL';
+        let isAnnExpanded = false;
+
+        function filterAnnouncements(category, btn) {
+            currentAnnCategory = category;
+            const buttons = document.querySelectorAll('.ann-filter-btn');
+            buttons.forEach(b => {
+                b.className = 'ann-filter-btn flex-1 py-1.5 px-3 text-center font-label-md text-xs rounded text-on-surface-variant hover:text-on-surface transition-all cursor-pointer font-medium';
+            });
+            if (btn) {
+                btn.className = 'ann-filter-btn flex-1 py-1.5 px-3 text-center font-label-md text-xs rounded bg-surface-container-lowest shadow-xs text-primary font-bold transition-all cursor-pointer';
+            }
+
+            const items = document.querySelectorAll('#announcementList .ann-item');
+            let visibleCount = 0;
+            const maxVisible = isAnnExpanded ? 50 : 6;
+
+            items.forEach(item => {
+                const cat = (item.dataset.category || '').toLowerCase();
+                const sender = (item.dataset.sender || '').toLowerCase();
+                let match = (category === 'ALL');
+                if (category === 'Công tác SV') {
+                    match = cat.includes('công tác') || cat.includes('sv') || sender.includes('qlsv');
+                }
+                if (match && visibleCount < maxVisible) {
+                    item.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        }
+
+        function toggleExpandAnnouncements() {
+            isAnnExpanded = !isAnnExpanded;
+            const text = document.getElementById('expandAnnText');
+            const icon = document.getElementById('expandAnnIcon');
+            if (text) text.textContent = isAnnExpanded ? 'Thu gọn thông báo' : 'Xem thêm thông báo';
+            if (icon) icon.textContent = isAnnExpanded ? 'expand_less' : 'expand_more';
+            filterAnnouncements(currentAnnCategory);
+        }
+
+        function openAnnouncementModal(item) {
+            const modal = document.getElementById('announcementModal');
+            if (!modal || !item) return;
+            document.getElementById('modalAnnTitle').textContent = item.dataset.title || '';
+            document.getElementById('modalAnnCategory').textContent = item.dataset.category || 'Thông báo';
+            document.getElementById('modalAnnDate').textContent = item.dataset.date || '';
+            document.getElementById('modalAnnSender').textContent = item.dataset.sender || 'Cổng trường';
+
+            const contentEl = document.getElementById('modalAnnContent');
+            const rawContent = item.dataset.content || '';
+            if (rawContent && rawContent.trim()) {
+                contentEl.innerHTML = rawContent;
+            } else {
+                contentEl.innerHTML = '<p class="text-slate-500 italic">Thông báo không kèm nội dung chi tiết. Vui lòng liên hệ đơn vị phát hành hoặc xem thêm trên Cổng đào tạo HCMUTE.</p>';
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeAnnouncementModal() {
+            const modal = document.getElementById('announcementModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeAnnouncementModal();
         });
     </script>
 

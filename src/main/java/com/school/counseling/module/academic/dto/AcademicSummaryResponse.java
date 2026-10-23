@@ -20,4 +20,10 @@ public class AcademicSummaryResponse {
     private String academicStanding;
     private String syncStatus;
     private LocalDateTime lastSyncedAt;
+
+    // Các chỉ số nâng cao chuẩn quy chế HCMUTE 2025
+    private Integer debtCredits;
+    private String academicYearLevel;
+    private Boolean isAcademicWarning;
+    private String warningReason;
 }

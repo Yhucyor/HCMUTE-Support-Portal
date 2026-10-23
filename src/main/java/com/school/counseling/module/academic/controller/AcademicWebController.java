@@ -51,6 +51,12 @@ public class AcademicWebController {
                     model.addAttribute("studentProfile", profile));
         }
 
+        // Nạp danh sách thông báo chính thức từ Cổng trường HCMUTE
+        String portalUser = (String) model.getAttribute("savedPortalUsername");
+        String portalPass = (String) model.getAttribute("savedPortalPassword");
+        model.addAttribute("announcements", crawlerService.getAnnouncements(
+                portalUser != null ? portalUser : effectiveStudentId, portalPass));
+
         return "academic-sync";
     }
 
@@ -122,6 +128,7 @@ public class AcademicWebController {
      * Template dùng để tự động điền form và trigger auto-sync.
      */
     private void populatePortalCredentials(Model model) {
+        model.addAttribute("portalLinked", false);
         try {
             SecurityUtils.getCurrentUserId().ifPresent(userId -> {
                 String portalUsername = profileService.getProfile(userId).getPortalUsername();

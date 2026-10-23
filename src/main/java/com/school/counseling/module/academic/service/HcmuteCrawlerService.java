@@ -7,6 +7,7 @@ import com.school.counseling.module.academic.dto.CurriculumCourseDto;
 import com.school.counseling.module.academic.dto.CurriculumSummaryDto;
 import com.school.counseling.module.academic.dto.HcmuteSyncRequest;
 import com.school.counseling.module.academic.dto.HcmuteSyncResponse;
+import com.school.counseling.module.academic.dto.PortalAnnouncementDto;
 import com.school.counseling.module.academic.entity.CourseSchedule;
 import com.school.counseling.module.academic.entity.CurriculumSubject;
 import com.school.counseling.module.academic.entity.StudentGrade;
@@ -35,6 +36,7 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class HcmuteCrawlerService {
@@ -45,6 +47,8 @@ public class HcmuteCrawlerService {
     private static final String API_KEY = "utepscRBF0zT2Mqo6vMw69YMOH43IrB2RtXBS0EHit2kzvL2auxaFJBvw==";
     private static final String CLIENT_ID = "ute";
     private static final Duration TIMEOUT = Duration.ofSeconds(15);
+
+    private final Map<String, CacheEntry<List<PortalAnnouncementDto>>> announcementCache = new ConcurrentHashMap<>();
 
     private final StudentGradeRepository gradeRepository;
     private final CourseScheduleRepository scheduleRepository;
@@ -444,6 +448,8 @@ public class HcmuteCrawlerService {
 
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 200 && response.body() != null && !response.body().isBlank()) {
+                log.info("HCMUTE marks response sample (first 1000 chars): {}",
+                        response.body().substring(0, Math.min(response.body().length(), 1000)));
                 JsonNode root = objectMapper.readTree(response.body());
                 parseMarksRecursively(root, studentId, "", list);
             }
@@ -463,19 +469,22 @@ public class HcmuteCrawlerService {
         }
 
         if (node.hasNonNull("DanhSachDiem") && node.get("DanhSachDiem").isArray()) {
-            String year = node.hasNonNull("NamHoc") ? node.get("NamHoc").asText() : "";
+            String year = node.hasNonNull("NamHoc") ? node.get("NamHoc").asText().trim() : "";
             for (JsonNode semNode : node.get("DanhSachDiem")) {
-                String semName = semNode.hasNonNull("HocKy") ? semNode.get("HocKy").asText() : "Học kỳ";
-                if (!year.isBlank()) {
-                    semName = semName + " (" + year + ")";
-                }
+                String rawHk = semNode.hasNonNull("HocKy") ? semNode.get("HocKy").asText().trim() : "";
+                String semName = formatSemesterLabel(rawHk, year);
                 parseMarksRecursively(semNode, studentId, semName, list);
             }
             return;
         }
 
         if (node.hasNonNull("DanhSachDiemHK") && node.get("DanhSachDiemHK").isArray()) {
-            String semName = node.hasNonNull("HocKy") ? node.get("HocKy").asText() : semesterContext;
+            String semName = (semesterContext != null && !semesterContext.isBlank())
+                    ? semesterContext
+                    : formatSemesterLabel(
+                            node.hasNonNull("HocKy") ? node.get("HocKy").asText().trim() : "",
+                            node.hasNonNull("NamHoc") ? node.get("NamHoc").asText().trim() : ""
+                    );
             for (JsonNode courseNode : node.get("DanhSachDiemHK")) {
                 StudentGrade g = parseSingleGrade(courseNode, studentId, semName);
                 if (g != null) list.add(g);
@@ -487,6 +496,31 @@ public class HcmuteCrawlerService {
             StudentGrade g = parseSingleGrade(node, studentId, semesterContext);
             if (g != null) list.add(g);
         }
+    }
+
+    public static String formatSemesterLabel(String hocKy, String namHoc) {
+        String sem = "Học kỳ";
+        if (hocKy != null && !hocKy.isBlank()) {
+            String hk = hocKy.trim().toUpperCase(Locale.ROOT);
+            if (hk.contains("HK01") || hk.contains("HK1") || hk.equals("1")) {
+                sem = "Học kỳ 1";
+            } else if (hk.contains("HK02") || hk.contains("HK2") || hk.equals("2")) {
+                sem = "Học kỳ 2";
+            } else if (hk.contains("HK03") || hk.contains("HK3") || hk.equals("3") || hk.contains("HE") || hk.contains("HÈ")) {
+                sem = "Học kỳ 3 (Hè)";
+            } else {
+                sem = hocKy.trim();
+            }
+        }
+
+        String year = (namHoc != null) ? namHoc.trim() : "";
+        if (!year.isBlank()) {
+            return sem + " (" + year + ")";
+        }
+        if ("Học kỳ".equals(sem) || sem.isBlank()) {
+            return "Toàn khóa / Đầu vào";
+        }
+        return sem;
     }
 
     private StudentGrade parseSingleGrade(JsonNode m, String studentId, String semesterName) {
@@ -530,18 +564,24 @@ public class HcmuteCrawlerService {
         else if (m.hasNonNull("DiemCK")) finalScore = m.get("DiemCK").asDouble();
         else if (m.hasNonNull("DiemThi_10")) finalScore = m.get("DiemThi_10").asDouble();
 
+        String sem = (semesterName != null && !semesterName.isBlank()) ? semesterName
+                : formatSemesterLabel(
+                        m.hasNonNull("HocKy") ? m.get("HocKy").asText().trim() : "",
+                        m.hasNonNull("NamHoc") ? m.get("NamHoc").asText().trim() : ""
+                );
+
         // Chỉ đánh giá kết quả đạt/rớt khi môn học đã có điểm kết quả cuối cùng trên Portal
         boolean hasFinalResult = (totalScore != null) || (!gradeLetter.isBlank() && !"--".equals(gradeLetter));
 
         Boolean isPassed = null;
         if (hasFinalResult) {
-            isPassed = (m.hasNonNull("IsPass") && "1".equals(m.get("IsPass").asText()))
-                    || (totalScore != null && totalScore >= 4.0 && !"F".equalsIgnoreCase(gradeLetter))
-                    || (!gradeLetter.isBlank() && !"F".equalsIgnoreCase(gradeLetter) && !"--".equals(gradeLetter));
+            HcmuteGradingEngine.GradeConversion conv = HcmuteGradingEngine.convertGrade(
+                    totalScore, gradeLetter, sem, courseCode, courseName);
+            isPassed = conv.isPassed();
+            if (gradeLetter.isBlank() && conv.getLetter() != null && !"--".equals(conv.getLetter())) {
+                gradeLetter = conv.getLetter();
+            }
         }
-
-        String sem = (semesterName != null && !semesterName.isBlank()) ? semesterName
-                : (m.hasNonNull("HocKy") ? m.get("HocKy").asText() : "Học kỳ");
 
         return StudentGrade.builder()
                 .studentId(studentId)
@@ -619,6 +659,11 @@ public class HcmuteCrawlerService {
                         int credits = s.hasNonNull("SoTinChi") ? s.get("SoTinChi").asInt(3)
                                 : (s.hasNonNull("STC") ? s.get("STC").asInt(3) : 3);
 
+                        String tuanHoc = s.hasNonNull("TuanHoc") ? s.get("TuanHoc").asText().trim() : "";
+                        String rawDot = s.hasNonNull("Dot") ? s.get("Dot").asText().trim()
+                                : (s.hasNonNull("DotHoc") ? s.get("DotHoc").asText().trim() : "");
+                        String phase = determinePhase(tuanHoc, rawDot);
+
                         list.add(CourseSchedule.builder()
                                 .studentId(studentId)
                                 .courseCode(courseCode)
@@ -629,9 +674,11 @@ public class HcmuteCrawlerService {
                                 .endTime(endTime)
                                 .room(room)
                                 .lecturer(lecturer)
-                                .semester(currentTerm + " (" + currentYear + ")")
+                                .semester(formatSemesterLabel(currentTerm, currentYear))
                                 .groupCode(groupCode)
                                 .credits(credits)
+                                .phase(phase)
+                                .weeks(!tuanHoc.isBlank() ? tuanHoc : (phase.equals("Đợt 2") ? "Tuần 11 - 20" : "Tuần 1 - 10"))
                                 .build());
                     }
                 }
@@ -775,49 +822,119 @@ public class HcmuteCrawlerService {
                     .gpa4(0.0)
                     .passedCoursesCount(0)
                     .failedCoursesCount(0)
+                    .debtCredits(0)
+                    .academicYearLevel("Năm thứ nhất")
                     .academicStanding("Chưa có dữ liệu")
+                    .isAcademicWarning(false)
+                    .warningReason("Chưa có dữ liệu học vụ")
                     .syncStatus(histories.isEmpty() ? "NOT_SYNCED" : histories.get(0).getStatus())
                     .lastSyncedAt(histories.isEmpty() ? null : histories.get(0).getSyncedAt())
                     .build();
         }
 
-        int totalPassedCredits = 0;
+        // Gom nhóm theo CourseCode để xử lý môn học lại / học cải thiện
+        // Với ĐTB tích lũy (CPA) và Tín chỉ tích lũy (accumulatedCredits), HCMUTE 2025 quy định:
+        // - Lấy điểm cao nhất trong các lần học
+        // - Mỗi môn học chỉ được tính số tín chỉ 1 lần duy nhất
+        Map<String, StudentGrade> bestCourseMap = new HashMap<>();
+
+        // Tìm học kỳ mới nhất có điểm để xét tỷ lệ rớt trong học kỳ (tiêu chí cảnh báo học vụ)
+        String latestSemester = null;
+        for (StudentGrade g : grades) {
+            boolean hasFinalResult = (g.getTotalScore() != null)
+                    || (g.getGradeLetter() != null && !g.getGradeLetter().isBlank() && !"--".equals(g.getGradeLetter().trim()));
+            if (hasFinalResult && g.getSemester() != null && !g.getSemester().isBlank()) {
+                latestSemester = g.getSemester();
+                break;
+            }
+        }
+
+        int latestSemRegisteredCredits = 0;
+        int latestSemFailedCredits = 0;
+
+        for (StudentGrade g : grades) {
+            String code = g.getCourseCode() != null ? g.getCourseCode().trim() : "";
+            if (code.isBlank()) continue;
+
+            // Tìm lần học có kết quả tốt nhất của môn này
+            if (!bestCourseMap.containsKey(code)) {
+                bestCourseMap.put(code, g);
+            } else {
+                StudentGrade prev = bestCourseMap.get(code);
+                Double prevScore = prev.getTotalScore() != null ? prev.getTotalScore() : 0.0;
+                Double currScore = g.getTotalScore() != null ? g.getTotalScore() : 0.0;
+                boolean prevPassed = Boolean.TRUE.equals(prev.getIsPassed());
+                boolean currPassed = Boolean.TRUE.equals(g.getIsPassed());
+
+                if (currPassed && !prevPassed) {
+                    bestCourseMap.put(code, g);
+                } else if (currPassed == prevPassed && currScore > prevScore) {
+                    bestCourseMap.put(code, g);
+                }
+            }
+
+            // Tính tỷ lệ rớt trong học kỳ mới nhất
+            if (latestSemester != null && latestSemester.equalsIgnoreCase(g.getSemester())) {
+                int cr = g.getCredits() != null ? g.getCredits() : 0;
+                boolean hasFinalResult = (g.getTotalScore() != null)
+                        || (g.getGradeLetter() != null && !g.getGradeLetter().isBlank() && !"--".equals(g.getGradeLetter().trim()));
+                if (hasFinalResult && cr > 0) {
+                    HcmuteGradingEngine.GradeConversion conv = HcmuteGradingEngine.convertGrade(
+                            g.getTotalScore(), g.getGradeLetter(), g.getSemester(), g.getCourseCode(), g.getCourseName());
+                    if (conv.isCountedInGpa()) {
+                        latestSemRegisteredCredits += cr;
+                        if (!conv.isPassed()) {
+                            latestSemFailedCredits += cr;
+                        }
+                    }
+                }
+            }
+        }
+
+        int totalAccumulatedCredits = 0;
         int totalCreditsForGpa = 0;
         double weightedScore10Sum = 0.0;
         double weightedScore4Sum = 0.0;
-        int passedCount = 0;
-        int failedCount = 0;
+        int passedCoursesCount = 0;
+        int failedCoursesCount = 0;
+        int debtCredits = 0;
 
-        for (StudentGrade g : grades) {
+        // Duyệt qua tập môn học tốt nhất (mỗi môn tính 1 lần duy nhất)
+        for (Map.Entry<String, StudentGrade> entry : bestCourseMap.entrySet()) {
+            StudentGrade g = entry.getValue();
             int credits = g.getCredits() != null ? g.getCredits() : 0;
             Double score10 = g.getTotalScore();
-            String letter = g.getGradeLetter() != null ? g.getGradeLetter().trim().toUpperCase() : "";
+            String letter = g.getGradeLetter() != null ? g.getGradeLetter().trim() : "";
 
-            // QUAN TRỌNG: Môn nào chưa có điểm tổng kết cuối cùng trên Portal thì bỏ qua, KHÔNG tính vào GPA / Nợ môn
             boolean hasFinalResult = (score10 != null) || (!letter.isBlank() && !"--".equals(letter));
             if (!hasFinalResult) {
-                continue;
+                continue; // Môn đang học chưa có điểm kết thúc học phần
             }
 
-            boolean isPassed = Boolean.TRUE.equals(g.getIsPassed())
-                    || (score10 != null && score10 >= 4.0 && !"F".equals(letter))
-                    || (!letter.isBlank() && !"F".equals(letter));
+            HcmuteGradingEngine.GradeConversion conv = HcmuteGradingEngine.convertGrade(
+                    score10, letter, g.getSemester(), g.getCourseCode(), g.getCourseName());
 
-            if (isPassed) {
-                passedCount++;
-                totalPassedCredits += credits;
+            if (conv.isPassed()) {
+                passedCoursesCount++;
+                if (conv.isCountedInAccumulatedCredits()) {
+                    totalAccumulatedCredits += credits;
+                }
+                // Chỉ các môn ĐẠT mới được đưa vào ĐTB tích lũy (CPA)
+                if (conv.isCountedInGpa() && credits > 0) {
+                    totalCreditsForGpa += credits;
+                    if (score10 != null) {
+                        weightedScore10Sum += score10 * credits;
+                    }
+                    if (conv.getGpa4() != null) {
+                        weightedScore4Sum += conv.getGpa4() * credits;
+                    }
+                }
             } else {
-                failedCount++;
-            }
-
-            if (score10 != null && credits > 0) {
-                totalCreditsForGpa += credits;
-                weightedScore10Sum += score10 * credits;
-                weightedScore4Sum += convertScale10To4(score10, letter) * credits;
-            } else if (!letter.isBlank() && credits > 0) {
-                double score4 = convertScale10To4(null, letter);
-                totalCreditsForGpa += credits;
-                weightedScore4Sum += score4 * credits;
+                // Môn chưa đạt (và chưa được trả nợ thành công ở các lần học khác)
+                failedCoursesCount++;
+                if (!HcmuteGradingEngine.isConditionalSubject(g.getCourseCode(), g.getCourseName())) {
+                    debtCredits += credits;
+                }
             }
         }
 
@@ -828,30 +945,31 @@ public class HcmuteCrawlerService {
                 ? BigDecimal.valueOf(weightedScore4Sum / totalCreditsForGpa).setScale(2, RoundingMode.HALF_UP).doubleValue()
                 : 0.0;
 
-        String standing;
-        if (gpa4 >= 3.6) {
-            standing = "Xuất sắc";
-        } else if (gpa4 >= 3.2) {
-            standing = "Giỏi";
-        } else if (gpa4 >= 2.5) {
-            standing = "Khá";
-        } else if (gpa4 >= 2.0) {
-            standing = "Trung bình";
-        } else {
-            standing = "Cảnh báo học vụ / Yếu";
-        }
+        String standing = HcmuteGradingEngine.resolveAcademicStanding(gpa4);
+        String yearLevel = HcmuteGradingEngine.resolveAcademicYearLevel(totalAccumulatedCredits);
+
+        Double latestSemesterFailRatio = latestSemRegisteredCredits > 0
+                ? (double) latestSemFailedCredits / latestSemRegisteredCredits
+                : null;
+
+        HcmuteGradingEngine.AcademicWarningResult warningResult = HcmuteGradingEngine.evaluateAcademicWarning(
+                debtCredits, latestSemesterFailRatio, gpa4, totalAccumulatedCredits);
 
         SyncHistory latestHistory = histories.isEmpty() ? null : histories.get(0);
 
         return AcademicSummaryResponse.builder()
                 .studentId(studentId)
                 .studentName(studentName)
-                .totalCredits(totalPassedCredits)
+                .totalCredits(totalAccumulatedCredits)
                 .gpa10(gpa10)
                 .gpa4(gpa4)
-                .passedCoursesCount(passedCount)
-                .failedCoursesCount(failedCount)
+                .passedCoursesCount(passedCoursesCount)
+                .failedCoursesCount(failedCoursesCount)
+                .debtCredits(debtCredits)
+                .academicYearLevel(yearLevel)
                 .academicStanding(standing)
+                .isAcademicWarning(warningResult.isWarning())
+                .warningReason(warningResult.getWarningReason())
                 .syncStatus(latestHistory != null ? latestHistory.getStatus() : "LIVE_PORTAL")
                 .lastSyncedAt(latestHistory != null ? latestHistory.getSyncedAt() : LocalDateTime.now())
                 .build();
@@ -1003,27 +1121,8 @@ public class HcmuteCrawlerService {
     }
 
     private double convertScale10To4(Double score10, String letter) {
-        if (letter != null && !letter.isBlank()) {
-            return switch (letter.trim().toUpperCase()) {
-                case "A+", "A" -> 4.0;
-                case "B+" -> 3.5;
-                case "B" -> 3.0;
-                case "C+" -> 2.5;
-                case "C" -> 2.0;
-                case "D+" -> 1.5;
-                case "D" -> 1.0;
-                default -> 0.0;
-            };
-        }
-        if (score10 == null) return 0.0;
-        if (score10 >= 8.5) return 4.0;
-        if (score10 >= 8.0) return 3.5;
-        if (score10 >= 7.0) return 3.0;
-        if (score10 >= 6.5) return 2.5;
-        if (score10 >= 5.5) return 2.0;
-        if (score10 >= 5.0) return 1.5;
-        if (score10 >= 4.0) return 1.0;
-        return 0.0;
+        HcmuteGradingEngine.GradeConversion conv = HcmuteGradingEngine.convertGrade(score10, letter, null, null, null);
+        return conv.getGpa4() != null ? conv.getGpa4() : 0.0;
     }
 
     private boolean isDemoMode(String studentId, String password) {
@@ -1147,16 +1246,18 @@ public class HcmuteCrawlerService {
         List<StudentGrade> list = new ArrayList<>();
 
         // HK01 (2023-2024)
-        list.add(createGrade(studentId, "MATH141601", "Toán cao cấp 1", 3, 8.5, 8.0, 8.2, "B+", "Học kỳ 1 (2023-2024)", true));
+        list.add(createGrade(studentId, "MATH141601", "Toán cao cấp 1", 3, 5.0, 4.0, 4.5, "D", "Học kỳ 1 (2023-2024)", false)); // Rớt lần 1
         list.add(createGrade(studentId, "INPR130285", "Nhập môn lập trình", 3, 9.5, 9.0, 9.2, "A+", "Học kỳ 1 (2023-2024)", true));
         list.add(createGrade(studentId, "PHYS130402", "Vật lý đại cương 1", 3, 7.5, 7.0, 7.2, "B", "Học kỳ 1 (2023-2024)", true));
         list.add(createGrade(studentId, "ENGL130137", "Anh văn 1", 3, 8.0, 8.5, 8.3, "B+", "Học kỳ 1 (2023-2024)", true));
+        list.add(createGrade(studentId, "PHED110515", "Giáo dục thể chất 1", 1, null, null, null, "P", "Học kỳ 1 (2023-2024)", true)); // Môn điều kiện
 
         // HK02 (2023-2024)
-        list.add(createGrade(studentId, "MATH141801", "Đại số tuyến tính", 3, 8.5, 9.0, 8.8, "A", "Học kỳ 2 (2023-2024)", true));
-        list.add(createGrade(studentId, "CPRG230264", "Kỹ thuật lập trình", 3, 9.0, 9.0, 9.0, "A", "Học kỳ 2 (2023-2024)", true));
+        list.add(createGrade(studentId, "MATH141601", "Toán cao cấp 1", 3, 8.5, 8.0, 8.2, "B+", "Học kỳ 2 (2023-2024)", true)); // Học lại & Đạt thành công (hết nợ)
+        list.add(createGrade(studentId, "MATH141801", "Đại số tuyến tính", 3, 8.5, 9.0, 8.8, "A", "Học kỳ 2 (2023-2024)", true)); // A quy đổi 3.7
+        list.add(createGrade(studentId, "CPRG230264", "Kỹ thuật lập trình", 3, 9.0, 9.0, 9.0, "A", "Học kỳ 2 (2023-2024)", true)); // A quy đổi 3.7
         list.add(createGrade(studentId, "EEEN234162", "Kỹ thuật điện - điện tử", 3, 7.0, 7.5, 7.3, "B", "Học kỳ 2 (2023-2024)", true));
-        list.add(createGrade(studentId, "ENGL230237", "Anh văn 2", 3, 8.5, 8.0, 8.2, "B+", "Học kỳ 2 (2023-2024)", true));
+        list.add(createGrade(studentId, "MILT110115", "Giáo dục quốc phòng - An ninh 1", 2, null, null, null, "P", "Học kỳ 2 (2023-2024)", true)); // Môn điều kiện
 
         // HK01 (2024-2025)
         list.add(createGrade(studentId, "DSAA330164", "Cấu trúc dữ liệu và giải thuật", 3, 9.0, 8.5, 8.7, "A", "Học kỳ 1 (2024-2025)", true));
@@ -1190,6 +1291,20 @@ public class HcmuteCrawlerService {
 
     public static String[] calculateTimesFromShift(String shift) {
         if (shift == null || shift.isBlank()) return new String[]{"07:30", "09:45"};
+
+        // 1. Dạng dữ liệu từ HCMUTE Portal API: "7 (12g45)", "1 (07g30)", "10 (15g15)", "13 (18g00)"
+        java.util.regex.Matcher mPortal = java.util.regex.Pattern.compile("(\\d+)\\s*\\(\\s*(\\d{1,2})[gGhH:](\\d{2})\\s*\\)").matcher(shift.trim());
+        if (mPortal.find()) {
+            int h = Integer.parseInt(mPortal.group(2));
+            int min = Integer.parseInt(mPortal.group(3));
+            String start = String.format("%02d:%02d", h, min);
+            // Một ca học tiêu chuẩn gồm 3 tiết (135 phút)
+            int endMins = h * 60 + min + 135;
+            String end = String.format("%02d:%02d", endMins / 60, endMins % 60);
+            return new String[]{start, end};
+        }
+
+        // 2. Dạng khoảng tiết: "Tiết 1 - 3", "1 - 3", "Tiết 7 - 9"
         String[] startTimes = {
             "", "07:30", "08:15", "09:00", "10:00", "10:45", "11:30",
             "13:00", "13:45", "14:30", "15:30", "16:15", "17:00",
@@ -1208,7 +1323,73 @@ public class HcmuteCrawlerService {
             String end = (e >= 1 && e < endTimes.length) ? endTimes[e] : "09:45";
             return new String[]{start, end};
         }
+
+        // 3. Dạng tiết đơn lẻ: "7", "Ca 7", "1"
+        java.util.regex.Matcher mSingle = java.util.regex.Pattern.compile("(\\d+)").matcher(shift);
+        if (mSingle.find()) {
+            int t = Integer.parseInt(mSingle.group(1));
+            if (t == 1) return new String[]{"07:30", "09:45"};
+            if (t == 4) return new String[]{"10:00", "12:15"};
+            if (t == 7) return new String[]{"12:45", "15:00"};
+            if (t == 10) return new String[]{"15:15", "17:30"};
+            if (t == 13) return new String[]{"18:00", "20:15"};
+            String start = (t >= 1 && t < startTimes.length) ? startTimes[t] : "07:30";
+            int endIdx = Math.min(t + 2, endTimes.length - 1);
+            String end = (endIdx >= 1 && endIdx < endTimes.length) ? endTimes[endIdx] : "09:45";
+            return new String[]{start, end};
+        }
+
         return new String[]{"07:30", "09:45"};
+    }
+
+    public static String determinePhase(String tuanHoc, String rawDot) {
+        if (rawDot != null && !rawDot.isBlank()) {
+            String d = rawDot.trim().toLowerCase(Locale.ROOT);
+            if (d.contains("1") || d.contains("đợt 1") || d.contains("dot 1")) return "Đợt 1";
+            if (d.contains("2") || d.contains("đợt 2") || d.contains("dot 2")) return "Đợt 2";
+        }
+        if (tuanHoc != null && !tuanHoc.isBlank()) {
+            String t = tuanHoc.trim();
+            // 1. Dạng ngày/tháng trong tuần học: dd/MM/yyyy->dd/MM/yyyy
+            java.util.regex.Matcher mDate = java.util.regex.Pattern.compile("(\\d{2})/(\\d{2})/\\d{4}").matcher(t);
+            if (mDate.find()) {
+                int month = Integer.parseInt(mDate.group(2));
+                // Học kỳ 1 (tháng 8-10: Đợt 1, tháng 11-1: Đợt 2) | Học kỳ 2 (tháng 1-3: Đợt 1, tháng 4-6: Đợt 2)
+                if ((month >= 8 && month <= 10) || (month >= 2 && month <= 3)) {
+                    return "Đợt 1";
+                }
+                if (month >= 11 || month == 1 || (month >= 4 && month <= 7)) {
+                    return "Đợt 2";
+                }
+            }
+            // 2. Dạng khoảng tuần: "1-10", "11-20", "1-18"
+            java.util.regex.Matcher mRange = java.util.regex.Pattern.compile("^\\s*(\\d+)\\s*[-–]\\s*(\\d+)\\s*$").matcher(t);
+            if (mRange.find()) {
+                int start = Integer.parseInt(mRange.group(1));
+                int end = Integer.parseInt(mRange.group(2));
+                if (end <= 10) return "Đợt 1";
+                if (start >= 10) return "Đợt 2";
+                return "Cả học kỳ";
+            }
+            // 3. Dạng chuỗi vị trí tuần (vd: "1234567890----------" hoặc "----------1234567890")
+            if (t.matches("^[\\d\\-]+$")) {
+                int firstDigit = -1;
+                int lastDigit = -1;
+                for (int i = 0; i < t.length(); i++) {
+                    char c = t.charAt(i);
+                    if (Character.isDigit(c)) {
+                        if (firstDigit == -1) firstDigit = i + 1;
+                        lastDigit = i + 1;
+                    }
+                }
+                if (firstDigit != -1) {
+                    if (lastDigit <= 10) return "Đợt 1";
+                    if (firstDigit >= 10) return "Đợt 2";
+                    return "Cả học kỳ";
+                }
+            }
+        }
+        return "Đợt 1";
     }
 
     private List<CourseSchedule> generateDemoSchedules(String studentId) {
@@ -1228,6 +1409,8 @@ public class HcmuteCrawlerService {
                 .semester(semester)
                 .groupCode("01CLC")
                 .credits(3)
+                .phase("Đợt 1")
+                .weeks("Tuần 1 - 10")
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -1243,6 +1426,8 @@ public class HcmuteCrawlerService {
                 .semester(semester)
                 .groupCode("02CLC")
                 .credits(3)
+                .phase("Đợt 1")
+                .weeks("Tuần 1 - 10")
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -1258,6 +1443,8 @@ public class HcmuteCrawlerService {
                 .semester(semester)
                 .groupCode("01")
                 .credits(3)
+                .phase("Đợt 1")
+                .weeks("Tuần 1 - 10")
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -1273,6 +1460,8 @@ public class HcmuteCrawlerService {
                 .semester(semester)
                 .groupCode("03")
                 .credits(3)
+                .phase("Đợt 2")
+                .weeks("Tuần 11 - 20")
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -1288,6 +1477,8 @@ public class HcmuteCrawlerService {
                 .semester(semester)
                 .groupCode("01CLC")
                 .credits(3)
+                .phase("Đợt 2")
+                .weeks("Tuần 11 - 20")
                 .build());
 
         list.add(CourseSchedule.builder()
@@ -1303,6 +1494,8 @@ public class HcmuteCrawlerService {
                 .semester(semester)
                 .groupCode("02")
                 .credits(3)
+                .phase("Đợt 2")
+                .weeks("Tuần 11 - 20")
                 .build());
 
         return list;
@@ -1360,6 +1553,246 @@ public class HcmuteCrawlerService {
                     .isCompleted(done)
                     .build());
         }
+
+        return list;
+    }
+
+    // ── Portal Announcements (Thông báo học vụ từ Cổng trường HCMUTE) ─────────
+
+    private static class CacheEntry<T> {
+        final T data;
+        final long expiresAt;
+
+        CacheEntry(T data, long ttlMillis) {
+            this.data = data;
+            this.expiresAt = System.currentTimeMillis() + ttlMillis;
+        }
+
+        boolean isExpired() {
+            return System.currentTimeMillis() > expiresAt;
+        }
+    }
+
+    /**
+     * Lấy danh sách thông báo chính thức từ Cổng trường HCMUTE:
+     * - Thông báo chung toàn trường (/student/GetAllThongBaoChung)
+     * - Thông báo cá nhân sinh viên (/student/GetMessagesByReceiverID)
+     */
+    public List<PortalAnnouncementDto> fetchPortalAnnouncements(String studentId, String password) {
+        String cacheKey = (studentId != null && !studentId.isBlank()) ? studentId.trim() : "GLOBAL";
+        CacheEntry<List<PortalAnnouncementDto>> cached = announcementCache.get(cacheKey);
+        if (cached != null && !cached.isExpired()) {
+            return cached.data;
+        }
+
+        List<PortalAnnouncementDto> list = new ArrayList<>();
+        try {
+            String token = null;
+            if (studentId != null && !studentId.isBlank() && password != null && !password.isBlank()) {
+                try {
+                    JsonNode auth = authenticateWithHcmute(studentId, password);
+                    if (auth.hasNonNull("Token")) token = auth.get("Token").asText();
+                    else if (auth.hasNonNull("access_token")) token = auth.get("access_token").asText();
+                    else if (auth.hasNonNull("token")) token = auth.get("token").asText();
+                } catch (Exception ex) {
+                    log.warn("Không thể xác thực Portal để lấy token thông báo: {}", ex.getMessage());
+                }
+            }
+
+            if (token != null) {
+                // 1. Thông báo chung từ Nhà trường / Phòng Đào tạo
+                try {
+                    HttpRequest reqChung = HttpRequest.newBuilder()
+                            .uri(URI.create(API_BASE + "/student/GetAllThongBaoChung"))
+                            .header("Content-Type", "application/json")
+                            .header("apiKey", API_KEY)
+                            .header("clientId", CLIENT_ID)
+                            .header("Authorization", "Bearer " + token)
+                            .timeout(TIMEOUT)
+                            .GET()
+                            .build();
+
+                    HttpResponse<String> resChung = httpClient.send(reqChung, HttpResponse.BodyHandlers.ofString());
+                    if (resChung.statusCode() == 200 && resChung.body() != null) {
+                        JsonNode root = objectMapper.readTree(resChung.body());
+                        if (root.isArray()) {
+                            for (JsonNode item : root) {
+                                String id = item.hasNonNull("MaTin") ? item.get("MaTin").asText() : UUID.randomUUID().toString();
+                                String title = item.hasNonNull("TieuDe") ? item.get("TieuDe").asText() : "";
+                                String contentHtml = item.hasNonNull("NoiDung") ? item.get("NoiDung").asText() : "";
+                                String sender = item.hasNonNull("StaffName") ? item.get("StaffName").asText() : "Phòng Đào tạo";
+                                String rawDate = item.hasNonNull("CreateDate") ? item.get("CreateDate").asText() : "";
+                                String date = formatAnnouncementDate(rawDate);
+                                boolean isPinned = item.hasNonNull("Ghim") && item.get("Ghim").asBoolean();
+                                String category = determineAnnouncementCategory(title, sender);
+
+                                list.add(PortalAnnouncementDto.builder()
+                                        .id(id)
+                                        .title(title)
+                                        .contentHtml(contentHtml)
+                                        .sender(sender)
+                                        .publishDate(date)
+                                        .isPinned(isPinned)
+                                        .category(category)
+                                        .type("CHUNG")
+                                        .isRead(true)
+                                        .build());
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    log.warn("Lỗi khi tải GetAllThongBaoChung từ Portal: {}", ex.getMessage());
+                }
+
+                // 2. Thông báo cá nhân gửi riêng cho sinh viên
+                try {
+                    HttpRequest reqMsg = HttpRequest.newBuilder()
+                            .uri(URI.create(API_BASE + "/student/GetMessagesByReceiverID"))
+                            .header("Content-Type", "application/json")
+                            .header("apiKey", API_KEY)
+                            .header("clientId", CLIENT_ID)
+                            .header("Authorization", "Bearer " + token)
+                            .timeout(TIMEOUT)
+                            .GET()
+                            .build();
+
+                    HttpResponse<String> resMsg = httpClient.send(reqMsg, HttpResponse.BodyHandlers.ofString());
+                    if (resMsg.statusCode() == 200 && resMsg.body() != null) {
+                        JsonNode root = objectMapper.readTree(resMsg.body());
+                        if (root.isArray()) {
+                            for (JsonNode item : root) {
+                                String id = item.hasNonNull("MessageID") ? "msg_" + item.get("MessageID").asText() : UUID.randomUUID().toString();
+                                String title = item.hasNonNull("MessageSubject") ? item.get("MessageSubject").asText() : "";
+                                String contentHtml = item.hasNonNull("MessageBody") ? item.get("MessageBody").asText() : "";
+                                String sender = item.hasNonNull("SenderName") ? item.get("SenderName").asText() : "Cổng thông tin";
+                                String date = item.hasNonNull("CreationDate") ? item.get("CreationDate").asText() : "";
+                                boolean isRead = item.hasNonNull("IsRead") && item.get("IsRead").asInt() == 1;
+                                String category = determineAnnouncementCategory(title, sender);
+
+                                list.add(PortalAnnouncementDto.builder()
+                                        .id(id)
+                                        .title(title)
+                                        .contentHtml(contentHtml)
+                                        .sender(sender)
+                                        .publishDate(date)
+                                        .isPinned(false)
+                                        .category(category)
+                                        .type("CA_NHAN")
+                                        .isRead(isRead)
+                                        .build());
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    log.warn("Lỗi khi tải GetMessagesByReceiverID từ Portal: {}", ex.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Lỗi khi fetchPortalAnnouncements: {}", e.getMessage());
+        }
+
+        // Nếu chưa liên kết hoặc lỗi kết nối, nạp dữ liệu mẫu thực tế
+        if (list.isEmpty()) {
+            list = generateDemoAnnouncements();
+        } else {
+            // Sắp xếp: Ưu tiên bài Ghim, sau đó xếp theo ngày mới nhất
+            list.sort((a, b) -> {
+                if (Boolean.TRUE.equals(a.getIsPinned()) && !Boolean.TRUE.equals(b.getIsPinned())) return -1;
+                if (!Boolean.TRUE.equals(a.getIsPinned()) && Boolean.TRUE.equals(b.getIsPinned())) return 1;
+                return (b.getPublishDate() != null ? b.getPublishDate() : "")
+                        .compareTo(a.getPublishDate() != null ? a.getPublishDate() : "");
+            });
+        }
+
+        announcementCache.put(cacheKey, new CacheEntry<>(list, 20 * 60 * 1000L)); // Cache 20 phút
+        return list;
+    }
+
+    public List<PortalAnnouncementDto> getAnnouncements(String studentId, String password) {
+        return fetchPortalAnnouncements(studentId, password);
+    }
+
+    private String formatAnnouncementDate(String rawDate) {
+        if (rawDate == null || rawDate.isBlank()) return "";
+        try {
+            if (rawDate.contains("T")) {
+                String d = rawDate.split("T")[0]; // yyyy-MM-dd
+                String[] p = d.split("-");
+                if (p.length == 3) {
+                    return p[2] + "/" + p[1] + "/" + p[0];
+                }
+            }
+        } catch (Exception ignored) {}
+        return rawDate;
+    }
+
+    public static String determineAnnouncementCategory(String title, String sender) {
+        String text = ((title != null ? title : "") + " " + (sender != null ? sender : "")).toLowerCase(Locale.ROOT);
+        if (text.contains("học bổng") || text.contains("tài trợ") || text.contains("hỗ trợ sinh viên") || text.contains("doanh nghiệp")) {
+            return "Học bổng";
+        }
+        if (text.contains("lịch thi") || text.contains("hoãn thi") || text.contains("thi giữa kỳ") || text.contains("thi cuối kỳ") || text.contains("phòng thi")) {
+            return "Lịch thi";
+        }
+        if (text.contains("pdt") || text.contains("đăng ký môn") || text.contains("kế hoạch") || text.contains("học vụ")
+                || text.contains("tín chỉ") || text.contains("chứng chỉ") || text.contains("xét tốt nghiệp") || text.contains("ngoại ngữ")) {
+            return "Học vụ";
+        }
+        if (text.contains("qlsv") || text.contains("công tác sinh viên") || text.contains("sinh hoạt công dân") || text.contains("xác nhận sinh viên")) {
+            return "Công tác SV";
+        }
+        return "Thông báo chung";
+    }
+
+    public List<PortalAnnouncementDto> generateDemoAnnouncements() {
+        List<PortalAnnouncementDto> list = new ArrayList<>();
+        list.add(PortalAnnouncementDto.builder()
+                .id("demo_1")
+                .title("Trung tâm Ngoại ngữ thông báo mở lớp Kỹ năng giao tiếp tiếng Anh cơ bản")
+                .contentHtml("<p>Trung tâm Ngoại ngữ thông báo mở lớp Kỹ năng giao tiếp tiếng Anh cơ bản áp dụng cho sinh viên các khóa tuyển sinh từ 2023 trở về sau.</p><p>Sinh viên liên hệ Trung tâm Ngoại ngữ để đăng ký học và kiểm tra điều kiện tiên quyết.</p>")
+                .category("Học vụ")
+                .publishDate("23/10/2026")
+                .sender("PDT_Vũ Văn Việt")
+                .isPinned(true)
+                .type("CHUNG")
+                .isRead(true)
+                .build());
+
+        list.add(PortalAnnouncementDto.builder()
+                .id("demo_2")
+                .title("THÔNG BÁO Kết thúc việc phân phối giấy xác nhận sinh viên khổ A5 và điểm nhận giấy mới")
+                .contentHtml("<p>Phòng Tuyển sinh và Công tác sinh viên thông báo hoàn tất chuyển đổi biểu mẫu xác nhận sinh viên sang hệ thống điện tử mới.</p>")
+                .category("Công tác SV")
+                .publishDate("21/10/2026")
+                .sender("QLSV_Đặng Hữu Khanh")
+                .isPinned(false)
+                .type("CA_NHAN")
+                .isRead(true)
+                .build());
+
+        list.add(PortalAnnouncementDto.builder()
+                .id("demo_3")
+                .title("Chương trình học bổng Doanh nghiệp tài trợ Khoa CNTT năm 2026")
+                .contentHtml("<p>Khoa Công nghệ Thông tin thông báo tiếp nhận hồ sơ xét cấp học bổng doanh nghiệp tài trợ cho sinh viên đạt thành tích xuất sắc và hoàn cảnh khó khăn năm học 2026.</p>")
+                .category("Học bổng")
+                .publishDate("18/10/2026")
+                .sender("Khoa CNTT")
+                .isPinned(false)
+                .type("CHUNG")
+                .isRead(true)
+                .build());
+
+        list.add(PortalAnnouncementDto.builder()
+                .id("demo_4")
+                .title("Công bố lịch thi giữa học kỳ 1 bổ sung đợt 1")
+                .contentHtml("<p>Phòng Đào tạo công bố lịch thi và danh sách phòng thi giữa học kỳ 1 cho toàn thể sinh viên các bậc đào tạo chính quy.</p>")
+                .category("Lịch thi")
+                .publishDate("15/10/2026")
+                .sender("Phòng Đào tạo")
+                .isPinned(false)
+                .type("CHUNG")
+                .isRead(true)
+                .build());
 
         return list;
     }
