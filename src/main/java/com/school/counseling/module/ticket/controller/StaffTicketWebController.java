@@ -138,12 +138,18 @@ public class StaffTicketWebController {
     public String handleResolveTicket(
             @PathVariable Long ticketId,
             @RequestParam(value = "note", required = false) String note,
+            @RequestParam(value = "closeTicket", required = false, defaultValue = "false") boolean closeTicket,
             RedirectAttributes redirectAttributes) {
 
         Long staffId = SecurityUtils.getCurrentUserId().orElse(null);
         TicketResponseDto ticket = ticketService.resolveTicket(ticketId, staffId, note);
 
-        redirectAttributes.addFlashAttribute("successMessage", "Đã đánh dấu hoàn tất yêu cầu #" + ticket.getTicketCode());
+        if (closeTicket) {
+            ticketService.closeTicket(ticketId, staffId, null, "Cán bộ đã giải quyết và đóng phiên tư vấn.");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã giải quyết và đóng yêu cầu #" + ticket.getTicketCode() + " thành công!");
+        } else {
+            redirectAttributes.addFlashAttribute("successMessage", "Đã đánh dấu hoàn tất giải quyết yêu cầu #" + ticket.getTicketCode());
+        }
         return "redirect:/tickets/detail/" + ticketId;
     }
 
