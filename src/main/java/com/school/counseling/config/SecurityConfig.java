@@ -36,17 +36,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // thuant toan băm 1 chieu = chuoi ngẫu nhiên
-    } // trộm đc db nhg ko thể dịch ngược
-
-    @Bean
     // xác thực tk
-    public DaoAuthenticationProvider authenticationProvider() {
+    public DaoAuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(); // DaoAuthen... trọng tài xác thực tk
                                                                                   // khibaamws lgoin
         authProvider.setUserDetailsService(userDetailsService);// tim thong tin tk
-        authProvider.setPasswordEncoder(passwordEncoder());// xac thuc mk đưa giải mã bcrupt vào
+        authProvider.setPasswordEncoder(passwordEncoder);// xac thuc mk đưa giải mã bcrupt vào
         return authProvider;
     }
 
@@ -58,7 +53,7 @@ public class SecurityConfig {
 
     @Bean
     // bộ lọc chính bảo vê ngóc ngách hệ thôgns
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, DaoAuthenticationProvider authenticationProvider) throws Exception {
         http
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.sameOrigin()))
@@ -108,7 +103,7 @@ public class SecurityConfig {
                         .permitAll())
                 .exceptionHandling(ex -> ex
                         .accessDeniedPage("/error"))
-                .authenticationProvider(authenticationProvider())
+                .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

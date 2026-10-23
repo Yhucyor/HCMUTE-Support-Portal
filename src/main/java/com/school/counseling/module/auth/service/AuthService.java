@@ -203,11 +203,13 @@ public class AuthService {
         String email = studentId.toLowerCase() + "@student.hcmute.edu.vn";
         String encodedPortalPassword = java.util.Base64.getEncoder().encodeToString(password.getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
-        // 2. Tìm hoặc tự động tạo tài khoản trong DB
         final String finalStudentId = studentId;
         final String finalFullName = fullName;
+        final String finalEmail = email;
+        final String finalPassword = password;
+        final String finalEncodedPortalPassword = encodedPortalPassword;
         User user = userRepository.findByUsername(studentId)
-                .or(() -> userRepository.findByEmail(email))
+                .or(() -> userRepository.findByEmail(finalEmail))
                 .orElseGet(() -> {
                     Role studentRole = roleRepository.findByName("ROLE_STUDENT")
                             .orElseGet(() -> roleRepository.save(Role.builder()
@@ -217,14 +219,14 @@ public class AuthService {
 
                     User newUser = User.builder()
                             .username(finalStudentId)
-                            .passwordHash(passwordEncoder.encode(password))
+                            .passwordHash(passwordEncoder.encode(finalPassword))
                             .fullName(finalFullName)
-                            .email(email)
+                            .email(finalEmail)
                             .role(studentRole)
                             .status(UserStatus.ACTIVE)
                             .avatarUrl("https://ui-avatars.com/api/?name=" + finalFullName.replace(" ", "+") + "&background=0D8ABC&color=fff")
                             .portalUsername(finalStudentId)
-                            .portalPasswordEnc(encodedPortalPassword)
+                            .portalPasswordEnc(finalEncodedPortalPassword)
                             .build();
 
                     log.info("Tự động tạo tài khoản sinh viên từ Cổng Đào tạo HCMUTE: MSSV={}", finalStudentId);
