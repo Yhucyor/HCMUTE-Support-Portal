@@ -79,6 +79,7 @@
             margin: 0;
             padding: 0;
             list-style: none;
+            height: 74px;
         }
         @media (min-width: 1200px) {
             .hcmute-nav-menu {
@@ -90,9 +91,13 @@
             font-weight: 500;
             color: #475569;
             text-decoration: none;
-            padding: 0.5rem 0.25rem;
+            padding: 0 0.25rem;
+            height: 74px;
+            display: inline-flex;
+            align-items: center;
             position: relative;
-            transition: color 0.2s ease;
+            border-bottom: 3px solid transparent;
+            transition: color 0.15s ease, border-color 0.15s ease;
         }
         .hcmute-nav-link:hover {
             color: #003882;
@@ -100,16 +105,7 @@
         .hcmute-nav-link.active {
             color: #003882;
             font-weight: 700;
-        }
-        .hcmute-nav-link.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 2.5px;
-            background: #003882;
-            border-radius: 2px;
+            border-bottom-color: #003882;
         }
 
         /* Action Buttons */
@@ -300,14 +296,6 @@
 
         <!-- 3. RIGHT ACTIONS & USER ACCOUNT -->
         <div class="hcmute-topbar-actions">
-
-            <!-- Nút Xanh "Bàn Cán Bộ" dành riêng cho Cán Bộ Tư Vấn -->
-            <div sec:authorize="hasRole('STAFF') and !hasRole('ADMIN')">
-                <a th:href="@{/staff/tickets}" class="btn-topbar-staff-blue" title="Truy cập Bàn Cán Bộ Tiếp Nhận Vé">
-                    <i class="bi bi-headset"></i>
-                    <span>Bàn Cán Bộ</span>
-                </a>
-            </div>
 
             <!-- Khi ĐÃ ĐĂNG NHẬP: Menu Tài Khoản Đa Năng -->
             <div sec:authorize="isAuthenticated()" class="hcmute-dropdown-wrapper">
