@@ -51,7 +51,12 @@ public class CustomErrorController implements ErrorController {
                     : "Đã xảy ra lỗi không xác định (" + statusCode + ").";
         };
 
-        log.warn("Đã xử lý mã lỗi HTTP {}: URI={}, Detail={}", statusCode, requestUri, userFriendlyMsg);
+        Object exObj = request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
+        if (statusCode == 500 && exObj instanceof Throwable th) {
+            log.error("Lỗi HTTP 500 tại URI {}: {}", requestUri, th.getMessage(), th);
+        } else {
+            log.warn("Đã xử lý mã lỗi HTTP {}: URI={}, Detail={}", statusCode, requestUri, userFriendlyMsg);
+        }
 
         // Kiểm tra nếu là lời gọi API RESTful
         String acceptHeader = request.getHeader("Accept");
