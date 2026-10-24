@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Quản Trị Người Dùng - QAUTE Portal</title>
+</head>
+<body>
+<div th:fragment="content">
+    <!-- Portal Workspace Header -->
+    <div th:replace="~{layout/portal-header :: portal-header('admin-users')}"></div>
+
+    <!-- CSRF Metadata for Secure AJAX Requests -->
+    <input type="hidden" id="csrfToken" th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}" th:value="${_csrf != null ? _csrf.token : ''}" />
+    <input type="hidden" id="csrfHeader" th:value="${_csrf != null ? _csrf.headerName : 'X-CSRF-TOKEN'}" />
+
+    <!-- Toast Container góc phải -->
+    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090;"></div>
+
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-2">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-danger px-2.5 py-1 text-uppercase fw-semibold" style="letter-spacing: 0.5px;">ADMIN WORKSPACE</span>
+                <span class="text-muted small">| Phân Quyền & Quản Lý Tài Khoản</span>
+            </div>
+            <h3 class="fw-bold text-dark mb-0">Danh Sách & Quản Trị Người Dùng</h3>
+            <p class="text-muted small mb-0 mt-1">Phân quyền vai trò (Role), gán Khoa/Phòng ban trực thuộc và kiểm soát trạng thái khóa/mở tài khoản</p>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary btn-sm fw-semibold">
+                <i class="bi bi-speedometer2 me-1"></i>Xem SLA Dashboard
+            </a>
+            <a th:href="@{/admin/departments}" class="btn btn-outline-primary btn-sm fw-semibold">
+                <i class="bi bi-buildings me-1"></i>Quản Lý Khoa / Phòng
+            </a>
+        </div>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="card bg-white p-3 mb-4 shadow-sm border-0">
+        <form th:action="@{/admin/users}" method="get" class="row g-2 align-items-center">
+            <!-- Keyword search -->
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold text-secondary mb-1">Tìm kiếm theo tên / email / username</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" name="keyword" class="form-control" placeholder="Nhập từ khóa tìm kiếm..." th:value="${keyword}">
+                </div>
+            </div>
+
+            <!-- Role filter -->
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold text-secondary mb-1">Vai trò</label>
+                <select name="roleId" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="" th:selected="${selectedRoleId == null}">-- Tất cả vai trò --</option>
+                    <option th:each="r : ${roles}" 
+                            th:value="${r.id}" 
+                            th:text="${r.name}" 
+                            th:selected="${selectedRoleId != null and selectedRoleId == r.id}"></option>
+                </select>
+            </div>
+
+            <!-- Department filter -->
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-secondary mb-1">Khoa / Phòng ban</label>
+                <select name="departmentId" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="" th:selected="${selectedDepartmentId == null}">-- Tất cả đơn vị --</option>
+                    <option th:each="d : ${departments}" 
+                            th:value="${d.id}" 
+                            th:text="${d.name}" 
+                            th:selected="${selectedDepartmentId != null and selectedDepartmentId == d.id}"></option>
+                </select>
+            </div>
+
+            <!-- Status filter -->
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold text-secondary mb-1">Trạng thái</label>
+                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="ALL" th:selected="${selectedStatus == 'ALL'}">Tất cả</option>
+                    <option value="ACTIVE" th:selected="${selectedStatus == 'ACTIVE'}">Hoạt động (ACTIVE)</option>
+                    <option value="LOCKED" th:selected="${selectedStatus == 'LOCKED'}">Đã khóa (LOCKED)</option>
+                    <option value="PENDING_ACTIVATION" th:selected="${selectedStatus == 'PENDING_ACTIVATION'}">Chờ kích hoạt</option>
+                </select>
+            </div>
+
+            <div class="col-md-1 mt-auto">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-funnel-fill"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Users Table Card -->
+    <div class="card border-0 shadow-sm bg-white overflow-hidden mb-4">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold text-dark mb-0"><i class="bi bi-people-fill text-primary me-2"></i>Danh Sách Tài Khoản</h5>
+                <small class="text-muted" th:text="'Tổng cộng ' + ${usersPage.totalElements} + ' người dùng trên hệ thống'">Tổng cộng 0 người dùng</small>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="usersTable">
+                <thead class="table-light text-secondary small">
+                    <tr>
+                        <th class="ps-3">Người Dùng</th>
+                        <th>Tên Đăng Nhập / Email</th>
+                        <th>Vai Trò (Role)</th>
+                        <th>Khoa / Phòng Ban Trực Thuộc</th>
+                        <th>Trạng Thái</th>
+                        <th>Ngày Tạo</th>
+                        <th class="text-end pe-3">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(usersPage.content)}">
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-3 d-block mb-1"></i>Không tìm thấy người dùng phù hợp với bộ lọc.
+                        </td>
+                    </tr>
+                    <tr th:each="u : ${usersPage.content}" th:id="'user-row-' + ${u.id}">
+                        <td class="ps-3">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle me-2 bg-primary-subtle text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center"
+                                     style="width: 36px; height: 36px; font-size: 14px;">
+                                    <span th:text="${u.fullName != null and !#strings.isEmpty(u.fullName) ? #strings.substring(u.fullName, 0, 1) : 'U'}">U</span>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold text-dark user-fullname-label" th:text="${u.fullName}">Họ và tên</div>
+                                    <small class="text-muted user-phone-label" th:text="${u.phone != null ? u.phone : 'Chưa có SĐT'}">SĐT</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-primary user-username-label" th:text="${u.username}">username</div>
+                            <small class="text-muted user-email-label" th:text="${u.email}">email@hcmute.edu.vn</small>
+                        </td>
+                        <td>
+                            <span th:if="${u.roleName == 'ROLE_ADMIN'}" class="badge bg-danger-subtle text-danger border border-danger user-role-badge">
+                                <i class="bi bi-shield-fill-check me-1"></i>Admin Hệ Thống
+                            </span>
+                            <span th:if="${u.roleName == 'ROLE_STAFF'}" class="badge bg-primary-subtle text-primary border border-primary user-role-badge">
+                                <i class="bi bi-person-badge-fill me-1"></i>Cán Bộ / Tư Vấn
+                            </span>
+                            <span th:if="${u.roleName == 'ROLE_STUDENT' or (u.roleName != 'ROLE_ADMIN' and u.roleName != 'ROLE_STAFF')}" 
+                                  class="badge bg-secondary-subtle text-secondary border user-role-badge">
+                                <i class="bi bi-mortarboard-fill me-1"></i>Sinh Viên
+                            </span>
+                        </td>
+                        <td>
+                            <div class="user-dept-label">
+                                <span th:if="${u.departmentName != null and u.departmentName != 'Chưa phân bổ'}" 
+                                      class="badge bg-light text-dark border" th:text="${u.departmentName}">Khoa CNTT</span>
+                                <span th:if="${u.departmentName == null or u.departmentName == 'Chưa phân bổ'}" 
+                                      class="text-muted small fst-italic">Chưa phân bổ</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="user-status-container">
+                                <span th:if="${u.status == 'ACTIVE'}" class="badge bg-success user-status-badge">
+                                    <i class="bi bi-check-circle me-1"></i>Hoạt động
+                                </span>
+                                <span th:if="${u.status == 'LOCKED'}" class="badge bg-danger user-status-badge">
+                                    <i class="bi bi-lock-fill me-1"></i>Đã khóa
+                                </span>
+                                <span th:if="${u.status == 'PENDING_ACTIVATION'}" class="badge bg-warning text-dark user-status-badge">
+                                    <i class="bi bi-hourglass-split me-1"></i>Chờ OTP
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <small class="text-muted" th:text="${u.createdAt != null ? #temporals.format(u.createdAt, 'dd/MM/yyyy') : 'N/A'}">Ngày tạo</small>
+                        </td>
+                        <td class="text-end pe-3">
+                            <div class="btn-group btn-group-sm">
+                                <!-- Nút Khóa / Mở khóa AJAX -->
+                                <button type="button" 
+                                        class="btn btn-sm btn-toggle-lock"
+                                        th:classappend="${u.status == 'LOCKED' ? 'btn-outline-success' : 'btn-outline-danger'}"
+                                        th:data-user-id="${u.id}"
+                                        th:data-status="${u.status}"
+                                        th:data-username="${u.username}"
+                                        onclick="handleToggleLock(this)">
+                                    <i th:class="${u.status == 'LOCKED' ? 'bi bi-unlock-fill me-1' : 'bi bi-lock-fill me-1'}"></i>
+                                    <span th:text="${u.status == 'LOCKED' ? 'Mở Khóa' : 'Khóa'}">Khóa</span>
+                                </button>
+
+                                <!-- Nút Chỉnh sửa thông tin / Gán Khoa / Role -->
+                                <button type="button" 
+                                        class="btn btn-outline-primary btn-sm btn-edit-user"
+                                        th:data-user-id="${u.id}"
+                                        onclick="openEditUserModal(this.getAttribute('data-user-id'))">
+                                    <i class="bi bi-pencil-square me-1"></i>Chỉnh Sửa
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Bar -->
+        <div class="card-footer bg-white py-3 border-0 d-flex flex-column flex-md-row justify-content-between align-items-center gap-2" th:if="${usersPage.totalPages > 1}">
+            <div class="small text-muted">
+                Hiển thị trang <strong th:text="${usersPage.number + 1}">1</strong> / <span th:text="${usersPage.totalPages}">1</span> 
+                (Tổng số <span th:text="${usersPage.totalElements}">0</span> người dùng)
+            </div>
+            <nav aria-label="Users pagination">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${usersPage.first ? 'disabled' : ''}">
+                        <a class="page-link" th:href="@{/admin/users(page=${usersPage.number - 1}, keyword=${keyword}, roleId=${selectedRoleId}, departmentId=${selectedDepartmentId}, status=${selectedStatus})}">Trước</a>
+                    </li>
+                    <li th:each="p : ${#numbers.sequence(0, usersPage.totalPages - 1)}" 
+                        class="page-item" 
+                        th:classappend="${p == usersPage.number ? 'active' : ''}">
+                        <a class="page-link" 
+                           th:href="@{/admin/users(page=${p}, keyword=${keyword}, roleId=${selectedRoleId}, departmentId=${selectedDepartmentId}, status=${selectedStatus})}" 
+                           th:text="${p + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${usersPage.last ? 'disabled' : ''}">
+                        <a class="page-link" th:href="@{/admin/users(page=${usersPage.number + 1}, keyword=${keyword}, roleId=${selectedRoleId}, departmentId=${selectedDepartmentId}, status=${selectedStatus})}">Sau</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Edit User Modal (AJAX Form) -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold text-dark" id="editUserModalLabel">
+                        <i class="bi bi-person-gear text-primary me-2"></i>Chỉnh Sửa Quyền & Đơn Vị Người Dùng
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="editUserForm">
+                        <input type="hidden" id="editUserId">
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Tên đăng nhập (Username)</label>
+                            <input type="text" id="editUsername" class="form-control form-control-sm bg-light" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Họ và tên <span class="text-danger">*</span></label>
+                            <input type="text" id="editFullName" class="form-control form-control-sm" required>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-7">
+                                <label class="form-label small fw-semibold text-secondary">Email <span class="text-danger">*</span></label>
+                                <input type="email" id="editEmail" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label small fw-semibold text-secondary">Số điện thoại</label>
+                                <input type="text" id="editPhone" class="form-control form-control-sm">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Vai trò hệ thống (Role) <span class="text-danger">*</span></label>
+                            <select id="editRoleId" class="form-select form-select-sm" required>
+                                <option th:each="r : ${roles}" th:value="${r.id}" th:text="${r.name} + ' (' + ${r.description} + ')'"></option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Khoa / Phòng ban quản lý</label>
+                            <select id="editDepartmentId" class="form-select form-select-sm">
+                                <option value="">-- Không phân bổ (Dành cho Sinh viên / Admin chung) --</option>
+                                <option th:each="d : ${departments}" th:value="${d.id}" th:text="${d.name} + ' (' + ${d.code} + ')'"></option>
+                            </select>
+                            <small class="text-muted" style="font-size: 11px;">* Cán bộ ROLE_STAFF bắt buộc phải được gán Khoa/Phòng để xử lý Ticket</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Trạng thái tài khoản</label>
+                            <select id="editStatus" class="form-select form-select-sm">
+                                <option value="ACTIVE">Hoạt động (ACTIVE)</option>
+                                <option value="LOCKED">Tạm khóa (LOCKED)</option>
+                                <option value="PENDING_ACTIVATION">Chờ kích hoạt OTP</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="button" class="btn btn-primary btn-sm fw-semibold" id="btnSaveUser" onclick="submitEditUserForm()">
+                        <span id="btnSaveUserSpinner" class="spinner-border spinner-border-sm me-1 d-none" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-check2-circle me-1" id="btnSaveUserIcon"></i>Lưu Thay Đổi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Interactive Logic (AJAX Fetch API + Toast) -->
+    <script>
+        // --------------------------------------------------------------------------
+        // 1. Toast Notification Utility (Right-side, Academic Minimalist)
+        // --------------------------------------------------------------------------
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toastId = 'toast-' + Date.now();
+            const icon = type === 'success' 
+                ? '<i class="bi bi-check-circle-fill text-success fs-5 me-2"></i>'
+                : '<i class="bi bi-exclamation-triangle-fill text-danger fs-5 me-2"></i>';
+
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center border-0 shadow-lg mb-2 show bg-white" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex p-3 align-items-center">
+                        ${icon}
+                        <div class="toast-body text-dark fw-semibold small flex-grow-1 p-0 pe-2">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close ms-auto me-1" onclick="this.closest('.toast').remove()" aria-label="Close"></button>
+                    </div>
+                    <div class="progress" style="height: 3px;">
+                        <div class="progress-bar ${type === 'success' ? 'bg-success' : 'bg-danger'}" style="width: 100%; transition: width 3s linear;"></div>
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', toastHtml);
+            const toastEl = document.getElementById(toastId);
+            const bar = toastEl.querySelector('.progress-bar');
+            requestAnimationFrame(() => {
+                if (bar) bar.style.width = '0%';
+            });
+
+            setTimeout(() => {
+                if (toastEl && toastEl.parentNode) {
+                    toastEl.classList.remove('show');
+                    setTimeout(() => toastEl.remove(), 250);
+                }
+            }, 3000);
+        }
+
+        // --------------------------------------------------------------------------
+        // 2. Toggle Lock / Unlock Account via AJAX (Zero Full-Page Refresh)
+        // --------------------------------------------------------------------------
+        async function handleToggleLock(button) {
+            const userId = button.getAttribute('data-user-id');
+            const username = button.getAttribute('data-username');
+            const token = document.getElementById('csrfToken')?.value || '';
+            const header = document.getElementById('csrfHeader')?.value || 'X-CSRF-TOKEN';
+
+            button.disabled = true;
+            const originalHtml = button.innerHTML;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/toggle-lock`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [header]: token
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    const updated = result.data;
+                    const row = document.getElementById('user-row-' + userId);
+
+                    // Cập nhật UI button & status badge ngay lập tức
+                    if (updated.status === 'LOCKED') {
+                        button.className = 'btn btn-sm btn-toggle-lock btn-outline-success';
+                        button.setAttribute('data-status', 'LOCKED');
+                        button.innerHTML = '<i class="bi bi-unlock-fill me-1"></i><span>Mở Khóa</span>';
+
+                        const statusContainer = row.querySelector('.user-status-container');
+                        if (statusContainer) {
+                            statusContainer.innerHTML = '<span class="badge bg-danger user-status-badge"><i class="bi bi-lock-fill me-1"></i>Đã khóa</span>';
+                        }
+                    } else {
+                        button.className = 'btn btn-sm btn-toggle-lock btn-outline-danger';
+                        button.setAttribute('data-status', 'ACTIVE');
+                        button.innerHTML = '<i class="bi bi-lock-fill me-1"></i><span>Khóa</span>';
+
+                        const statusContainer = row.querySelector('.user-status-container');
+                        if (statusContainer) {
+                            statusContainer.innerHTML = '<span class="badge bg-success user-status-badge"><i class="bi bi-check-circle me-1"></i>Hoạt động</span>';
+                        }
+                    }
+
+                    showToast(result.message || 'Cập nhật trạng thái thành công!', 'success');
+                } else {
+                    button.innerHTML = originalHtml;
+                    showToast(result.message || 'Không thể thay đổi trạng thái tài khoản!', 'danger');
+                }
+            } catch (err) {
+                console.error(err);
+                button.innerHTML = originalHtml;
+                showToast('Lỗi kết nối máy chủ! Vui lòng thử lại.', 'danger');
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        // --------------------------------------------------------------------------
+        // 3. Open Edit User Modal & Fetch Details
+        // --------------------------------------------------------------------------
+        let editModalInstance = null;
+
+        async function openEditUserModal(userId) {
+            try {
+                const response = await fetch(`/api/admin/users/${userId}`);
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    const u = result.data;
+                    document.getElementById('editUserId').value = u.id;
+                    document.getElementById('editUsername').value = u.username;
+                    document.getElementById('editFullName').value = u.fullName || '';
+                    document.getElementById('editEmail').value = u.email || '';
+                    document.getElementById('editPhone').value = u.phone || '';
+                    document.getElementById('editRoleId').value = u.roleId || '';
+                    document.getElementById('editDepartmentId').value = u.departmentId || '';
+                    document.getElementById('editStatus').value = u.status || 'ACTIVE';
+
+                    const modalEl = document.getElementById('editUserModal');
+                    editModalInstance = new bootstrap.Modal(modalEl);
+                    editModalInstance.show();
+                } else {
+                    showToast(result.message || 'Không thể tải thông tin người dùng!', 'danger');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi kết nối máy chủ khi tải dữ liệu người dùng!', 'danger');
+            }
+        }
+
+        // --------------------------------------------------------------------------
+        // 4. Submit Edit User Form via AJAX (Zero Full-Page Refresh)
+        // --------------------------------------------------------------------------
+        async function submitEditUserForm() {
+            const userId = document.getElementById('editUserId').value;
+            const fullName = document.getElementById('editFullName').value.trim();
+            const email = document.getElementById('editEmail').value.trim();
+            const phone = document.getElementById('editPhone').value.trim();
+            const roleId = document.getElementById('editRoleId').value;
+            const departmentId = document.getElementById('editDepartmentId').value || null;
+            const status = document.getElementById('editStatus').value;
+
+            if (!fullName) {
+                showToast('Họ và tên không được để trống!', 'danger');
+                return;
+            }
+            if (!email) {
+                showToast('Email không được để trống!', 'danger');
+                return;
+            }
+
+            const token = document.getElementById('csrfToken')?.value || '';
+            const header = document.getElementById('csrfHeader')?.value || 'X-CSRF-TOKEN';
+
+            const btnSave = document.getElementById('btnSaveUser');
+            const spinner = document.getElementById('btnSaveUserSpinner');
+            const icon = document.getElementById('btnSaveUserIcon');
+
+            btnSave.disabled = true;
+            spinner.classList.remove('d-none');
+            icon.classList.add('d-none');
+
+            const payload = {
+                fullName: fullName,
+                email: email,
+                phone: phone,
+                roleId: parseInt(roleId),
+                departmentId: departmentId ? parseInt(departmentId) : null,
+                status: status
+            };
+
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/update`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [header]: token
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    const updated = result.data;
+                    const row = document.getElementById('user-row-' + userId);
+
+                    // Cập nhật các trường hiển thị trên hàng của bảng
+                    if (row) {
+                        const nameEl = row.querySelector('.user-fullname-label');
+                        if (nameEl) nameEl.textContent = updated.fullName;
+
+                        const emailEl = row.querySelector('.user-email-label');
+                        if (emailEl) emailEl.textContent = updated.email;
+
+                        const phoneEl = row.querySelector('.user-phone-label');
+                        if (phoneEl) phoneEl.textContent = updated.phone || 'Chưa có SĐT';
+
+                        const deptEl = row.querySelector('.user-dept-label');
+                        if (deptEl) {
+                            if (updated.departmentName && updated.departmentName !== 'Chưa phân bổ') {
+                                deptEl.innerHTML = `<span class="badge bg-light text-dark border">${updated.departmentName}</span>`;
+                            } else {
+                                deptEl.innerHTML = '<span class="text-muted small fst-italic">Chưa phân bổ</span>';
+                            }
+                        }
+
+                        // Cập nhật role badge
+                        const roleEl = row.querySelector('.user-role-badge');
+                        if (roleEl) {
+                            if (updated.roleName === 'ROLE_ADMIN') {
+                                roleEl.className = 'badge bg-danger-subtle text-danger border border-danger user-role-badge';
+                                roleEl.innerHTML = '<i class="bi bi-shield-fill-check me-1"></i>Admin Hệ Thống';
+                            } else if (updated.roleName === 'ROLE_STAFF') {
+                                roleEl.className = 'badge bg-primary-subtle text-primary border border-primary user-role-badge';
+                                roleEl.innerHTML = '<i class="bi bi-person-badge-fill me-1"></i>Cán Bộ / Tư Vấn';
+                            } else {
+                                roleEl.className = 'badge bg-secondary-subtle text-secondary border user-role-badge';
+                                roleEl.innerHTML = '<i class="bi bi-mortarboard-fill me-1"></i>Sinh Viên';
+                            }
+                        }
+
+                        // Cập nhật status
+                        const statusContainer = row.querySelector('.user-status-container');
+                        const toggleBtn = row.querySelector('.btn-toggle-lock');
+                        if (statusContainer) {
+                            if (updated.status === 'LOCKED') {
+                                statusContainer.innerHTML = '<span class="badge bg-danger user-status-badge"><i class="bi bi-lock-fill me-1"></i>Đã khóa</span>';
+                                if (toggleBtn) {
+                                    toggleBtn.className = 'btn btn-sm btn-toggle-lock btn-outline-success';
+                                    toggleBtn.setAttribute('data-status', 'LOCKED');
+                                    toggleBtn.innerHTML = '<i class="bi bi-unlock-fill me-1"></i><span>Mở Khóa</span>';
+                                }
+                            } else {
+                                statusContainer.innerHTML = '<span class="badge bg-success user-status-badge"><i class="bi bi-check-circle me-1"></i>Hoạt động</span>';
+                                if (toggleBtn) {
+                                    toggleBtn.className = 'btn btn-sm btn-toggle-lock btn-outline-danger';
+                                    toggleBtn.setAttribute('data-status', 'ACTIVE');
+                                    toggleBtn.innerHTML = '<i class="bi bi-lock-fill me-1"></i><span>Khóa</span>';
+                                }
+                            }
+                        }
+                    }
+
+                    if (editModalInstance) {
+                        editModalInstance.hide();
+                    }
+                    showToast(result.message || 'Cập nhật thành công!', 'success');
+                } else {
+                    showToast(result.message || 'Cập nhật thất bại!', 'danger');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi kết nối khi cập nhật người dùng!', 'danger');
+            } finally {
+                btnSave.disabled = false;
+                spinner.classList.add('d-none');
+                icon.classList.remove('d-none');
+            }
+        }
+    </script>
+</div>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Chỉnh Sửa Thông Báo - QAUTE Portal</title>
+</head>
+<body>
+<div th:fragment="content">
+
+    <!-- Breadcrumb -->
+    <div class="mb-3">
+        <a th:href="@{'/feed/official/' + ${post.id}}" class="text-decoration-none text-muted small">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại bài viết
+        </a>
+    </div>
+
+    <!-- Main Card -->
+    <div class="card border shadow-sm rounded-3 p-4 p-md-5 bg-white max-w-850 mx-auto">
+        <form id="editPostForm" th:action="@{'/feed/official/edit/' + ${post.id}}" th:object="${postRequest}" method="post" enctype="multipart/form-data">
+            <!-- CSRF Token -->
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between border-bottom pb-3 mb-4 gap-2">
+                <div>
+                    <h4 class="fw-bold text-dark mb-1 d-flex align-items-center">
+                        <i class="bi bi-pencil-square text-primary me-2"></i>Chỉnh Sửa Thông Báo Chính Thức
+                    </h4>
+                    <p class="small text-muted mb-0">Cập nhật nội dung, liên kết video hoặc bổ sung tài liệu văn bản</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a th:href="@{'/feed/official/' + ${post.id}}" class="btn btn-outline-secondary btn-sm px-3">Hủy</a>
+                    <button type="submit" class="btn btn-primary btn-sm px-3 fw-semibold shadow-sm">
+                        <i class="bi bi-check-circle-fill me-1"></i>Lưu Thay Đổi
+                    </button>
+                </div>
+            </div>
+
+            <!-- Department Select -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold text-dark">Đơn vị / Khoa / Phòng ban hành <span class="text-danger">*</span></label>
+                <select th:field="*{departmentId}" class="form-select bg-light" required>
+                    <option value="">-- Chọn đơn vị ban hành thông báo --</option>
+                    <option th:each="dept : ${departments}" 
+                            th:value="${dept.id}" 
+                            th:text="${dept.name}"
+                            th:selected="${dept.id == post.departmentId}">Phòng Đào tạo</option>
+                </select>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('departmentId')}" th:errors="*{departmentId}"></div>
+            </div>
+
+            <!-- Title -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold text-dark">Tiêu đề thông báo <span class="text-danger">*</span></label>
+                <input type="text" th:field="*{title}" class="form-control bg-light" placeholder="Nhập tiêu đề thông báo..." required maxlength="255">
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+            </div>
+
+            <!-- Content -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold text-dark">Nội dung chi tiết thông báo <span class="text-danger">*</span></label>
+                <textarea th:field="*{content}" rows="8" class="form-control bg-light" placeholder="Nhập toàn văn nội dung quy chế, thời hạn, hướng dẫn..." required></textarea>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></div>
+            </div>
+
+            <!-- Video Section (Hybrid Model) -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="card p-3 bg-light border-0 rounded-3 h-100">
+                        <label class="form-label fw-semibold text-dark small mb-1">
+                            <i class="bi bi-youtube text-danger me-1"></i>Video YouTube / Liên Kết (Tùy chọn)
+                        </label>
+                        <input type="text" th:field="*{youtubeUrl}" class="form-control mb-2" 
+                               placeholder="Dán link YouTube (Ví dụ: https://www.youtube.com/watch?v=...)">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-white"><i class="bi bi-upload"></i></span>
+                            <input type="file" id="videoFileInput" name="videoFile" class="form-control" accept=".mp4,.webm">
+                        </div>
+                        <small class="text-muted d-block mt-1" style="font-size: 0.72rem;">Để trống nếu muốn giữ nguyên video hiện tại.</small>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card p-3 bg-light border-0 rounded-3 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label fw-semibold text-dark small mb-0">
+                                <i class="bi bi-paperclip text-primary me-1"></i>Tài Liệu Đính Kèm Mới
+                            </label>
+                        </div>
+                        <input type="file" id="documentFilesInput" name="documentFiles" multiple class="form-control" 
+                               accept=".pdf,.docx,.xlsx,.zip,.rar,.txt,.md,.json">
+                        <small class="text-muted d-block mt-1" style="font-size: 0.72rem;">Bổ sung thêm tệp tài liệu văn bản (.pdf, .docx, .xlsx...)</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Existing Attachments Display -->
+            <div class="mb-4" th:if="${post.attachments != null and !#lists.isEmpty(post.attachments)}">
+                <label class="form-label fw-semibold text-dark small mb-2">
+                    <i class="bi bi-files text-secondary me-1"></i>Danh sách tệp đính kèm hiện tại (<span th:text="${#lists.size(post.attachments)}">0</span> tệp)
+                </label>
+                <div class="list-group rounded-3 border">
+                    <div th:each="att : ${post.attachments}" class="list-group-item d-flex align-items-center justify-content-between py-2 px-3 bg-white">
+                        <div class="d-flex align-items-center gap-2 text-truncate">
+                            <i class="bi bi-file-earmark-text text-primary"></i>
+                            <span class="text-dark fw-medium small text-truncate" th:text="${att.fileName}">document.pdf</span>
+                        </div>
+                        <span class="badge bg-light text-secondary border small" th:text="${att.fileType}">PDF</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Options Row (Admin Pin) -->
+            <div sec:authorize="hasRole('ADMIN')" class="card p-3 bg-light border-0 rounded-3 mb-4">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="isPinned" th:field="*{isPinned}">
+                    <label class="form-check-label fw-semibold text-dark" for="isPinned">
+                        <i class="bi bi-pin-angle-fill text-danger me-1"></i>Ghim thông báo này lên đầu trang
+                    </label>
+                </div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="d-flex justify-content-end gap-2">
+                <a th:href="@{'/feed/official/' + ${post.id}}" class="btn btn-outline-secondary px-4">Hủy</a>
+                <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                    <i class="bi bi-check-circle-fill me-1"></i>Lưu Thay Đổi
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Client-side Script for validation and preview -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const videoInput = document.getElementById('videoFileInput');
+            if (videoInput) {
+                videoInput.addEventListener('change', function () {
+                    const file = this.files[0];
+                    if (file) {
+                        const sizeMB = file.size / (1024 * 1024);
+                        if (sizeMB > 100) {
+                            alert('⚠️ Lỗi: Tệp video vượt quá dung lượng tối đa 100MB (' + sizeMB.toFixed(1) + ' MB).\nVui lòng chọn video nhỏ hơn hoặc sử dụng liên kết YouTube/Drive!');
+                            this.value = '';
+                            return;
+                        }
+                    }
+                });
+            }
+
+            const docInput = document.getElementById('documentFilesInput');
+            if (docInput) {
+                docInput.addEventListener('change', function () {
+                    if (this.files.length > 5) {
+                        alert('⚠️ Bạn chỉ được chọn tối đa 5 tệp đính kèm!');
+                        this.value = '';
+                        return;
+                    }
+                    let totalSizeMB = 0;
+                    for (let i = 0; i < this.files.length; i++) {
+                        const sizeMB = this.files[i].size / (1024 * 1024);
+                        totalSizeMB += sizeMB;
+                        if (sizeMB > 100) {
+                            alert('⚠️ Tệp "' + this.files[i].name + '" vượt quá giới hạn 100MB (' + sizeMB.toFixed(1) + ' MB)!');
+                            this.value = '';
+                            return;
+                        }
+                    }
+                    if (totalSizeMB > 105) {
+                        alert('⚠️ Tổng dung lượng các tệp tải lên vượt quá 105MB (' + totalSizeMB.toFixed(1) + ' MB)!');
+                        this.value = '';
+                    }
+                });
+            }
+        });
+    </script>
+</div>
+</body>
+</html>

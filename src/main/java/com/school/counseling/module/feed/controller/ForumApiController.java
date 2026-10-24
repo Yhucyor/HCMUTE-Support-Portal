@@ -43,6 +43,7 @@ public class ForumApiController {
     public ResponseEntity<ApiResponse<PostResponseDto>> createPost(
             @RequestParam("title") String title,
             @RequestParam("content") String content,
+            @RequestParam(value = "departmentId", required = false) Long departmentId,
             @RequestParam(value = "image", required = false) MultipartFile image) {
 
         if (title == null || title.isBlank() || content == null || content.isBlank()) {
@@ -53,11 +54,11 @@ public class ForumApiController {
         Long currentUserId = SecurityUtils.getCurrentUserId().orElseThrow();
         User author = userRepository.findByIdWithRoleAndDepartment(currentUserId).orElseThrow();
 
-        PostResponseDto createdPost = postService.createForumPostDto(title.trim(), content.trim(), image, author);
+        PostResponseDto createdPost = postService.createForumPostDto(title.trim(), content.trim(), departmentId, image, author);
 
         String message = "APPROVED".equalsIgnoreCase(createdPost.getStatus())
                 ? "Đã đăng bài thảo luận thành công!"
-        : "Bài thảo luận đã gửi thành công và đang chờ Cán bộ phê duyệt theo quy định!";
+                : "Bài thảo luận đã gửi thành công và đang chờ Cán bộ phê duyệt theo quy định!";
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(createdPost, message));
@@ -101,6 +102,17 @@ public class ForumApiController {
 
         postService.deletePost(id, currentUserId, isStaffOrAdmin);
         return ResponseEntity.ok(ApiResponse.success(null, "Đã xóa bài viết thành công!"));
+    }
+
+    /**
+     * Thả tim (Like / Unlike) bài viết qua AJAX
+     */
+    @PostMapping("/posts/{id}/like")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<LikeToggleResponseDto>> likePost(@PathVariable("id") Long postId) {
+        Long currentUserId = SecurityUtils.getCurrentUserId().orElseThrow();
+        LikeToggleResponseDto result = likeService.toggleLike(currentUserId, "POST", postId);
+        return ResponseEntity.ok(ApiResponse.success(result, "Thao tác thả tim bài viết thành công"));
     }
 
     /**

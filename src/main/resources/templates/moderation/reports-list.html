@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Xử Lý Báo Cáo Vi Phạm - QAUTE Portal</title>
+</head>
+<body>
+<div th:fragment="content">
+
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold text-dark mb-1 d-flex align-items-center">
+                <i class="bi bi-shield-slash-fill text-danger me-2"></i>Danh Sách Báo Cáo Vi Phạm
+            </h4>
+            <p class="small text-muted mb-0">Xử lý các bài viết bị người dùng báo cáo vi phạm tiêu chuẩn cộng đồng (BRULE-POST-004)</p>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <a th:href="@{/feed/forum}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-box-arrow-up-right me-1"></i>Xem Diễn Đàn
+            </a>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs for Moderation -->
+    <ul class="nav nav-pills mb-4">
+        <li class="nav-item">
+            <a class="nav-link text-secondary fw-semibold" th:href="@{/moderation/posts}">
+                <i class="bi bi-hourglass-split me-1"></i>Bài Chờ Duyệt
+                <span class="badge bg-secondary ms-1" th:text="${pendingCount}">0</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active fw-semibold bg-danger" th:href="@{/moderation/reports}">
+                <i class="bi bi-flag-fill me-1"></i>Báo Cáo Vi Phạm
+                <span class="badge bg-white text-danger ms-1" th:text="${reportCount}">0</span>
+            </a>
+        </li>
+    </ul>
+
+    <!-- Filter Sub-Tabs for Reports -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <ul class="nav nav-tabs border-bottom-0">
+            <li class="nav-item">
+                <a class="nav-link py-2 px-3 fw-semibold" 
+                   th:classappend="${currentStatus == 'PENDING' or currentStatus == null ? 'active text-danger border-danger border-bottom-0' : 'text-secondary'}" 
+                   th:href="@{/moderation/reports(status='PENDING')}">
+                    <i class="bi bi-clock-history me-1"></i>Chờ Xử Lý
+                    <span class="badge bg-danger text-white ms-1" th:text="${reportCount}">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link py-2 px-3 fw-semibold" 
+                   th:classappend="${currentStatus == 'RESOLVED' ? 'active text-primary border-primary border-bottom-0' : 'text-secondary'}" 
+                   th:href="@{/moderation/reports(status='RESOLVED')}">
+                    <i class="bi bi-check-circle me-1"></i>Đã Xử Lý / Bài Viết Đã Ẩn
+                    <span class="badge bg-secondary ms-1" th:text="${resolvedReportCount}">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link py-2 px-3 fw-semibold" 
+                   th:classappend="${currentStatus == 'ALL' ? 'active text-dark border-dark border-bottom-0' : 'text-secondary'}" 
+                   th:href="@{/moderation/reports(status='ALL')}">
+                    <i class="bi bi-list-ul me-1"></i>Tất Cả
+                </a>
+            </li>
+        </ul>
+        <div class="small text-muted">
+            <i class="bi bi-info-circle me-1"></i>Cán bộ có thể xem lại toàn bộ bài viết đã bị ẩn và khôi phục khi cần thiết.
+        </div>
+    </div>
+
+
+    <!-- Reports Table -->
+    <div th:if="${reports.empty}" class="card p-5 text-center text-muted border shadow-sm rounded-3 bg-white">
+        <i class="bi bi-shield-check fs-1 text-success mb-3"></i>
+        <h5 class="fw-bold text-dark mb-1">Không có báo cáo vi phạm nào trong danh mục này</h5>
+        <p class="small text-muted mb-0">Cộng đồng sinh viên đang hoạt động an toàn và tích cực!</p>
+    </div>
+
+    <div th:unless="${reports.empty}" class="card border shadow-sm rounded-3 bg-white overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small text-uppercase">
+                    <tr>
+                        <th>#</th>
+                        <th>Bài Viết Bị Báo Cáo</th>
+                        <th>Người Báo Cáo</th>
+                        <th>Lý Do Vi Phạm</th>
+                        <th>Trạng Thái</th>
+                        <th class="text-end">Hành Động Xử Lý</th>
+                    </tr>
+                </thead>
+                <tbody class="small">
+                    <tr th:each="rep : ${reports.content}">
+                        <td class="fw-bold" th:text="'#' + ${rep.id}">#1</td>
+                        <td style="max-width: 300px;">
+                            <div class="d-flex align-items-center gap-1 mb-1">
+                                <span th:if="${rep.post != null and rep.post.status == 'HIDDEN'}" class="badge bg-danger bg-opacity-25 text-danger border border-danger">
+                                    <i class="bi bi-eye-slash-fill me-1"></i>ĐÃ ẨN
+                                </span>
+                                <span th:if="${rep.post != null and rep.post.status == 'APPROVED'}" class="badge bg-success bg-opacity-25 text-success border border-success">
+                                    <i class="bi bi-check2-circle me-1"></i>HIỂN THỊ
+                                </span>
+                                <div class="fw-bold text-dark text-truncate" th:text="${rep.post != null ? rep.post.title : 'Bài viết đã bị xóa'}">Tiêu đề bài viết</div>
+                            </div>
+                            <small class="text-muted text-truncate d-block" th:text="${rep.post != null ? (rep.post.plainTextSummary != null ? rep.post.plainTextSummary : rep.post.content) : ''}">Nội dung bài viết...</small>
+                            <div class="d-flex align-items-center justify-content-between mt-1">
+                                <small class="text-muted">Tác giả: <strong th:text="${rep.post != null and rep.post.author != null ? rep.post.author.fullName : 'N/A'}">Sinh viên A</strong></small>
+                                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none text-primary" data-bs-toggle="modal" th:data-bs-target="'#postDetailModal_' + ${rep.id}" th:if="${rep.post != null}">
+                                    <i class="bi bi-arrows-angle-expand me-1"></i>Xem bài
+                                </button>
+                                <span class="badge bg-light text-muted border py-1 px-1.5" th:if="${rep.post == null}">
+                                    <i class="bi bi-trash3 me-1"></i>Đã xóa
+                                </span>
+                            </div>
+
+                            <!-- Modal Chi Tiết Bài Viết (Staff xem toàn bộ nội dung bài đã ẩn) -->
+                            <div class="modal fade text-start" th:id="'postDetailModal_' + ${rep.id}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                    <div class="modal-content border-0 shadow">
+                                        <div class="modal-header border-bottom bg-light">
+                                            <h6 class="modal-title fw-bold text-dark">
+                                                <i class="bi bi-file-earmark-text text-danger me-2"></i>Nội Dung Toàn Văn Bài Viết (Báo Cáo #<span th:text="${rep.id}"></span>)
+                                            </h6>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body p-4">
+                                            <div class="mb-3 pb-3 border-bottom">
+                                                <div class="d-flex align-items-center gap-2 mb-1">
+                                                    <span th:if="${rep.post != null and rep.post.status == 'HIDDEN'}" class="badge bg-danger">Trạng thái: ĐÃ ẨN KHỎI DIỄN ĐÀN</span>
+                                                    <span th:if="${rep.post != null and rep.post.status == 'APPROVED'}" class="badge bg-success">Trạng thái: ĐANG HIỂN THỊ</span>
+                                                    <small class="text-muted ms-auto" th:if="${rep.createdAt != null}" th:text="'Báo cáo lúc: ' + ${#temporals.format(rep.createdAt, 'HH:mm dd/MM/yyyy')}"></small>
+                                                </div>
+                                                <h5 class="fw-bold text-dark mb-1" th:text="${rep.post != null ? rep.post.title : 'N/A'}"></h5>
+                                                <div class="small text-muted">
+                                                    Tác giả: <strong class="text-dark" th:text="${rep.post != null and rep.post.author != null ? rep.post.author.fullName : 'N/A'}"></strong>
+                                                    <span th:if="${rep.post != null and rep.post.author != null and rep.post.author.email != null}" th:text="' (' + ${rep.post.author.email} + ')'"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-4">
+                                                <label class="form-label small fw-bold text-secondary text-uppercase">Toàn văn nội dung bài viết:</label>
+                                                <div class="p-3 bg-light rounded border text-dark" style="font-size: 0.95rem; max-height: 250px; overflow-y: auto;" th:utext="${rep.post != null ? rep.post.content : 'Nội dung rỗng'}"></div>
+                                            </div>
+
+                                            <div class="p-3 rounded bg-danger bg-opacity-10 border border-danger border-opacity-25">
+                                                <div class="fw-bold text-danger mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Chi tiết tố cáo từ sinh viên:</div>
+                                                <div class="small text-dark"><strong>Lý do:</strong> <span th:text="${rep.reason}"></span></div>
+                                                <div class="small text-dark mt-1" th:if="${rep.details != null and !rep.details.isEmpty()}"><strong>Mô tả chi tiết:</strong> <span th:text="${rep.details}"></span></div>
+                                                <div class="small text-muted mt-1">Người tố cáo: <span th:text="${rep.reporter != null ? rep.reporter.fullName : 'Ẩn danh'}"></span></div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-top bg-light">
+                                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-dark" th:text="${rep.reporter != null ? rep.reporter.fullName : 'Ẩn danh'}">Sinh viên B</div>
+                            <small class="text-muted" th:if="${rep.reporter != null and rep.reporter.email != null}" th:text="${rep.reporter.email}">email</small>
+                        </td>
+                        <td>
+                            <span th:if="${rep.reason == 'SPAM'}" class="badge bg-warning text-dark">SPAM / QUẢNG CÁO</span>
+                            <span th:if="${rep.reason == 'INAPPROPRIATE_LANGUAGE'}" class="badge bg-danger">NGÔN TỪ XÚC PHẠM</span>
+                            <span th:if="${rep.reason == 'WRONG_ACADEMIC_INFO'}" class="badge bg-info text-dark">THÔNG TIN SAI LỆCH</span>
+                            <span th:if="${rep.reason == 'OTHER'}" class="badge bg-secondary">LÝ DO KHÁC</span>
+                            <div class="small text-muted mt-1" th:if="${rep.details != null and rep.details != ''}" th:text="'Chi tiết: ' + ${rep.details}">Chi tiết</div>
+                        </td>
+                        <td>
+                            <span th:if="${rep.status == 'PENDING'}" class="badge bg-danger bg-opacity-10 text-danger border border-danger">Chờ xử lý</span>
+                            <div th:if="${rep.status == 'RESOLVED'}">
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success mb-1">Đã xử lý</span>
+                                <div class="small text-muted" th:if="${rep.actionTaken != null}">
+                                    <span th:if="${rep.actionTaken == 'HIDE_POST'}" class="text-danger fw-semibold"><i class="bi bi-eye-slash me-1"></i>Đã ẩn bài</span>
+                                    <span th:if="${rep.actionTaken == 'LOCK_USER'}" class="text-danger fw-semibold"><i class="bi bi-lock me-1"></i>Đã khóa user</span>
+                                    <span th:if="${rep.actionTaken == 'RESTORED'}" class="text-success fw-semibold"><i class="bi bi-check-circle me-1"></i>Đã khôi phục</span>
+                                    <span th:if="${rep.actionTaken == 'DISMISS'}" class="text-secondary"><i class="bi bi-x-circle me-1"></i>Đã bỏ qua</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <!-- Hành động khi Chờ xử lý -->
+                            <div class="d-inline-flex gap-1" th:if="${rep.status == 'PENDING'}">
+                                <!-- Nếu bài viết đã bị xóa khỏi hệ thống -->
+                                <th:block th:if="${rep.post == null}">
+                                    <form th:action="@{/moderation/reports/{id}/resolve(id=${rep.id})}" method="post" class="m-0">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <input type="hidden" name="action" value="DISMISS" />
+                                        <button type="submit" class="btn btn-primary btn-sm" title="Xác nhận đóng báo cáo vì bài viết đã bị xóa">
+                                            <i class="bi bi-check2-circle me-1"></i>Đóng Báo Cáo
+                                        </button>
+                                    </form>
+                                </th:block>
+
+                                <!-- Nếu bài viết còn tồn tại -->
+                                <th:block th:if="${rep.post != null}">
+                                    <!-- Ẩn bài viết -->
+                                    <form th:action="@{/moderation/reports/{id}/resolve(id=${rep.id})}" method="post" class="m-0">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <input type="hidden" name="action" value="HIDE_POST" />
+                                        <button type="submit" class="btn btn-outline-warning btn-sm" title="Ẩn bài viết khỏi diễn đàn">
+                                            <i class="bi bi-eye-slash me-1"></i>Ẩn Bài
+                                        </button>
+                                    </form>
+
+                                    <!-- Khóa tài khoản tác giả -->
+                                    <form th:action="@{/moderation/reports/{id}/resolve(id=${rep.id})}" method="post" class="m-0">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <input type="hidden" name="action" value="LOCK_USER" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Khóa tài khoản sinh viên vi phạm 7 ngày (BRULE-AUTH-004)" onclick="return confirm('Bạn có chắc chắn muốn khóa tài khoản này?');">
+                                            <i class="bi bi-lock me-1"></i>Khóa User
+                                        </button>
+                                    </form>
+
+                                    <!-- Bỏ qua -->
+                                    <form th:action="@{/moderation/reports/{id}/resolve(id=${rep.id})}" method="post" class="m-0">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <input type="hidden" name="action" value="DISMISS" />
+                                        <button type="submit" class="btn btn-light btn-sm text-muted" title="Bỏ qua báo cáo này">
+                                            Bỏ qua
+                                        </button>
+                                    </form>
+                                </th:block>
+                            </div>
+
+                            <!-- Hành động khi Đã xử lý: Cho phép Staff Khôi phục / Mở lại bài viết nếu đã bị ẩn -->
+                            <div class="d-inline-flex gap-1 align-items-center" th:unless="${rep.status == 'PENDING'}">
+                                <form th:if="${rep.post != null and rep.post.status == 'HIDDEN'}" th:action="@{/moderation/reports/{id}/unhide(id=${rep.id})}" method="post" class="m-0">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <button type="submit" class="btn btn-outline-success btn-sm" title="Khôi phục và hiển thị lại bài viết trên diễn đàn">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i>Khôi Phục Bài
+                                    </button>
+                                </form>
+                                <span th:unless="${rep.post != null and rep.post.status == 'HIDDEN'}" class="text-muted small">
+                                    <i class="bi bi-check-all text-success me-1"></i>Hoàn tất
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top" th:if="${reports.totalPages > 1}">
+        <div class="small text-muted">
+            Trang <strong th:text="${reports.number + 1}">1</strong> / <span th:text="${reports.totalPages}">5</span>
+        </div>
+        <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" th:classappend="${reports.first ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/moderation/reports(status=${currentStatus}, page=${reports.number - 1})}">Trước</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, reports.totalPages - 1)}" th:classappend="${i == reports.number ? 'active' : ''}">
+                <a class="page-link" th:href="@{/moderation/reports(status=${currentStatus}, page=${i})}" th:text="${i + 1}">1</a>
+            </li>
+            <li class="page-item" th:classappend="${reports.last ? 'disabled' : ''}">
+                <a class="page-link" th:href="@{/moderation/reports(status=${currentStatus}, page=${reports.number + 1})}">Sau</a>
+            </li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>

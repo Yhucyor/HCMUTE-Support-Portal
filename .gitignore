@@ -42,6 +42,9 @@ hs_err_pid*
 # Local sensitive configuration (prevent leaking passwords to GitHub)
 *application-local.properties
 .env
+**/.env
+*.env.local
+**/.env.local
 .classpath
 .project
 .settings/

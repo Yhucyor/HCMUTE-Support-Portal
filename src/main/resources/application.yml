@@ -26,15 +26,15 @@ spring:
 
   # Cấu hình Database (Hỗ trợ MySQL mặc định và profile SQL Server)
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/qaute_portal?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&characterEncoding=UTF-8}
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:123456}
+    url: ${AIVEN_DB_URL:${DB_URL:jdbc:mysql://portal-hcmute-lequoccuong31126-f025.i.aivencloud.com:25013/defaultdb?sslMode=REQUIRED}}
+    username: ${AIVEN_DB_USERNAME:${DB_USERNAME:avnadmin}}
+    password: ${AIVEN_DB_PASSWORD:AVNS_FgQK2DZvjvhihUGwzl1}
     driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
     # ── HikariCP: Cấu hình Connection Pool tối ưu cho tải 1.000 users ──
     hikari:
       pool-name: QauteHikariPool
-      maximum-pool-size: 30          # Điểm tối ưu cho máy chủ 8 CPU cores
-      minimum-idle: 15               # Giữ sẵn 15 connections ấm
+      maximum-pool-size: ${DB_POOL_MAX:10}          # Tối ưu cho cloud database (Aiven/TiDB)
+      minimum-idle: ${DB_POOL_MIN:2}               # Giữ sẵn connection ấm
       idle-timeout: 300000           # 5 phút: giải phóng connection nhàn rỗi về pool
       max-lifetime: 1800000          # 30 phút: tái tạo connection
       connection-timeout: 20000      # 20 giây: tối đa chờ connection
@@ -63,19 +63,36 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME:trt571983@gmail.com}
-    password: ${MAIL_PASSWORD:sabipjlesvachnta}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+  # Cấu hình Google OAuth2 Client
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:421445209284-pa969lv3mo2u9i35dppq9g9uqsfqkps1.apps.googleusercontent.com}
+            client-secret: ${GOOGLE_CLIENT_SECRET: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}
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
 
 # Cấu hình Lưu Trữ & Thư Mục Upload Cục Bộ (Tương thích chuẩn Constant.DIR = C:\upload)
 app:
   storage:
-    provider: local # 'local' hoặc 'cloudinary'
+    provider: ${STORAGE_PROVIDER:cloudinary} # 'local' hoặc 'cloudinary'
     upload-dir: ${UPLOAD_DIR:C:/upload} # Thư mục lưu ảnh/file cục bộ trên máy
     max-image-size-mb: 10
     max-doc-size-mb: 100

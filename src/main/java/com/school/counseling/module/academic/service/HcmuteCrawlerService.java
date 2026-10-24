@@ -1200,6 +1200,17 @@ public class HcmuteCrawlerService {
                 .build();
     }
 
+    public JsonNode authenticatePortal(String studentId, String password) throws Exception {
+        if (isDemoMode(studentId, password)) {
+            com.fasterxml.jackson.databind.node.ObjectNode demo = objectMapper.createObjectNode();
+            demo.put("Token", "demo-token-" + UUID.randomUUID());
+            demo.put("FullName", "Sinh viên Demo " + studentId);
+            demo.put("Role", "SV");
+            return demo;
+        }
+        return authenticateWithHcmute(studentId, password);
+    }
+
     private JsonNode authenticateWithHcmute(String studentId, String password) throws Exception {
         Map<String, Object> payload = new HashMap<>();
         payload.put("username", studentId);

@@ -41,6 +41,7 @@ public class TicketResponseDto {
     private boolean isDueSoon;
 
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private LocalDateTime resolvedAt;
     private LocalDateTime closedAt;
     private Integer rating;
