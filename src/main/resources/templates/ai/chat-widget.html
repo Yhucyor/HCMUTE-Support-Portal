@@ -68,8 +68,8 @@
                 <select id="aiModelSelector" class="form-select form-select-sm py-0 px-2 text-white border-0 shadow-none" 
                         style="background-color: rgba(255,255,255,0.18); font-size: 11px; width: auto; cursor: pointer; border-radius: 20px;" 
                         title="Chọn mô hình AI xử lý">
-                    <option value="DIFY" selected class="text-dark">⚡ Dify Workflow</option>
-                    <option value="GEMINI" class="text-dark">✨ Gemini 2.5 Flash</option>
+                    <option value="GEMINI" selected class="text-dark">✨ Gemini 2.5 Flash</option>
+                    <option value="DIFY" class="text-dark">⚡ Dify Workflow</option>
                 </select>
                 <button type="button" id="btn-close-ai-chat" class="btn-close btn-close-white shadow-none" aria-label="Close"></button>
             </div>
@@ -139,7 +139,20 @@
                 const loadingId = 'ai-loading-' + Date.now();
                 appendLoading(loadingId);
 
-                // 3. Đấu nối sang REST API AI RAG thực sự
+                // [NEW_CODE]: Đồng bộ sang REST API /api/ai/chat của Spring Boot
+                const selectedEngine = (document.getElementById('aiModelSelector')?.value || 'GEMINI').toLowerCase();
+                fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ 
+                        query: query,
+                        provider: selectedEngine
+                    })
+                })
+                /* [LEGACY_CODE - ROLLBACK IF NEEDED]:
                 fetch('/api/v1/ai/chat', {
                     method: 'POST',
                     headers: {
@@ -150,6 +163,7 @@
                         engine: document.getElementById('aiModelSelector')?.value || 'DIFY'
                     })
                 })
+                */
                 .then(res => {
                     if (!res.ok) throw new Error('Network error: ' + res.status);
                     return res.json();
@@ -158,8 +172,9 @@
                     removeLoading(loadingId);
                     isAiThinking = false;
                     btnSend.disabled = false;
-                    if (res.success && res.data) {
-                        const ragData = res.data;
+                    const responseData = (res.success && res.data) ? (res.data.data || res.data) : (res.data || res);
+                    if (responseData) {
+                        const ragData = responseData;
                         let rawAnswer = ragData.answer || 'Xin chào! Tôi đã tiếp nhận câu hỏi của bạn.';
                         let answerHtml = '';
 
