@@ -47,10 +47,19 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
         String picture = oAuth2User.getAttribute("picture");
+        String givenName = oAuth2User.getAttribute("given_name");
+        String familyName = oAuth2User.getAttribute("family_name");
 
         if (email == null || email.isBlank()) {
             throw new OAuth2AuthenticationException(
                     new OAuth2Error("invalid_email"), "Không tìm thấy địa chỉ email từ tài khoản Google.");
+        }
+
+        // Ưu tiên trích xuất Họ Tên đầy đủ từ Google nếu trường name rỗng
+        if (name == null || name.isBlank()) {
+            if (givenName != null || familyName != null) {
+                name = ((familyName != null ? familyName + " " : "") + (givenName != null ? givenName : "")).trim();
+            }
         }
 
         email = email.trim().toLowerCase();
@@ -68,6 +77,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             // Nếu tài khoản đang chờ kích hoạt nhưng đăng nhập qua Google thì tự động kích hoạt
             if (user.getStatus() == UserStatus.PENDING_ACTIVATION) {
                 user.setStatus(UserStatus.ACTIVE);
+            }
+
+            // Cập nhật họ tên nếu chưa có hoặc đang trùng với mã số / username
+            if (name != null && !name.isBlank()) {
+                if (user.getFullName() == null || user.getFullName().isBlank() || user.getFullName().equalsIgnoreCase(user.getUsername())) {
+                    user.setFullName(name.trim());
+                }
             }
 
             // Cập nhật ảnh đại diện nếu chưa có
