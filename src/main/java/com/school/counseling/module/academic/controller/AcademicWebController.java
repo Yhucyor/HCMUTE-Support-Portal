@@ -49,12 +49,12 @@ public class AcademicWebController {
                     model.addAttribute("studentProfile", profile));
         }
 
-        // Nạp danh sách thông báo chính thức từ Cổng trường HCMUTE
+        // Nạp nhanh thông báo từ cache RAM hoặc demo (không gọi HTTP bên ngoài đồng bộ gây treo luồng)
         String portalUser = (String) model.getAttribute("savedPortalUsername");
         String portalPass = SecurityUtils.getCurrentUserId()
                 .map(profileService::decodePortalPassword)
                 .orElse(null);
-        model.addAttribute("announcements", crawlerService.getAnnouncements(
+        model.addAttribute("announcements", crawlerService.getQuickAnnouncements(
                 portalUser != null ? portalUser : effectiveStudentId, portalPass));
 
         return "academic-sync";
