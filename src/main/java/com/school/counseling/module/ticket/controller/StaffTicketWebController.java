@@ -178,7 +178,7 @@ public class StaffTicketWebController {
             @PathVariable Long ticketId,
             @RequestParam("toDepartmentId") Long toDepartmentId,
             @RequestParam(value = "reason", required = false) String reason,
-            @org.springframework.security.core.annotation.AuthenticationPrincipal com.school.counseling.module.auth.security.UserPrincipal currentUser,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.school.counseling.module.auth.dto.UserPrincipal currentUser,
             RedirectAttributes redirectAttributes) {
 
         try {
