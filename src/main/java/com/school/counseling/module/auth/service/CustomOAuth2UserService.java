@@ -43,7 +43,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
     }
 
-    private OAuth2User processOAuth2User(OAuth2UserRequest userRequest, OAuth2User oAuth2User) {
+    public UserPrincipal processOAuth2User(OAuth2UserRequest userRequest, OAuth2User oAuth2User) {
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
         String picture = oAuth2User.getAttribute("picture");
@@ -98,6 +98,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
 
         return UserPrincipal.create(user, oAuth2User.getAttributes());
+    }
+
+    public UserPrincipal processOidcUser(org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest userRequest,
+                                         org.springframework.security.oauth2.core.oidc.user.OidcUser oidcUser) {
+        UserPrincipal principal = processOAuth2User(userRequest, oidcUser);
+        User user = userRepository.findById(principal.getId()).orElse(null);
+        return UserPrincipal.create(user, oidcUser.getAttributes(), oidcUser.getIdToken(), oidcUser.getUserInfo());
     }
 
     private User registerNewOAuth2User(String email, String name, String picture) {

@@ -26,13 +26,16 @@ public class SecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final com.school.counseling.module.auth.service.CustomOAuth2UserService customOAuth2UserService;
+    private final com.school.counseling.module.auth.service.CustomOidcUserService customOidcUserService;
 
     public SecurityConfig(UserDetailsServiceImpl userDetailsService,
                           JwtAuthenticationFilter jwtAuthenticationFilter,
-                          com.school.counseling.module.auth.service.CustomOAuth2UserService customOAuth2UserService) {
+                          com.school.counseling.module.auth.service.CustomOAuth2UserService customOAuth2UserService,
+                          com.school.counseling.module.auth.service.CustomOidcUserService customOidcUserService) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.customOAuth2UserService = customOAuth2UserService;
+        this.customOidcUserService = customOidcUserService;
     }
 
     @Bean
@@ -95,7 +98,8 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/auth/login")
                         .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService))
+                                .userService(customOAuth2UserService)
+                                .oidcUserService(customOidcUserService))
                         .defaultSuccessUrl("/home", false)
                         .failureUrl("/auth/login?error=oauth2"))
                 .logout(logout -> logout
