@@ -58,14 +58,11 @@ public class AdminDashboardWebController {
             @RequestParam(value = "departmentId", required = false) Long departmentId,
             Model model) {
         boolean isAdmin = SecurityUtils.hasAnyRole("ADMIN");
-        Long currentDeptId = departmentId;
-        if (!isAdmin && currentDeptId == null) {
-            currentDeptId = SecurityUtils.getCurrentDepartmentId().orElse(null);
-        }
 
+        // [USER_REQUEST]: Mặc định hiển thị toàn trường cho mọi cán bộ và admin
         List<Department> departments = departmentRepository.findAll();
         model.addAttribute("departments", departments);
-        model.addAttribute("selectedDepartmentId", currentDeptId);
+        model.addAttribute("selectedDepartmentId", departmentId);
         model.addAttribute("isAdmin", isAdmin);
 
         return "admin/internal-messages";

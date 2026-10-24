@@ -19,7 +19,7 @@ public interface InternalStaffAdminMessageRepository extends JpaRepository<Inter
         LEFT JOIN FETCH m.receiver r
         LEFT JOIN FETCH m.department d
         WHERE m.isDeleted = false
-          AND (:deptId IS NULL OR m.department.id = :deptId)
+          AND (:deptId IS NULL OR m.department.id = :deptId OR m.department IS NULL)
         ORDER BY m.createdAt DESC
     """)
     List<InternalStaffAdminMessage> findRecentMessagesByDepartment(@Param("deptId") Long deptId);
