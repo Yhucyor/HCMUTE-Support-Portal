@@ -11,14 +11,19 @@ services:
       MYSQL_USER: qaute_user
       MYSQL_PASSWORD: qautepassword
     ports:
-      # Map port 3307 trên máy của bạn vào port 3306 của container
-      # (Điều này giúp TRÁNH XUNG ĐỘT nếu máy bạn đã cài sẵn MySQL chạy ở port 3306)
+      # Map port 3307 trên máy host vào port 3306 của container
       - "3307:3306"
     volumes:
       # Lưu trữ data xuống ổ cứng thật để không bị mất dữ liệu khi xóa container
       - qaute_db_data:/var/lib/mysql
       # Tự động nạp toàn bộ 17 bảng và dữ liệu ban đầu khi tạo container lần đầu
       - ./docs/database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
     networks:
       - qaute_network
 
@@ -30,15 +35,20 @@ services:
     container_name: qaute_app
     restart: on-failure
     ports:
-      # Map port 8088 ở ngoài vào port 8080 ở trong để tránh trùng port 8080 của máy bạn (nếu có)
+      # Map port 8088 ở máy ngoài vào port 8080 trong container
       - "8088:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/qaute_portal?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      # Biến môi trường đồng bộ với application.yml (${DB_URL})
+      - DB_URL=jdbc:mysql://db:3306/qaute_portal?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+      - DB_USERNAME=qaute_user
+      - DB_PASSWORD=qautepassword
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/qaute_portal?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
       - SPRING_DATASOURCE_USERNAME=qaute_user
       - SPRING_DATASOURCE_PASSWORD=qautepassword
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - qaute_network
 
