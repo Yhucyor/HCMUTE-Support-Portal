@@ -4,61 +4,54 @@
 <body>
 
 <!-- ========================================================================= -->
-<!-- UNIFIED HCMUTE AI MASCOT FLOATING WIDGET (CHÍNH THỨC DÙNG CHUNG TOÀN HỆ THỐNG) -->
+<!-- HCMUTE AI MASCOT FLOATING WIDGET (VERSION 2.0)                           -->
 <!-- ========================================================================= -->
-<div th:fragment="ai-mascot" id="unifiedAiMascotWrapper" class="mascot-widget-wrapper">
+<div th:fragment="ai-mascot" class="mascot-widget-wrapper">
     <style>
-        .mascot-widget-wrapper {
-            position: fixed !important;
-            bottom: 24px !important;
-            right: 24px !important;
-            z-index: 1040 !important;
-            pointer-events: auto !important;
-        }
         .floating-ai-mascot {
-            display: inline-flex !important;
-            align-items: center !important;
-            gap: 10px !important;
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1040;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
             text-decoration: none !important;
-            cursor: pointer !important;
-            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-            box-sizing: border-box !important;
+            cursor: pointer;
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .floating-ai-mascot:hover {
-            transform: translateY(-4px) scale(1.02) !important;
+            transform: translateY(-4px) scale(1.02);
         }
         .floating-ai-mascot .mascot-badge {
-            display: inline-flex !important;
-            align-items: center !important;
-            gap: 8px !important;
-            background: #ffffff !important;
-            color: #003882 !important;
-            padding: 7px 16px !important;
-            border-radius: 9999px !important;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-            font-size: 13px !important;
-            font-weight: 700 !important;
-            box-shadow: 0 4px 18px rgba(0, 56, 130, 0.16) !important;
-            border: 1.5px solid rgba(0, 56, 130, 0.22) !important;
-            white-space: nowrap !important;
-            transition: all 0.2s ease !important;
-            user-select: none !important;
-            line-height: normal !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #ffffff;
+            color: #003882;
+            padding: 7px 16px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 4px 18px rgba(0, 56, 130, 0.16);
+            border: 1.5px solid rgba(0, 56, 130, 0.22);
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            user-select: none;
         }
         .floating-ai-mascot:hover .mascot-badge {
-            background: #003882 !important;
-            color: #ffffff !important;
-            border-color: #003882 !important;
-            box-shadow: 0 6px 22px rgba(0, 56, 130, 0.28) !important;
+            background: #003882;
+            color: #ffffff;
+            border-color: #003882;
+            box-shadow: 0 6px 22px rgba(0, 56, 130, 0.28);
         }
         .floating-ai-mascot .pulse-dot {
-            width: 8px !important;
-            height: 8px !important;
-            border-radius: 50% !important;
-            background-color: #10b981 !important;
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7) !important;
-            animation: mascotPulse 1.8s infinite !important;
-            flex-shrink: 0 !important;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #10b981;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: mascotPulse 1.8s infinite;
         }
         @keyframes mascotPulse {
             0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
@@ -66,83 +59,66 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
         .floating-ai-mascot .mascot-avatar {
-            position: relative !important;
-            width: 58px !important;
-            height: 58px !important;
-            border-radius: 50% !important;
-            background: #ffffff !important;
-            box-shadow: 0 8px 24px rgba(0, 56, 130, 0.22) !important;
-            border: 2.5px solid #003882 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            overflow: visible !important;
-            transition: all 0.25s ease !important;
-            flex-shrink: 0 !important;
-            box-sizing: border-box !important;
+            position: relative;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 8px 24px rgba(0, 56, 130, 0.22);
+            border: 2.5px solid #003882;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: visible;
+            transition: all 0.25s ease;
         }
         .floating-ai-mascot:hover .mascot-avatar {
-            box-shadow: 0 12px 32px rgba(0, 56, 130, 0.35) !important;
-            border-color: #002456 !important;
+            box-shadow: 0 12px 32px rgba(0, 56, 130, 0.35);
+            border-color: #002456;
         }
         .floating-ai-mascot .mascot-img {
-            width: 44px !important;
-            height: 44px !important;
-            object-fit: contain !important;
-            user-select: none !important;
-            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-            display: block !important;
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+            user-select: none;
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .floating-ai-mascot:hover .mascot-img {
-            transform: scale(1.14) !important;
+            transform: scale(1.14);
         }
         .floating-ai-mascot .online-indicator {
-            position: absolute !important;
-            top: 2px !important;
-            right: 2px !important;
-            width: 13px !important;
-            height: 13px !important;
-            border-radius: 50% !important;
-            background: #10b981 !important;
-            border: 2px solid #ffffff !important;
-            box-sizing: border-box !important;
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #10b981;
+            border: 2px solid #ffffff;
         }
         @media (max-width: 768px) {
             .floating-ai-mascot .mascot-badge {
-                display: none !important;
+                display: none;
             }
-            .mascot-widget-wrapper {
-                bottom: 16px !important;
-                right: 16px !important;
+            .floating-ai-mascot {
+                bottom: 16px;
+                right: 16px;
             }
         }
     </style>
 
-    <a th:href="@{/ai-chat}" class="floating-ai-mascot" title="Hỏi Trợ lý AI QAUTE HCMUTE (Quy chế & Thủ tục học vụ 24/7)">
+    <a th:href="@{/ai-chat}" class="floating-ai-mascot" title="Hỏi Trợ lý AI QAUTE HCMUTE">
         <div class="mascot-badge">
             <span class="pulse-dot"></span>
             <span>Hỏi AI QAUTE</span>
         </div>
         <div class="mascot-avatar">
-            <!-- Ảnh Mascot AI chuẩn thống nhất trên toàn hệ thống -->
-            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg" 
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDal19qGXszE1yVLlWrchkc2CRKylUftJRlipfnB8gqWSMxky8egEKvmKMHQQKEU_fq_LKN60MpD2MH5d-pAEGA9J3dhIfW0NBRKsFh9ehXbY3_KekJ9sYMYlzW6L0xCxQuTZMqo24VsLxo5ZMlKMHfCq5QhGCv1sA05dB4KsRYz0H-FDl5LCT8fpVgvL_Lrmonh6Ba7PbMA0Sj0iwJOc4RJmWQYmskr2D6mhPNyouFBffj6oaMOADNfOKOqbkm_MgPQA" 
                  alt="HCMUTE AI Mascot" 
                  class="mascot-img">
             <span class="online-indicator"></span>
         </div>
     </a>
-
-    <!-- Tự động ẩn widget nếu đang ở ngay tại trang /ai-chat -->
-    <script>
-        (function() {
-            try {
-                if (window.location.pathname.includes('/ai-chat')) {
-                    const el = document.getElementById('unifiedAiMascotWrapper');
-                    if (el) el.style.display = 'none';
-                }
-            } catch(e) {}
-        })();
-    </script>
 </div>
 
 </body>

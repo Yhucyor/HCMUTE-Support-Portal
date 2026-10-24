@@ -598,23 +598,23 @@
                 <!-- Header Chatbox -->
                 <div class="bg-white border-b border-slate-100 p-3.5 flex items-center justify-between">
                     <div class="flex items-center gap-2.5">
-                        <div class="w-9 h-9 rounded-full bg-blue-50 border-2 border-[#003882] overflow-hidden flex items-center justify-center shadow-xs flex-shrink-0 p-0.5">
-                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg" 
-                                 alt="Trợ lý HCMUTE Mascot" class="w-full h-full object-contain">
+                        <div class="w-8 h-8 rounded-full bg-blue-50 border border-slate-200 overflow-hidden flex items-center justify-center shadow-xs flex-shrink-0">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDal19qGXszE1yVLlWrchkc2CRKylUftJRlipfnB8gqWSMxky8egEKvmKMHQQKEU_fq_LKN60MpD2MH5d-pAEGA9J3dhIfW0NBRKsFh9ehXbY3_KekJ9sYMYlzW6L0xCxQuTZMqo24VsLxo5ZMlKMHfCq5QhGCv1sA05dB4KsRYz0H-FDl5LCT8fpVgvL_Lrmonh6Ba7PbMA0Sj0iwJOc4RJmWQYmskr2D6mhPNyouFBffj6oaMOADNfOKOqbkm_MgPQA" 
+                                 alt="Trợ lý HCMUTE Mascot" class="w-full h-full object-contain p-0.5">
                         </div>
                         <div>
-                            <div class="text-xs font-bold text-[#003882] leading-none">Trợ lý AI QAUTE</div>
+                            <div class="text-xs font-bold text-slate-900 leading-none">Trợ lý HCMUTE</div>
                             <div class="text-[10px] text-emerald-600 font-medium flex items-center gap-1 mt-0.5">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                <span>Trực tuyến 24/7 &bull; Quy chế học vụ</span>
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                <span>Sẵn sàng hỗ trợ</span>
                             </div>
                         </div>
                     </div>
                     <div class="flex items-center gap-1 text-slate-400">
-                        <a th:href="@{/ai-chat}" title="Mở trang tư vấn AI chuyên sâu" class="hover:text-[#003882] p-1 text-slate-500 transition-colors" target="_blank">
+                        <a th:href="@{/ai-chat}" title="Mở trang tư vấn AI chuyên sâu" class="hover:text-[#003882] p-1 text-slate-500" target="_blank">
                             <span class="material-symbols-outlined text-[16px]">open_in_new</span>
                         </a>
-                        <button aria-label="Đóng" class="hover:text-slate-600 p-1 transition-colors" onclick="toggleChatWindow()">
+                        <button aria-label="Đóng" class="hover:text-slate-600 p-1" onclick="toggleChatWindow()">
                             <span class="material-symbols-outlined text-[16px]">close</span>
                         </button>
                     </div>
@@ -622,8 +622,8 @@
 
                 <!-- Messages Body -->
                 <div id="chatScrollArea" class="p-4 bg-[#f8fafc] space-y-3 text-xs max-h-[340px] overflow-y-auto">
-                    <div class="bg-blue-50 border border-blue-100 text-slate-800 p-3 rounded-2xl rounded-tl-none max-w-[90%] leading-relaxed shadow-xs">
-                        Xin chào! 👋 Tôi là <strong>Trợ lý AI QAUTE</strong> của HCMUTE. Bạn cần hỗ trợ quy chế, học bổng hay thủ tục gì hôm nay?
+                    <div class="bg-slate-200/60 text-slate-800 p-3 rounded-2xl rounded-tl-none max-w-[90%] leading-relaxed shadow-xs">
+                        Xin chào! 👋 Tôi là trợ lý ảo QAUTE của HCMUTE. Bạn cần hỗ trợ thông tin gì hôm nay?
                     </div>
                     <!-- 4 Gợi ý bấm nhanh -->
                     <div id="quickPromptContainer" class="flex flex-col gap-1.5 pt-1">
@@ -649,32 +649,25 @@
                         <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"></span>
                         <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0.2s]"></span>
                         <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0.4s]"></span>
-                        <span class="text-[10px] ml-1 text-slate-500 font-medium">Trợ lý đang suy luận...</span>
+                        <span class="text-[10px] ml-1 text-slate-500 font-medium">Trợ lý đang phản hồi...</span>
                     </div>
                 </div>
 
                 <!-- Input Chat -->
                 <div class="p-2.5 bg-white border-t border-slate-100 flex items-center gap-2">
-                    <input id="chatMessageInput" class="flex-1 text-xs border border-slate-200 rounded-full px-3.5 py-2 outline-none focus:border-[#003882] transition-colors" 
+                    <input id="chatMessageInput" class="flex-1 text-xs border border-slate-200 rounded-full px-3.5 py-2 outline-none focus:border-[#991b1e] transition-colors" 
                            onkeydown="if(event.key === 'Enter') sendUserMsg();" placeholder="Hỏi về tuyển sinh, học vụ, học phí..." type="text">
-                    <button id="chatSendBtn" aria-label="Gửi tin nhắn" class="w-8 h-8 rounded-full bg-[#003882] hover:bg-[#002456] disabled:opacity-50 text-white flex items-center justify-center flex-shrink-0 transition-transform active:scale-95 shadow" onclick="sendUserMsg()">
+                    <button id="chatSendBtn" aria-label="Gửi tin nhắn" class="w-8 h-8 rounded-full bg-[#991b1e] hover:bg-[#831518] disabled:opacity-50 text-white flex items-center justify-center flex-shrink-0 transition-transform active:scale-95 shadow" onclick="sendUserMsg()">
                         <span class="material-symbols-outlined text-[16px]">send</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Floating Unified Bot Button (Đồng bộ nhận diện với toàn bộ hệ thống) -->
-            <div class="flex items-center gap-2.5 cursor-pointer select-none" onclick="toggleChatWindow()">
-                <div class="hidden sm:inline-flex items-center gap-2 bg-white text-[#003882] px-4 py-1.5 rounded-full font-bold text-xs shadow-md border border-[#003882]/20 hover:bg-[#003882] hover:text-white transition-all">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>Hỏi AI QAUTE</span>
-                </div>
-                <button aria-label="Mở Trợ lý HCMUTE" class="relative w-14 h-14 rounded-full bg-white border-2 border-[#003882] shadow-xl hover:scale-105 active:scale-95 flex items-center justify-center transition-all cursor-pointer group focus:outline-none p-1.5">
-                    <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg" 
-                         alt="HCMUTE AI Mascot" class="w-full h-full object-contain filter group-hover:scale-110 transition-transform">
-                    <span class="absolute top-0.5 right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white"></span>
-                </button>
-            </div>
+            <!-- Floating Circular Bot Button -->
+            <button aria-label="Mở Trợ lý HCMUTE" class="w-16 h-16 rounded-full bg-transparent hover:scale-105 active:scale-95 flex items-center justify-center transition-all cursor-pointer group drop-shadow-xl focus:outline-none" onclick="toggleChatWindow()">
+                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDal19qGXszE1yVLlWrchkc2CRKylUftJRlipfnB8gqWSMxky8egEKvmKMHQQKEU_fq_LKN60MpD2MH5d-pAEGA9J3dhIfW0NBRKsFh9ehXbY3_KekJ9sYMYlzW6L0xCxQuTZMqo24VsLxo5ZMlKMHfCq5QhGCv1sA05dB4KsRYz0H-FDl5LCT8fpVgvL_Lrmonh6Ba7PbMA0Sj0iwJOc4RJmWQYmskr2D6mhPNyouFBffj6oaMOADNfOKOqbkm_MgPQA" 
+                     alt="HCMUTE AI Mascot" class="w-full h-full object-contain filter group-hover:scale-110 transition-transform">
+            </button>
         </div>
     </main>
 
