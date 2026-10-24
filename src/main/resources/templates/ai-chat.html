@@ -534,8 +534,12 @@
         const currentUserFullName = _ctxEl ? (_ctxEl.dataset.fullname || 'Sinh viên') : 'Sinh viên';
         const currentUserAvatar = _ctxEl ? (_ctxEl.dataset.avatar || '') : '';
         let currentProvider = 'gemini';
-        let currentSessionId = 'session_' + Date.now();
+        const _urlParts = window.location.pathname.split('/');
+        const _pathSess = (_urlParts.length > 2 && (_urlParts[1] === 'ai-chat' || _urlParts[1] === 'ai')) ? _urlParts[2] : null;
+        const _querySess = new URLSearchParams(window.location.search).get('session');
+        let currentSessionId = _pathSess || _querySess || ('session_' + Date.now());
         let sessions = [];
+        let welcomeTemplate = null;
 
         // Citation database simulation
         const citationDb = {
@@ -591,34 +595,51 @@
             if (ho) ho.classList.add('hidden');
         });
 
-        // --- History & Sessions Management ---
-        function loadSessions() {
+        // --- History & Sessions Management (Đồng bộ Backend Database) ---
+        async function loadSessions() {
+            try {
+                const res = await fetch('/api/ai/conversations', { credentials: 'include' });
+                if (res.ok) {
+                    const apiData = await res.json();
+                    const convList = (apiData.data || apiData) || [];
+                    if (Array.isArray(convList) && convList.length > 0) {
+                        sessions = convList.map(c => ({
+                            id: c.sessionId,
+                            dbId: c.id,
+                            title: c.title || 'Cuộc trò chuyện',
+                            timestamp: c.updatedAt ? new Date(c.updatedAt).getTime() : (c.createdAt ? new Date(c.createdAt).getTime() : Date.now()),
+                            messages: []
+                        }));
+                        saveSessions();
+                        renderHistoryList();
+                        
+                        // Nếu có sessionId từ URL, tự động khôi phục tin nhắn
+                        if (_pathSess || _querySess) {
+                            switchSession(currentSessionId, false);
+                        }
+                        return;
+                    }
+                }
+            } catch (err) {
+                console.warn('Không thể tải lịch sử từ server, fallback localStorage:', err);
+            }
+
+            // [LEGACY_CODE - ROLLBACK IF NEEDED]:
             try {
                 const stored = localStorage.getItem('hcmute_ai_chat_sessions');
                 if (stored) {
                     sessions = JSON.parse(stored);
                 } else {
-                    // Seed initial demo session
-                    sessions = [
-                        {
-                            id: 'session_demo_1',
-                            title: 'Điều kiện xét học bổng HK1 2026 - 2027',
-                            timestamp: Date.now() - 3600000,
-                            messages: []
-                        },
-                        {
-                            id: 'session_demo_2',
-                            title: 'Cách tính điểm rèn luyện & GPA',
-                            timestamp: Date.now() - 7200000,
-                            messages: []
-                        }
-                    ];
+                    sessions = [];
                     saveSessions();
                 }
             } catch (e) {
                 sessions = [];
             }
             renderHistoryList();
+            if (_pathSess || _querySess) {
+                switchSession(currentSessionId, false);
+            }
         }
 
         function saveSessions() {
@@ -707,39 +728,111 @@
 
         function startNewChat() {
             currentSessionId = 'session_' + Date.now();
+            window.history.pushState({}, '', '/ai-chat');
             const container = document.getElementById('messageContainer');
-            // Reset to initial welcome message
-            const welcome = document.getElementById('welcomeMessage');
-            container.innerHTML = '';
-            if (welcome) container.appendChild(welcome);
+            if (container) {
+                if (!welcomeTemplate) {
+                    const w = document.getElementById('welcomeMessage');
+                    if (w) welcomeTemplate = w.cloneNode(true);
+                }
+                container.innerHTML = '';
+                if (welcomeTemplate) container.appendChild(welcomeTemplate.cloneNode(true));
+            }
             renderHistoryList();
-            document.getElementById('chatInput').focus();
+            const input = document.getElementById('chatInput');
+            if (input) input.focus();
         }
 
-        function switchSession(sessId) {
+        // [NEW_CODE]: Khôi phục toàn bộ tin nhắn thật từ Database khi click session
+        async function switchSession(sessId, pushHistory = true) {
             currentSessionId = sessId;
             renderHistoryList();
-            // In a full implementation, messages can be restored from session.messages
+            if (pushHistory) {
+                window.history.pushState({}, '', '/ai-chat/' + sessId);
+            }
+
+            const container = document.getElementById('messageContainer');
+            if (!container) return;
+
+            if (!welcomeTemplate) {
+                const w = document.getElementById('welcomeMessage');
+                if (w) welcomeTemplate = w.cloneNode(true);
+            }
+
+            container.innerHTML = `
+                <div class="flex items-center justify-center p-8 text-xs text-[#64748b] gap-2">
+                    <span class="w-2 h-2 rounded-full bg-[#1d4ed8] animate-bounce"></span>
+                    <span class="w-2 h-2 rounded-full bg-[#1d4ed8] animate-bounce [animation-delay:0.2s]"></span>
+                    <span class="w-2 h-2 rounded-full bg-[#1d4ed8] animate-bounce [animation-delay:0.4s]"></span>
+                    <span>Đang tải lịch sử hội thoại...</span>
+                </div>
+            `;
+
+            try {
+                const res = await fetch('/api/ai/conversations/session/' + sessId + '/messages', { credentials: 'include' });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const json = await res.json();
+                const msgList = (json.data || json) || [];
+
+                container.innerHTML = '';
+                if (!msgList || msgList.length === 0) {
+                    if (welcomeTemplate) container.appendChild(welcomeTemplate.cloneNode(true));
+                    return;
+                }
+
+                msgList.forEach(m => {
+                    const isUser = (m.role === 'USER' || m.role === 'user');
+                    if (isUser) {
+                        appendUserMessage(m.content);
+                    } else {
+                        let sources = [];
+                        if (m.metadata) {
+                            try {
+                                const meta = typeof m.metadata === 'string' ? JSON.parse(m.metadata) : m.metadata;
+                                if (meta.sources) sources = meta.sources;
+                            } catch (e) {}
+                        }
+                        appendAiMessage(m.content, sources, "0.1", "");
+                    }
+                });
+                scrollToBottom();
+            } catch (err) {
+                console.error('Lỗi tải tin nhắn lịch sử:', err);
+                container.innerHTML = '';
+                if (welcomeTemplate) container.appendChild(welcomeTemplate.cloneNode(true));
+            }
         }
 
-        function renameSession(sessId) {
+        async function renameSession(sessId) {
             const sess = sessions.find(s => s.id === sessId);
             if (!sess) return;
             const newTitle = prompt('Nhập tiêu đề mới cho hội thoại:', sess.title);
             if (newTitle && newTitle.trim()) {
-                sess.title = newTitle.trim();
+                const clean = newTitle.trim();
+                sess.title = clean;
+                try {
+                    await fetch('/api/ai/conversations/' + sessId + '/title', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ title: clean })
+                    });
+                } catch (e) {}
                 saveSessions();
                 renderHistoryList();
             }
         }
 
         function shareSession(sessId) {
-            navigator.clipboard.writeText(window.location.origin + '/ai-chat?session=' + sessId);
+            navigator.clipboard.writeText(window.location.origin + '/ai-chat/' + sessId);
             showToast('Đã sao chép liên kết', 'Liên kết chia sẻ đoạn chat đã được lưu vào khay nhớ tạm.');
         }
 
-        function deleteSession(sessId) {
+        async function deleteSession(sessId) {
             if (confirm('Bạn có chắc chắn muốn xóa hội thoại này khỏi lịch sử?')) {
+                try {
+                    await fetch('/api/ai/conversations/' + sessId, { method: 'DELETE', credentials: 'include' });
+                } catch (e) {}
                 sessions = sessions.filter(s => s.id !== sessId);
                 saveSessions();
                 if (currentSessionId === sessId) startNewChat();
@@ -838,6 +931,13 @@
                 // [LEGACY_CODE - ROLLBACK IF NEEDED]:
                 // appendAiMessage(data.answer, data.sources, duration, query);
                 appendAiMessage(answerText, sourcesList, duration, query);
+
+                // Cập nhật sessionId từ backend và đồng bộ sidebar
+                if (data.data && data.data.sessionId) {
+                    currentSessionId = data.data.sessionId;
+                    window.history.pushState({}, '', '/ai-chat/' + currentSessionId);
+                }
+                setTimeout(loadSessions, 600);
             } catch (err) {
                 if (typingEl) typingEl.remove();
                 appendAiMessage(
@@ -1044,6 +1144,8 @@
 
         // Initialize on load
         document.addEventListener('DOMContentLoaded', () => {
+            const w = document.getElementById('welcomeMessage');
+            if (w) welcomeTemplate = w.cloneNode(true);
             loadSessions();
         });
 
