@@ -168,4 +168,32 @@ public class StaffTicketWebController {
         }
         return "redirect:/staff/tickets?status=IN_PROGRESS";
     }
+
+    /**
+     * Chuyển giao Ticket sang Khoa/Phòng ban khác từ Web UI
+     */
+    @PostMapping("/{ticketId}/transfer")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN', 'HEAD', 'DEPARTMENT_HEAD', 'DEPT_HEAD')")
+    public String handleTransferTicket(
+            @PathVariable Long ticketId,
+            @RequestParam("toDepartmentId") Long toDepartmentId,
+            @RequestParam(value = "reason", required = false) String reason,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.school.counseling.module.auth.security.UserPrincipal currentUser,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            com.school.counseling.module.ticket.dto.TicketTransferRequest request = com.school.counseling.module.ticket.dto.TicketTransferRequest.builder()
+                    .toDepartmentId(toDepartmentId)
+                    .reason(reason != null && !reason.trim().isEmpty() ? reason.trim() : "Chuyển giao chuyên môn liên phòng ban")
+                    .build();
+
+            TicketResponseDto ticket = ticketService.transferTicket(ticketId, request, currentUser);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Đã chuyển giao thành công yêu cầu #" + ticket.getTicketCode() + " sang đơn vị mới!");
+            return "redirect:/staff/tickets";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể chuyển giao vé: " + e.getMessage());
+            return "redirect:/tickets/detail/" + ticketId;
+        }
+    }
 }

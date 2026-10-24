@@ -156,6 +156,7 @@ public class TicketWebController {
         model.addAttribute("ticket", ticket);
         model.addAttribute("currentUserId", currentUserId);
         model.addAttribute("isStaffOrAdmin", isStaffOrAdmin);
+        model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
         return "ticket/detail";
     }
 

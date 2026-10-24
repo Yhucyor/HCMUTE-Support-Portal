@@ -290,6 +290,21 @@
                         </div>
                     </div>
 
+                    <!-- 1.1 THÔNG BÁO LỊCH SỬ CHUYỂN GIAO PHÒNG BAN (NẾU CÓ) -->
+                    <div th:if="${ticket.transferHistories != null and !ticket.transferHistories.isEmpty()}" 
+                         class="mx-3 mt-2 mb-1 p-2.5 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-3 d-flex align-items-start gap-2 shadow-xs">
+                        <i class="bi bi-arrow-left-right text-primary fs-6 mt-0.5"></i>
+                        <div class="small w-100">
+                            <div class="fw-bold text-primary mb-1" style="font-size: 0.8rem;">Thông tin chuyển giao đơn vị xử lý:</div>
+                            <div th:each="th : ${ticket.transferHistories}" class="text-dark py-0.5 border-top border-primary border-opacity-10" style="font-size: 0.78rem;">
+                                • Chuyển từ <strong class="text-secondary" th:text="${th.fromDepartmentName}">Phòng A</strong> sang <strong class="text-primary" th:text="${th.toDepartmentName}">Phòng B</strong> 
+                                bởi <span class="fw-semibold" th:text="${th.transferredByName}">Cán bộ</span> 
+                                (<span th:text="${#temporals.format(th.transferredAt, 'HH:mm dd/MM/yyyy')}">...</span>). 
+                                Lý do: <em class="text-muted" th:text="${th.reason}">Lý do</em>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- 2. MESSENGER CHAT STREAM (VÙNG DÒNG TIN NHẮN TỰ CUỘN ĐỘC LẬP) -->
                     <div class="chat-stream-viewport" id="chatStream">
 
@@ -1031,6 +1046,14 @@
                                 <i class="bi bi-check2-circle me-1"></i>Hoàn Tất Giải Quyết (RESOLVED)
                             </button>
 
+                            <!-- Nút Chuyển Giao Phòng Ban (chỉ khi vé chưa CLOSED và chưa CANCELLED) -->
+                            <button th:if="${ticket.status != 'CLOSED' and ticket.status != 'CANCELLED'}" type="button"
+                                class="btn btn-outline-primary btn-sm w-100 fw-semibold py-2 rounded-3 shadow-xs d-flex align-items-center justify-content-center gap-1.5"
+                                data-bs-toggle="modal" data-bs-target="#transferTicketModal">
+                                <i class="bi bi-arrow-left-right"></i>
+                                <span>Chuyển Giao Phòng Ban</span>
+                            </button>
+
                             <!-- Nút Đóng Ticket -->
                             <form th:action="@{'/tickets/' + ${ticket.id} + '/close'}" method="post" class="m-0"
                                 onsubmit="return confirm('Bạn có chắc chắn muốn đóng yêu cầu tư vấn này? Vé sẽ được chuyển sang trạng thái CLOSED.');">
@@ -1091,6 +1114,64 @@
                                 data-bs-dismiss="modal">Hủy bỏ</button>
                             <button type="submit" class="btn btn-sm btn-success rounded-pill px-4 fw-semibold" id="btnConfirmResolve"><i
                                     class="bi bi-check-lg me-1"></i>Xác Nhận Hoàn Tất</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: CHUYỂN GIAO TICKET CHO ĐƠN VỊ / KHOA / PHÒNG KHÁC -->
+        <div sec:authorize="hasAnyRole('STAFF', 'ADMIN', 'HEAD', 'DEPARTMENT_HEAD', 'DEPT_HEAD')" class="modal fade" id="transferTicketModal" tabindex="-1"
+            aria-labelledby="transferModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+                    <form id="transferTicketForm" th:action="@{'/staff/tickets/' + ${ticket.id} + '/transfer'}" method="post">
+                        <div class="modal-header bg-primary text-white py-3 px-4">
+                            <h6 class="modal-title fw-bold" id="transferModalLabel">
+                                <i class="bi bi-arrow-left-right me-2"></i>Chuyển Giao Yêu Cầu Tư Vấn
+                            </h6>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4 bg-white">
+                            <div class="alert alert-info bg-info bg-opacity-10 border-0 py-2.5 px-3 small text-info-emphasis mb-3 rounded-3">
+                                <i class="bi bi-info-circle-fill me-1"></i>
+                                Khi chuyển giao, yêu cầu sẽ được bàn giao sang Khoa/Phòng tiếp nhận mới, người tiếp nhận cũ sẽ được giải phóng và vé sẽ trở về trạng thái <strong>MỚI TIẾP NHẬN (OPEN)</strong>.
+                            </div>
+
+                            <!-- Đơn vị hiện tại -->
+                            <div class="mb-3 p-2.5 bg-light rounded-3 border">
+                                <div class="small text-muted mb-0.5" style="font-size: 0.75rem;">Đơn vị đang phụ trách hiện tại:</div>
+                                <div class="fw-bold text-dark" th:text="${ticket.departmentName}">Phòng Đào tạo</div>
+                            </div>
+
+                            <!-- Chọn Đơn vị tiếp nhận mới -->
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-dark mb-1">
+                                    Đơn vị / Khoa / Phòng tiếp nhận mới: <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select form-select-sm" name="toDepartmentId" required id="transferToDeptSelect">
+                                    <option value="" disabled selected>-- Chọn đơn vị tiếp nhận mới --</option>
+                                    <option th:each="dept : ${departments}"
+                                            th:if="${dept.id != ticket.departmentId}"
+                                            th:value="${dept.id}"
+                                            th:text="${dept.name}">Khoa Công nghệ Thông tin</option>
+                                </select>
+                            </div>
+
+                            <!-- Lý do chuyển giao -->
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold text-dark mb-1">
+                                    Lý do chuyển giao chuyên môn: <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control form-control-sm" name="reason" rows="3" required
+                                          placeholder="Nêu rõ lý do cần chuyển giao (ví dụ: Thuộc thẩm quyền giải quyết của Phòng Tuyển sinh & CTSV, chuyển chuyên môn đào tạo...)"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light px-4 py-2.5 d-flex justify-content-end gap-2 border-top">
+                            <button type="button" class="btn btn-secondary btn-sm px-3 rounded-3" data-bs-dismiss="modal">Hủy bỏ</button>
+                            <button type="submit" class="btn btn-primary btn-sm px-4 fw-semibold rounded-3 shadow-xs">
+                                <i class="bi bi-send-check-fill me-1"></i>Xác Nhận Chuyển Giao
+                            </button>
                         </div>
                     </form>
                 </div>
