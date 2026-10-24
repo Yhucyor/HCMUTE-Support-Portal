@@ -33,8 +33,8 @@ spring:
     # ── HikariCP: Cấu hình Connection Pool tối ưu cho tải 1.000 users ──
     hikari:
       pool-name: QauteHikariPool
-      maximum-pool-size: 30          # Điểm tối ưu cho máy chủ 8 CPU cores
-      minimum-idle: 15               # Giữ sẵn 15 connections ấm
+      maximum-pool-size: ${DB_POOL_MAX:10}          # Tối ưu cho cloud database (Aiven/TiDB)
+      minimum-idle: ${DB_POOL_MIN:2}               # Giữ sẵn connection ấm
       idle-timeout: 300000           # 5 phút: giải phóng connection nhàn rỗi về pool
       max-lifetime: 1800000          # 30 phút: tái tạo connection
       connection-timeout: 20000      # 20 giây: tối đa chờ connection
@@ -92,7 +92,7 @@ spring:
 # Cấu hình Lưu Trữ & Thư Mục Upload Cục Bộ (Tương thích chuẩn Constant.DIR = C:\upload)
 app:
   storage:
-    provider: local # 'local' hoặc 'cloudinary'
+    provider: ${STORAGE_PROVIDER:cloudinary} # 'local' hoặc 'cloudinary'
     upload-dir: ${UPLOAD_DIR:C:/upload} # Thư mục lưu ảnh/file cục bộ trên máy
     max-image-size-mb: 10
     max-doc-size-mb: 100
