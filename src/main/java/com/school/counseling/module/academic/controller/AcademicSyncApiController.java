@@ -57,9 +57,10 @@ public class AcademicSyncApiController {
 
     @PostMapping("/sync")
     public ResponseEntity<HcmuteSyncResponse> syncAcademicData(@Valid @RequestBody HcmuteSyncRequest request) {
-        if (request.getStudentId() == null || request.getStudentId().isBlank()) {
-            request.setStudentId(resolveStudentId(null));
-        }
+        // Chống IDOR: Sinh viên chỉ được phép đồng bộ dữ liệu cho chính mình
+        String effectiveStudentId = resolveStudentId(request.getStudentId());
+        request.setStudentId(effectiveStudentId);
+
         if (request.getPassword() == null || request.getPassword().isBlank() || "__SAVED__".equals(request.getPassword())) {
             SecurityUtils.getCurrentUserId().ifPresent(userId -> {
                 String savedPass = profileService.decodePortalPassword(userId);
@@ -346,22 +347,39 @@ public class AcademicSyncApiController {
         return ResponseEntity.ok(syncHistoryRepository.findByStudentIdOrderBySyncedAtDesc(resolvedId));
     }
 
-    private String resolveStudentId(String studentId) {
-        if (studentId != null && !studentId.isBlank()) {
-            return studentId.trim();
-        }
-        // Ưu tiên MSSV/Portal Username đã liên kết trong Profile
+    private String resolveStudentId(String requestedStudentId) {
+        // Lấy MSSV/Portal Username thực tế của người dùng hiện tại
+        String currentUserStudentId = null;
         try {
             Long userId = SecurityUtils.getCurrentUserId().orElse(null);
             if (userId != null) {
                 String portalUsername = profileService.getProfile(userId).getPortalUsername();
                 if (portalUsername != null && !portalUsername.isBlank()) {
-                    return portalUsername.trim();
+                    currentUserStudentId = portalUsername.trim();
                 }
             }
         } catch (Exception ignored) {}
 
-        return SecurityUtils.getCurrentUsername().orElse("21110001");
+        if (currentUserStudentId == null || currentUserStudentId.isBlank()) {
+            currentUserStudentId = SecurityUtils.getCurrentUsername().orElse(null);
+        }
+
+        // Nếu client chỉ định một studentId cụ thể
+        if (requestedStudentId != null && !requestedStudentId.isBlank()) {
+            String trimmed = requestedStudentId.trim();
+            boolean isStaffOrAdmin = SecurityUtils.hasAnyRole("STAFF", "DEPARTMENT_HEAD", "ADMIN", "SUPER_ADMIN");
+            // Cho phép nếu là Cán bộ/Admin hoặc đang truy vấn chính MSSV của mình
+            if (isStaffOrAdmin || (currentUserStudentId != null && currentUserStudentId.equalsIgnoreCase(trimmed))) {
+                return trimmed;
+            }
+            log.warn("⚠️ [Security Anti-IDOR] Người dùng '{}' không có thẩm quyền truy cập dữ liệu học vụ của MSSV '{}' - Đã tự động chặn và giới hạn về dữ liệu cá nhân.",
+                    currentUserStudentId, trimmed);
+            if (currentUserStudentId != null) {
+                return currentUserStudentId;
+            }
+        }
+
+        return (currentUserStudentId != null && !currentUserStudentId.isBlank()) ? currentUserStudentId : "21110001";
     }
 
     @GetMapping("/announcements")

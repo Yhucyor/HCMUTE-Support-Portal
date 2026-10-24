@@ -67,6 +67,29 @@ public class DepartmentAccessEvaluator {
     }
 
     /**
+     * Kiểm tra người dùng có phải là Cán bộ / Trưởng bộ phận Khoa/Phòng
+     */
+    public boolean isStaffOrDeptHead(UserPrincipal user) {
+        if (user == null) {
+            return false;
+        }
+        if (user.getRole() != null) {
+            String cleanRole = user.getRole().toUpperCase().replace("ROLE_", "");
+            if ("STAFF".equals(cleanRole) || "DEPARTMENT_HEAD".equals(cleanRole) || "DEPT_HEAD".equals(cleanRole)) {
+                return true;
+            }
+        }
+        if (user.getAuthorities() != null) {
+            return user.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .filter(Objects::nonNull)
+                    .map(a -> a.toUpperCase().replace("ROLE_", ""))
+                    .anyMatch(r -> "STAFF".equals(r) || "DEPARTMENT_HEAD".equals(r) || "DEPT_HEAD".equals(r));
+        }
+        return false;
+    }
+
+    /**
      * Kiểm tra Cán bộ có thuộc Khoa/Phòng được yêu cầu không (Admin luôn được phép)
      */
     public boolean canAccessDepartment(Long departmentId) {
@@ -84,7 +107,7 @@ public class DepartmentAccessEvaluator {
             return true;
         }
 
-        if ("ROLE_STAFF".equalsIgnoreCase(user.getRole())) {
+        if (isStaffOrDeptHead(user)) {
             return Objects.equals(user.getDepartmentId(), departmentId);
         }
 
@@ -108,7 +131,11 @@ public class DepartmentAccessEvaluator {
             return true;
         }
 
-        return userPrincipal.getDepartmentId() != null && userPrincipal.getDepartmentId().equals(departmentId);
+        if (isStaffOrDeptHead(userPrincipal)) {
+            return userPrincipal.getDepartmentId() != null && userPrincipal.getDepartmentId().equals(departmentId);
+        }
+
+        return false;
     }
 
     /**
@@ -145,7 +172,7 @@ public class DepartmentAccessEvaluator {
             return true;
         }
 
-        if ("ROLE_STAFF".equalsIgnoreCase(user.getRole())) {
+        if (isStaffOrDeptHead(user)) {
             return authInfo.getDepartmentId() != null
                     && Objects.equals(authInfo.getDepartmentId(), user.getDepartmentId());
         }

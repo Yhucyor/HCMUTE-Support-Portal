@@ -32,9 +32,7 @@ public class AcademicWebController {
     public String syncPage(@RequestParam(required = false) String studentId,
                            @RequestParam(required = false) String tab,
                            Model model) {
-        String effectiveStudentId = (studentId != null && !studentId.isBlank())
-                ? studentId.trim()
-                : SecurityUtils.getCurrentUsername().orElse("");
+        String effectiveStudentId = resolve(studentId);
 
         String activeTab = (tab != null && !tab.isBlank()) ? tab : "academic";
 
@@ -110,19 +108,33 @@ public class AcademicWebController {
     // ── helpers ──────────────────────────────────────────────────────────────
 
     private String resolve(String studentId) {
-        if (studentId != null && !studentId.isBlank()) {
-            return studentId.trim();
-        }
+        String currentUserStudentId = null;
         try {
             Long userId = SecurityUtils.getCurrentUserId().orElse(null);
             if (userId != null) {
                 String portalUsername = profileService.getProfile(userId).getPortalUsername();
                 if (portalUsername != null && !portalUsername.isBlank()) {
-                    return portalUsername.trim();
+                    currentUserStudentId = portalUsername.trim();
                 }
             }
         } catch (Exception ignored) {}
-        return SecurityUtils.getCurrentUsername().orElse("");
+
+        if (currentUserStudentId == null || currentUserStudentId.isBlank()) {
+            currentUserStudentId = SecurityUtils.getCurrentUsername().orElse("");
+        }
+
+        if (studentId != null && !studentId.isBlank()) {
+            String trimmed = studentId.trim();
+            boolean isStaffOrAdmin = SecurityUtils.hasAnyRole("STAFF", "DEPARTMENT_HEAD", "ADMIN", "SUPER_ADMIN");
+            if (isStaffOrAdmin || (currentUserStudentId != null && currentUserStudentId.equalsIgnoreCase(trimmed))) {
+                return trimmed;
+            }
+            log.warn("⚠️ [Security Anti-IDOR] Web: Sinh viên '{}' cố gắng xem học vụ của '{}' - Đã chặn và điều hướng về trang cá nhân.",
+                    currentUserStudentId, trimmed);
+            return currentUserStudentId;
+        }
+
+        return currentUserStudentId;
     }
 
     /**
