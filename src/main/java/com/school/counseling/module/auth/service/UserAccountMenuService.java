@@ -33,30 +33,13 @@ public class UserAccountMenuService {
                 return null;
             }
             
-            // Build DTO từ UserPrincipal
-            UserAccountMenuDto menuDto = UserAccountMenuDto.builder()
+            // Build DTO thuần in-memory từ UserPrincipal (không query DB)
+            return UserAccountMenuDto.builder()
                     .fullName(currentUser.getFullName())
                     .username(currentUser.getUsername())
                     .avatarUrl(currentUser.getAvatarUrl())
                     .role(extractRoleName(currentUser.getRole()))
                     .build();
-            
-            // Nếu avatarUrl null/rỗng, ProfileService sẽ fallback generated avatar
-            // ProfileService có timeout 3s theo requirement 10
-            if (menuDto.getAvatarUrl() == null || menuDto.getAvatarUrl().isBlank()) {
-                try {
-                    String avatarFromProfile = profileService.getUserAvatarUrl(currentUser.getId());
-                    if (avatarFromProfile != null && !avatarFromProfile.isBlank()) {
-                        menuDto.setAvatarUrl(avatarFromProfile);
-                    }
-                } catch (Exception ex) {
-                    log.warn("Failed to fetch avatar from ProfileService for user {}: {}", 
-                            currentUser.getId(), ex.getMessage());
-                    // Fallback: giữ null để View generate avatar từ initial
-                }
-            }
-            
-            return menuDto;
             
         } catch (Exception ex) {
             log.error("Error building UserAccountMenu: {}", ex.getMessage(), ex);

@@ -1723,6 +1723,19 @@ public class HcmuteCrawlerService {
         return fetchPortalAnnouncements(studentId, password);
     }
 
+    /**
+     * Lấy nhanh thông báo từ cache RAM hoặc demo (không gọi HTTP bên ngoài đồng bộ)
+     * Đảm bảo render view MVC < 10ms.
+     */
+    public List<PortalAnnouncementDto> getQuickAnnouncements(String studentId, String password) {
+        String cacheKey = (studentId != null && !studentId.isBlank()) ? studentId.trim() : "GLOBAL";
+        CacheEntry<List<PortalAnnouncementDto>> cached = announcementCache.get(cacheKey);
+        if (cached != null && !cached.isExpired()) {
+            return cached.data;
+        }
+        return generateDemoAnnouncements();
+    }
+
     private String formatAnnouncementDate(String rawDate) {
         if (rawDate == null || rawDate.isBlank()) return "";
         try {

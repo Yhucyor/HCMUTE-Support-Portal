@@ -15,11 +15,15 @@ import com.school.counseling.module.ticket.dto.TicketResponseDto.AttachmentDto;
 import com.school.counseling.module.ticket.dto.TicketResponseDto.HistoryDto;
 import com.school.counseling.module.ticket.entity.Ticket;
 import com.school.counseling.module.ticket.entity.TicketHistory;
+import com.school.counseling.module.ticket.entity.TicketTransferHistory;
+import com.school.counseling.module.auth.dto.UserPrincipal;
 import com.school.counseling.module.ticket.event.TicketClaimedEvent;
 import com.school.counseling.module.ticket.event.TicketCreatedEvent;
 import com.school.counseling.module.ticket.event.TicketResolvedEvent;
+import com.school.counseling.module.ticket.event.TicketTransferredEvent;
 import com.school.counseling.module.ticket.repository.TicketHistoryRepository;
 import com.school.counseling.module.ticket.repository.TicketRepository;
+import com.school.counseling.module.ticket.repository.TicketTransferHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +47,7 @@ public class TicketService {
 
     private final TicketRepository ticketRepository;
     private final TicketHistoryRepository ticketHistoryRepository;
+    private final TicketTransferHistoryRepository ticketTransferHistoryRepository;
     private final DepartmentRepository departmentRepository;
     private final UserRepository userRepository;
     private final AttachmentRepository attachmentRepository;
@@ -264,6 +269,97 @@ public class TicketService {
                 String.format("Quản trị viên (Admin %s) can thiệp tiếp quản vé từ [%s] do yêu cầu quá hạn SLA.", admin.getFullName(), oldAssignee));
 
         log.info("Admin ID={} đã can thiệp tiếp quản Ticket Code={} thành công", adminId, ticket.getTicketCode());
+        return mapToDetailDto(ticket);
+    }
+
+    /**
+     * Chuyển giao Ticket sang Khoa / Phòng ban tiếp nhận mới.
+     * Cán bộ của đơn vị hiện tại hoặc Quản trị viên (Admin) mới có quyền chuyển giao.
+     */
+    @Transactional
+    public TicketResponseDto transferTicket(Long ticketId, TicketTransferRequest request, UserPrincipal currentUser) {
+        if (currentUser == null) {
+            throw new AccessDeniedBusinessException("Vui lòng đăng nhập để thực hiện chuyển giao ticket!");
+        }
+
+        Ticket ticket = ticketRepository.findByIdWithRelations(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+
+        // 1. Kiểm tra trạng thái vé: Không được chuyển nếu đã đóng hoặc đã hủy
+        if ("CLOSED".equalsIgnoreCase(ticket.getStatus()) || "CANCELLED".equalsIgnoreCase(ticket.getStatus())) {
+            throw new IllegalArgumentException("Không thể chuyển giao ticket đã đóng hoặc đã hủy.");
+        }
+
+        // 2. Thẩm định quyền: Phải là Admin hoặc thuộc Khoa/Phòng hiện tại đang giữ vé
+        boolean isPrivileged = (currentUser.getRole() != null &&
+                (currentUser.getRole().equalsIgnoreCase("ROLE_ADMIN")
+                || currentUser.getRole().equalsIgnoreCase("ROLE_SUPER_ADMIN")
+                || currentUser.getRole().equalsIgnoreCase("ROLE_SUPERADMIN")))
+                || (currentUser.getAuthorities() != null && currentUser.getAuthorities().stream()
+                        .anyMatch(a -> a.getAuthority().equalsIgnoreCase("ROLE_ADMIN")
+                                || a.getAuthority().equalsIgnoreCase("ROLE_SUPER_ADMIN")));
+
+        Long currentDeptId = ticket.getDepartment() != null ? ticket.getDepartment().getId() : null;
+        if (!isPrivileged && !Objects.equals(currentDeptId, currentUser.getDepartmentId())) {
+            throw new AccessDeniedBusinessException("Bạn chỉ có quyền chuyển giao yêu cầu thuộc đơn vị của mình!");
+        }
+
+        // 3. Đơn vị tiếp nhận mới phải khác đơn vị hiện tại
+        if (Objects.equals(currentDeptId, request.getToDepartmentId())) {
+            throw new IllegalArgumentException("Đơn vị tiếp nhận mới phải khác với đơn vị hiện tại của ticket!");
+        }
+
+        Department toDepartment = departmentRepository.findById(request.getToDepartmentId())
+                .orElseThrow(() -> new ResourceNotFoundException("Đơn vị tiếp nhận mới", "id", request.getToDepartmentId()));
+
+        if (toDepartment.getIsActive() != null && !toDepartment.getIsActive()) {
+            throw new IllegalArgumentException("Đơn vị [" + toDepartment.getName() + "] hiện đang tạm dừng tiếp nhận yêu cầu.");
+        }
+
+        User transferrer = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cán bộ thực hiện", "id", currentUser.getId()));
+
+        Department fromDepartment = ticket.getDepartment();
+
+        // 4. Lưu bản ghi TicketTransferHistory
+        TicketTransferHistory transferHistory = TicketTransferHistory.builder()
+                .ticket(ticket)
+                .fromDepartment(fromDepartment)
+                .toDepartment(toDepartment)
+                .transferredBy(transferrer)
+                .reason(request.getReason().trim())
+                .build();
+        ticketTransferHistoryRepository.save(transferHistory);
+
+        // 5. Cập nhật Ticket: Đổi đơn vị, reset cán bộ phụ trách, đưa trạng thái về OPEN để đơn vị mới tiếp nhận
+        String oldStatus = ticket.getStatus();
+        ticket.setDepartment(toDepartment);
+        ticket.setAssignedTo(null);
+        ticket.setStatus("OPEN");
+        ticketRepository.save(ticket);
+
+        // 6. Ghi nhận nhật ký TicketHistory
+        String fromDeptName = fromDepartment != null ? fromDepartment.getName() : "Không xác định";
+        String historyNote = String.format("Chuyển giao đơn vị: [%s] ➔ [%s]. Lý do: %s",
+                fromDeptName, toDepartment.getName(), request.getReason().trim());
+        saveHistory(ticket, transferrer, transferrer.getFullName(), oldStatus, "OPEN", historyNote);
+
+        // 7. Bắn sự kiện TicketTransferredEvent
+        String trackingUrl = buildTrackingUrl(ticket);
+        eventPublisher.publishEvent(new TicketTransferredEvent(
+                ticket.getId(),
+                ticket.getTicketCode(),
+                ticket.getTitle(),
+                fromDeptName,
+                toDepartment.getName(),
+                transferrer.getFullName(),
+                request.getReason().trim(),
+                trackingUrl
+        ));
+
+        log.info("Ticket #{} đã được chuyển giao thành công từ [{}] sang [{}] bởi cán bộ [{}] (ID={})",
+                ticket.getTicketCode(), fromDeptName, toDepartment.getName(), transferrer.getFullName(), transferrer.getId());
+
         return mapToDetailDto(ticket);
     }
 
@@ -686,6 +782,24 @@ public class TicketService {
         boolean isOverdue = slaCalculatorService.isOverdue(t.getDueDate(), t.getStatus());
         boolean isDueSoon = slaCalculatorService.isDueSoon(t.getDueDate(), t.getStatus());
 
+        List<TicketTransferResponse> transferResponses = ticketTransferHistoryRepository
+                .findByTicketIdWithRelations(t.getId())
+                .stream()
+                .map(tth -> TicketTransferResponse.builder()
+                        .id(tth.getId())
+                        .ticketId(t.getId())
+                        .ticketCode(t.getTicketCode())
+                        .fromDepartmentId(tth.getFromDepartment() != null ? tth.getFromDepartment().getId() : null)
+                        .fromDepartmentName(tth.getFromDepartment() != null ? tth.getFromDepartment().getName() : null)
+                        .toDepartmentId(tth.getToDepartment() != null ? tth.getToDepartment().getId() : null)
+                        .toDepartmentName(tth.getToDepartment() != null ? tth.getToDepartment().getName() : null)
+                        .transferredById(tth.getTransferredBy() != null ? tth.getTransferredBy().getId() : null)
+                        .transferredByName(tth.getTransferredBy() != null ? tth.getTransferredBy().getFullName() : null)
+                        .reason(tth.getReason())
+                        .transferredAt(tth.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+
         return TicketResponseDto.builder()
                 .id(t.getId())
                 .ticketCode(t.getTicketCode())
@@ -718,6 +832,7 @@ public class TicketService {
                 .attachments(attachments)
                 .initialAttachments(initialAttachments)
                 .histories(histories)
+                .transferHistories(transferResponses)
                 .build();
     }
 }

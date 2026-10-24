@@ -24,17 +24,18 @@ spring:
       max-request-size: 105MB
       file-size-threshold: 2MB
 
-  # Cấu hình Database (Hỗ trợ MySQL mặc định và profile SQL Server)
+  # Cấu hình Database (Mặc định MySQL Local, comment Aiven Cloud để deploy sau)
   datasource:
-    url: ${AIVEN_DB_URL:${DB_URL:jdbc:mysql://portal-hcmute-lequoccuong31126-f025.i.aivencloud.com:25013/defaultdb?sslMode=REQUIRED}}
-    username: ${AIVEN_DB_USERNAME:${DB_USERNAME:avnadmin}}
-    password: ${AIVEN_DB_PASSWORD:AVNS_FgQK2DZvjvhihUGwzl1}
+    # ── Aiven Cloud (Khi cần deploy thì đổi sang: jdbc:mysql://portal-hcmute-lequoccuong31126-f025.i.aivencloud.com:25013/defaultdb?sslMode=REQUIRED) ──
+    url: ${DB_URL:jdbc:mysql://localhost:3306/qaute_portal?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&characterEncoding=UTF-8}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:caucuong}
     driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
-    # ── HikariCP: Cấu hình Connection Pool tối ưu cho tải 1.000 users ──
+    # ── HikariCP: Cấu hình Connection Pool tối ưu cho Local & Cloud ──
     hikari:
       pool-name: QauteHikariPool
-      maximum-pool-size: ${DB_POOL_MAX:10}          # Tối ưu cho cloud database (Aiven/TiDB)
-      minimum-idle: ${DB_POOL_MIN:2}               # Giữ sẵn connection ấm
+      maximum-pool-size: ${DB_POOL_MAX:20}
+      minimum-idle: ${DB_POOL_MIN:5}
       idle-timeout: 300000           # 5 phút: giải phóng connection nhàn rỗi về pool
       max-lifetime: 1800000          # 30 phút: tái tạo connection
       connection-timeout: 20000      # 20 giây: tối đa chờ connection
@@ -51,13 +52,22 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
 
-  # Cấu hình Thymeleaf
+  # Cấu hình Thymeleaf & Caching tăng tốc tải trang
   thymeleaf:
-    cache: false
+    cache: ${THYMELEAF_CACHE:true}
     mode: HTML
     encoding: UTF-8
     servlet:
       produce-partial-output-while-processing: false
+
+  # Cấu hình HTTP Cache cho Static Resources (CSS, JS, Fonts, Images)
+  web:
+    resources:
+      cache:
+        period: 3600
+        cachecontrol:
+          max-age: 3600
+          must-revalidate: true
 
   # Cấu hình Mail SMTP
   mail:

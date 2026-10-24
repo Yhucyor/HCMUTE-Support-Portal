@@ -49,6 +49,7 @@ public class TicketResponseDto {
     private List<AttachmentDto> attachments;
     private List<AttachmentDto> initialAttachments;
     private List<HistoryDto> histories;
+    private List<TicketTransferResponse> transferHistories;
 
     @Getter
     @Setter
