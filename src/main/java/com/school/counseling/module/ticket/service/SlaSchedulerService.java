@@ -67,7 +67,7 @@ public class SlaSchedulerService {
 
                 String actionNote;
                 if (ticket.getAssignedTo() == null) {
-                    // Vé OPEN chưa có cán bộ tiếp nhận -> Tự động chuyển giao quyền xử lý lên Admin
+                    // [USER_REQUEST]: Vé chưa có người nhận -> Gán mặc định người phụ trách về cho Admin, KHÔNG gia hạn thêm giờ
                     User defaultAdmin = userRepository.findByUsername("admin")
                             .orElseGet(() -> userRepository.findAll().stream()
                                     .filter(u -> u.getRole() != null && "ROLE_ADMIN".equalsIgnoreCase(u.getRole().getName()))
@@ -76,17 +76,16 @@ public class SlaSchedulerService {
                     if (defaultAdmin != null) {
                         ticket.setAssignedTo(defaultAdmin);
                     }
-                    LocalDateTime extendedDueDate = now.plusHours(24);
-                    ticket.setDueDate(extendedDueDate);
-                    String newDueStr = extendedDueDate.format(DATE_FORMATTER);
+                    // Giữ nguyên hạn chót (dueDate), không cộng thêm thời gian tiếp nhận
 
-                    actionNote = String.format("Yêu cầu quá hạn tiếp nhận tại đơn vị [%s]. Hệ thống tự động chuyển giao cho Quản trị viên (Admin) trực tiếp giải quyết và gia hạn thêm 24 giờ (Hạn mới: %s).", deptName, newDueStr);
-                    log.warn("SLA Scheduler: Ticket #{} quá hạn tiếp nhận tại {}. Đã chuyển Admin ({}) & gia hạn đến {}",
-                            ticket.getTicketCode(), deptName, defaultAdmin != null ? defaultAdmin.getFullName() : "Admin", newDueStr);
+                    actionNote = String.format("Yêu cầu quá hạn tiếp nhận tại đơn vị [%s]. Hệ thống chuyển sang trạng thái QUÁ HẠN (OVERDUE) và phân bổ cho Quản trị viên (Admin) trực tiếp giải quyết.", deptName);
+                    log.warn("SLA Scheduler: Ticket #{} quá hạn tiếp nhận tại {}. Đã chuyển Admin ({}) xử lý ở trạng thái OVERDUE.",
+                            ticket.getTicketCode(), deptName, defaultAdmin != null ? defaultAdmin.getFullName() : "Admin");
                 } else {
-                    // Đã có Cán bộ tiếp nhận nhưng xử lý quá hạn
+                    // [USER_REQUEST]: Vé đã có Cán bộ (Staff) tiếp nhận nhưng xử lý quá hạn -> Giữ nguyên Cán bộ phụ trách (Staff) và báo OVERDUE
                     String staffName = ticket.getAssignedTo().getFullName();
-                    actionNote = String.format("Cán bộ [%s] thuộc đơn vị [%s] xử lý quá thời hạn cam kết (Hạn chót: %s). Hệ thống chuyển sang trạng thái QUÁ HẠN (OVERDUE) và chuyển giao quyền can thiệp cho Quản trị viên (Admin).", staffName, deptName, dueStr);
+                    actionNote = String.format("Cán bộ [%s] thuộc đơn vị [%s] xử lý quá thời hạn cam kết (Hạn chót: %s). Hệ thống ghi nhận trạng thái QUÁ HẠN (OVERDUE) chờ giải quyết khẩn cấp.", staffName, deptName, dueStr);
+                    log.warn("SLA Scheduler: Ticket #{} quá hạn xử lý bởi {}. Đã đánh dấu OVERDUE.", ticket.getTicketCode(), staffName);
                 }
 
                 // 1. Ghi nhận nhật ký lịch sử hệ thống (Audit Trail)
