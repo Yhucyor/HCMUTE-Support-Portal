@@ -6,10 +6,10 @@ services:
     container_name: qaute_mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: qaute_portal
-      MYSQL_USER: qaute_user
-      MYSQL_PASSWORD: qautepassword
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=qaute_portal
+      - MYSQL_USER=qaute_user
+      - MYSQL_PASSWORD=qautepassword
     ports:
       # Map port 3307 trên máy host vào port 3306 của container
       - "3307:3306"
