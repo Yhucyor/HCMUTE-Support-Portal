@@ -18,8 +18,13 @@ import java.util.Set;
  */
 @Slf4j
 @Component("deptSecurity")
-@RequiredArgsConstructor
 public class DepartmentAccessEvaluator {
+
+    private final org.springframework.beans.factory.ObjectProvider<com.school.counseling.module.ticket.repository.TicketRepository> ticketRepositoryProvider;
+
+    public DepartmentAccessEvaluator(org.springframework.beans.factory.ObjectProvider<com.school.counseling.module.ticket.repository.TicketRepository> ticketRepositoryProvider) {
+        this.ticketRepositoryProvider = ticketRepositoryProvider;
+    }
 
     private static final Set<String> PRIVILEGED_ROLES = Set.of(
             "ROLE_ADMIN",
@@ -105,8 +110,6 @@ public class DepartmentAccessEvaluator {
 
         return userPrincipal.getDepartmentId() != null && userPrincipal.getDepartmentId().equals(departmentId);
     }
-    @org.springframework.beans.factory.annotation.Autowired(required = false)
-    private com.school.counseling.module.ticket.repository.TicketRepository ticketRepository;
 
     /**
      * Thẩm định quyền truy cập Ticket chống IDOR
@@ -126,7 +129,9 @@ public class DepartmentAccessEvaluator {
             return true;
         }
 
+        var ticketRepository = ticketRepositoryProvider.getIfAvailable();
         if (ticketRepository == null) {
+            log.error("[Security] Không thể nạp TicketRepository để thẩm định IDOR!");
             return false;
         }
 

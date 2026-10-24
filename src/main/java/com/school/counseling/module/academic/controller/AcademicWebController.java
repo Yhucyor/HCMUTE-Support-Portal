@@ -53,7 +53,9 @@ public class AcademicWebController {
 
         // Nạp danh sách thông báo chính thức từ Cổng trường HCMUTE
         String portalUser = (String) model.getAttribute("savedPortalUsername");
-        String portalPass = (String) model.getAttribute("savedPortalPassword");
+        String portalPass = SecurityUtils.getCurrentUserId()
+                .map(profileService::decodePortalPassword)
+                .orElse(null);
         model.addAttribute("announcements", crawlerService.getAnnouncements(
                 portalUser != null ? portalUser : effectiveStudentId, portalPass));
 
@@ -140,9 +142,9 @@ public class AcademicWebController {
                 model.addAttribute("portalLinked", hasCredentials);
                 if (hasCredentials) {
                     model.addAttribute("savedPortalUsername", portalUsername);
-                    // Truyền password qua model chỉ trong scope request server-side.
-                    // Template dùng th:data-* ẩn để JS tự fill — KHÔNG render ra HTML visible.
-                    model.addAttribute("savedPortalPassword", portalPassword);
+                    // Không truyền mật khẩu plain-text vào Model để chống lộ lọt phía Client DOM.
+                    // Sử dụng token che giấu __SAVED__; API Backend sẽ tự động nạp mật khẩu an toàn.
+                    model.addAttribute("savedPortalPassword", "__SAVED__");
                 }
             });
         } catch (Exception e) {

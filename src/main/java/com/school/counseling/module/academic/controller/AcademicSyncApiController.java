@@ -60,7 +60,7 @@ public class AcademicSyncApiController {
         if (request.getStudentId() == null || request.getStudentId().isBlank()) {
             request.setStudentId(resolveStudentId(null));
         }
-        if (request.getPassword() == null || request.getPassword().isBlank()) {
+        if (request.getPassword() == null || request.getPassword().isBlank() || "__SAVED__".equals(request.getPassword())) {
             SecurityUtils.getCurrentUserId().ifPresent(userId -> {
                 String savedPass = profileService.decodePortalPassword(userId);
                 if (savedPass != null && !savedPass.isBlank()) {
