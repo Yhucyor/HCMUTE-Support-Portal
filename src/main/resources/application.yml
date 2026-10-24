@@ -26,9 +26,9 @@ spring:
 
   # Cấu hình Database (Hỗ trợ MySQL mặc định và profile SQL Server)
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/qaute_portal?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&characterEncoding=UTF-8}
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:123456}
+    url: ${AIVEN_DB_URL:${DB_URL:jdbc:mysql://portal-hcmute-lequoccuong31126-f025.i.aivencloud.com:25013/defaultdb?sslMode=REQUIRED}}
+    username: ${AIVEN_DB_USERNAME:${DB_USERNAME:avnadmin}}
+    password: ${AIVEN_DB_PASSWORD:AVNS_FgQK2DZvjvhihUGwzl1}
     driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
     # ── HikariCP: Cấu hình Connection Pool tối ưu cho tải 1.000 users ──
     hikari:
