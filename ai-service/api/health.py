@@ -16,10 +16,12 @@ async def health_check():
     
     try:
         client = get_qdrant_client()
-        collections = client.get_collections()
+        target_col = os.getenv("QDRANT_COLLECTION_NAME", "hcmute_chatbot_collection")
+        col_info = client.get_collection(target_col)
         health_status["services"]["qdrant"] = {
             "status": "up",
-            "collections": len(collections.collections)
+            "collection": target_col,
+            "points_count": getattr(col_info, "points_count", 0)
         }
     except Exception as e:
         logger.error(f"Qdrant health check failed: {e}")

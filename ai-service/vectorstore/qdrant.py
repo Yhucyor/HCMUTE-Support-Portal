@@ -43,8 +43,12 @@ def get_qdrant_client() -> QdrantClient: # them -> QdrantClient de tra ve
                 timeout=TIMEOUT
             )
         
-        # Test connection
-        _client.get_collections()
+        # Test connection: use get_collection on target collection to support scoped Cloud API keys
+        target_col = COLLECTION_NAME or QDRANT_CONFIG.get("collection_name", "hcmute_chatbot_collection")
+        try:
+            _client.get_collection(target_col)
+        except Exception as e:
+            logger.debug(f"Target collection check note: {e}")
         logger.info("Successfully connected to Qdrant")
         return _client
     
@@ -53,15 +57,20 @@ def get_qdrant_client() -> QdrantClient: # them -> QdrantClient de tra ve
         raise ConnectionError(f"Cannot connect to Qdrant database: {e}")
 
 def ensure_collection(client: QdrantClient, recreate: bool = False):
-    existing_collection = [collection.name for collection in client.get_collections().collections]
+    try:
+        if not recreate and client.collection_exists(COLLECTION_NAME):
+            logger.info(f"Collection '{COLLECTION_NAME}' already exists.")
+            return
+    except Exception:
+        pass
     
-    if not recreate and COLLECTION_NAME in existing_collection:
-        logger.info(f"Collection '{COLLECTION_NAME}' already exists.")
-        return
-    
-    if recreate and COLLECTION_NAME in existing_collection:
-        logger.info(f"Recreating collection '{COLLECTION_NAME}'...")
-        client.delete_collection(COLLECTION_NAME)
+    if recreate:
+        try:
+            if client.collection_exists(COLLECTION_NAME):
+                logger.info(f"Recreating collection '{COLLECTION_NAME}'...")
+                client.delete_collection(COLLECTION_NAME)
+        except Exception:
+            pass
     
     logger.info(f"Creating collection '{COLLECTION_NAME}' with hybrid vectors (dense + sparse)...")
     client.create_collection(
