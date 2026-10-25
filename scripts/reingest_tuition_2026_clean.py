@@ -4,8 +4,8 @@ import uuid
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Set paths
-workspace_root = Path(r"d:\Laptrinh-Java\HCMUTE-Student-Portal")
+# Set paths dynamically
+workspace_root = Path(__file__).resolve().parent.parent
 ai_service_dir = workspace_root / "ai-service"
 sys.path.insert(0, str(ai_service_dir))
 os.chdir(str(ai_service_dir))
