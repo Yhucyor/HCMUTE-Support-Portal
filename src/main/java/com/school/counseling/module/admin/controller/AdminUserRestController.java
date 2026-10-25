@@ -46,4 +46,14 @@ public class AdminUserRestController {
         UserManagementDto updated = adminUserService.updateUser(id, dto);
         return ResponseEntity.ok(ApiResponse.success(updated, "Cập nhật thông tin người dùng [" + updated.getUsername() + "] thành công!"));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long id) {
+        try {
+            adminUserService.deleteUser(id);
+            return ResponseEntity.ok(ApiResponse.success(null, "Đã xóa / khóa tài khoản người dùng thành công!"));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(ex.getMessage()));
+        }
+    }
 }

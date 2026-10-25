@@ -117,6 +117,26 @@ public class AdminUserService {
         return mapToDto(updated);
     }
 
+    @Transactional
+    public void deleteUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + id));
+
+        Long currentAdminId = SecurityUtils.getCurrentUserId().orElse(null);
+        if (currentAdminId != null && currentAdminId.equals(id)) {
+            throw new IllegalArgumentException("Quản trị viên không thể tự xóa tài khoản của chính mình!");
+        }
+
+        try {
+            userRepository.delete(user);
+            log.info("Admin đã xóa hoàn toàn tài khoản người dùng ID: {}, username: {}", id, user.getUsername());
+        } catch (Exception ex) {
+            user.setStatus(UserStatus.LOCKED);
+            userRepository.save(user);
+            log.info("Do có dữ liệu liên kết, tài khoản user ID: {}, username: {} đã được chuyển về trạng thái LOCKED", id, user.getUsername());
+        }
+    }
+
     public List<Role> getAllRoles() {
         return roleRepository.findAll();
     }
