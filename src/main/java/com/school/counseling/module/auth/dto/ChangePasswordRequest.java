@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ChangePasswordRequest {
 
-    @NotBlank(message = "Mật khẩu hiện tại không được để trống")
+    // Mật khẩu hiện tại (bắt buộc với tài khoản thường, không bắt buộc với tài khoản Google OAuth)
     private String currentPassword;
 
     @NotBlank(message = "Mật khẩu mới không được để trống")

@@ -21,4 +21,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByPostIdWithAuthor(@Param("postId") Long postId);
 
     long countByPostIdAndIsDeletedFalse(Long postId);
+
+    boolean existsByPostIdAndAuthorIdAndContent(Long postId, Long authorId, String content);
 }

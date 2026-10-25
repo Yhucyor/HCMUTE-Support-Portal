@@ -113,9 +113,9 @@ public class ProfileWebController {
         Long currentUserId = SecurityUtils.getCurrentUserId()
                 .orElseThrow(() -> new AppException("Chưa đăng nhập"));
         try {
-            profileService.sendChangePasswordOtp(currentUserId);
+            String destinationEmail = profileService.sendChangePasswordOtp(currentUserId);
             return org.springframework.http.ResponseEntity.ok(
-                    java.util.Map.of("success", true, "message", "Mã xác thực OTP đã được gửi đến email của bạn! Vui lòng kiểm tra hộp thư."));
+                    java.util.Map.of("success", true, "message", "Mã xác thực OTP đã được gửi đến email: " + destinationEmail + "! Vui lòng kiểm tra hộp thư."));
         } catch (Exception ex) {
             return org.springframework.http.ResponseEntity.badRequest().body(
                     java.util.Map.of("success", false, "message", ex.getMessage()));

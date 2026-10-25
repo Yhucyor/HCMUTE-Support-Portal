@@ -81,6 +81,7 @@ public class DataInitializer implements CommandLineRunner {
 
             // 0. Dọn dẹp tài khoản rác test (race_staff_1 -> race_staff_10)
             cleanupMockRaceStaffUsers();
+            cleanupDuplicateComments();
 
             // 1. Khởi tạo 3 Vai trò (Roles)
             Role roleStudent = initRole("ROLE_STUDENT", "Sinh viên trường ĐH Sư phạm Kỹ thuật TP.HCM");
@@ -398,6 +399,9 @@ public class DataInitializer implements CommandLineRunner {
 
     private void initComment(Post post, User author, String content, int likeCount) {
         if (post == null || author == null) return;
+        if (commentRepository.existsByPostIdAndAuthorIdAndContent(post.getId(), author.getId(), content)) {
+            return;
+        }
         Comment comment = Comment.builder()
                 .post(post)
                 .author(author)
@@ -707,6 +711,23 @@ public class DataInitializer implements CommandLineRunner {
             }
         } catch (Exception e) {
             log.warn("Không thể xóa tài khoản test race_staff: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Dọn dẹp triệt để các bình luận trùng lặp do server restart / reload nhiều lần.
+     */
+    private void cleanupDuplicateComments() {
+        try {
+            int deleted = jdbcTemplate.update(
+                "DELETE c1 FROM comments c1 INNER JOIN comments c2 " +
+                "WHERE c1.id > c2.id AND c1.post_id = c2.post_id AND c1.author_id = c2.author_id AND c1.content = c2.content"
+            );
+            if (deleted > 0) {
+                log.info("==> Đã dọn dẹp {} bình luận trùng lặp trên Diễn đàn sinh viên!", deleted);
+            }
+        } catch (Exception e) {
+            log.warn("Không thể dọn dẹp bình luận trùng lặp: {}", e.getMessage());
         }
     }
 }
