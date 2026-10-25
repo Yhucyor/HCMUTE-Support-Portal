@@ -50,7 +50,7 @@
     <!-- 1. UNIFIED TOP GLOBAL HEADER -->
     <div th:replace="~{layout/navbar :: navbar}"></div>
 
-    <main class="w-full pt-[74px]">
+    <main class="w-full">
         <!-- 2. HERO SECTION -->
         <section class="relative w-full min-h-[640px] lg:min-h-[700px] bg-slate-900 overflow-hidden flex items-center pt-8 pb-20">
             <!-- Hero Image Background: Cổng & toà nhà trung tâm HCMUTE -->
@@ -116,7 +116,7 @@
             <!-- Slider Counter Badge -->
             <div class="absolute bottom-20 right-6 sm:right-8 lg:right-16 z-20 flex items-center gap-3 bg-black/50 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 text-white text-xs shadow-lg">
                 <span id="sliderCurrentNum" class="font-bold text-[#fca5a5]">01</span>
-                <span class="opacity-60">/ 03</span>
+                <span class="opacity-60">/ 02</span>
                 <button aria-label="Slide trước" onclick="prevHeroSlide()" class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"><span class="material-symbols-outlined text-[16px]">chevron_left</span></button>
                 <button aria-label="Slide sau" onclick="nextHeroSlide()" class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"><span class="material-symbols-outlined text-[16px]">chevron_right</span></button>
             </div>
@@ -781,11 +781,10 @@
 
     <!-- Interactive Scripts -->
     <script>
-        // Hero Slider Controls
+        // Hero Slider Controls (2 ảnh chất lượng cao theo yêu cầu)
         const heroSlides = [
             "https://lh3.googleusercontent.com/aida-public/AB6AXuDoccAbK8VsruXpycy90Sn25S0uEYyPGo7g_GNyfmK7-1JN485OqzWd6nlbXCU6URMftUttd3_PfD0Fjlket5RQI5PpkSBkqMtLSV4owDEUe8H_WAJacNxAX7E4dpdzkKTqogPMlU9WvOwCYx56tfAWB-Thf9nZsT58a94GJtNz-Me_GA04E-Ue2nHYpf0oiGS30AnRSJq-iJgGB1e6VmMgIjx2LoOmm8iEpOK9A69IuZx0Or6v1mpBVoiBckTH2Z6OrQ",
-            "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80",
-            "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80"
+            "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80"
         ];
         let currentSlideIdx = 0;
 

@@ -103,9 +103,9 @@
             color: #003882;
         }
         .hcmute-nav-link.active {
-            color: #003882;
-            font-weight: 700;
-            border-bottom-color: #003882;
+            color: #003882 !important;
+            font-weight: 700 !important;
+            border-bottom: 3px solid #003882 !important;
         }
 
         /* Action Buttons */
@@ -443,6 +443,61 @@
                 drawer.classList.remove('show');
             }
         });
+
+        // Tự động nhận diện và làm nổi bật (active) tab trên Topbar khi chuyển trang
+        (function() {
+            function updateActiveNavbar() {
+                var rawPath = window.location.pathname || '/';
+                var currentPath = (rawPath.length > 1 && rawPath.endsWith('/')) ? rawPath.slice(0, -1) : rawPath;
+
+                var desktopLinks = document.querySelectorAll('.hcmute-nav-link');
+                desktopLinks.forEach(function(link) {
+                    var href = link.getAttribute('href');
+                    if (!href) return;
+                    var cleanHref = (href.length > 1 && href.endsWith('/')) ? href.slice(0, -1) : href;
+                    
+                    var isActive = false;
+                    if (cleanHref === '/' || cleanHref === '') {
+                        isActive = (currentPath === '/' || currentPath === '');
+                    } else {
+                        isActive = (currentPath === cleanHref || currentPath.startsWith(cleanHref + '/'));
+                    }
+
+                    if (isActive) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+
+                var mobileLinks = document.querySelectorAll('#hcmuteMobileDrawer a');
+                mobileLinks.forEach(function(link) {
+                    var href = link.getAttribute('href');
+                    if (!href) return;
+                    var cleanHref = (href.length > 1 && href.endsWith('/')) ? href.slice(0, -1) : href;
+
+                    var isActive = false;
+                    if (cleanHref === '/' || cleanHref === '') {
+                        isActive = (currentPath === '/' || currentPath === '');
+                    } else {
+                        isActive = (currentPath === cleanHref || currentPath.startsWith(cleanHref + '/'));
+                    }
+
+                    if (isActive) {
+                        link.style.color = '#003882';
+                        link.style.fontWeight = '700';
+                        link.style.borderLeft = '3px solid #003882';
+                        link.style.paddingLeft = '0.5rem';
+                    }
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', updateActiveNavbar);
+            } else {
+                updateActiveNavbar();
+            }
+        })();
     </script>
 </header>
 
