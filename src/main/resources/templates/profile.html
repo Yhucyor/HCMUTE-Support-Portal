@@ -124,7 +124,8 @@
                     <h1 class="font-display text-headline-lg font-bold tracking-tight text-on-surface leading-tight">
                         Hồ sơ cá nhân
                     </h1>
-                    <p class="font-body-lg text-body-lg text-on-surface-variant mt-1 max-w-2xl">
+                    <p class="font-body-lg text-body-lg text-on-surface-variant mt-1 max-w-2xl"
+                       th:text="${user.role == 'ADMIN' or user.role == 'STAFF'} ? 'Quản lý thông tin tài khoản, đơn vị công tác và bảo mật cán bộ HCMUTE' : 'Quản lý thông tin tài khoản, định danh học vụ và bảo mật sinh viên HCMUTE'">
                         Quản lý thông tin tài khoản, định danh học vụ và bảo mật sinh viên HCMUTE
                     </p>
                 </div>
@@ -185,8 +186,9 @@
 
                             <!-- Role badges -->
                             <div class="mt-space-xs flex flex-wrap gap-space-xs justify-center items-center">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full font-label-caps text-label-caps uppercase font-semibold bg-surface-container text-primary">
-                                    <th:block th:text="${user.role == 'ADMIN'} ? 'Quản trị viên' : (${user.role == 'STAFF'} ? 'Cán bộ / Giảng viên' : 'Sinh viên chính quy')">Sinh viên</th:block>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full font-label-caps text-label-caps uppercase font-semibold"
+                                      th:classappend="${user.role == 'ADMIN'} ? 'bg-rose-100 text-rose-700' : (${user.role == 'STAFF'} ? 'bg-blue-100 text-blue-700' : 'bg-surface-container text-primary')">
+                                    <th:block th:text="${user.role == 'ADMIN'} ? 'Quản trị viên hệ thống' : (${user.role == 'STAFF'} ? 'Cán bộ / Giảng viên' : 'Sinh viên chính quy')">Sinh viên</th:block>
                                 </span>
                             </div>
 
@@ -199,7 +201,8 @@
                                 </div>
                                 <div class="flex items-center gap-space-sm text-on-surface-variant font-body-sm text-body-sm">
                                     <span class="material-symbols-outlined text-secondary text-[18px]">badge</span>
-                                    <span>MSSV: <strong class="text-on-surface font-semibold" th:text="${user.username}">—</strong></span>
+                                    <span th:if="${user.role == 'ADMIN' or user.role == 'STAFF'}">Mã cán bộ: <strong class="text-on-surface font-semibold" th:text="${user.username}">—</strong></span>
+                                    <span th:unless="${user.role == 'ADMIN' or user.role == 'STAFF'}">MSSV: <strong class="text-on-surface font-semibold" th:text="${user.username}">—</strong></span>
                                 </div>
                                 <!-- Status indicator -->
                                 <div class="flex items-center gap-space-sm font-body-sm text-body-sm"
@@ -232,7 +235,8 @@
                                 <span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary font-bold">Truy cập nhanh</span>
                                 <span class="material-symbols-outlined text-secondary text-[18px]">tune</span>
                             </div>
-                            <nav class="flex flex-col gap-1.5">
+                            <!-- Menu dành cho SINH VIÊN -->
+                            <nav th:if="${user.role != 'ADMIN' and user.role != 'STAFF'}" class="flex flex-col gap-1.5">
                                 <a class="group flex items-center justify-between px-space-md py-2.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all" href="/academic/sync">
                                     <div class="flex items-center gap-space-sm">
                                         <span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors text-[20px]">dashboard</span>
@@ -269,14 +273,57 @@
                                     <span class="material-symbols-outlined text-secondary text-[18px] group-hover:translate-x-1 transition-transform">chevron_right</span>
                                 </a>
                             </nav>
+
+                            <!-- Menu dành cho CÁN BỘ & QUẢN TRỊ VIÊN -->
+                            <nav th:if="${user.role == 'ADMIN' or user.role == 'STAFF'}" class="flex flex-col gap-1.5">
+                                <a class="group flex items-center justify-between px-space-md py-2.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all" href="/tickets">
+                                    <div class="flex items-center gap-space-sm">
+                                        <span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors text-[20px]">confirmation_number</span>
+                                        <span class="font-label-lg text-label-lg">Điều phối &amp; Xử lý Ticket</span>
+                                    </div>
+                                    <span class="material-symbols-outlined text-secondary text-[18px] group-hover:translate-x-1 transition-transform">chevron_right</span>
+                                </a>
+                                <a class="group flex items-center justify-between px-space-md py-2.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all" href="/moderation/posts">
+                                    <div class="flex items-center gap-space-sm">
+                                        <span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors text-[20px]">fact_check</span>
+                                        <span class="font-label-lg text-label-lg">Duyệt bài đăng Diễn đàn</span>
+                                    </div>
+                                    <span class="material-symbols-outlined text-secondary text-[18px] group-hover:translate-x-1 transition-transform">chevron_right</span>
+                                </a>
+                                <a class="group flex items-center justify-between px-space-md py-2.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all" href="/moderation/reports">
+                                    <div class="flex items-center gap-space-sm">
+                                        <span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors text-[20px]">flag</span>
+                                        <span class="font-label-lg text-label-lg">Báo cáo vi phạm cộng đồng</span>
+                                    </div>
+                                    <span class="material-symbols-outlined text-secondary text-[18px] group-hover:translate-x-1 transition-transform">chevron_right</span>
+                                </a>
+                                <a class="group flex items-center justify-between px-space-md py-2.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all" href="/feed/official">
+                                    <div class="flex items-center gap-space-sm">
+                                        <span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors text-[20px]">campaign</span>
+                                        <span class="font-label-lg text-label-lg">Quản lý Bảng tin thông báo</span>
+                                    </div>
+                                    <span class="material-symbols-outlined text-secondary text-[18px] group-hover:translate-x-1 transition-transform">chevron_right</span>
+                                </a>
+                                <a th:if="${user.role == 'ADMIN'}" class="group flex items-center justify-between px-space-md py-2.5 rounded-lg text-on-surface-variant hover:text-rose-600 hover:bg-rose-50 transition-all" href="/admin/users">
+                                    <div class="flex items-center gap-space-sm">
+                                        <span class="material-symbols-outlined text-secondary group-hover:text-rose-600 transition-colors text-[20px]">manage_accounts</span>
+                                        <span class="font-label-lg text-label-lg font-semibold">Quản lý Người dùng &amp; Phân quyền</span>
+                                    </div>
+                                    <span class="material-symbols-outlined text-secondary text-[18px] group-hover:translate-x-1 transition-transform">chevron_right</span>
+                                </a>
+                            </nav>
                         </div>
 
-                        <!-- AUN-QA Notice -->
+                        <!-- Notice Footer -->
                         <div class="bg-gradient-to-br from-surface-container to-surface-container-high rounded-xl p-space-md text-on-surface-variant shadow-sm flex items-start gap-space-sm">
                             <span class="material-symbols-outlined text-primary text-[24px] mt-0.5 shrink-0">verified_user</span>
-                            <div class="flex flex-col gap-0.5">
+                            <div class="flex flex-col gap-0.5" th:if="${user.role != 'ADMIN' and user.role != 'STAFF'}">
                                 <span class="font-title-md text-title-md text-on-surface">Đảm bảo chuẩn AUN-QA</span>
                                 <span class="font-body-sm text-body-sm text-secondary">Dữ liệu hồ sơ sinh viên được đồng bộ trực tiếp với hệ thống quản lý đào tạo Edusoft HCMUTE.</span>
+                            </div>
+                            <div class="flex flex-col gap-0.5" th:if="${user.role == 'ADMIN' or user.role == 'STAFF'}">
+                                <span class="font-title-md text-title-md text-on-surface">Bảo mật hệ thống HCMUTE</span>
+                                <span class="font-body-sm text-body-sm text-secondary">Tài khoản cán bộ quản trị hệ thống hỗ trợ sinh viên HCMUTE - QAUTE Portal.</span>
                             </div>
                         </div>
                     </aside>
@@ -308,8 +355,10 @@
                                     <span class="material-symbols-outlined text-[24px]">manage_accounts</span>
                                 </div>
                                 <div class="flex flex-col">
-                                    <h3 class="font-headline text-headline-sm font-bold text-on-surface">Cập nhật thông tin sinh viên</h3>
-                                    <p class="font-body-md text-body-md text-secondary">
+                                    <h3 class="font-headline text-headline-sm font-bold text-on-surface"
+                                        th:text="${user.role == 'ADMIN' or user.role == 'STAFF'} ? 'Cập nhật thông tin cán bộ quản trị' : 'Cập nhật thông tin sinh viên'">Cập nhật thông tin sinh viên</h3>
+                                    <p class="font-body-md text-body-md text-secondary"
+                                       th:text="${user.role == 'ADMIN' or user.role == 'STAFF'} ? 'Thông tin tài khoản phục vụ công tác điều hành, quản trị hệ thống và hỗ trợ sinh viên.' : 'Thông tin cơ bản tài khoản phục vụ công tác liên lạc, cấp văn bằng và dịch vụ sinh viên.'">
                                         Thông tin cơ bản tài khoản phục vụ công tác liên lạc, cấp văn bằng và dịch vụ sinh viên.
                                     </p>
                                 </div>
@@ -347,7 +396,7 @@
                                     <!-- Tên đăng nhập / MSSV (read-only) -->
                                     <div class="flex flex-col gap-1.5">
                                         <label class="font-label-caps text-label-caps uppercase font-bold text-on-surface-variant flex items-center justify-between" for="username">
-                                            <span>Tên đăng nhập (MSSV)</span>
+                                            <span th:text="${user.role == 'ADMIN' or user.role == 'STAFF'} ? 'Tên đăng nhập / Mã cán bộ' : 'Tên đăng nhập (MSSV)'">Tên đăng nhập</span>
                                             <span class="text-secondary font-label-md lowercase normal-case">Cố định</span>
                                         </label>
                                         <div class="relative">
@@ -355,7 +404,8 @@
                                                    id="username" th:value="${user.username}" disabled readonly type="text">
                                             <span class="material-symbols-outlined absolute right-3 top-3 text-secondary text-[18px]">lock</span>
                                         </div>
-                                        <span class="font-body-sm text-body-sm text-secondary">Được đồng bộ từ phòng Đào tạo, không thể sửa đổi</span>
+                                        <span class="font-body-sm text-body-sm text-secondary"
+                                              th:text="${user.role == 'ADMIN' or user.role == 'STAFF'} ? 'Định danh cán bộ trong hệ thống HCMUTE, không thể sửa đổi' : 'Được đồng bộ từ phòng Đào tạo, không thể sửa đổi'">Định danh cố định</span>
                                     </div>
 
                                     <!-- Email -->
@@ -368,14 +418,15 @@
                                         </label>
                                         <input class="w-full h-11 px-space-md rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
                                                id="email" th:field="*{email}" type="email"
-                                               placeholder="email@student.hcmute.edu.vn"
+                                               placeholder="email@hcmute.edu.vn"
                                                th:classappend="${#fields.hasErrors('email')} ? 'border-error focus:ring-error/20' : ''">
                                         <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-label-md text-error"></p>
                                     </div>
 
                                     <!-- Khoa / Đơn vị -->
                                     <div class="flex flex-col gap-1.5 md:col-span-2">
-                                        <label class="font-label-caps text-label-caps uppercase font-bold text-on-surface-variant" for="departmentId">
+                                        <label class="font-label-caps text-label-caps uppercase font-bold text-on-surface-variant" for="departmentId"
+                                               th:text="${user.role == 'ADMIN' or user.role == 'STAFF'} ? 'Phòng ban / Đơn vị công tác' : 'Khoa / Đơn vị quản lý'">
                                             Khoa / Đơn vị quản lý
                                         </label>
                                         <div class="relative">
@@ -392,8 +443,8 @@
 
                                 </div>
 
-                                <!-- ── Liên kết tài khoản Portal Sinh viên ── -->
-                                <div class="flex flex-col gap-space-md pt-space-md border-t border-surface-container-high/60 md:col-span-2">
+                                <!-- ── Liên kết tài khoản Portal Sinh viên (Chỉ hiển thị cho Sinh viên) ── -->
+                                <div th:if="${user.role != 'ADMIN' and user.role != 'STAFF'}" class="flex flex-col gap-space-md pt-space-md border-t border-surface-container-high/60 md:col-span-2">
                                     <!-- Header row -->
                                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                         <div class="flex items-center gap-space-sm">

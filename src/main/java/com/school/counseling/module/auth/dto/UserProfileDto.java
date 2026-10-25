@@ -42,7 +42,7 @@ public class UserProfileDto {
                 .portalUsername(user.getPortalUsername())
                 .portalLinked(user.getPortalUsername() != null && !user.getPortalUsername().isBlank()
                         && user.getPortalPasswordEnc() != null && !user.getPortalPasswordEnc().isBlank())
-                .role(user.getRole() != null ? user.getRole().getName() : null)
+                .role(user.getRole() != null ? user.getRole().getName().replace("ROLE_", "") : "STUDENT")
                 .departmentId(user.getDepartment() != null ? user.getDepartment().getId() : null)
                 .departmentName(user.getDepartment() != null ? user.getDepartment().getName() : null)
                 .departmentCode(user.getDepartment() != null ? user.getDepartment().getCode() : null)
