@@ -96,7 +96,7 @@ app:
   dify:
     enabled: ${DIFY_ENABLED:true}
     base-url: ${DIFY_BASE_URL:https://api.dify.ai/v1}
-    api-key: ${DIFY_API_KEY:app-Ku5Tbg0u2r7AD6ev5P6sQmlk}
+    api-key: ${DIFY_API_KEY:app-4RqpdjhJVvBcYRlRfnI5kdtD}
     connect-timeout-ms: ${DIFY_CONNECT_TIMEOUT_MS:3000}
     read-timeout-ms: ${DIFY_READ_TIMEOUT_MS:6000}
 
