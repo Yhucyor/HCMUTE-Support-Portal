@@ -36,6 +36,16 @@ public class AdminDepartmentService {
                 .collect(Collectors.toList());
     }
 
+    public List<DepartmentAdminDto> getAllDepartments() {
+        return departmentRepository.findAll().stream()
+                .map(this::mapToDtoSimple)
+                .collect(Collectors.toList());
+    }
+
+    public Optional<DepartmentAdminDto> findDepartmentDtoById(Long id) {
+        return departmentRepository.findById(id).map(this::mapToDtoSimple);
+    }
+
     public DepartmentAdminDto getDepartmentById(Long id) {
         Department dept = departmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy Đơn vị với ID: " + id));
@@ -106,6 +116,20 @@ public class AdminDepartmentService {
                 .isActive(d.getIsActive())
                 .staffCount(staffCount)
                 .totalTickets(ticketCount)
+                .createdAt(d.getCreatedAt())
+                .build();
+    }
+
+    private DepartmentAdminDto mapToDtoSimple(Department d) {
+        return DepartmentAdminDto.builder()
+                .id(d.getId())
+                .name(d.getName())
+                .code(d.getCode())
+                .officeLocation(d.getOfficeLocation())
+                .contactEmail(d.getContactEmail())
+                .contactPhone(d.getContactPhone())
+                .description(d.getDescription())
+                .isActive(d.getIsActive())
                 .createdAt(d.getCreatedAt())
                 .build();
     }
