@@ -43,6 +43,14 @@ public class ProfileRestController {
         return ResponseEntity.ok(ApiResponse.success(updated, "Cập nhật thông tin thành công"));
     }
 
+    @PostMapping("/change-password/send-otp")
+    public ResponseEntity<ApiResponse<Void>> sendChangePasswordOtp() {
+        Long userId = SecurityUtils.getCurrentUserId()
+                .orElseThrow(() -> new IllegalArgumentException("Người dùng chưa đăng nhập"));
+        profileService.sendChangePasswordOtp(userId);
+        return ResponseEntity.ok(ApiResponse.success(null, "Mã xác thực OTP đã được gửi đến email của bạn"));
+    }
+
     @PostMapping("/change-password")
     public ResponseEntity<ApiResponse<Void>> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
         Long userId = SecurityUtils.getCurrentUserId()

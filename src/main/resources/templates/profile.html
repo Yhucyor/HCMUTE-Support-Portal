@@ -560,10 +560,38 @@
                                     <p th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" class="text-label-md text-error"></p>
                                 </div>
 
+                                <!-- Xác thực OTP 2 lớp (Gmail 2FA) -->
+                                <div class="flex flex-col gap-1.5 p-3.5 bg-surface-container-low rounded-xl border border-outline-variant/60">
+                                    <div class="flex items-center justify-between">
+                                        <label class="font-label-caps text-label-caps uppercase font-bold text-on-surface flex items-center gap-1.5" for="otpCode">
+                                            <span class="material-symbols-outlined text-[18px] text-primary">verified_user</span>
+                                            <span>Mã OTP xác thực qua Gmail</span>
+                                            <span class="text-error">*</span>
+                                        </label>
+                                        <span class="text-[11px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Bảo mật 2FA</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <div class="relative flex-1">
+                                            <span class="material-symbols-outlined absolute left-3 top-2.5 text-secondary text-[20px]">mark_email_read</span>
+                                            <input class="w-full h-11 pl-10 pr-4 rounded-lg bg-surface-container-lowest text-on-surface font-mono font-bold tracking-widest text-base border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:font-sans placeholder:font-normal placeholder:tracking-normal placeholder:text-xs"
+                                                   id="otpCode" th:field="*{otpCode}" type="text" maxlength="6" pattern="[0-9]{6}"
+                                                   placeholder="Nhập 6 số OTP từ Gmail"
+                                                   th:classappend="${#fields.hasErrors('otpCode')} ? 'border-error' : ''" required>
+                                        </div>
+                                        <button type="button" id="btnSendChangePwdOtp" onclick="sendChangePwdOtp()"
+                                                class="h-11 px-4 bg-primary text-white hover:bg-primary-container rounded-lg text-xs font-semibold shadow-xs hover:shadow-sm transition flex items-center gap-1.5 shrink-0 cursor-pointer active:scale-95">
+                                            <span class="material-symbols-outlined text-[16px]">send</span>
+                                            <span id="btnSendChangePwdOtpText">Nhận mã OTP</span>
+                                        </button>
+                                    </div>
+                                    <p id="otpStatusMsg" class="text-xs font-medium hidden mt-1"></p>
+                                    <p th:if="${#fields.hasErrors('otpCode')}" th:errors="*{otpCode}" class="text-label-md text-error"></p>
+                                </div>
+
                                 <!-- Security note -->
                                 <div class="flex items-start gap-2.5 px-4 py-3 bg-primary-fixed/40 border border-primary-fixed rounded-lg">
                                     <span class="material-symbols-outlined text-[18px] text-primary mt-0.5 shrink-0">info</span>
-                                    <p class="font-body-sm text-body-sm text-on-surface-variant">Sau khi đổi mật khẩu, bạn sẽ cần đăng nhập lại trên tất cả thiết bị.</p>
+                                    <p class="font-body-sm text-body-sm text-on-surface-variant">Hệ thống gửi mã OTP bảo vệ vào hòm thư Gmail của bạn. Sau khi đổi mật khẩu, bạn cần đăng nhập lại.</p>
                                 </div>
 
                                 <!-- Action Buttons -->
@@ -714,6 +742,70 @@
                 input.type = 'password';
                 eye.textContent = 'visibility';
             }
+        }
+
+        /* ── Gửi mã OTP xác thực đổi mật khẩu qua Gmail ── */
+        let otpCountdownTimer = null;
+        function sendChangePwdOtp() {
+            const btn = document.getElementById('btnSendChangePwdOtp');
+            const btnText = document.getElementById('btnSendChangePwdOtpText');
+            const statusMsg = document.getElementById('otpStatusMsg');
+            if (!btn || !btnText) return;
+
+            btn.disabled = true;
+            btnText.textContent = 'Đang gửi OTP...';
+            if (statusMsg) statusMsg.classList.add('hidden');
+
+            const csrfToken = document.querySelector('input[name="_csrf"]')?.value || '';
+
+            fetch('/profile/change-password/send-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (statusMsg) {
+                        statusMsg.textContent = '✅ ' + data.message;
+                        statusMsg.className = 'text-xs font-semibold text-emerald-600 mt-1';
+                        statusMsg.classList.remove('hidden');
+                    }
+                    // Bắt đầu đếm ngược 60 giây
+                    let remaining = 60;
+                    btnText.textContent = `Gửi lại (${remaining}s)`;
+                    clearInterval(otpCountdownTimer);
+                    otpCountdownTimer = setInterval(() => {
+                        remaining--;
+                        if (remaining <= 0) {
+                            clearInterval(otpCountdownTimer);
+                            btn.disabled = false;
+                            btnText.textContent = 'Nhận mã OTP';
+                        } else {
+                            btnText.textContent = `Gửi lại (${remaining}s)`;
+                        }
+                    }, 1000);
+                } else {
+                    btn.disabled = false;
+                    btnText.textContent = 'Nhận mã OTP';
+                    if (statusMsg) {
+                        statusMsg.textContent = '❌ ' + (data.message || 'Không thể gửi mã OTP!');
+                        statusMsg.className = 'text-xs font-semibold text-error mt-1';
+                        statusMsg.classList.remove('hidden');
+                    }
+                }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btnText.textContent = 'Nhận mã OTP';
+                if (statusMsg) {
+                    statusMsg.textContent = '❌ Lỗi kết nối tới máy chủ khi gửi OTP.';
+                    statusMsg.className = 'text-xs font-semibold text-error mt-1';
+                    statusMsg.classList.remove('hidden');
+                }
+            });
         }
 
         // Header Account Dropdown Toggle

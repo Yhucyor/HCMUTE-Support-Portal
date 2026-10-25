@@ -22,4 +22,8 @@ public class ChangePasswordRequest {
 
     @NotBlank(message = "Xác nhận mật khẩu mới không được để trống")
     private String confirmPassword;
+
+    @NotBlank(message = "Mã xác thực OTP không được để trống")
+    @Size(min = 6, max = 6, message = "Mã OTP phải gồm 6 chữ số")
+    private String otpCode;
 }
