@@ -111,10 +111,18 @@ async def chat_endpoint(request: ChatRequest, req: Request):
         reranker = get_reranker()
         
         if bm25 is None:
-            logger.error(f"Session {session_id}: BM25 not initialized!")
-            raise HTTPException(
-                status_code=503,
-                detail="Hệ thống chưa sẵn sàng. Vui lòng thử lại sau."
+            logger.warning(f"Session {session_id}: BM25 not initialized, generating direct answer with LLM...")
+            direct_answer = generate_answer(
+                context="Bạn là Trợ lý AI học vụ của trường Đại học Sư phạm Kỹ thuật TP.HCM (HCMUTE). Hãy giải đáp các thắc mắc học vụ, quy chế, tuyển sinh và thủ tục cho sinh viên một cách chi tiết, thân thiện và chính xác.",
+                question=question,
+                provider=provider,
+                history=request.history or []
+            )
+            return ChatResponse(
+                answer=direct_answer,
+                sources=[],
+                session_id=session_id,
+                provider=provider
             )
         
         history = request.history or []
