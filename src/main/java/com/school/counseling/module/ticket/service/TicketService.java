@@ -414,7 +414,10 @@ public class TicketService {
         Ticket ticket = ticketRepository.findByIdWithRelations(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
 
-        User staff = userRepository.findById(staffId).orElse(null);
+        User staff = staffId != null ? userRepository.findById(staffId).orElse(null) : null;
+        if (staff != null) {
+            validateTicketAccess(ticketId, staff);
+        }
         String fromStatus = ticket.getStatus();
 
         ticket.setStatus("RESOLVED");
