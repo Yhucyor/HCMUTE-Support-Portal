@@ -138,13 +138,23 @@ Khi sinh viên hoặc quản trị viên mở chi tiết bài viết thông báo
 
 ---
 
-## 5. TỔNG KẾT TIẾN ĐỘ & BÀI HỌC KIẾN TRÚC
+## 6. NÂNG CẤP BẢO MẬT 2 LỚP (2FA): XÁC THỰC OTP QUA GMAIL KHI ĐỔI MẬT KHẨU (`/profile`)
 
-1. **Tuân thủ quy chuẩn DTO Contract**:
-   - Mọi thuộc tính hiển thị trên Thymeleaf hoặc JS client phải được bảo chứng bằng Getter / Record Component trong DTO.
-   - Tránh việc frontend tự giả định phương thức helper khi DTO chưa khai báo.
-2. **Quản lý đường dẫn tệp đính kèm linh hoạt**:
-   - Không nên hardcode một thư mục duy nhất (`C:\upload`) cho hệ thống đa môi trường (Windows / Linux / Docker / Ổ đĩa phân vùng `D:`).
-   - Cơ chế bảo mật Path Traversal cần dựa trên việc xác thực tính hợp lệ của tệp và loại trừ thư mục nguy hiểm, thay vì ép buộc một đường dẫn duy nhất.
-3. **Cấu hình Cache trong môi trường Development**:
-   - `spring.thymeleaf.cache: false` đã được thiết lập mặc định trong [application.yml](file:///d:/HK5/LapTrinhWeb/doancuoiki/ban2/src/main/resources/application.yml) để đảm bảo các thay đổi giao diện HTML/CSS được cập nhật ngay khi `F5` mà không cần khởi động lại server.
+### 6.1. Bối cảnh & Yêu cầu nghiệp vụ
+- Trước đây, khi người dùng đang đăng nhập tại trang [profile.html](file:///d:/HK5/LapTrinhWeb/doancuoiki/ban2/src/main/resources/templates/profile.html), thao tác Đổi mật khẩu chỉ yêu cầu: *Mật khẩu hiện tại* + *Mật khẩu mới*.
+- Để ngăn ngừa trường hợp người dùng bị kẻ gian sử dụng máy tính khi quên đăng xuất (session hijack) tự ý đổi mật khẩu chiếm đoạt tài khoản, hệ thống được nâng cấp thêm **cơ chế bảo mật 2 lớp (2FA)** bắt buộc phải có mã OTP gửi về hòm thư Gmail chính thức của chủ tài khoản.
+
+### 6.2. Thiết kế Kiến trúc & Triển khai
+1. **Backend DTO & Service**:
+   - [ChangePasswordRequest.java](file:///d:/HK5/LapTrinhWeb/doancuoiki/ban2/src/main/java/com/school/counseling/module/auth/dto/ChangePasswordRequest.java): Bổ sung trường `@NotBlank @Size(min=6, max=6) String otpCode`.
+   - [ProfileService.java](file:///d:/HK5/LapTrinhWeb/doancuoiki/ban2/src/main/java/com/school/counseling/module/auth/service/ProfileService.java):
+     - `sendChangePasswordOtp(userId)`: Sinh mã OTP 6 số ngẫu nhiên với mục đích `CHANGE_PASSWORD` (hiệu lực 10 phút, lưu tại bảng `otp_tokens`) và gửi mail bất đồng bộ qua `emailAsyncService.sendOtpEmail(...)`.
+     - `changePassword(userId, request)`: Xác minh `otpService.verifyOtp(user.getEmail(), request.getOtpCode(), "CHANGE_PASSWORD")`. Nếu không khớp hoặc hết hạn $\rightarrow$ từ chối đổi mật khẩu.
+2. **Controller Endpoints**:
+   - Web Controller: `POST /profile/change-password/send-otp` (AJAX sinh và gửi OTP về Gmail).
+   - REST Controller: `POST /api/v1/profile/change-password/send-otp`.
+3. **Giao diện người dùng (UI/UX)**:
+   - Thêm ô nhập mã OTP định dạng Mono 6 số kèm badge "Bảo mật 2FA".
+   - Nút **"Nhận mã OTP"** tích hợp đồng hồ đếm ngược 60 giây chống spam gửi mail liên tục.
+   - Thông báo phản hồi trạng thái thời gian thực.
+- **Commit Git:** `d8a498b` (`feat(auth): implement 2FA Gmail OTP verification for change password in profile`).
