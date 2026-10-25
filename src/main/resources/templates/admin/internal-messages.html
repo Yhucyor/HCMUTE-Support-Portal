@@ -67,34 +67,15 @@
         <!-- Sidebar: Bộ lọc & Thông tin kênh -->
         <div class="msg-sidebar p-3 d-flex flex-column justify-content-between">
             <div>
-                <div class="d-flex align-items-center gap-2 mb-3">
-                    <div class="rounded-3 p-2 text-white" style="background: #003882;">
-                        <i class="bi bi-chat-left-dots-fill fs-5"></i>
-                    </div>
-                    <div>
-                        <h6 class="fw-bold mb-0 text-dark">Kênh Chỉ Đạo Nội Bộ</h6>
-                        <small class="text-secondary" style="font-size: 0.72rem;">Trao đổi trực tiếp 2 chiều</small>
-                    </div>
-                </div>
-
-                <!-- Thống kê nhanh & Trạng thái Realtime -->
-                <div class="p-2.5 rounded-3 mb-3 border bg-white shadow-xs">
-                    <div class="d-flex align-items-center justify-content-between small text-muted mb-1">
-                        <span>Trạng thái kết nối:</span>
-                        <span class="badge bg-success-subtle text-success border border-success d-inline-flex align-items-center gap-1">
-                            <span class="spinner-grow spinner-grow-sm" style="width: 6px; height: 6px;" role="status"></span>
-                            Real-time 24/7
-                        </span>
-                    </div>
-                    <div class="small text-secondary" style="font-size: 0.75rem;">
-                        Tin nhắn được cập nhật tức thì, không cần tải lại trang.
-                    </div>
+                <div class="mb-3">
+                    <h6 class="fw-bold mb-0 text-dark">Kênh Trao Đổi Nghiệp Vụ</h6>
+                    <small class="text-secondary" style="font-size: 0.75rem;">Chỉ đạo &amp; phối hợp xử lý giữa Cán bộ và Ban Quản Trị</small>
                 </div>
 
                 <!-- Bộ lọc theo Đơn vị -->
                 <div class="mb-3">
-                    <label class="form-label small fw-bold text-secondary mb-1">Phạm vi Khoa / Phòng:</label>
-                    <select id="filterDeptSelect" class="form-select form-select-sm" onchange="loadInternalMessages()">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Lọc theo Khoa / Phòng:</label>
+                    <select id="filterDeptSelect" class="form-select form-select-sm" onchange="loadInternalMessages(true)">
                         <option value="">-- Toàn thể các đơn vị --</option>
                         <option th:each="d : ${departments}" 
                                 th:value="${d.id}" 
@@ -102,27 +83,11 @@
                                 th:selected="${selectedDepartmentId != null and selectedDepartmentId == d.id}"></option>
                     </select>
                 </div>
-
-                <!-- Phân loại tin nhắn -->
-                <div class="mb-3">
-                    <label class="form-label small fw-bold text-secondary mb-1">Loại trao đổi:</label>
-                    <div class="d-flex flex-column gap-1" style="font-size: 0.8rem;">
-                        <span class="badge bg-warning-subtle text-dark border border-warning text-start py-1.5 px-2">
-                            <i class="bi bi-bell-fill me-1 text-warning"></i>Đôn đốc hạn SLA
-                        </span>
-                        <span class="badge bg-danger-subtle text-danger border border-danger text-start py-1.5 px-2">
-                            <i class="bi bi-exclamation-octagon-fill me-1 text-danger"></i>Cảnh báo / Phàn nàn
-                        </span>
-                        <span class="badge bg-primary-subtle text-primary border border-primary text-start py-1.5 px-2">
-                            <i class="bi bi-compass me-1 text-primary"></i>Chỉ đạo học vụ
-                        </span>
-                    </div>
-                </div>
             </div>
 
             <!-- Footer Sidebar -->
-            <div class="pt-2 border-top text-center text-muted" style="font-size: 0.75rem;">
-                <i class="bi bi-shield-lock me-1"></i>Kênh mật nội bộ Ban Quản Trị
+            <div class="pt-2 border-top text-center text-muted" style="font-size: 0.72rem;">
+                Kênh nghiệp vụ nội bộ HCMUTE
             </div>
         </div>
 
@@ -216,9 +181,9 @@
                     // Lưu các ID đã biết
                     result.data.forEach(m => knownMessageIds.add(m.id));
 
-                    // Scroll to bottom nếu lần đầu hoặc manual click
+                    // Scroll to top nếu lần đầu hoặc manual click
                     if (isFirstLoad || manualClick) {
-                        container.scrollTop = container.scrollHeight;
+                        container.scrollTop = 0;
                         isFirstLoad = false;
                     }
                 }
@@ -292,7 +257,7 @@
                     document.getElementById('msgSubjectInput').value = '';
                     document.getElementById('msgContentInput').value = '';
 
-                    // Append ngay tin nhắn mới mà KHÔNG RELOAD TRANG
+                    // Prepend ngay tin nhắn mới lên đầu danh sách mà KHÔNG RELOAD TRANG
                     appendNewMessage(result.data);
                 } else {
                     alert('Lỗi: ' + (result.message || 'Không thể gửi tin nhắn'));
@@ -312,10 +277,11 @@
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = renderMessageBubble(m);
             const newEl = tempDiv.firstElementChild;
-            container.appendChild(newEl);
+            // Chèn tin mới lên TRÊN CÙNG đồng bộ với thứ tự DESC
+            container.prepend(newEl);
 
-            // Tự động scroll xuống cuối
-            container.scrollTop = container.scrollHeight;
+            // Tự động cuộn lên đầu
+            container.scrollTop = 0;
         }
 
         // Kết nối WebSocket Real-time

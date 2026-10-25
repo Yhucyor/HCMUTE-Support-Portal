@@ -25,14 +25,8 @@ public class InternalMessageRestController {
     public ResponseEntity<ApiResponse<List<InternalMessageDto>>> getMessages(
             @RequestParam(value = "departmentId", required = false) Long departmentId) {
 
-        boolean isAdmin = SecurityUtils.hasAnyRole("ADMIN");
-
-        Long deptId = departmentId;
-        if (!isAdmin && deptId == null) {
-            deptId = SecurityUtils.getCurrentDepartmentId().orElse(null);
-        }
-
-        List<InternalMessageDto> messages = internalMessageService.getMessages(deptId);
+        // [USER_REQUEST]: Mặc định lấy tất cả trao đổi của toàn thể cán bộ & admin, không giới hạn theo phòng
+        List<InternalMessageDto> messages = internalMessageService.getMessages(departmentId);
         return ResponseEntity.ok(ApiResponse.success(messages, "Tải danh sách trao đổi nội bộ thành công"));
     }
 

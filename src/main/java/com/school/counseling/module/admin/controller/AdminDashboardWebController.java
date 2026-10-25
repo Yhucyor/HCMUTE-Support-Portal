@@ -3,9 +3,9 @@ package com.school.counseling.module.admin.controller;
 import com.school.counseling.common.dto.ApiResponse;
 import com.school.counseling.common.util.SecurityUtils;
 import com.school.counseling.module.admin.dto.AdminSlaDashboardDto;
+import com.school.counseling.module.admin.dto.DepartmentAdminDto;
 import com.school.counseling.module.admin.service.AdminDashboardService;
-import com.school.counseling.module.auth.entity.Department;
-import com.school.counseling.module.auth.repository.DepartmentRepository;
+import com.school.counseling.module.admin.service.AdminDepartmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,7 @@ import java.util.List;
 public class AdminDashboardWebController {
 
     private final AdminDashboardService adminDashboardService;
-    private final DepartmentRepository departmentRepository;
+    private final AdminDepartmentService adminDepartmentService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -40,7 +40,7 @@ public class AdminDashboardWebController {
             Model model) {
 
         AdminSlaDashboardDto stats = adminDashboardService.getSlaDashboardStats(timeRange, departmentId);
-        List<Department> departments = departmentRepository.findAll();
+        List<DepartmentAdminDto> departments = adminDepartmentService.getAllDepartments();
 
         model.addAttribute("stats", stats);
         model.addAttribute("departments", departments);
@@ -58,14 +58,11 @@ public class AdminDashboardWebController {
             @RequestParam(value = "departmentId", required = false) Long departmentId,
             Model model) {
         boolean isAdmin = SecurityUtils.hasAnyRole("ADMIN");
-        Long currentDeptId = departmentId;
-        if (!isAdmin && currentDeptId == null) {
-            currentDeptId = SecurityUtils.getCurrentDepartmentId().orElse(null);
-        }
 
-        List<Department> departments = departmentRepository.findAll();
+        // Mặc định hiển thị toàn trường cho mọi cán bộ và admin qua Service DTO
+        List<DepartmentAdminDto> departments = adminDepartmentService.getAllDepartments();
         model.addAttribute("departments", departments);
-        model.addAttribute("selectedDepartmentId", currentDeptId);
+        model.addAttribute("selectedDepartmentId", departmentId);
         model.addAttribute("isAdmin", isAdmin);
 
         return "admin/internal-messages";

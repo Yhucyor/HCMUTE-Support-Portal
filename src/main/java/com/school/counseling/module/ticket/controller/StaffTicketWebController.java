@@ -2,8 +2,8 @@ package com.school.counseling.module.ticket.controller;
 
 import com.school.counseling.common.exception.TicketAlreadyClaimedException;
 import com.school.counseling.common.util.SecurityUtils;
-import com.school.counseling.module.auth.entity.Department;
-import com.school.counseling.module.auth.repository.DepartmentRepository;
+import com.school.counseling.module.admin.dto.DepartmentAdminDto;
+import com.school.counseling.module.admin.service.AdminDepartmentService;
 import com.school.counseling.module.ticket.dto.TicketResponseDto;
 import com.school.counseling.module.ticket.dto.TicketSummaryDto;
 import com.school.counseling.module.ticket.service.TicketService;
@@ -31,7 +31,7 @@ import java.util.List;
 public class StaffTicketWebController {
 
     private final TicketService ticketService;
-    private final DepartmentRepository departmentRepository;
+    private final AdminDepartmentService adminDepartmentService;
 
     @GetMapping
     @PreAuthorize("#departmentId == null or @deptSecurity.canAccessDepartment(#departmentId)")
@@ -56,16 +56,16 @@ public class StaffTicketWebController {
             return "error/403";
         }
 
-        List<Department> allDepartments = departmentRepository.findAll();
+        List<DepartmentAdminDto> allDepartments = adminDepartmentService.getAllDepartments();
         model.addAttribute("allDepartments", allDepartments);
         model.addAttribute("isAdmin", isAdmin);
 
-        Department dept = null;
+        DepartmentAdminDto dept = null;
         List<TicketSummaryDto> allTickets;
         List<TicketSummaryDto> filteredTickets;
 
         if (currentDeptId != null) {
-            dept = departmentRepository.findById(currentDeptId).orElse(null);
+            dept = adminDepartmentService.findDepartmentDtoById(currentDeptId).orElse(null);
             allTickets = ticketService.getTicketSummaryByDepartment(currentDeptId, "ALL");
         } else {
             // Admin xem toàn bộ vé toàn trường
@@ -167,5 +167,33 @@ public class StaffTicketWebController {
             redirectAttributes.addFlashAttribute("errorMessage", "Không thể tiếp quản vé: " + e.getMessage());
         }
         return "redirect:/staff/tickets?status=IN_PROGRESS";
+    }
+
+    /**
+     * Chuyển giao Ticket sang Khoa/Phòng ban khác từ Web UI
+     */
+    @PostMapping("/{ticketId}/transfer")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN', 'HEAD', 'DEPARTMENT_HEAD', 'DEPT_HEAD')")
+    public String handleTransferTicket(
+            @PathVariable Long ticketId,
+            @RequestParam("toDepartmentId") Long toDepartmentId,
+            @RequestParam(value = "reason", required = false) String reason,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.school.counseling.module.auth.dto.UserPrincipal currentUser,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            com.school.counseling.module.ticket.dto.TicketTransferRequest request = com.school.counseling.module.ticket.dto.TicketTransferRequest.builder()
+                    .toDepartmentId(toDepartmentId)
+                    .reason(reason != null && !reason.trim().isEmpty() ? reason.trim() : "Chuyển giao chuyên môn liên phòng ban")
+                    .build();
+
+            TicketResponseDto ticket = ticketService.transferTicket(ticketId, request, currentUser);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Đã chuyển giao thành công yêu cầu #" + ticket.getTicketCode() + " sang đơn vị mới!");
+            return "redirect:/staff/tickets";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể chuyển giao vé: " + e.getMessage());
+            return "redirect:/tickets/detail/" + ticketId;
+        }
     }
 }

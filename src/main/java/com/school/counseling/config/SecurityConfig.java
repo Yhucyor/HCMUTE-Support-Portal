@@ -78,7 +78,10 @@ public class SecurityConfig {
                                 "/css/**", "/js/**", "/vendor/**", "/images/**", "/uploads/**", "/webjars/**", "/favicon.ico")
                         .permitAll()
                         
-                        // AI Chat - YÊU CẦU ĐĂNG NHẬP để track user & apply rate limiting
+                        // AI Chat Widget công khai cho trang chủ & FAQ (hỗ trợ cả Khách vãng lai & Đã đăng nhập)
+                        .requestMatchers("/api/ai/chat", "/api/ai/chat-stream").permitAll()
+
+                        // AI Chat chuyên sâu & Lịch sử hội thoại cá nhân - YÊU CẦU ĐĂNG NHẬP
                         .requestMatchers("/ai/chat", "/ai/chat/**", "/ai-chat", "/ai-chat/**", "/api/ai/**").authenticated()
 
                         // Admin & Staff boundaries

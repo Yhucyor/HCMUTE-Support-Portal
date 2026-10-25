@@ -8,8 +8,8 @@ import com.school.counseling.module.auth.entity.Department;
 import com.school.counseling.module.auth.entity.User;
 import com.school.counseling.module.auth.repository.DepartmentRepository;
 import com.school.counseling.module.auth.repository.UserRepository;
-import com.school.counseling.module.chat.entity.Attachment;
-import com.school.counseling.module.chat.repository.AttachmentRepository;
+import com.school.counseling.module.ticket.entity.Attachment;
+import com.school.counseling.module.ticket.repository.AttachmentRepository;
 import com.school.counseling.module.ticket.dto.*;
 import com.school.counseling.module.ticket.dto.TicketResponseDto.AttachmentDto;
 import com.school.counseling.module.ticket.dto.TicketResponseDto.HistoryDto;
@@ -414,7 +414,10 @@ public class TicketService {
         Ticket ticket = ticketRepository.findByIdWithRelations(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
 
-        User staff = userRepository.findById(staffId).orElse(null);
+        User staff = staffId != null ? userRepository.findById(staffId).orElse(null) : null;
+        if (staff != null) {
+            validateTicketAccess(ticketId, staff);
+        }
         String fromStatus = ticket.getStatus();
 
         ticket.setStatus("RESOLVED");

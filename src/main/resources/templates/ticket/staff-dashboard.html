@@ -10,19 +10,15 @@
     
 
     <!-- Dashboard Header -->
+    <!-- Dashboard Header -->
     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-2">
         <div>
-            <span class="badge bg-warning text-dark me-2">STAFF WORKSPACE</span>
-            <h4 class="fw-bold text-dark mb-0 d-inline align-middle">Bàn Tiếp Nhận & Xử Lý Ticket</h4>
-            <p class="small text-muted mb-0 mt-1" th:text="${currentDepartment != null ? ('Đơn vị quản lý: ' + currentDepartment.name + ' (' + currentDepartment.officeLocation + ')') : 'Phạm vi quản lý: Toàn trường (Tất cả Khoa / Phòng ban)'}">Khoa / Phòng</p>
+            <h4 class="fw-bold text-dark mb-0 d-inline align-middle">Bàn Tiếp Nhận &amp; Xử Lý Ticket</h4>
+            <p class="small text-muted mb-0 mt-1" th:text="${currentDepartment != null ? ('Đơn vị quản lý: ' + currentDepartment.name + (currentDepartment.officeLocation != null ? ' (' + currentDepartment.officeLocation + ')' : '')) : 'Phạm vi quản lý: Toàn trường (Tất cả Khoa / Phòng ban)'}">Khoa / Phòng</p>
         </div>
         
-        <!-- Filter & Action Buttons -->
+        <!-- Filter Bar -->
         <div class="d-flex align-items-center gap-2 flex-wrap">
-            <a th:href="@{/admin/messages}" class="btn btn-outline-primary btn-sm fw-semibold">
-                <i class="bi bi-chat-left-dots-fill me-1"></i>Kênh Trao Đổi Ban Quản Trị
-            </a>
-
             <form th:action="@{/staff/tickets}" method="get" class="d-flex align-items-center gap-2 m-0">
                 <select th:if="${isAdmin and allDepartments != null}" 
                         name="departmentId" class="form-select form-select-sm" onchange="this.form.submit()">
@@ -44,39 +40,39 @@
         </div>
     </div>
 
-    <!-- Summary Statistics Cards (5 thẻ chuyên biệt) -->
+    <!-- Summary Statistics Cards (5 thẻ tinh giản phong cách Enterprise) -->
     <div class="row row-cols-2 row-cols-md-5 g-3 mb-4">
         <div class="col">
-            <div class="card p-3 border-start border-4 border-warning bg-white shadow-sm h-100">
-                <small class="text-muted text-uppercase fw-bold" style="font-size: 11px;">Chờ Tiếp Nhận</small>
+            <div class="bg-white p-3 rounded-3 shadow-xs h-100 border" style="border-color: #e2e8f0 !important;">
+                <span class="text-secondary text-uppercase fw-semibold d-block mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Chờ Tiếp Nhận</span>
                 <h3 class="fw-bold text-dark mb-0" th:text="${countOpen}">0</h3>
             </div>
         </div>
         <div class="col">
-            <div class="card p-3 border-start border-4 border-info bg-white shadow-sm h-100">
-                <small class="text-muted text-uppercase fw-bold" style="font-size: 11px;">Đang Xử Lý</small>
+            <div class="bg-white p-3 rounded-3 shadow-xs h-100 border" style="border-color: #e2e8f0 !important;">
+                <span class="text-secondary text-uppercase fw-semibold d-block mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Đang Xử Lý</span>
                 <h3 class="fw-bold text-dark mb-0" th:text="${countInProgress}">0</h3>
             </div>
         </div>
         <div class="col">
-            <div class="card p-3 border-start border-4 border-danger bg-white shadow-sm h-100" style="border-left-color: #e11d48 !important;">
-                <div class="d-flex align-items-center justify-content-between">
-                    <small class="text-danger text-uppercase fw-bold" style="font-size: 11px;">Tin Mới Từ SV</small>
-                    <span th:if="${countNewReplies > 0}" class="badge bg-danger rounded-pill" style="font-size: 0.65rem;">Cần đọc</span>
+            <div class="bg-white p-3 rounded-3 shadow-xs h-100 border" style="border-color: #e2e8f0 !important;">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                    <span class="text-secondary text-uppercase fw-semibold" style="font-size: 11px; letter-spacing: 0.5px;">Tin Mới Từ SV</span>
+                    <span th:if="${countNewReplies > 0}" class="badge bg-danger-subtle text-danger rounded-pill" style="font-size: 0.65rem;">Cần đọc</span>
                 </div>
-                <h3 class="fw-bold text-danger mb-0" th:text="${countNewReplies}">0</h3>
+                <h3 class="fw-bold text-dark mb-0" th:classappend="${countNewReplies > 0 ? 'text-danger' : ''}" th:text="${countNewReplies}">0</h3>
             </div>
         </div>
         <div class="col">
-            <div class="card p-3 border-start border-4 border-secondary bg-white shadow-sm h-100">
-                <small class="text-muted text-uppercase fw-bold" style="font-size: 11px;">Cảnh Báo Quá Hạn</small>
-                <h3 class="fw-bold text-secondary mb-0" th:text="${countOverdue}">0</h3>
+            <div class="bg-white p-3 rounded-3 shadow-xs h-100 border" style="border-color: #e2e8f0 !important;">
+                <span class="text-secondary text-uppercase fw-semibold d-block mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Cảnh Báo Quá Hạn</span>
+                <h3 class="fw-bold text-dark mb-0" th:classappend="${countOverdue > 0 ? 'text-danger' : ''}" th:text="${countOverdue}">0</h3>
             </div>
         </div>
         <div class="col">
-            <div class="card p-3 border-start border-4 border-success bg-white shadow-sm h-100">
-                <small class="text-muted text-uppercase fw-bold" style="font-size: 11px;">Đã Giải Quyết</small>
-                <h3 class="fw-bold text-success mb-0" th:text="${countResolved}">0</h3>
+            <div class="bg-white p-3 rounded-3 shadow-xs h-100 border" style="border-color: #e2e8f0 !important;">
+                <span class="text-secondary text-uppercase fw-semibold d-block mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Đã Giải Quyết</span>
+                <h3 class="fw-bold text-dark mb-0" th:text="${countResolved}">0</h3>
             </div>
         </div>
     </div>
@@ -123,28 +119,28 @@
                             <small class="text-muted" th:text="${t.createdAt != null ? 'Gửi lúc: ' + #temporals.format(t.createdAt, 'HH:mm dd/MM/yyyy') : ''}">Thời gian</small>
                         </td>
                         <td>
-                            <span th:if="${t.priority == 'URGENT'}" class="badge bg-danger">Khẩn cấp (24h)</span>
-                            <span th:if="${t.priority == 'HIGH'}" class="badge bg-warning text-dark">Cao (48h)</span>
-                            <span th:if="${t.priority == 'MEDIUM'}" class="badge bg-secondary">Bình thường (72h)</span>
-                            <span th:if="${t.priority == 'LOW'}" class="badge bg-light text-dark border">Thấp (5d)</span>
+                            <span th:if="${t.priority == 'URGENT'}" class="badge bg-danger-subtle text-danger border border-danger-subtle fw-semibold">Khẩn cấp (24h)</span>
+                            <span th:if="${t.priority == 'HIGH'}" class="badge bg-warning-subtle text-dark border border-warning-subtle">Cao (48h)</span>
+                            <span th:if="${t.priority == 'MEDIUM'}" class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Bình thường (72h)</span>
+                            <span th:if="${t.priority == 'LOW'}" class="badge bg-light text-secondary border">Thấp (5d)</span>
                         </td>
                         <td>
-                            <span th:if="${t.status == 'OPEN'}" class="badge bg-warning text-dark">Chờ nhận</span>
-                            <span th:if="${t.status == 'IN_PROGRESS'}" class="badge bg-info text-dark">Đang xử lý</span>
-                            <span th:if="${t.status == 'RESOLVED'}" class="badge bg-success">Đã giải quyết</span>
-                            <span th:if="${t.status == 'CLOSED'}" class="badge bg-dark">Đã đóng</span>
-                            <span th:if="${t.status == 'OVERDUE'}" class="badge bg-danger">Quá hạn</span>
+                            <span th:if="${t.status == 'OPEN'}" class="badge bg-warning-subtle text-dark border border-warning-subtle">Chờ nhận</span>
+                            <span th:if="${t.status == 'IN_PROGRESS'}" class="badge bg-primary-subtle text-primary border border-primary-subtle">Đang xử lý</span>
+                            <span th:if="${t.status == 'RESOLVED'}" class="badge bg-success-subtle text-success border border-success-subtle">Đã giải quyết</span>
+                            <span th:if="${t.status == 'CLOSED'}" class="badge bg-light text-secondary border">Đã đóng</span>
+                            <span th:if="${t.status == 'OVERDUE'}" class="badge bg-danger-subtle text-danger border border-danger-subtle">Quá hạn</span>
                         </td>
                         <td>
                             <div class="badge-sla-deadline">
-                                <span th:if="${t.isOverdue()}" class="badge bg-danger"><i class="bi bi-exclamation-octagon me-1"></i>Quá hạn (Overdue)</span>
-                                <span th:if="${t.isDueSoon() and !t.isOverdue()}" class="badge bg-warning text-dark"><i class="bi bi-clock-history me-1"></i>Sắp đến hạn 24h</span>
+                                <span th:if="${t.isOverdue()}" class="badge bg-danger-subtle text-danger border border-danger-subtle">Quá hạn</span>
+                                <span th:if="${t.isDueSoon() and !t.isOverdue()}" class="badge bg-warning-subtle text-dark border border-warning-subtle">Sắp đến hạn</span>
                                 <span th:if="${!t.isOverdue() and !t.isDueSoon()}" class="small text-muted" th:text="${t.dueDate != null ? #temporals.format(t.dueDate, 'HH:mm dd/MM/yyyy') : 'N/A'}">Hạn</span>
                             </div>
                         </td>
                         <td class="text-center">
-                            <span th:if="${t.rating != null}" class="badge bg-warning-subtle text-dark border border-warning" title="Đánh giá CSAT từ người học">
-                                <i class="bi bi-star-fill text-warning me-1"></i><span th:text="${t.rating} + '/5'">5/5</span>
+                            <span th:if="${t.rating != null}" class="badge bg-warning-subtle text-dark border border-warning-subtle" title="Đánh giá CSAT từ người học">
+                                <span th:text="'★ ' + ${t.rating} + '/5'">★ 5/5</span>
                             </span>
                             <span th:if="${t.rating == null}" class="text-muted small">--</span>
                         </td>
@@ -382,9 +378,6 @@
         }
         /*]]>*/
     </script>
-
-    <!-- Floating HCMUTE AI Mascot Widget (Góc phải dưới) -->
-    <div th:replace="~{layout/ai-mascot-floating :: ai-mascot}"></div>
 
 </div>
 </body>

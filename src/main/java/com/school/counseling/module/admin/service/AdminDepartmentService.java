@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -34,6 +35,16 @@ public class AdminDepartmentService {
         return departmentRepository.findAll().stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
+    }
+
+    public List<DepartmentAdminDto> getAllDepartments() {
+        return departmentRepository.findAll().stream()
+                .map(this::mapToDtoSimple)
+                .collect(Collectors.toList());
+    }
+
+    public Optional<DepartmentAdminDto> findDepartmentDtoById(Long id) {
+        return departmentRepository.findById(id).map(this::mapToDtoSimple);
     }
 
     public DepartmentAdminDto getDepartmentById(Long id) {
@@ -106,6 +117,20 @@ public class AdminDepartmentService {
                 .isActive(d.getIsActive())
                 .staffCount(staffCount)
                 .totalTickets(ticketCount)
+                .createdAt(d.getCreatedAt())
+                .build();
+    }
+
+    private DepartmentAdminDto mapToDtoSimple(Department d) {
+        return DepartmentAdminDto.builder()
+                .id(d.getId())
+                .name(d.getName())
+                .code(d.getCode())
+                .officeLocation(d.getOfficeLocation())
+                .contactEmail(d.getContactEmail())
+                .contactPhone(d.getContactPhone())
+                .description(d.getDescription())
+                .isActive(d.getIsActive())
                 .createdAt(d.getCreatedAt())
                 .build();
     }

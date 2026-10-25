@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="utf-8">
@@ -169,7 +169,7 @@
     <div th:replace="~{layout/navbar :: navbar}"></div>
 
     <!-- MAIN FORUM CONTENT (COMMON HEADER + 3 COLUMNS) -->
-    <main class="w-full pt-[74px] bg-background min-h-screen">
+    <main class="w-full bg-background min-h-screen">
         
         <!-- PHẦN CHUNG: BANNER DIỄN ĐÀN SINH VIÊN (Nằm trên 3 cột, cuộn tự nhiên theo trang) -->
         <div class="w-full max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6 pt-4 pb-2">
@@ -1127,6 +1127,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
+                    credentials: 'include',
                     body: JSON.stringify({
                         query: text,
                         session_id: getChatSessionId(),
@@ -1135,8 +1136,10 @@
                 });
 
                 if (response.ok) {
-                    const data = await response.json();
-                    appendBot(data.answer || 'Xin chào! Tôi đã ghi nhận thông tin từ bạn.', data.provider);
+                    const res = await response.json();
+                    const data = (res.success && res.data) ? res.data : (res.data || res);
+                    const botAnswer = data.answer || data.reply || data.content || 'Xin chào! Tôi đã ghi nhận thông tin từ bạn.';
+                    appendBot(botAnswer, data.provider);
                 } else {
                     appendBot('Xin lỗi, hệ thống AI hiện chưa thể phản hồi câu hỏi này. Bạn có thể mở trang <a href="/ai-chat" class="underline text-blue-600 font-bold" target="_blank">Tư vấn AI chuyên sâu</a> hoặc tra cứu mục <a href="/faqs" class="underline text-blue-600 font-bold">Hỏi đáp FAQ</a> nhé!');
                 }

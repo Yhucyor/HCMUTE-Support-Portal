@@ -27,6 +27,8 @@ public class ProfileService {
     private final DepartmentRepository departmentRepository;
     private final PasswordEncoder passwordEncoder;
     private final IStorageService storageService;
+    private final OtpService otpService;
+    private final com.school.counseling.module.notification.service.EmailAsyncService emailAsyncService;
 
     @Transactional(readOnly = true)
     public UserProfileDto getProfile(Long userId) {
@@ -83,6 +85,20 @@ public class ProfileService {
     }
 
     @Transactional
+    public void sendChangePasswordOtp(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException("Không tìm thấy người dùng"));
+
+        if (user.getEmail() == null || user.getEmail().isBlank()) {
+            throw new AppException("Tài khoản chưa có thông tin email để nhận mã OTP!");
+        }
+
+        String otp = otpService.generateOtp(user.getEmail(), "CHANGE_PASSWORD");
+        log.info("Change password OTP generated for user {}: {}", user.getUsername(), otp);
+        emailAsyncService.sendOtpEmail(user.getEmail(), user.getFullName(), otp, "xác thực đổi mật khẩu tài khoản");
+    }
+
+    @Transactional
     public void changePassword(Long userId, ChangePasswordRequest request) {
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new AppException("Mật khẩu xác nhận không khớp");
@@ -95,8 +111,19 @@ public class ProfileService {
             throw new AppException("Mật khẩu hiện tại không chính xác");
         }
 
+        // Xác thực mã OTP 2FA gửi qua Gmail
+        if (request.getOtpCode() == null || request.getOtpCode().isBlank()) {
+            throw new AppException("Vui lòng nhập mã OTP xác thực được gửi đến email của bạn");
+        }
+
+        boolean valid = otpService.verifyOtp(user.getEmail(), request.getOtpCode().trim(), "CHANGE_PASSWORD");
+        if (!valid) {
+            throw new AppException("Mã OTP không chính xác hoặc đã hết hạn (hiệu lực 10 phút)");
+        }
+
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+        log.info("User {} successfully changed password with 2FA OTP verification", user.getUsername());
     }
 
     @Transactional

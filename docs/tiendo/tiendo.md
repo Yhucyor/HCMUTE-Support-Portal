@@ -98,3 +98,48 @@
    - Bổ sung luồng gửi OTP Email 6 số khi đăng ký tài khoản sinh viên để hoàn tất 100% Sprint 1.
 3. **Ưu tiên 3 (Dev B):**
    - Xây dựng `NodejsWebhookController` tiếp nhận video render tự động từ Node.js microservice.
+
+---
+
+## 🏛️ 5. ĐÁNH GIÁ HIỆN TRẠNG PHÂN HỆ ADMIN WORKSPACE & DỰ ĐỊNH CẢI TIẾN (CẬP NHẬT 25/10/2026)
+
+### 5.1. Bảng Đánh Giá Hiện Trạng 4 Màn Hình Quản Trị Cốt Lõi
+
+| Trang quản trị | Tuyến đường (Route) | File Template | Công nghệ UI hiện tại | Trạng thái kỹ thuật | Điểm nghẽn & Hạn chế cần cải tiến |
+| :--- | :--- | :--- | :---: | :---: | :--- |
+| **1. SLA Dashboard** | `GET /admin/dashboard` | [dashboard.html](file:///d:/HK5/LapTrinhWeb/doancuoiki/ban2/src/main/resources/templates/admin/dashboard.html) | Bootstrap 5 + Chart.js | 🟢 Hoạt động tốt | - Biểu đồ tải tĩnh khi load trang, chưa tự cập nhật khi có ticket vi phạm SLA.<br>- Thiếu tính năng Xuất báo cáo SLA (Export Excel / PDF) gửi Ban Giám hiệu.<br>- Màu sắc biểu đồ còn cơ bản, chưa theo bảng màu thương hiệu HCMUTE. |
+| **2. Quản Trị Người Dùng** | `GET /admin/users` | [users.html](file:///d:/HK5/LapTrinhWeb/doancuoiki/ban2/src/main/resources/templates/admin/users.html) | Bootstrap 5 Table + AJAX | 🟢 Hoạt động tốt | - Thiếu Thao tác hàng loạt (Bulk Actions: Khóa, Mở khóa, Đổi Role nhiều user cùng lúc).<br>- Chưa có chức năng Import danh sách Cán bộ / Sinh viên từ file Excel (.xlsx).<br>- Modal Reset mật khẩu chưa có tùy chọn gửi thông báo mật khẩu tạm qua Email. |
+| **3. Quản Lý Khoa / Phòng Ban** | `GET /admin/departments` | [departments.html](file:///d:/HK5/LapTrinhWeb/doancuoiki/ban2/src/main/resources/templates/admin/departments.html) | Bootstrap 5 Table + Modal | 🟢 Hoạt động tốt | - Chưa hiển thị trực quan Trưởng đơn vị (Head of Dept) và danh sách chuyên viên trực ca.<br>- Cấu hình SLA đang áp dụng chung toàn trường, chưa cho phép tùy biến thời hạn SLA riêng cho từng phòng ban đặc thù.<br>- Thiếu chỉ số đánh giá tỷ lệ xử lý đúng hạn của từng đơn vị. |
+| **4. Kênh Chỉ Đạo Nội Bộ** | `GET /admin/messages` | [internal-messages.html](file:///d:/HK5/LapTrinhWeb/doancuoiki/ban2/src/main/resources/templates/admin/internal-messages.html) | Bootstrap 5 Chat Split Pane | 🟡 Cần nâng cấp | - Đang dùng cơ chế Polling / Refresh thủ công, chưa tận dụng WebSocket STOMP `/topic/internal-messages` để tin nhắn nảy tức thì.<br>- Chưa hỗ trợ gửi đính kèm văn bản chỉ đạo (PDF, Word, Ảnh minh chứng). |
+
+---
+
+### 5.2. Đánh Giá Trải Nghiệm Người Dùng (UI/UX) & Tính Đồng Bộ Hệ Thống
+1. **Lệch pha ngôn ngữ thiết kế (Design System Disparity)**:
+   - Trong khi toàn bộ Cổng sinh viên (Home, Tra cứu FAQ, Tạo Ticket, Hồ sơ cá nhân, Thời khóa biểu, Điểm số, Bảng tin) đã được nâng cấp lên chuẩn **Tailwind CSS + Google Material Symbols + Academic Horizon Design System** (tông màu `#003882`, bo góc 16-24px, đổ bóng mềm, Typography Outfit/Inter cao cấp).
+   - Thì phân hệ Admin Workspace vẫn đang sử dụng **Bootstrap 5 cổ điển** kết hợp Bootstrap Icons (`bi-*`), tạo cảm giác giao diện quản trị bị tách biệt và chưa đồng bộ vẻ đẹp hiện đại của toàn hệ thống.
+2. **Khoảng cách và Sub-Banner Điều Hành**:
+   - Sub-banner [portal-header.html](file:///d:/HK5/LapTrinhWeb/doancuoiki/ban2/src/main/resources/templates/layout/portal-header.html) hoạt động rất tốt, chia rõ tab Cán bộ và Admin. Cần giữ vững cấu trúc phân quyền này nhưng nâng cấp giao diện bảng và thẻ KPI sang phong cách hiện đại hơn.
+
+---
+
+### 5.3. Kế Hoạch & Dự Định Cải Tiến Toàn Diện (Roadmap Cải Tiến)
+
+#### 🔹 Giai đoạn 1: Chuẩn hóa Giao diện & Trải nghiệm (Modern Admin UI Re-skin)
+- [ ] **Đồng bộ hóa giao diện sang chuẩn Academic Horizon**:
+  - Chuyển đổi bảng dữ liệu sang phong cách Flat-Modern với hiệu ứng hover mượt mà, phân trang hiện đại.
+  - Tối ưu hóa các thẻ thống kê KPI SLA trên Dashboard: Hiển thị thanh tiến độ trực quan, màu cảnh báo thông minh (Xanh lá >95%, Vàng 85-95%, Đỏ <85%).
+  - Tinh chỉnh typography dùng font Inter/Outfit đồng bộ với Cổng thông tin HCMUTE.
+
+#### 🔹 Giai đoạn 2: Tính năng Nghiệp vụ Quản trị Chuyên sâu (Advanced Admin Features)
+- [ ] **Import / Export Dữ liệu Người dùng & Báo cáo SLA**:
+  - Tích hợp thư viện Apache POI: Cho phép Admin tải file mẫu Excel, điền thông tin và import hàng trăm tài khoản sinh viên/cán bộ cùng lúc.
+  - Nút **"Xuất Báo Cáo SLA (.xlsx / .pdf)"** trên Dashboard để phục vụ họp giao ban trường và kiểm định chất lượng đào tạo.
+- [ ] **Thao tác hàng loạt (Bulk Actions) trong Quản trị Người dùng**:
+  - Tích hợp Checkbox chọn nhiều dòng, thanh công cụ nổi (Floating Action Bar): *Khóa tài khoản đã chọn*, *Gán Khoa/Phòng*, *Kích hoạt hàng loạt*.
+- [ ] **Cấu hình SLA Đa Tầng theo Khoa / Phòng ban**:
+  - Cho phép Admin thiết lập thời gian cam kết SLA riêng cho từng phòng ban (Ví dụ: Phòng Tuyển sinh 24h, Phòng Đào tạo 48h, Phòng CTSV 72h).
+
+#### 🔹 Giai đoạn 3: Real-time hóa Kênh Chỉ Đạo Nội Bộ (WebSocket Modernization)
+- [ ] Kết nối Kênh Trao Đổi Ban Quản Trị (`/admin/messages`) vào broker WebSocket STOMP (`/topic/internal-messages`), hỗ trợ nhận thông báo tin nhắn tức thời và đính kèm công văn PDF chỉ đạo nội bộ.
+

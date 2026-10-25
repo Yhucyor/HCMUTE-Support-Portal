@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="utf-8">
@@ -162,7 +162,7 @@
     <div th:replace="~{layout/navbar :: navbar}"></div>
 
     <!-- 2. MAIN CONTAINER -->
-    <main class="pt-[90px] pb-16 flex-1 bg-background">
+    <main class="pt-4 pb-16 flex-1 bg-background">
         <div class="flex flex-col w-full">
 
             <!-- Flash Success / Error Messages -->
@@ -1130,8 +1130,8 @@
                 typing.classList.add('hidden');
 
                 const botBubble = document.createElement('div');
-                botBubble.className = "bg-white text-slate-800 p-3 rounded-2xl rounded-tl-none border border-slate-200 max-w-[90%] leading-relaxed shadow-xs whitespace-pre-line";
-                botBubble.textContent = data.reply || (data.data ? data.data.reply : "Tôi đã ghi nhận câu hỏi của bạn và sẽ phản hồi sớm.");
+                const botAnswer = (data.data && (data.data.answer || data.data.reply)) || data.answer || data.reply || "Tôi đã ghi nhận câu hỏi của bạn và sẽ phản hồi sớm.";
+                botBubble.textContent = botAnswer;
                 scrollArea.insertBefore(botBubble, typing);
             } catch (err) {
                 typing.classList.add('hidden');
