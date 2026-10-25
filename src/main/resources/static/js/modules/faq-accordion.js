@@ -32,6 +32,119 @@ document.addEventListener('DOMContentLoaded', () => {
         if (searchClearBtn) searchClearBtn.classList.remove('hidden');
     }
 
+    // Từ điển từ viết tắt và từ đồng nghĩa học vụ HCMUTE
+    const ACADEMIC_EQUIVALENTS = [
+        {
+            keys: ['dkmh', 'dkhp', 'dang ky mon hoc', 'dang ky hoc phan', 'dky mon hoc', 'dky hoc phan', 'dang ky tin chi'],
+            matchFn: (t) => t.includes('dang ky') && (t.includes('hoc phan') || t.includes('mon hoc') || t.includes('tin chi') || t.includes('dkmh') || t.includes('dkhp'))
+        },
+        {
+            keys: ['rut mon', 'rut mon hoc', 'rut hp', 'rut hoc phan', 'huy mon', 'huy hoc phan', 'huy tin chi'],
+            matchFn: (t) => (t.includes('rut') || t.includes('huy')) && (t.includes('hoc phan') || t.includes('mon hoc') || t.includes('tin chi'))
+        },
+        {
+            keys: ['drl', 'diem ren luyen', 'ren luyen'],
+            matchFn: (t) => t.includes('ren luyen') || t.includes('drl')
+        },
+        {
+            keys: ['ctsv', 'cong tac sinh vien'],
+            matchFn: (t) => t.includes('cong tac sinh vien') || t.includes('ctsv')
+        },
+        {
+            keys: ['pdt', 'phong dao tao', 'dao tao'],
+            matchFn: (t) => t.includes('dao tao') || t.includes('pdt')
+        },
+        {
+            keys: ['kltn', 'khoa luan tot nghiep', 'khoa luan'],
+            matchFn: (t) => t.includes('khoa luan') || t.includes('kltn')
+        },
+        {
+            keys: ['datn', 'do an tot nghiep', 'do an'],
+            matchFn: (t) => t.includes('do an') || t.includes('datn')
+        },
+        {
+            keys: ['hb', 'hoc bong'],
+            matchFn: (t) => t.includes('hoc bong') || t.includes('khuyen khich hoc tap')
+        },
+        {
+            keys: ['tn', 'tot nghiep', 'xet tot nghiep'],
+            matchFn: (t) => t.includes('tot nghiep')
+        },
+        {
+            keys: ['avdv', 'anh van dau vao', 'tieng anh dau vao', 'ngoai ngu dau vao'],
+            matchFn: (t) => (t.includes('anh van') || t.includes('tieng anh') || t.includes('avdv')) && t.includes('dau vao')
+        },
+        {
+            keys: ['avdr', 'anh van dau ra', 'tieng anh dau ra', 'chuan dau ra tieng anh', 'toeic'],
+            matchFn: (t) => (t.includes('anh van') || t.includes('tieng anh') || t.includes('avdr') || t.includes('toeic')) && (t.includes('dau ra') || t.includes('chuan'))
+        },
+        {
+            keys: ['gpa', 'dtbtl', 'diem trung binh', 'tich luy'],
+            matchFn: (t) => t.includes('trung binh') || t.includes('tich luy') || t.includes('gpa')
+        },
+        {
+            keys: ['hoc phi', 'tien hoc', 'dong tien hoc'],
+            matchFn: (t) => t.includes('hoc phi') || t.includes('tien hoc') || t.includes('bien lai')
+        },
+        {
+            keys: ['phuc khao', 'pk', 'cham lai'],
+            matchFn: (t) => t.includes('phuc khao') || t.includes('pk')
+        },
+        {
+            keys: ['bao luu', 'nghi hoc tam thoi', 'tam dung hoc tap'],
+            matchFn: (t) => t.includes('bao luu') || t.includes('tam dung') || t.includes('nghi hoc tam thoi')
+        },
+        {
+            keys: ['hoan thi', 'thi bu', 'thi bo sung'],
+            matchFn: (t) => t.includes('hoan thi') || t.includes('thi bo sung') || t.includes('thi bu')
+        }
+    ];
+
+    function removeVietnameseTones(str) {
+        if (!str) return '';
+        str = str.toLowerCase();
+        str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a');
+        str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, 'e');
+        str = str.replace(/ì|í|ị|ỉ|ĩ/g, 'i');
+        str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, 'o');
+        str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, 'u');
+        str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, 'y');
+        str = str.replace(/đ/g, 'd');
+        return str;
+    }
+
+    function isFaqSearchMatch(rawText, query) {
+        if (!query || !query.trim()) return true;
+        const normQuery = query.trim().toLowerCase();
+        const cleanQuery = removeVietnameseTones(normQuery);
+        const normText = (rawText || '').toLowerCase();
+        const cleanText = removeVietnameseTones(normText);
+
+        // 1. Trực tiếp khớp chuỗi gốc (có dấu hoặc không dấu)
+        if (normText.includes(normQuery) || cleanText.includes(cleanQuery)) {
+            return true;
+        }
+
+        // 2. Tra cứu đối soát từ viết tắt / từ đồng nghĩa học vụ
+        for (const item of ACADEMIC_EQUIVALENTS) {
+            const hasMatchedKey = item.keys.some(k => cleanQuery.includes(k) || normQuery.includes(k));
+            if (hasMatchedKey && item.matchFn(cleanText)) {
+                return true;
+            }
+        }
+
+        // 3. Khớp token từ khóa (nếu mọi từ có nghĩa trong query đều xuất hiện)
+        const tokens = cleanQuery.split(/\s+/).filter(w => w.length >= 2);
+        if (tokens.length > 1) {
+            const matchCount = tokens.filter(t => cleanText.includes(t)).length;
+            if (matchCount === tokens.length || (tokens.length >= 3 && matchCount >= tokens.length - 1)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // 1. Áp dụng bộ lọc và phân trang
     function applyFilters() {
         if (!faqList) return;
@@ -45,12 +158,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemCat = item.getAttribute('data-cat') || '';
             const itemDept = item.getAttribute('data-dept') || '';
             const itemType = item.getAttribute('data-type') || '';
-            const textContent = item.textContent.toLowerCase();
+            const textContent = item.textContent || '';
 
             const matchCat = (activeCategory === 'all' || itemCat === activeCategory);
             const matchDept = (activeDept === 'all' || itemDept === activeDept);
             const matchTab = (activeTab === 'all' || itemType === activeTab || itemType === 'all');
-            const matchSearch = (!searchQuery || textContent.includes(searchQuery));
+            const matchSearch = isFaqSearchMatch(textContent, searchQuery);
 
             return matchCat && matchDept && matchTab && matchSearch;
         });
@@ -125,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const textContent = item.textContent.toLowerCase();
 
             const matchDept = (activeDept === 'all' || itemDept === activeDept);
-            const matchSearch = (!searchQuery || textContent.includes(searchQuery));
+            const matchSearch = isFaqSearchMatch(textContent, searchQuery);
 
             if (matchDept && matchSearch) {
                 counts['all']++;

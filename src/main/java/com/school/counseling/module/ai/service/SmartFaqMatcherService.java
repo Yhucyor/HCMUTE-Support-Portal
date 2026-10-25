@@ -41,16 +41,23 @@ public class SmartFaqMatcherService {
     );
 
     // Bản đồ từ đồng nghĩa thuật ngữ học vụ HCMUTE
-    private static final Map<String, List<String>> ACADEMIC_SYNONYMS = Map.of(
-            "anh van", List.of("tieng anh", "ngoai ngu", "avdv", "avdr", "toeic"),
-            "tieng anh", List.of("anh van", "ngoai ngu", "avdv", "avdr", "toeic"),
-            "dau vao", List.of("avdv", "dgnlta", "xet tuyen"),
-            "dau ra", List.of("avdr", "chuan dau ra", "tot nghiep"),
-            "avdv", List.of("anh van dau vao", "tieng anh dau vao", "ngoai ngu dau vao"),
-            "avdr", List.of("anh van dau ra", "tieng anh dau ra", "toeic dau ra"),
-            "dkmh", List.of("dang ky mon hoc", "dang ky tin chi", "tin chi"),
-            "hoc phi", List.of("dong tien", "hoc phi tin chi", "bien lai"),
-            "tot nghiep", List.of("xet tot nghiep", "bang tot nghiep", "le tot nghiep")
+    private static final Map<String, List<String>> ACADEMIC_SYNONYMS = Map.ofEntries(
+            Map.entry("anh van", List.of("tieng anh", "ngoai ngu", "avdv", "avdr", "toeic")),
+            Map.entry("tieng anh", List.of("anh van", "ngoai ngu", "avdv", "avdr", "toeic")),
+            Map.entry("dau vao", List.of("avdv", "dgnlta", "xet tuyen")),
+            Map.entry("dau ra", List.of("avdr", "chuan dau ra", "tot nghiep")),
+            Map.entry("avdv", List.of("anh van dau vao", "tieng anh dau vao", "ngoai ngu dau vao")),
+            Map.entry("avdr", List.of("anh van dau ra", "tieng anh dau ra", "toeic dau ra")),
+            Map.entry("dkmh", List.of("dang ky mon hoc", "dang ky hoc phan", "dang ky tin chi", "tin chi")),
+            Map.entry("dkhp", List.of("dang ky mon hoc", "dang ky hoc phan", "dang ky tin chi", "tin chi")),
+            Map.entry("dang ky mon hoc", List.of("dang ky hoc phan", "dkmh", "dang ky tin chi", "tin chi", "mon hoc")),
+            Map.entry("dang ky hoc phan", List.of("dang ky mon hoc", "dkmh", "dang ky tin chi", "tin chi", "mon hoc")),
+            Map.entry("rut mon", List.of("rut hoc phan", "huy mon", "huy hoc phan")),
+            Map.entry("rut hoc phan", List.of("rut mon", "huy mon", "huy hoc phan")),
+            Map.entry("hoc phi", List.of("dong tien", "hoc phi tin chi", "bien lai")),
+            Map.entry("tot nghiep", List.of("xet tot nghiep", "bang tot nghiep", "le tot nghiep")),
+            Map.entry("drl", List.of("diem ren luyen", "ren luyen")),
+            Map.entry("diem ren luyen", List.of("drl", "ren luyen"))
     );
 
     @PostConstruct

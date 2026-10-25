@@ -38,4 +38,17 @@ class AcademicAbbreviationUtilsTest {
         String normalText = "Lịch thi học kỳ chính thức của trường";
         assertEquals(normalText, AcademicAbbreviationUtils.expand(normalText));
     }
+
+    @Test
+    @DisplayName("Từ viết tắt dkmh, dkhp mở rộng chuẩn xác thành đăng ký học phần")
+    void testCourseRegistrationSynonyms() {
+        String input1 = "Khi nào bắt đầu đkmh học kỳ 2?";
+        String output1 = AcademicAbbreviationUtils.expand(input1);
+        assertTrue(output1.toLowerCase().contains("đăng ký học phần"));
+
+        String input2 = "Hạn chót dkhp và rút hp đợt 1";
+        String output2 = AcademicAbbreviationUtils.expand(input2);
+        assertTrue(output2.toLowerCase().contains("đăng ký học phần"));
+        assertTrue(output2.toLowerCase().contains("rút học phần"));
+    }
 }
