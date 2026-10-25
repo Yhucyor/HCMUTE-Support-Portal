@@ -15,6 +15,8 @@ spring:
     import: optional:file:.env[.properties]
   application:
     name: qaute-portal
+  main:
+    allow-bean-definition-overriding: true
 
   # Cấu hình Multipart Upload (Hỗ trợ file văn bản & Video tới 100MB)
   servlet:
