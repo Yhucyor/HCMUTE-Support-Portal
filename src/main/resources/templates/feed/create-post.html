@@ -1130,8 +1130,8 @@
                 typing.classList.add('hidden');
 
                 const botBubble = document.createElement('div');
-                botBubble.className = "bg-white text-slate-800 p-3 rounded-2xl rounded-tl-none border border-slate-200 max-w-[90%] leading-relaxed shadow-xs whitespace-pre-line";
-                botBubble.textContent = data.reply || (data.data ? data.data.reply : "Tôi đã ghi nhận câu hỏi của bạn và sẽ phản hồi sớm.");
+                const botAnswer = (data.data && (data.data.answer || data.data.reply)) || data.answer || data.reply || "Tôi đã ghi nhận câu hỏi của bạn và sẽ phản hồi sớm.";
+                botBubble.textContent = botAnswer;
                 scrollArea.insertBefore(botBubble, typing);
             } catch (err) {
                 typing.classList.add('hidden');
