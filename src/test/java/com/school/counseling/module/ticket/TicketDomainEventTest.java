@@ -55,6 +55,9 @@ class TicketDomainEventTest {
     private TicketHistoryRepository ticketHistoryRepository;
 
     @Mock
+    private com.school.counseling.module.ticket.repository.TicketTransferHistoryRepository ticketTransferHistoryRepository;
+
+    @Mock
     private AttachmentRepository attachmentRepository;
 
     @Mock
