@@ -267,31 +267,44 @@ public class OfficialFeedController {
         }
 
         // Tệp trên hệ thống tệp cục bộ
-        File file = new File(fileUrl);
-        if (!file.exists() || !file.isFile()) {
-            String cleanName = file.getName();
-            String[] searchDirs = {
-                Constant.DIR_DOCUMENTS,
-                Constant.DIR,
-                Constant.DIR_VIDEOS,
-                Constant.DIR_IMAGES
-            };
-            boolean found = false;
-            for (String dir : searchDirs) {
-                File candidate = new File(dir, cleanName);
-                if (candidate.exists() && candidate.isFile()) {
+        File rawFile = new File(fileUrl);
+        String safeName = rawFile.getName();
+        String[] allowedDirs = {
+            Constant.DIR_DOCUMENTS,
+            Constant.DIR,
+            Constant.DIR_VIDEOS,
+            Constant.DIR_IMAGES
+        };
+        File file = null;
+        for (String dir : allowedDirs) {
+            File candidate = new File(dir, safeName);
+            try {
+                String candidateCanonical = candidate.getCanonicalPath();
+                String dirCanonical = new File(dir).getCanonicalPath();
+                if (candidateCanonical.startsWith(dirCanonical) && candidate.exists() && candidate.isFile()) {
                     file = candidate;
-                    found = true;
                     break;
                 }
-            }
-            if (!found) {
-                log.warn("Không tìm thấy tệp đính kèm trên đĩa: {}", fileUrl);
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                return;
-            }
+            } catch (Exception ignored) {}
         }
 
+        if (file == null && rawFile.exists() && rawFile.isFile()) {
+            try {
+                String rawCanonical = rawFile.getCanonicalPath();
+                for (String dir : allowedDirs) {
+                    if (rawCanonical.startsWith(new File(dir).getCanonicalPath())) {
+                        file = rawFile;
+                        break;
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+
+        if (file == null) {
+            log.warn("Không tìm thấy tệp đính kèm an toàn hoặc vi phạm Path Traversal: {}", fileUrl);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
         String fileName = attachment.getFileName() != null ? attachment.getFileName() : file.getName();
         String mimeType = resolveMimeType(fileName);
 

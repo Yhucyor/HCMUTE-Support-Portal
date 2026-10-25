@@ -32,9 +32,7 @@ public class AcademicWebController {
     public String syncPage(@RequestParam(required = false) String studentId,
                            @RequestParam(required = false) String tab,
                            Model model) {
-        String effectiveStudentId = (studentId != null && !studentId.isBlank())
-                ? studentId.trim()
-                : SecurityUtils.getCurrentUsername().orElse("");
+        String effectiveStudentId = resolve(studentId);
 
         String activeTab = (tab != null && !tab.isBlank()) ? tab : "academic";
 
@@ -51,10 +49,12 @@ public class AcademicWebController {
                     model.addAttribute("studentProfile", profile));
         }
 
-        // Nạp danh sách thông báo chính thức từ Cổng trường HCMUTE
+        // Nạp nhanh thông báo từ cache RAM hoặc demo (không gọi HTTP bên ngoài đồng bộ gây treo luồng)
         String portalUser = (String) model.getAttribute("savedPortalUsername");
-        String portalPass = (String) model.getAttribute("savedPortalPassword");
-        model.addAttribute("announcements", crawlerService.getAnnouncements(
+        String portalPass = SecurityUtils.getCurrentUserId()
+                .map(profileService::decodePortalPassword)
+                .orElse(null);
+        model.addAttribute("announcements", crawlerService.getQuickAnnouncements(
                 portalUser != null ? portalUser : effectiveStudentId, portalPass));
 
         return "academic-sync";
@@ -108,19 +108,33 @@ public class AcademicWebController {
     // ── helpers ──────────────────────────────────────────────────────────────
 
     private String resolve(String studentId) {
-        if (studentId != null && !studentId.isBlank()) {
-            return studentId.trim();
-        }
+        String currentUserStudentId = null;
         try {
             Long userId = SecurityUtils.getCurrentUserId().orElse(null);
             if (userId != null) {
                 String portalUsername = profileService.getProfile(userId).getPortalUsername();
                 if (portalUsername != null && !portalUsername.isBlank()) {
-                    return portalUsername.trim();
+                    currentUserStudentId = portalUsername.trim();
                 }
             }
         } catch (Exception ignored) {}
-        return SecurityUtils.getCurrentUsername().orElse("");
+
+        if (currentUserStudentId == null || currentUserStudentId.isBlank()) {
+            currentUserStudentId = SecurityUtils.getCurrentUsername().orElse("");
+        }
+
+        if (studentId != null && !studentId.isBlank()) {
+            String trimmed = studentId.trim();
+            boolean isStaffOrAdmin = SecurityUtils.hasAnyRole("STAFF", "DEPARTMENT_HEAD", "ADMIN", "SUPER_ADMIN");
+            if (isStaffOrAdmin || (currentUserStudentId != null && currentUserStudentId.equalsIgnoreCase(trimmed))) {
+                return trimmed;
+            }
+            log.warn("⚠️ [Security Anti-IDOR] Web: Sinh viên '{}' cố gắng xem học vụ của '{}' - Đã chặn và điều hướng về trang cá nhân.",
+                    currentUserStudentId, trimmed);
+            return currentUserStudentId;
+        }
+
+        return currentUserStudentId;
     }
 
     /**
@@ -140,9 +154,9 @@ public class AcademicWebController {
                 model.addAttribute("portalLinked", hasCredentials);
                 if (hasCredentials) {
                     model.addAttribute("savedPortalUsername", portalUsername);
-                    // Truyền password qua model chỉ trong scope request server-side.
-                    // Template dùng th:data-* ẩn để JS tự fill — KHÔNG render ra HTML visible.
-                    model.addAttribute("savedPortalPassword", portalPassword);
+                    // Không truyền mật khẩu plain-text vào Model để chống lộ lọt phía Client DOM.
+                    // Sử dụng token che giấu __SAVED__; API Backend sẽ tự động nạp mật khẩu an toàn.
+                    model.addAttribute("savedPortalPassword", "__SAVED__");
                 }
             });
         } catch (Exception e) {

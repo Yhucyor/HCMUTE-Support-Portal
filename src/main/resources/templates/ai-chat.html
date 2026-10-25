@@ -1,876 +1,1184 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title th:text="${pageTitle ?: 'Trợ lý AI học vụ - QAUTE PORTAL | HCMUTE'}">Trợ lý AI học vụ - QAUTE PORTAL | HCMUTE</title>
-    
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Trợ lý AI học vụ - QAUTE PORTAL | HCMUTE</title>
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
     <style>
-        @layer base {
-            html, body { margin: 0; padding: 0; }
-            body { overscroll-behavior: none; }
+        html, body {
+            height: 100%;
+            max-height: 100vh;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
         }
-        
-        /* Custom Scrollbar for Sidebar */
-        .scrollbar-thin::-webkit-scrollbar {
+
+        /* Sidebar dedicated scrollbar - always clean, visible and smooth */
+        .sidebar-scroll {
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f8fafc;
+        }
+        .sidebar-scroll::-webkit-scrollbar {
             width: 6px;
         }
-        .scrollbar-thin::-webkit-scrollbar-track {
-            background: transparent;
+        .sidebar-scroll::-webkit-scrollbar-track {
+            background: #f8fafc;
         }
-        .scrollbar-thin::-webkit-scrollbar-thumb {
+        .sidebar-scroll::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 9999px;
         }
-        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
-        
-        /* Main scrollbar (thinner) */
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        /* Typing indicator animation */
-        @keyframes typing-dot {
-            0%, 60%, 100% { transform: translateY(0); opacity: 0.7; }
-            30% { transform: translateY(-6px); opacity: 1; }
+
+        /* Chat arena scrollbar */
+        .chat-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
         }
-        .typing-indicator span {
-            display: inline-block;
+        .chat-scrollbar::-webkit-scrollbar {
             width: 6px;
-            height: 6px;
-            border-radius: 50%;
+        }
+        .chat-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .chat-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        .chat-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
-            animation: typing-dot 1.4s infinite;
         }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-        
-        /* Message fade-in */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        /* Print styles for PDF export */
+        @media print {
+            header, aside, .floating-composer, #modelSelectBtn, .action-buttons, #ticketModal, #citationDrawer {
+                display: none !important;
+            }
+            main, .chat-arena, #chatStream {
+                height: auto !important;
+                overflow: visible !important;
+                padding: 0 !important;
+                background: white !important;
+            }
         }
-        .message-animate { animation: fadeInUp 0.3s ease-out; }
     </style>
-    
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS with Academic Horizon & HCMUTE Tokens -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script>
+    <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     colors: {
+                        "brand-red": "#991b1e",
+                        "brand-red-hover": "#831518",
+                        "brand-blue": "#003882",
+                        "brand-blue-dark": "#002456",
                         "navy-dark": "#0f172a",
                         "primary": "#1d4ed8",
-                        "primary-container": "#1d4ed8",
                         "primary-hover": "#1e40af",
                         "primary-subtle": "#eff6ff",
-                        "background": "#f8fafc",
                         "surface": "#ffffff",
                         "surface-subtle": "#f1f5f9",
                         "border-ui": "#e2e8f0",
-                        "border-ui-subtle": "#cbd5e1",
                         "text-primary": "#0f172a",
                         "text-secondary": "#64748b",
                         "text-muted": "#94a3b8",
                         "success": "#10b981",
                         "warning": "#f59e0b",
-                        "error": "#ef4444"
+                        "error": "#ba1a1a"
                     },
                     fontFamily: {
-                        "sans": ["Inter", "sans-serif"],
-                        "heading": ["Outfit", "sans-serif"]
+                        sans: ["Inter", "sans-serif"],
+                        heading: ["Outfit", "sans-serif"]
                     }
                 }
             }
         };
     </script>
 </head>
-<body class="bg-background font-sans text-sm text-text-primary antialiased min-h-screen flex flex-col">
+<body class="bg-[#f8fafc] font-sans text-sm text-[#0f172a] antialiased h-screen overflow-hidden flex flex-col selection:bg-[#991b1e] selection:text-white">
 
-<!-- 1. TOP HEADER & NAVIGATION (giống index.html) -->
-<header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all">
-    <div class="w-full px-4 sm:px-6 lg:px-8 h-[74px] flex items-center justify-between">
-        <!-- Logo HCMUTE -->
-        <a class="flex items-center gap-3 group py-1.5" th:href="@{/}">
-            <img alt="HCMUTE Logo" class="h-12 w-auto object-contain transition-transform group-hover:scale-105" 
-                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKSHNb9YZP8QFQKzZ-_B_glnPE615kLoTh0DIZM9-id7Eb1Z7EZXRKcjBeCckK7VOaTPGdnMs7Cl7qdtjr1Mry3Y7d1U0S8maxw8fAHipOBnT-HFyaVBuqc6xe0fMZJf4fPlHw6UIkL0vHJV2kfl-tnjJgobCtm7Cy-KazrUCaEZefkxCcT9HC_-zWiT9twVqKg6xymALE7_hrVpAjI-XYdTFsbm3wyDRY8PxAR-vjOB00BqpW9wX9dVryQuIfZgdSA">
-            <div class="flex flex-col text-[#003882]">
-                <span class="font-bold text-sm sm:text-base tracking-tight leading-tight text-[#003882]">Trường Đại học Sư phạm Kỹ thuật Tp. Hồ Chí Minh</span>
-                <span class="font-normal text-[11px] sm:text-xs text-[#003882] tracking-normal leading-normal">HCMC University of Technology and Education</span>
-            </div>
-        </a>
+    <!-- 1. UNIFIED TOP GLOBAL HEADER -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
 
-        <!-- Nav Items (Desktop) -->
-        <nav class="hidden xl:flex items-center space-x-7">
-            <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/}">Trang chủ</a>
-            <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/feed/forum}">Diễn đàn</a>
-            <a class="font-semibold text-[14px] text-[#991b1e] border-b-2 border-[#991b1e] pb-1" th:href="@{/ai/chat}">Hỗ trợ AI</a>
-            <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/faqs}">Tra cứu FAQ</a>
-            <a class="font-medium text-[14px] text-slate-700 hover:text-[#003882] transition-colors pb-1" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
-        </nav>
+    <!-- 2. MAIN APP WORKSPACE (Fixed from Header to Bottom) -->
+    <div class="fixed top-[74px] bottom-0 left-0 right-0 flex overflow-hidden bg-[#f8fafc]">
+        <main class="flex-1 w-full h-full flex overflow-hidden">
+            <!-- Dual-Panel Chat Workspace Container -->
+            <div class="flex-1 h-full flex overflow-hidden bg-white shadow-sm border-t border-[#e2e8f0]">
 
-        <!-- Header Actions -->
-        <div class="flex items-center gap-2 sm:gap-3">
-            <button aria-label="Tìm kiếm" class="w-9 h-9 rounded-full flex items-center justify-center text-slate-600 hover:text-[#003882] hover:bg-slate-100 transition-colors">
-                <span class="material-symbols-outlined text-[20px]">search</span>
-            </button>
-
-            <div class="hidden sm:flex items-center text-xs font-semibold text-slate-600 px-2 py-1 rounded cursor-pointer hover:bg-slate-100">
-                <span>VI</span>
-                <span class="material-symbols-outlined text-[16px]">expand_more</span>
-            </div>
-
-            <!-- Đã đăng nhập: Student Account Dropdown Menu -->
-            <div sec:authorize="isAuthenticated()" class="relative">
-                <button id="aiChatAccountToggle" 
-                        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#003882] hover:bg-[#002456] rounded-md shadow-sm transition-all active:scale-95" 
-                        th:title="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}"
-                        aria-haspopup="true"
-                        aria-expanded="false">
-                    <span class="material-symbols-outlined text-[16px]">account_circle</span>
-                    <span class="hidden sm:inline truncate max-w-[150px]" th:text="${currentUser != null ? currentUser.fullName : (principal != null ? principal.fullName : #authentication.name)}">Họ Tên</span>
-                    <span class="material-symbols-outlined text-[14px]">expand_more</span>
-                </button>
-                
-                <!-- Dropdown Menu -->
-                <div id="aiChatDropdownMenu" 
-                     class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50"
-                     role="menu">
-                    <a href="/profile" 
-                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                        <span class="material-symbols-outlined text-[18px]">person</span>
-                        <span>Thông tin cá nhân</span>
-                    </a>
-                    <a href="/academic/sync" 
-                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                        <span class="material-symbols-outlined text-[18px]">home</span>
-                        <span>Tổng quan</span>
-                    </a>
-                    <a href="/academic/grades" 
-                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                        <span class="material-symbols-outlined text-[18px]">description</span>
-                        <span>Bảng điểm</span>
-                    </a>
-                    <a href="/academic/timetable" 
-                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                        <span class="material-symbols-outlined text-[18px]">calendar_month</span>
-                        <span>Thời khóa biểu</span>
-                    </a>
-                    <a href="/academic/curriculum" 
-                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                        <span class="material-symbols-outlined text-[18px]">book</span>
-                        <span>Chương trình đào tạo</span>
-                    </a>
-                    <a href="/tickets/my-tickets" 
-                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                        <span class="material-symbols-outlined text-[18px]">confirmation_number</span>
-                        <span>Ticket hỗ trợ</span>
-                    </a>
-                    <div class="border-t border-slate-200 my-1"></div>
-                    <a th:href="@{/auth/logout}" 
-                       class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                        <span class="material-symbols-outlined text-[18px]">logout</span>
-                        <span>Đăng xuất</span>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Chưa đăng nhập: Nút Đăng nhập -->
-            <div sec:authorize="!isAuthenticated()">
-                <a class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#991b1e] hover:bg-[#831518] rounded-md shadow-sm transition-all active:scale-95" th:href="@{/auth/login}">
-                    <span class="material-symbols-outlined text-[16px]">person</span>
-                    <span>Đăng nhập</span>
-                </a>
-            </div>
-
-            <!-- Mobile Menu Button -->
-            <button aria-label="Mở menu" id="mobileMenuToggle" class="xl:hidden w-9 h-9 rounded-md flex items-center justify-center text-slate-700 hover:bg-slate-100">
-                <span class="material-symbols-outlined text-[24px]">menu</span>
-            </button>
-        </div>
-    </div>
-</header>
-
-<!-- ================= MAIN APP WORKSPACE (with top padding for fixed header) ================= -->
-<div class="flex flex-col min-h-screen bg-background pt-[74px]">
-    <main class="flex-1 w-full mx-auto flex flex-col overflow-hidden">
-        <div class="flex w-full h-[calc(100vh-74px)] overflow-hidden">
-            <!-- Dual-Panel Chat Workspace -->
-            <div class="flex-1 flex overflow-hidden bg-white shadow-sm border border-border-ui">
-                
-                <!-- ================= LEFT PANEL: CONVERSATION HISTORY (~280px) ================= -->
-                <aside class="w-[280px] flex-shrink-0 flex flex-col bg-background border-r border-border-ui hidden md:flex" style="height: calc(100vh - 74px); overflow: hidden;">
-                    <!-- Sidebar Header & Action (Fixed - KHÔNG SCROLL) -->
-                    <div class="flex-shrink-0 p-3.5 flex flex-col gap-3 bg-white border-b border-border-ui" style="flex-shrink: 0;">
+                <!-- ================= LEFT PANEL: CONVERSATION HISTORY (~280px CỐ ĐỊNH, CÓ THANH TRƯỢT) ================= -->
+                <aside id="historySidebar" class="w-[280px] shrink-0 h-full flex flex-col bg-[#f8fafc] border-r border-[#e2e8f0] hidden md:flex transition-all duration-200 z-30 max-md:fixed max-md:top-[74px] max-md:bottom-0 max-md:left-0 max-md:shadow-2xl">
+                    <!-- Sidebar Header & Action (Cố định phía trên) -->
+                    <div class="p-3.5 shrink-0 flex flex-col gap-2.5 bg-white border-b border-[#e2e8f0]">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <div class="w-7 h-7 rounded-lg bg-primary-subtle flex items-center justify-center text-primary">
+                                <div class="w-7 h-7 rounded-lg bg-[#eff6ff] flex items-center justify-center text-[#1d4ed8]">
                                     <span class="material-symbols-outlined text-lg">forum</span>
                                 </div>
-                                <span class="font-heading font-semibold text-xs tracking-tight text-text-primary">Hội thoại của bạn</span>
+                                <span class="font-heading font-semibold text-xs tracking-tight text-[#0f172a]">Hội thoại của bạn</span>
                             </div>
-                            <button class="p-1 text-text-muted hover:text-text-primary hover:bg-surface-subtle rounded-md transition-colors" title="Thu gọn danh sách" type="button">
-                                <span class="material-symbols-outlined text-base">vertical_split</span>
+                            <button class="p-1 text-[#94a3b8] hover:text-[#0f172a] hover:bg-[#f1f5f9] rounded-md transition-colors md:hidden" onclick="toggleMobileSidebar()" title="Đóng danh sách">
+                                <span class="material-symbols-outlined text-base">close</span>
                             </button>
                         </div>
-                        
+
                         <!-- "+ Cuộc trò chuyện mới" button -->
-                        <button id="newChatBtn" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-primary text-white font-medium text-xs shadow-xs hover:bg-primary-hover transition-all active:scale-[0.99]" type="button">
+                        <button onclick="startNewChat()" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-[#1d4ed8] text-white font-semibold text-xs shadow-xs hover:bg-[#1e40af] transition-all active:scale-[0.99] cursor-pointer" type="button">
                             <span class="material-symbols-outlined text-base">add_circle</span>
                             <span>+ Cuộc trò chuyện mới</span>
                         </button>
-                        
+
                         <!-- Search Conversations Input -->
                         <div class="relative flex items-center">
-                            <span class="material-symbols-outlined absolute left-2.5 text-text-muted text-base pointer-events-none">search</span>
-                            <input id="searchConversationsInput" class="w-full pl-8 pr-2.5 py-1.5 rounded-lg bg-surface-subtle border border-border-ui text-text-primary placeholder-text-muted text-xs focus:outline-none focus:border-primary focus:bg-white transition-all" 
-                                   placeholder="Tìm kiếm hội thoại..." type="text"/>
+                            <span class="material-symbols-outlined absolute left-2.5 text-[#94a3b8] text-base pointer-events-none">search</span>
+                            <input id="historySearchInput" oninput="filterHistoryList(this.value)" class="w-full pl-8 pr-2.5 py-1.5 rounded-lg bg-[#f1f5f9] border border-[#e2e8f0] text-[#0f172a] placeholder-[#94a3b8] text-xs focus:outline-none focus:border-[#1d4ed8] focus:bg-white transition-all" placeholder="Tìm kiếm hội thoại..." type="text"/>
                         </div>
                     </div>
-                    
-                    <!-- Scrollable Grouped History (CÓ SCROLL RIÊNG) -->
-                    <div id="conversationHistoryList" class="flex-1 px-2 py-3 space-y-4 scrollbar-thin" style="overflow-y: auto; overflow-x: hidden; flex: 1 1 0%; min-height: 0;">
-                        <div th:if="${recentConversations != null and !recentConversations.isEmpty()}">
-                            <!-- Group: Gần đây -->
-                            <div class="space-y-1">
-                                <div class="px-2.5 py-1 text-[11px] font-semibold text-text-muted uppercase tracking-wider flex items-center justify-between">
-                                    <span class="flex items-center gap-1.5">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>Gần đây
-                                    </span>
-                                    <span class="text-[10px] text-text-muted font-mono" th:text="${recentConversations.size()}">0</span>
-                                </div>
-                                
-                                <!-- Conversation Items -->
-                                <div th:each="conv : ${recentConversations}" 
-                                     class="group conversation-item relative flex items-center justify-between px-2.5 py-2 rounded-xl cursor-pointer transition-all hover:bg-surface-subtle"
-                                     th:classappend="${conversation != null and conv.sessionId == conversation.sessionId} ? 'bg-primary-subtle text-primary font-medium border border-primary/20' : 'text-text-secondary'"
-                                     th:data-session-id="${conv.sessionId}">
-                                    <div class="flex items-center gap-2 min-w-0 pr-1">
-                                        <span class="material-symbols-outlined text-base flex-shrink-0" 
-                                              th:classappend="${conversation != null and conv.sessionId == conversation.sessionId} ? 'text-primary' : 'text-text-muted'">
-                                            chat
-                                        </span>
-                                        <div class="flex flex-col min-w-0">
-                                            <span class="text-xs font-semibold truncate conv-title-text" th:text="${conv.title}" th:title="${conv.title}">Conversation Title</span>
-                                            <span class="text-[10px] text-text-secondary truncate" 
-                                                  th:text="${#temporals.format(conv.updatedAt, 'HH:mm') + ' • ' + conv.messageCount + ' tin nhắn'}">
-                                                Vừa xong • 5 tin nhắn
-                                            </span>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Action buttons (Rename & Delete) -->
-                                    <div class="relative flex items-center gap-0.5">
-                                        <button class="opacity-0 group-hover:opacity-100 p-1 text-text-secondary hover:text-primary hover:bg-white/80 rounded transition-opacity rename-conv" 
-                                                th:data-session-id="${conv.sessionId}"
-                                                th:data-title="${conv.title}"
-                                                title="Đổi tên" type="button">
-                                            <span class="material-symbols-outlined text-[15px] leading-none">edit</span>
-                                        </button>
-                                        <button class="opacity-0 group-hover:opacity-100 p-1 text-text-secondary hover:text-error hover:bg-white/80 rounded transition-opacity delete-conv" 
-                                                th:data-session-id="${conv.sessionId}"
-                                                title="Xóa" type="button">
-                                            <span class="material-symbols-outlined text-[15px] leading-none">delete</span>
-                                        </button>
-                                    </div>
-                                </div>
+
+                    <!-- Scrollable Grouped History (Thanh trượt riêng biệt) -->
+                    <div class="flex-1 min-h-0 overflow-y-auto px-2 py-3 space-y-4 sidebar-scroll" id="historyGroupContainer">
+                        <!-- Group: HÔM NAY -->
+                        <div class="space-y-1" id="group-today">
+                            <div class="px-2.5 py-1 text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wider flex items-center justify-between">
+                                <span class="flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#1d4ed8]"></span>Hôm nay
+                                </span>
+                                <span class="text-[10px] text-[#94a3b8] font-mono" id="todayCount">1</span>
+                            </div>
+                            <div class="history-item-list space-y-1" id="list-today">
+                                <!-- Populated dynamically by JS -->
                             </div>
                         </div>
-                        
-                        <div th:if="${recentConversations == null or recentConversations.isEmpty()}" 
-                             class="text-center text-text-muted mt-12">
-                            <span class="material-symbols-outlined text-5xl text-slate-300">chat_bubble_outline</span>
-                            <p class="text-sm mt-3">Chưa có hội thoại nào</p>
+
+                        <!-- Group: 7 NGÀY GẦN ĐÂY -->
+                        <div class="space-y-1" id="group-recent">
+                            <div class="px-2.5 py-1 text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wider flex items-center justify-between">
+                                <span>7 ngày gần đây</span>
+                                <span class="text-[10px] text-[#94a3b8] font-mono" id="recentCount">0</span>
+                            </div>
+                            <div class="history-item-list space-y-1" id="list-recent">
+                                <!-- Populated dynamically by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Group: TRƯỚC ĐÓ -->
+                        <div class="space-y-1" id="group-older">
+                            <div class="px-2.5 py-1 text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wider flex items-center justify-between">
+                                <span>Trước đó</span>
+                                <span class="text-[10px] text-[#94a3b8] font-mono" id="olderCount">0</span>
+                            </div>
+                            <div class="history-item-list space-y-1" id="list-older">
+                                <!-- Populated dynamically by JS -->
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Bottom User Status (Cố định phía dưới) -->
+                    <div class="p-3 shrink-0 bg-white border-t border-[#e2e8f0] flex items-center justify-between text-xs text-[#64748b]">
+                        <div class="flex items-center gap-2 truncate">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span class="truncate" th:text="${currentUserFullName != null ? currentUserFullName : 'Khách vãng lai'}">Nguyễn Văn An</span>
+                        </div>
+                        <span class="text-[10px] font-mono text-[#94a3b8]">v2.5 RAG</span>
+                    </div>
                 </aside>
-                
+
                 <!-- ================= RIGHT PANEL: CHAT ARENA ================= -->
-                <section class="flex-1 flex flex-col h-full bg-white overflow-hidden relative">
+                <section class="chat-arena flex-1 flex flex-col h-full bg-white overflow-hidden relative">
                     <!-- Chat Header -->
-                    <header class="h-14 px-4 md:px-6 flex-shrink-0 flex items-center justify-between bg-white border-b border-border-ui z-10">
+                    <header class="h-14 px-4 md:px-6 shrink-0 flex items-center justify-between bg-white border-b border-[#e2e8f0] z-20">
                         <!-- Assistant Identity -->
                         <div class="flex items-center gap-3 min-w-0">
-                            <div class="relative w-9 h-9 rounded-full bg-primary-subtle flex items-center justify-center p-0.5 border border-primary/20 flex-shrink-0 shadow-xs">
-                                <img alt="HCMUTE AI Mascot" class="w-full h-full object-contain" 
-                                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg"/>
-                                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-success rounded-full ring-2 ring-white"></span>
+                            <div class="relative w-9 h-9 rounded-full bg-[#eff6ff] flex items-center justify-center p-0.5 border border-[#1d4ed8]/20 shrink-0 shadow-xs">
+                                <img alt="HCMUTE AI Mascot" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg"/>
+                                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#10b981] rounded-full ring-2 ring-white animate-pulse"></span>
                             </div>
                             <div class="flex flex-col min-w-0">
                                 <div class="flex items-center gap-2">
-                                    <h2 id="currentConversationTitle" class="font-heading font-bold text-sm text-text-primary truncate"
-                                        th:text="${conversation != null and conversation.title != null ? conversation.title : 'Trợ lý AI học vụ'}">
-                                        Trợ lý AI học vụ
-                                    </h2>
-                                    <button th:if="${conversation != null}" 
-                                            id="headerRenameBtn"
-                                            th:data-session-id="${conversation.sessionId}"
-                                            th:data-title="${conversation.title}"
-                                            onclick="window.openRenameModal(this.dataset.sessionId, this.dataset.title)"
-                                            class="p-0.5 text-text-muted hover:text-primary transition-colors rounded" 
-                                            title="Đổi tên cuộc trò chuyện" type="button">
-                                        <span class="material-symbols-outlined text-[16px] leading-none">edit</span>
-                                    </button>
+                                    <h2 class="font-heading font-bold text-sm text-[#0f172a] truncate">Trợ lý AI học vụ</h2>
                                     <span class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#ecfdf5] text-[#047857] border border-[#a7f3d0]">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-success"></span>Đang hoạt động
+                                        <span class="w-1.5 h-1.5 rounded-full bg-[#10b981]"></span>Đang hoạt động
                                     </span>
                                 </div>
-                                <p class="text-[11px] text-text-secondary truncate">Tra cứu quy chế đào tạo, học bổng &amp; thủ tục sinh viên</p>
+                                <p class="text-[11px] text-[#64748b] truncate">Tra cứu quy chế đào tạo, học bổng &amp; thủ tục sinh viên</p>
                             </div>
                         </div>
-                        
-                        <!-- User Info (if authenticated) -->
-                        <div sec:authorize="isAuthenticated()" class="hidden sm:flex items-center gap-2">
-                            <span class="text-xs text-text-secondary" th:text="${currentUser != null ? currentUser.fullName : ''}">User Name</span>
+
+                        <!-- Model Selector & Header Actions -->
+                        <div class="flex items-center gap-2">
+                            <!-- Refined Model Selector Dropdown -->
+                            <div class="relative">
+                                <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#f8fafc] border border-[#e2e8f0] text-[#0f172a] text-xs font-medium hover:bg-[#f1f5f9] transition-colors cursor-pointer" id="modelSelectBtn" type="button" onclick="toggleModelDropdown(event)">
+                                    <span class="w-2 h-2 rounded-full bg-[#10b981]"></span>
+                                    <span id="currentModelLabel">Gemini 1.5 Pro</span>
+                                    <span class="material-symbols-outlined text-base text-[#94a3b8]">expand_more</span>
+                                </button>
+                                <div class="hidden absolute right-0 mt-1.5 w-80 p-1.5 rounded-xl bg-white shadow-xl border border-[#e2e8f0] z-30 max-h-[420px] overflow-y-auto" id="modelDropdown">
+                                    <div class="p-1 space-y-1.5">
+                                        <!-- 1. Google Gemini -->
+                                        <button class="w-full flex flex-col p-2.5 rounded-lg bg-[#eff6ff] text-left border border-[#bfdbfe] transition-colors group cursor-pointer" onclick="selectModel('gemini', 'Gemini 1.5 Pro (Cloud)')" type="button">
+                                            <div class="flex items-center justify-between text-xs font-semibold text-[#1d4ed8]">
+                                                <span class="flex items-center gap-1.5">
+                                                    <span class="material-symbols-outlined text-sm">cloud_done</span> Gemini Cloud (1.5 Pro)
+                                                </span>
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] bg-[#ecfdf5] text-[#047857] font-semibold border border-[#a7f3d0]">Khuyên dùng</span>
+                                            </div>
+                                            <span class="text-[11px] text-[#64748b] mt-0.5">Phản hồi nhanh, suy luận sâu rộng quy chế toàn trường</span>
+                                        </button>
+                                        <!-- 2. Ollama Local -->
+                                        <button class="w-full flex flex-col p-2.5 rounded-lg hover:bg-[#f8fafc] text-left border border-transparent hover:border-[#e2e8f0] transition-colors group cursor-pointer" onclick="selectModel('ollama', 'Ollama Local (Qwen 2.5)')" type="button">
+                                            <div class="flex items-center justify-between text-xs font-semibold text-[#0f172a]">
+                                                <span class="flex items-center gap-1.5">
+                                                    <span class="material-symbols-outlined text-sm text-[#475569]">dns</span> Ollama Local (Qwen 2.5)
+                                                </span>
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] bg-[#eff6ff] text-[#1d4ed8] font-semibold border border-[#bfdbfe]">On-Premise</span>
+                                            </div>
+                                            <span class="text-[11px] text-[#64748b] mt-0.5">Bảo mật dữ liệu, vận hành trên máy chủ nội bộ trường</span>
+                                        </button>
+                                        <!-- 3. Dify AI Agent -->
+                                        <button class="w-full flex flex-col p-2.5 rounded-lg hover:bg-[#f8fafc] text-left border border-transparent hover:border-[#e2e8f0] transition-colors group cursor-pointer" onclick="selectModel('dify', 'Dify AI Agent (Workflow RAG)')" type="button">
+                                            <div class="flex items-center justify-between text-xs font-semibold text-[#0f172a]">
+                                                <span class="flex items-center gap-1.5">
+                                                    <span class="material-symbols-outlined text-sm text-[#7c3aed]">psychology</span> Dify AI Agent (Workflow)
+                                                </span>
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] bg-[#f5f3ff] text-[#7c3aed] font-semibold border border-[#ddd6fe]">Agentic RAG</span>
+                                            </div>
+                                            <span class="text-[11px] text-[#64748b] mt-0.5">Quy trình Agent trích xuất &amp; trả lời chuyên sâu nhiều bước</span>
+                                        </button>
+                                        <!-- 4. QAUTE Academic FAQ -->
+                                        <button class="w-full flex flex-col p-2.5 rounded-lg hover:bg-[#f8fafc] text-left border border-transparent hover:border-[#e2e8f0] transition-colors group cursor-pointer" onclick="selectModel('qaute', 'QAUTE Academic FAQ (Nội bộ)')" type="button">
+                                            <div class="flex items-center justify-between text-xs font-semibold text-[#0f172a]">
+                                                <span class="flex items-center gap-1.5">
+                                                    <span class="material-symbols-outlined text-sm text-[#059669]">menu_book</span> QAUTE Academic FAQ
+                                                </span>
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] bg-[#ecfdf5] text-[#059669] font-semibold border border-[#a7f3d0]">Database Nội Bộ</span>
+                                            </div>
+                                            <span class="text-[11px] text-[#64748b] mt-0.5">Bộ tri thức câu hỏi thường gặp HCMUTE sẵn sàng 100%</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="h-4 w-px bg-[#e2e8f0] mx-0.5 hidden sm:block"></div>
+
+                            <!-- 3-dots Overflow Menu -->
+                            <div class="relative">
+                                <button class="p-1.5 text-[#64748b] hover:text-[#0f172a] hover:bg-[#f1f5f9] rounded-lg transition-colors cursor-pointer" onclick="toggleHeaderOverflow(event)" title="Tùy chọn khác" type="button">
+                                    <span class="material-symbols-outlined text-lg">more_vert</span>
+                                </button>
+                                <div class="hidden absolute right-0 mt-1.5 w-48 bg-white rounded-xl shadow-xl border border-[#e2e8f0] p-1.5 z-30 text-xs text-[#0f172a]" id="headerOverflow">
+                                    <button class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer" onclick="window.print()" type="button">
+                                        <span class="material-symbols-outlined text-base text-[#64748b]">picture_as_pdf</span> Xuất PDF hội thoại
+                                    </button>
+                                    <button class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer" onclick="shareCurrentChat()" type="button">
+                                        <span class="material-symbols-outlined text-base text-[#64748b]">share</span> Chia sẻ liên kết
+                                    </button>
+                                    <button class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer" onclick="openTicketModal()" type="button">
+                                        <span class="material-symbols-outlined text-base text-[#1d4ed8]">confirmation_number</span> Tạo Ticket từ phiên chat
+                                    </button>
+                                    <div class="my-1 border-t border-[#e2e8f0]"></div>
+                                    <button class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-red-50 text-red-600 flex items-center gap-2 cursor-pointer" onclick="clearCurrentConversation()" type="button">
+                                        <span class="material-symbols-outlined text-base text-red-500">delete_sweep</span> Xóa lịch sử đoạn chat
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </header>
-                    
-                    <!-- Main Conversation Stream (Scrollable) -->
-                    <div class="flex-1 overflow-y-auto px-4 md:px-8 lg:px-12 py-6 space-y-6 scroll-smooth" id="chatMessages">
-                        <div class="max-w-[860px] mx-auto space-y-6 pb-40">
+
+                    <!-- Main Conversation Stream (Scrollable, Clean ChatGPT/Claude whitespace) -->
+                    <div id="chatStream" class="flex-1 min-h-0 overflow-y-auto px-4 md:px-8 lg:px-12 py-6 space-y-6 scroll-smooth chat-scrollbar">
+                        <div class="max-w-[860px] mx-auto space-y-6 pb-48" id="messageContainer">
                             
-                            <!-- Load existing messages if available -->
-                            <div th:if="${messages != null and !messages.isEmpty()}">
-                                <div th:each="msg : ${messages}" class="message-animate">
-                                    <!-- USER MESSAGE -->
-                                    <div th:if="${msg.role.name() == 'USER'}" class="flex items-start justify-end gap-3 pl-8 md:pl-16">
-                                        <div class="flex flex-col items-end max-w-xl">
-                                            <div class="flex items-center gap-1.5 mb-1">
-                                                <span class="text-xs font-semibold text-text-primary" th:text="${currentUser != null ? currentUser.fullName : 'User'}">User</span>
-                                                <span class="text-[11px] text-text-muted" th:text="${#temporals.format(msg.createdAt, 'HH:mm')}">10:24</span>
-                                            </div>
-                                            <div class="p-3.5 rounded-2xl rounded-tr-xs bg-primary text-white leading-relaxed text-sm shadow-xs" th:text="${msg.content}">
-                                                Message content
-                                            </div>
-                                        </div>
-                                        <div class="w-8 h-8 rounded-full bg-primary-subtle text-primary font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-xs border border-primary/30 mt-1"
-                                             th:text="${currentUser != null ? #strings.substring(currentUser.fullName, 0, 2).toUpperCase() : 'AN'}">
-                                            AN
-                                        </div>
+                            <!-- Initial Welcome Assistant Message -->
+                            <div class="flex items-start gap-3.5 pr-2" id="welcomeMessage">
+                                <div class="w-8 h-8 rounded-full bg-[#eff6ff] p-0.5 border border-[#1d4ed8]/20 flex items-center justify-center shrink-0 shadow-xs mt-1">
+                                    <img alt="HCMUTE AI Mascot" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg"/>
+                                </div>
+                                <div class="flex-1 flex flex-col space-y-3 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-heading font-bold text-xs text-[#1d4ed8]">Trợ lý AI học vụ HCMUTE</span>
+                                        <span class="px-2 py-0.2 rounded-full text-[10px] font-medium bg-[#eff6ff] text-[#1d4ed8] border border-[#bfdbfe]">QAUTE Bot</span>
+                                        <span class="text-[11px] text-[#94a3b8]">• Trực tuyến</span>
                                     </div>
-                                    
-                                    <!-- AI RESPONSE -->
-                                    <div th:if="${msg.role.name() == 'ASSISTANT'}" class="flex items-start gap-3.5 pr-2">
-                                        <div class="w-8 h-8 rounded-full bg-primary-subtle p-0.5 border border-primary/20 flex items-center justify-center flex-shrink-0 shadow-xs mt-1">
-                                            <img alt="AI" class="w-full h-full object-contain" 
-                                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg"/>
-                                        </div>
-                                        <div class="flex-1 flex flex-col space-y-4 min-w-0">
-                                            <div class="flex items-center gap-2">
-                                                <span class="font-heading font-bold text-xs text-primary">Trợ lý AI học vụ HCMUTE</span>
-                                                <span class="px-2 py-0.2 rounded-full text-[10px] font-medium bg-primary-subtle text-primary border border-primary/20" 
-                                                      th:text="${msg.provider != null ? (msg.provider == 'gemini' ? 'Gemini 1.5 Pro' : (msg.provider == 'ollama' ? 'Llama 3.2' : (msg.provider == 'dify' ? 'Dify AI' : 'QAUTE AI'))) : 'Gemini 1.5 Pro'}">Gemini 1.5 Pro</span>
-                                                <span class="text-[11px] text-text-muted" th:text="'• ' + ${#temporals.format(msg.createdAt, 'HH:mm')}">• 10:24</span>
-                                            </div>
-                                            <div class="text-sm text-text-primary leading-relaxed prose prose-sm max-w-none ai-markdown-content" th:text="${msg.content}">
-                                                AI response content
-                                            </div>
-                                            
-                                            <!-- Source Documents (if available) -->
-                                            <div th:if="${msg.sources != null and !msg.sources.isEmpty()}" class="mt-3 p-3 bg-surface-subtle rounded-lg border border-border-ui">
-                                                <div class="flex items-center gap-2 mb-2">
-                                                    <span class="material-symbols-outlined text-sm text-text-muted">link</span>
-                                                    <span class="text-xs font-semibold text-text-secondary">Nguồn tham khảo</span>
-                                                </div>
-                                                <div class="space-y-1.5">
-                                                    <div th:each="src : ${msg.sources}" class="text-xs text-text-secondary hover:text-primary cursor-pointer">
-                                                        <span class="material-symbols-outlined text-[14px] align-middle mr-1">article</span>
-                                                        <span th:text="${src['title'] != null ? src['title'] : (src['source'] != null ? src['source'] : 'Tài liệu tham khảo')}">Document title</span>
-                                                        <span class="text-[10px] text-text-muted" th:if="${src['score'] != null}" th:text="' (' + ${#numbers.formatDecimal(src['score'] * 100, 0, 0)} + '% độ chính xác)'"> (95%)</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Feedback & Actions Bar -->
-                                            <div class="flex items-center gap-3 pt-2">
-                                                <!-- Feedback Buttons -->
-                                                <div class="flex items-center gap-1">
-                                                    <button class="feedback-btn w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-success hover:bg-green-50 transition-all" 
-                                                            th:data-message-id="${msg.id}"
-                                                            data-feedback="POSITIVE"
-                                                            onclick="submitFeedback(this)"
-                                                            title="Hữu ích">
-                                                        <span class="material-symbols-outlined text-[16px]">thumb_up</span>
-                                                    </button>
-                                                    <button class="feedback-btn w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-error hover:bg-red-50 transition-all" 
-                                                            th:data-message-id="${msg.id}"
-                                                            data-feedback="NEGATIVE"
-                                                            onclick="submitFeedback(this)"
-                                                            title="Không hữu ích">
-                                                        <span class="material-symbols-outlined text-[16px]">thumb_down</span>
-                                                    </button>
-                                                </div>
-                                                
-                                                <div class="h-4 w-px bg-border-ui"></div>
-                                                
-                                                <!-- Copy Button -->
-                                                <button class="copy-btn w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-primary hover:bg-primary-subtle transition-all" 
-                                                        th:data-content="${msg.content}"
-                                                        onclick="copyResponse(this)"
-                                                        title="Sao chép">
-                                                    <span class="material-symbols-outlined text-[16px]">content_copy</span>
-                                                </button>
-                                                
-                                                <!-- Regenerate Button (optional) -->
-                                                <button class="w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-primary hover:bg-primary-subtle transition-all" 
-                                                        title="Tạo lại câu trả lời">
-                                                    <span class="material-symbols-outlined text-[16px]">refresh</span>
-                                                </button>
-                                            </div>
+                                    <div class="text-sm text-[#0f172a] leading-relaxed space-y-3 bg-white p-4 rounded-2xl rounded-tl-xs border border-slate-200/80 shadow-xs">
+                                        <p>Xin chào <strong th:text="${currentUserFullName != null ? currentUserFullName : 'bạn'}">bạn</strong>! 👋 Tôi là trợ lý ảo chính thức của Trường Đại học Sư phạm Kỹ thuật TP.HCM.</p>
+                                        <p>Tôi được huấn luyện trên toàn bộ cơ sở dữ liệu quy chế đào tạo, sổ tay học vụ và quy định học bổng của Nhà trường. Bạn có thể hỏi tôi bất kỳ điều gì hoặc chọn các gợi ý bên dưới:</p>
+                                        
+                                        <!-- Quick Suggestion Buttons Grid -->
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                                            <button onclick="fillAndSend('Điều kiện xét học bổng khuyến khích học tập (KKHT) của trường là gì?')" class="text-left p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#eff6ff] border border-slate-200 hover:border-[#1d4ed8]/40 transition-colors text-xs font-medium text-slate-800 flex items-center justify-between group cursor-pointer">
+                                                <span>🎓 Tiêu chuẩn học bổng KKHT</span>
+                                                <span class="material-symbols-outlined text-sm text-slate-400 group-hover:text-[#1d4ed8]">arrow_forward</span>
+                                            </button>
+                                            <button onclick="fillAndSend('Cách tính điểm trung bình tích lũy GPA và điểm rèn luyện ĐRL')" class="text-left p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#eff6ff] border border-slate-200 hover:border-[#1d4ed8]/40 transition-colors text-xs font-medium text-slate-800 flex items-center justify-between group cursor-pointer">
+                                                <span>📊 Quy chế tính điểm GPA &amp; ĐRL</span>
+                                                <span class="material-symbols-outlined text-sm text-slate-400 group-hover:text-[#1d4ed8]">arrow_forward</span>
+                                            </button>
+                                            <button onclick="fillAndSend('Thủ tục xin hoãn thi kết thúc học phần khi gặp sự cố đột xuất')" class="text-left p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#eff6ff] border border-slate-200 hover:border-[#1d4ed8]/40 transition-colors text-xs font-medium text-slate-800 flex items-center justify-between group cursor-pointer">
+                                                <span>📝 Hướng dẫn hoãn thi học kỳ</span>
+                                                <span class="material-symbols-outlined text-sm text-slate-400 group-hover:text-[#1d4ed8]">arrow_forward</span>
+                                            </button>
+                                            <button onclick="fillAndSend('Quy trình gửi Ticket yêu cầu hỗ trợ tới các Khoa/Phòng')" class="text-left p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#eff6ff] border border-slate-200 hover:border-[#1d4ed8]/40 transition-colors text-xs font-medium text-slate-800 flex items-center justify-between group cursor-pointer">
+                                                <span>🎫 Quy trình gửi Ticket SLA</span>
+                                                <span class="material-symbols-outlined text-sm text-slate-400 group-hover:text-[#1d4ed8]">arrow_forward</span>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <!-- Welcome Screen (if no messages) -->
-                            <div th:if="${messages == null or messages.isEmpty()}" id="welcomeScreen" class="text-center mt-20">
-                                <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-6 shadow-lg">
-                                    <span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
-                                </div>
-                                <h2 class="font-heading text-2xl font-bold text-text-primary mb-3">Chào mừng đến với QAUTE!</h2>
-                                <p class="text-text-secondary mb-8 max-w-md mx-auto">Tôi là trợ lý AI của HCMUTE. Hãy hỏi tôi về học tập, đào tạo và thủ tục sinh viên.</p>
-                                
-                                <!-- Suggestion Cards -->
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
-                                    <div class="suggestion-card bg-white rounded-xl p-4 border border-border-ui hover:border-blue-300 hover:shadow-md transition-all cursor-pointer" data-prompt="Hỏi về môn học và điều kiện tốt nghiệp">
-                                        <span class="material-symbols-outlined text-3xl text-blue-600 mb-2">school</span>
-                                        <p class="text-sm font-semibold text-text-primary mb-1">Chương trình đào tạo</p>
-                                        <p class="text-xs text-text-secondary">Hỏi về môn học, điều kiện tốt nghiệp</p>
-                                    </div>
-                                    <div class="suggestion-card bg-white rounded-xl p-4 border border-border-ui hover:border-green-300 hover:shadow-md transition-all cursor-pointer" data-prompt="Xem lịch học, lịch thi, thời khóa biểu">
-                                        <span class="material-symbols-outlined text-3xl text-green-600 mb-2">calendar_month</span>
-                                        <p class="text-sm font-semibold text-text-primary mb-1">Lịch học & thi</p>
-                                        <p class="text-xs text-text-secondary">Xem lịch học, lịch thi, thời khóa biểu</p>
-                                    </div>
-                                    <div class="suggestion-card bg-white rounded-xl p-4 border border-border-ui hover:border-amber-300 hover:shadow-md transition-all cursor-pointer" data-prompt="Hỏi về giấy tờ, đơn từ, quy trình sinh viên">
-                                        <span class="material-symbols-outlined text-3xl text-amber-600 mb-2">description</span>
-                                        <p class="text-sm font-semibold text-text-primary mb-1">Thủ tục hành chính</p>
-                                        <p class="text-xs text-text-secondary">Hỏi về giấy tờ, đơn từ, quy trình</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
+
                         </div>
                     </div>
-                    
+
                     <!-- ================= FLOATING MESSAGE COMPOSER ================= -->
-                    <div class="absolute bottom-0 left-0 right-0 p-4 md:px-8 bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-xs z-20">
+                    <div class="floating-composer absolute bottom-0 left-0 right-0 p-4 md:px-8 bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-xs z-20">
                         <div class="max-w-[860px] mx-auto space-y-2.5">
+                            
+                            <!-- Suggested Quick Prompts Bar (Scrollable horizontally) -->
+                            <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
+                                <button onclick="fillPrompt('Điều kiện để nhận học bổng loại Xuất sắc?')" class="shrink-0 px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-[#1d4ed8] hover:text-[#1d4ed8] text-slate-600 shadow-2xs transition-colors cursor-pointer">
+                                    💡 Học bổng Xuất sắc
+                                </button>
+                                <button onclick="fillPrompt('Khi nào bị cảnh báo học vụ mức 1 và mức 2?')" class="shrink-0 px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-[#1d4ed8] hover:text-[#1d4ed8] text-slate-600 shadow-2xs transition-colors cursor-pointer">
+                                    ⚠️ Cảnh báo học vụ
+                                </button>
+                                <button onclick="fillPrompt('Chuẩn đầu ra Tiếng Anh cho K22 Khoa CNTT')" class="shrink-0 px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-[#1d4ed8] hover:text-[#1d4ed8] text-slate-600 shadow-2xs transition-colors cursor-pointer">
+                                    🇬🇧 Chuẩn đầu ra Tiếng Anh
+                                </button>
+                                <button onclick="fillPrompt('Cách nộp đơn phúc khảo bài thi kết thúc môn')" class="shrink-0 px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-[#1d4ed8] hover:text-[#1d4ed8] text-slate-600 shadow-2xs transition-colors cursor-pointer">
+                                    📑 Phúc khảo bài thi
+                                </button>
+                            </div>
+
                             <!-- Input Box -->
-                            <form id="chatForm" class="rounded-2xl bg-white border border-border-ui-subtle shadow-lg p-2.5 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15 transition-all">
-                                <textarea class="w-full bg-transparent border-none text-text-primary placeholder-text-muted text-sm focus:outline-none resize-none px-2 py-1 leading-relaxed" 
-                                          id="messageInput" 
-                                          placeholder="Đặt câu hỏi về học vụ, quy chế, học bổng, đăng ký học phần... (Enter để gửi, Shift + Enter xuống dòng)" 
-                                          rows="2"
-                                          required></textarea>
-                                <div class="flex items-center justify-between pt-1.5 px-1 border-t border-surface-subtle">
-                                    <div class="flex items-center gap-1">
-                                        <button class="p-1.5 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-subtle transition-colors" 
-                                                title="Kèm tài liệu/ảnh minh chứng" type="button">
+                            <div class="rounded-2xl bg-white border border-[#cbd5e1] shadow-lg p-2.5 focus-within:border-[#1d4ed8] focus-within:ring-2 focus-within:ring-[#1d4ed8]/15 transition-all">
+                                <textarea class="w-full bg-transparent border-none text-[#0f172a] placeholder-[#94a3b8] text-sm focus:outline-none resize-none px-2 py-1 leading-relaxed" 
+                                          id="chatInput" onkeydown="handleInputKey(event)" 
+                                          placeholder="Đặt câu hỏi về học vụ, quy chế, học bổng, đăng ký học phần... (Enter để gửi, Shift + Enter xuống dòng)" rows="2"></textarea>
+                                
+                                <div class="flex items-center justify-between pt-1.5 px-1 border-t border-[#f1f5f9]">
+                                    <div class="flex items-center gap-1.5">
+                                        <!-- Paperclip Attachment Info -->
+                                        <button class="p-1.5 rounded-lg text-[#64748b] hover:text-[#1d4ed8] hover:bg-[#f1f5f9] transition-colors cursor-pointer" title="Đính kèm tài liệu minh chứng" type="button" onclick="alert('Tính năng tải tài liệu đính kèm đang kết nối với hệ thống lưu trữ HCMUTE Cloud.')">
                                             <span class="material-symbols-outlined text-lg">attach_file</span>
                                         </button>
-                                        <div class="h-4 w-px bg-border-ui mx-1"></div>
-                                        <!-- Model Selector Dropdown -->
-                                        <div class="relative inline-block text-left" id="modelSelectorDropdown">
-                                            <button type="button" id="modelSelectorBtn"
-                                                    class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-surface-subtle hover:bg-slate-100 text-text-secondary flex items-center gap-1 transition-all border border-border-ui/50 focus:outline-none cursor-pointer"
-                                                    aria-expanded="false" title="Chọn mô hình AI">
-                                                <span class="material-symbols-outlined text-xs text-primary" id="selectedModelIcon">auto_awesome</span>
-                                                <span id="selectedModelText">Gemini 1.5 Pro</span>
-                                                <span class="material-symbols-outlined text-[13px] text-text-muted">expand_more</span>
-                                            </button>
-                                            
-                                            <!-- Dropdown Menu -->
-                                            <div id="modelDropdownMenu" class="hidden absolute left-0 bottom-full mb-1.5 w-60 rounded-xl bg-white shadow-xl border border-border-ui py-1.5 z-50 text-xs transition-all">
-                                                <div class="px-3 py-1 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
-                                                    Chọn mô hình AI
-                                                </div>
-                                                
-                                                <button type="button" class="model-option w-full px-3 py-2 flex items-center justify-between text-left hover:bg-surface-subtle transition-colors cursor-pointer"
-                                                        data-provider="gemini" data-name="Gemini 1.5 Pro" data-icon="auto_awesome">
-                                                    <div class="flex items-center gap-2">
-                                                        <span class="material-symbols-outlined text-sm text-primary">auto_awesome</span>
-                                                        <div>
-                                                            <div class="font-medium text-text-primary">Gemini 1.5 Pro</div>
-                                                            <div class="text-[10px] text-text-muted">Google Cloud AI (Khuyên dùng)</div>
-                                                        </div>
-                                                    </div>
-                                                    <span class="material-symbols-outlined text-xs text-primary check-icon">check</span>
-                                                </button>
-                                                
-                                                <button type="button" class="model-option w-full px-3 py-2 flex items-center justify-between text-left hover:bg-surface-subtle transition-colors cursor-pointer"
-                                                        data-provider="ollama" data-name="Llama 3.2 (Ollama)" data-icon="neurology">
-                                                    <div class="flex items-center gap-2">
-                                                        <span class="material-symbols-outlined text-sm text-indigo-600">neurology</span>
-                                                        <div>
-                                                            <div class="font-medium text-text-primary">Llama 3.2 (Ollama)</div>
-                                                            <div class="text-[10px] text-text-muted">Local Model mã nguồn mở</div>
-                                                        </div>
-                                                    </div>
-                                                    <span class="material-symbols-outlined text-xs text-primary check-icon hidden">check</span>
-                                                </button>
-                                                
-                                                <button type="button" class="model-option w-full px-3 py-2 flex items-center justify-between text-left hover:bg-surface-subtle transition-colors cursor-pointer"
-                                                        data-provider="dify" data-name="Dify AI Agent" data-icon="hub">
-                                                    <div class="flex items-center gap-2">
-                                                        <span class="material-symbols-outlined text-sm text-emerald-600">hub</span>
-                                                        <div>
-                                                            <div class="font-medium text-text-primary">Dify AI Agent</div>
-                                                            <div class="text-[10px] text-text-muted">Workflow RAG Cloud</div>
-                                                        </div>
-                                                    </div>
-                                                    <span class="material-symbols-outlined text-xs text-primary check-icon hidden">check</span>
-                                                </button>
-                                                
-                                                <button type="button" class="model-option w-full px-3 py-2 flex items-center justify-between text-left hover:bg-surface-subtle transition-colors cursor-pointer"
-                                                        data-provider="default" data-name="QAUTE FAQ Hybrid" data-icon="school">
-                                                    <div class="flex items-center gap-2">
-                                                        <span class="material-symbols-outlined text-sm text-amber-600">school</span>
-                                                        <div>
-                                                            <div class="font-medium text-text-primary">QAUTE FAQ Hybrid</div>
-                                                            <div class="text-[10px] text-text-muted">Kho tri thức học vụ HCMUTE</div>
-                                                        </div>
-                                                    </div>
-                                                    <span class="material-symbols-outlined text-xs text-primary check-icon hidden">check</span>
-                                                </button>
-                                            </div>
-                                        </div>
+                                        <div class="h-4 w-px bg-[#e2e8f0] mx-0.5"></div>
+                                        <!-- Model Chip Indicator -->
+                                        <span class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-[#f1f5f9] text-[#64748b] flex items-center gap-1" id="activeModelChip">
+                                            <span class="material-symbols-outlined text-xs text-[#1d4ed8]">auto_awesome</span> Gemini 1.5 Pro
+                                        </span>
                                     </div>
-                                    <button type="submit" id="sendBtn"
-                                            class="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center shadow-xs hover:bg-primary-hover active:scale-95 transition-all flex-shrink-0" 
-                                            title="Gửi câu hỏi">
+
+                                    <!-- Circular Blue Send Button with upward arrow -->
+                                    <button id="sendBtn" class="w-9 h-9 rounded-full bg-[#1d4ed8] text-white flex items-center justify-center shadow-xs hover:bg-[#1e40af] active:scale-95 transition-all shrink-0 cursor-pointer disabled:opacity-50" onclick="sendMessage()" title="Gửi câu hỏi" type="button">
                                         <span class="material-symbols-outlined text-lg">arrow_upward</span>
                                     </button>
                                 </div>
-                            </form>
-                            
-                            <!-- Disclaimer -->
-                            <p class="text-center text-[11px] text-text-muted">
-                                Trợ lý AI có thể đưa ra thông tin cần kiểm chứng. Vui lòng đối chiếu với văn bản chính thức tại 
-                                <a class="text-primary hover:underline" href="https://daotao.hcmute.edu.vn" target="_blank">daotao.hcmute.edu.vn</a>.
+                            </div>
+
+                            <!-- Subtle Disclaimer -->
+                            <p class="text-center text-[11px] text-[#94a3b8]">
+                                Trợ lý AI có thể đưa ra thông tin cần đối chiếu. Vui lòng tham khảo văn bản chính thức tại 
+                                <a class="text-[#1d4ed8] hover:underline" href="https://daotao.hcmute.edu.vn" target="_blank">daotao.hcmute.edu.vn</a>.
                             </p>
                         </div>
                     </div>
                 </section>
             </div>
-        </div>
-    </main>
-</div>
+        </main>
+    </div>
 
-<!-- Modal Đổi tên Cuộc trò chuyện -->
-<div id="renameModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs transition-opacity">
-    <div class="bg-white rounded-2xl shadow-2xl border border-border-ui w-full max-w-sm p-5 mx-4 transform transition-all">
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-primary-subtle text-primary flex items-center justify-center">
-                    <span class="material-symbols-outlined text-lg">edit</span>
+    <!-- ================= 8. CONVERT-TO-TICKET MODAL ================= -->
+    <div class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs" id="ticketModal">
+        <div class="w-full max-w-lg rounded-2xl bg-white shadow-2xl border border-[#e2e8f0] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <!-- Modal Header -->
+            <div class="px-5 py-3.5 bg-[#003882] text-white flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-xl">confirmation_number</span>
+                    <h3 class="font-heading font-semibold text-sm">Chuyển thành yêu cầu hỗ trợ (Create Ticket)</h3>
                 </div>
-                <h3 class="font-heading font-semibold text-sm text-text-primary">Đổi tên cuộc trò chuyện</h3>
+                <button class="text-white/80 hover:text-white p-1 rounded-lg cursor-pointer" onclick="closeTicketModal()" type="button">
+                    <span class="material-symbols-outlined text-lg leading-none">close</span>
+                </button>
             </div>
-            <button onclick="window.closeRenameModal()" type="button" class="text-text-muted hover:text-text-primary p-1 rounded-md hover:bg-surface-subtle transition-colors">
-                <span class="material-symbols-outlined text-lg">close</span>
-            </button>
-        </div>
-        <div class="space-y-3">
-            <label for="renameTitleInput" class="block text-xs font-medium text-text-secondary">Tiêu đề cuộc trò chuyện</label>
-            <input type="text" id="renameTitleInput" maxlength="255"
-                   class="w-full px-3 py-2 rounded-xl bg-surface-subtle border border-border-ui text-text-primary text-xs focus:outline-none focus:border-primary focus:bg-white transition-all"
-                   placeholder="Nhập tiêu đề mới..."/>
-            <div id="renameErrorMsg" class="hidden text-xs text-red-500">Tiêu đề không được để trống</div>
-        </div>
-        <div class="flex items-center justify-end gap-2 mt-5">
-            <button onclick="window.closeRenameModal()" type="button" 
-                    class="px-3 py-1.5 rounded-lg border border-border-ui text-text-secondary hover:bg-surface-subtle text-xs font-medium transition-colors">
-                Hủy
-            </button>
-            <button id="saveRenameBtn" onclick="window.submitRenameModal()" type="button" 
-                    class="px-4 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-white text-xs font-medium shadow-xs transition-all flex items-center gap-1.5">
-                <span>Lưu thay đổi</span>
-            </button>
+
+            <!-- Modal Body -->
+            <form th:action="@{/tickets/create}" method="post" id="convertTicketForm" class="p-5 space-y-3.5 text-[#0f172a] text-xs">
+                <!-- Tiêu đề -->
+                <div>
+                    <label class="block font-semibold mb-1 text-[#0f172a]">Tiêu đề yêu cầu <span class="text-rose-500">*</span></label>
+                    <input name="title" id="ticketTitleInput" required class="w-full px-3 py-2 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] text-xs focus:outline-none focus:border-[#003882] focus:bg-white" type="text" value="Cần tư vấn hỗ trợ quy chế học vụ từ phiên chat AI"/>
+                </div>
+
+                <!-- Đơn vị tiếp nhận -->
+                <div>
+                    <label class="block font-semibold mb-1 text-[#0f172a]">Đơn vị tiếp nhận (Khoa / Phòng)</label>
+                    <select name="departmentId" id="ticketDeptSelect" class="w-full px-3 py-2 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] text-xs focus:outline-none focus:border-[#003882] focus:bg-white">
+                        <option value="">-- Chọn Khoa / Phòng ban tiếp nhận --</option>
+                        <option th:if="${departments != null}" th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}">Phòng Đào tạo</option>
+                    </select>
+                </div>
+
+                <!-- Độ ưu tiên (Priority) -->
+                <div>
+                    <label class="block font-semibold mb-1 text-[#0f172a]">Độ ưu tiên (SLA)</label>
+                    <select name="priority" class="w-full px-3 py-2 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] text-xs focus:outline-none focus:border-[#003882] focus:bg-white">
+                        <option value="LOW">Thấp (Phản hồi trong 7 ngày)</option>
+                        <option value="MEDIUM" selected="">Trung bình (Phản hồi trong 72 giờ)</option>
+                        <option value="HIGH">Cao (Phản hồi trong 48 giờ)</option>
+                        <option value="URGENT">Khẩn cấp (Phản hồi trong 24 giờ)</option>
+                    </select>
+                </div>
+
+                <!-- Tóm tắt nội dung trích từ đoạn chat -->
+                <div>
+                    <label class="block font-semibold mb-1 text-[#0f172a]">Nội dung yêu cầu chi tiết <span class="text-rose-500">*</span></label>
+                    <textarea name="description" id="ticketDescriptionInput" required class="w-full px-3 py-2 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] text-xs focus:outline-none focus:border-[#003882] focus:bg-white leading-relaxed" rows="4" placeholder="Mô tả cụ thể vấn đề bạn cần giải quyết..."></textarea>
+                </div>
+
+                <!-- Auto attach banner -->
+                <div class="p-2.5 rounded-xl bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-between text-[11px] text-[#003882]">
+                    <span class="flex items-center gap-1.5 font-medium">
+                        <span class="material-symbols-outlined text-base">attach_email</span>
+                        Tự động đính kèm lịch sử đoạn chat làm minh chứng
+                    </span>
+                    <span class="font-semibold text-[#047857] text-[10px] uppercase">Đã sẵn sàng</span>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-[#e2e8f0]">
+                    <button class="px-4 py-2 rounded-xl border border-[#cbd5e1] text-[#475569] hover:bg-[#f1f5f9] transition-colors text-xs font-medium cursor-pointer" onclick="closeTicketModal()" type="button">
+                        Hủy
+                    </button>
+                    <button class="px-5 py-2 rounded-xl bg-[#003882] text-white hover:bg-[#002456] font-semibold text-xs shadow-xs transition-all cursor-pointer" type="submit">
+                        Tạo Ticket
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
-</div>
 
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script>
-    if (typeof marked !== 'undefined') {
-        marked.setOptions({ breaks: true, gfm: true });
-        document.querySelectorAll('.ai-markdown-content').forEach(function(el) {
-            var raw = el.textContent || '';
-            if (raw.trim()) {
-                el.innerHTML = marked.parse(raw);
-                el.dataset.parsed = 'true';
-            }
-        });
-    }
-</script>
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    const currentSessionId = /*[[${conversation?.sessionId}]]*/ null;
-    const isAuthenticated = /*[[${currentUser != null}]]*/ false;
-    /*]]>*/
-</script>
-<script th:src="@{/js/ai-chat.js(v=8)}"></script>
+    <!-- ================= 9. RAG CITATION SIDE DRAWER ================= -->
+    <div class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex justify-end transition-opacity" id="citationDrawer">
+        <div class="w-full max-w-lg h-full bg-white shadow-2xl flex flex-col border-l border-[#e2e8f0] animate-in slide-in-from-right duration-200">
+            <div class="p-4 border-b border-[#e2e8f0] flex items-center justify-between bg-[#f8fafc]">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#1d4ed8]">menu_book</span>
+                    <h3 class="font-heading font-bold text-sm text-[#0f172a]" id="drawerDocTitle">Trích đoạn văn bản quy chế</h3>
+                </div>
+                <button class="p-1 text-[#64748b] hover:text-[#0f172a] hover:bg-[#e2e8f0] rounded-lg transition-colors cursor-pointer" onclick="closeCitationDrawer()" type="button">
+                    <span class="material-symbols-outlined text-lg">close</span>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-5 space-y-4 text-xs leading-relaxed text-[#0f172a] chat-scrollbar">
+                <div class="p-3 rounded-xl bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-between text-[#1d4ed8]">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-base">verified</span>
+                        <span class="font-semibold" id="drawerMeta">Cơ sở dữ liệu Đào tạo HCMUTE</span>
+                    </div>
+                    <span class="text-[10px] bg-white px-2 py-0.5 rounded font-mono border border-[#bfdbfe]">RAG Verified</span>
+                </div>
+                <div class="border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] font-mono text-[11px] text-[#475569] space-y-2 whitespace-pre-line" id="drawerContent">
+                    Đang tải nội dung văn bản gốc...
+                </div>
+                <div class="p-3 bg-amber-50/80 rounded-xl border border-[#f59e0b]/40 text-[#92400e]">
+                    <p class="font-semibold flex items-center gap-1.5 mb-1">
+                        <span class="material-symbols-outlined text-sm">gavel</span> Hiệu lực pháp lý:
+                    </p>
+                    <p class="text-[11px]">Văn bản này được ban hành chính thức theo thẩm quyền của Hiệu trưởng Trường Đại học Sư phạm Kỹ thuật TP.HCM và áp dụng cho toàn bộ sinh viên hệ đào tạo chính quy.</p>
+                </div>
+            </div>
+            <div class="p-4 border-t border-[#e2e8f0] bg-white flex items-center justify-between">
+                <a class="flex items-center gap-1.5 text-xs text-[#1d4ed8] font-semibold hover:underline" href="https://daotao.hcmute.edu.vn" target="_blank">
+                    <span class="material-symbols-outlined text-base">download</span> Tải bản PDF chính thức
+                </a>
+                <button class="px-4 py-2 rounded-xl bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#0f172a] font-medium text-xs transition-colors cursor-pointer" onclick="closeCitationDrawer()" type="button">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
 
-<!-- Header Dropdown & Mobile Interactions -->
-<script>
-    // AI Chat Account Dropdown Toggle (từ index.html)
-    (function() {
-        const toggle = document.getElementById('aiChatAccountToggle');
-        const dropdown = document.getElementById('aiChatDropdownMenu');
-        if (!toggle || !dropdown) return;
-        
-        // Toggle dropdown
-        toggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const isHidden = dropdown.classList.contains('hidden');
-            dropdown.classList.toggle('hidden');
-            toggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
-        });
-        
-        // Close on click outside
-        document.addEventListener('click', function(e) {
-            if (!dropdown.classList.contains('hidden') && 
-                !toggle.contains(e.target) && 
-                !dropdown.contains(e.target)) {
-                dropdown.classList.add('hidden');
-                toggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-        
-        // Close on ESC key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && !dropdown.classList.contains('hidden')) {
-                dropdown.classList.add('hidden');
-                toggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    })();
-    
-    // Mobile menu toggle
-    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-    const sidebar = document.querySelector('aside');
-    
-    if (mobileMenuToggle && sidebar) {
-        mobileMenuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('hidden');
-            sidebar.classList.toggle('fixed');
-            sidebar.classList.toggle('inset-0');
-            sidebar.classList.toggle('z-40');
-            sidebar.classList.toggle('md:flex');
-        });
-    }
-    
-    // Search conversations filter
-    const searchConvInput = document.getElementById('searchConversationsInput');
-    if (searchConvInput) {
-        searchConvInput.addEventListener('input', function() {
-            const query = this.value.toLowerCase().trim();
-            document.querySelectorAll('.conversation-item').forEach(item => {
-                const text = item.textContent.toLowerCase();
-                item.style.display = text.includes(query) ? '' : 'none';
-            });
-        });
-    }
-    
-    // Modal rename functions
-    let targetRenameSessionId = null;
+    <!-- Toast Notification -->
+    <div class="hidden fixed bottom-6 right-6 z-50 bg-[#0f172a] text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-150" id="toastNotification">
+        <span class="material-symbols-outlined text-[#10b981] text-xl">check_circle</span>
+        <div class="flex flex-col">
+            <span class="text-xs font-semibold" id="toastTitle">Thành công!</span>
+            <span class="text-[11px] text-white/80" id="toastMessage">Nội dung thông báo</span>
+        </div>
+        <button class="p-1 text-white/60 hover:text-white cursor-pointer" onclick="document.getElementById('toastNotification').classList.add('hidden')" type="button">
+            <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+    </div>
 
-    window.openRenameModal = function(sid, currentTitle) {
-        targetRenameSessionId = sid;
-        const modal = document.getElementById('renameModal');
-        const input = document.getElementById('renameTitleInput');
-        const errorMsg = document.getElementById('renameErrorMsg');
-        if (!modal || !input) {
-            const fallback = prompt('Nhập tiêu đề mới cho cuộc trò chuyện:', currentTitle || '');
-            if (fallback && fallback.trim() && fallback.trim() !== currentTitle) {
-                doRenameConversation(sid, fallback.trim());
-            }
-            return;
-        }
-        input.value = currentTitle || '';
-        if (errorMsg) errorMsg.classList.add('hidden');
-        modal.classList.remove('hidden');
-        setTimeout(() => {
-            input.focus();
-            input.select();
-        }, 50);
-    };
+    <!-- Hidden Context for Client Script -->
+    <div id="aiUserContext" 
+         th:data-fullname="${currentUserFullName != null ? currentUserFullName : 'Sinh viên'}"
+         th:data-avatar="${currentUserAvatar != null ? currentUserAvatar : ''}"
+         th:data-role="${currentUserRole != null ? currentUserRole : 'STUDENT'}"
+         class="hidden"></div>
 
-    window.closeRenameModal = function() {
-        const modal = document.getElementById('renameModal');
-        if (modal) modal.classList.add('hidden');
-        targetRenameSessionId = null;
-    };
+    <!-- INTERACTIVE SCRIPTS -->
+    <script th:inline="none">
+        const _ctxEl = document.getElementById('aiUserContext');
+        const currentUserFullName = _ctxEl ? (_ctxEl.dataset.fullname || 'Sinh viên') : 'Sinh viên';
+        const currentUserAvatar = _ctxEl ? (_ctxEl.dataset.avatar || '') : '';
+        let currentProvider = 'gemini';
+        const _urlParts = window.location.pathname.split('/');
+        const _pathSess = (_urlParts.length > 2 && (_urlParts[1] === 'ai-chat' || _urlParts[1] === 'ai')) ? _urlParts[2] : null;
+        const _querySess = new URLSearchParams(window.location.search).get('session');
+        let currentSessionId = _pathSess || _querySess || ('session_' + Date.now());
+        let sessions = [];
+        let welcomeTemplate = null;
 
-    window.submitRenameModal = async function() {
-        const input = document.getElementById('renameTitleInput');
-        const errorMsg = document.getElementById('renameErrorMsg');
-        const saveBtn = document.getElementById('saveRenameBtn');
-        if (!input || !targetRenameSessionId) return;
-
-        const newTitle = input.value.trim();
-        if (!newTitle) {
-            if (errorMsg) errorMsg.classList.remove('hidden');
-            return;
-        }
-
-        if (saveBtn) saveBtn.disabled = true;
-        await doRenameConversation(targetRenameSessionId, newTitle);
-        if (saveBtn) saveBtn.disabled = false;
-        window.closeRenameModal();
-    };
-
-    async function doRenameConversation(sid, newTitle) {
-        try {
-            const res = await fetch(`/api/ai/conversations/${sid}/title`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ title: newTitle })
-            });
-
-            if (res.ok) {
-                // Update active header if it's the current session
-                const headerTitle = document.getElementById('currentConversationTitle');
-                const headerBtn = document.getElementById('headerRenameBtn');
-                if (headerTitle && (headerBtn && headerBtn.dataset.sessionId === sid || currentSessionId === sid)) {
-                    headerTitle.textContent = newTitle;
-                    if (headerBtn) headerBtn.dataset.title = newTitle;
-                }
-                // Update sidebar title in DOM directly
-                const items = document.querySelectorAll(`.conversation-item[data-session-id="${sid}"]`);
-                items.forEach(item => {
-                    const titleEl = item.querySelector('.conv-title-text');
-                    if (titleEl) {
-                        titleEl.textContent = newTitle;
-                        titleEl.title = newTitle;
-                    }
-                    const renameBtn = item.querySelector('.rename-conv');
-                    if (renameBtn) renameBtn.dataset.title = newTitle;
-                });
-                showToast('Đã đổi tên cuộc trò chuyện! ✏️');
-            } else {
-                alert('Không thể đổi tên cuộc trò chuyện. Vui lòng thử lại.');
-            }
-        } catch (err) {
-            console.error('Rename error:', err);
-            alert('Lỗi kết nối khi đổi tên cuộc trò chuyện.');
-        }
-    }
-
-    // Modal keyboard shortcuts (Enter to save, Esc to close)
-    document.getElementById('renameTitleInput')?.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            window.submitRenameModal();
-        } else if (e.key === 'Escape') {
-            window.closeRenameModal();
-        }
-    });
-    
-    // Submit feedback (Thumbs Up/Down)
-    window.submitFeedback = function(button) {
-        const messageId = button.dataset.messageId;
-        const feedbackType = button.dataset.feedback; // "POSITIVE" or "NEGATIVE"
-        
-        fetch('/api/ai/feedback', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
+        // Citation database simulation
+        const citationDb = {
+            'qd824': {
+                title: 'Quyết định 824/QĐ-ĐHSPKT: Quy chế Đào tạo & CTSV',
+                meta: 'Phòng Đào tạo & CTSV • Điều 24',
+                content: `Điều 24: Quy định xét cấp Học bổng Khuyến khích học tập (KKHT)
+1. Đối tượng xét cấp: Sinh viên có kết quả học tập và rèn luyện từ loại Khá trở lên trong học kỳ xét, không bị kỷ luật từ mức khiển trách trở lên trong học kỳ xét học bổng.
+2. Tiêu chuẩn xét cấp:
+   - Loại Xuất sắc: Điểm trung bình học kỳ (GPA) >= 3.60 VÀ Điểm rèn luyện (ĐRL) >= 90 điểm. Mức học bổng bằng 120% mức học phí của học kỳ.
+   - Loại Giỏi: Điểm GPA >= 3.20 VÀ Điểm ĐRL >= 80 điểm. Mức học bổng bằng 100% mức học phí.
+   - Loại Khá: Điểm GPA >= 2.50 VÀ Điểm ĐRL >= 70 điểm. Mức học bổng từ 50% đến 80% mức học phí tùy thuộc quỹ học bổng.
+3. Sinh viên phải tích lũy tối thiểu 15 tín chỉ trong học kỳ chính (không tính các học phần GDTC, GDQP và Anh văn không tính điểm tích lũy).`
             },
-            credentials: 'include',  // Include session cookies for authentication
-            body: JSON.stringify({
-                messageId: messageId,
-                feedbackType: feedbackType
-            })
-        })
-        .then(response => {
-            if (response.ok) {
-                // Visual feedback: fill icon and disable
-                button.querySelector('.material-symbols-outlined').style.fontVariationSettings = "'FILL' 1";
-                button.classList.add(feedbackType === 'POSITIVE' ? 'text-success' : 'text-error');
-                button.disabled = true;
-                
-                // Disable opposite button
-                const container = button.parentElement;
-                const buttons = container.querySelectorAll('.feedback-btn');
-                buttons.forEach(btn => btn.disabled = true);
-                
-                // Show toast (optional)
-                showToast(feedbackType === 'POSITIVE' ? 'Cảm ơn phản hồi của bạn! 👍' : 'Cảm ơn, chúng tôi sẽ cải thiện! 👎');
-            } else {
-                showToast('Không thể gửi phản hồi. Vui lòng thử lại.', 'error');
+            'cntt_notice': {
+                title: 'Thông báo xét duyệt học bổng HK1 (Phòng Tuyển sinh & CTSV)',
+                meta: 'Văn bản hướng dẫn chi trả học bổng qua ngân hàng',
+                content: `Kế hoạch chi trả học bổng KKHT năm học 2026:
+- Danh sách dự kiến sẽ được công bố công khai trên Cổng thông tin sinh viên sau khi có quyết định chính thức từ Ban Giám hiệu.
+- Thời gian tiếp nhận khiếu nại, điều chỉnh thông tin tài khoản ngân hàng: trong vòng 07 ngày làm việc kể từ ngày công bố.
+- Tiền học bổng sẽ được chuyển khoản trực tiếp vào tài khoản ngân hàng liên kết của sinh viên đã đăng ký trên hệ thống Portal.`
             }
-        })
-        .catch(err => {
-            console.error('Feedback error:', err);
-            showToast('Lỗi kết nối. Vui lòng thử lại.', 'error');
-        });
-    };
-    
-    // Copy response to clipboard
-    window.copyResponse = function(button) {
-        const content = button.dataset.content;
-        
-        // Remove HTML tags for plain text
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = content;
-        const plainText = tempDiv.textContent || tempDiv.innerText || '';
-        
-        navigator.clipboard.writeText(plainText).then(() => {
-            // Visual feedback
-            const icon = button.querySelector('.material-symbols-outlined');
-            const originalIcon = icon.textContent;
-            icon.textContent = 'done';
-            button.classList.add('text-success', 'bg-green-50');
-            
-            setTimeout(() => {
-                icon.textContent = originalIcon;
-                button.classList.remove('text-success', 'bg-green-50');
-            }, 2000);
-            
-            showToast('Đã sao chép câu trả lời! 📋');
-        }).catch(err => {
-            console.error('Copy error:', err);
-            showToast('Không thể sao chép. Vui lòng thử lại.', 'error');
-        });
-    };
-    
-    // Simple toast notification
-    function showToast(message, type = 'success') {
-        const toast = document.createElement('div');
-        toast.className = `fixed bottom-4 right-4 px-4 py-3 rounded-lg shadow-lg text-sm font-medium text-white transition-all z-50 ${
-            type === 'success' ? 'bg-success' : 'bg-error'
-        }`;
-        toast.textContent = message;
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(10px)';
-        
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.style.opacity = '1';
-            toast.style.transform = 'translateY(0)';
-        }, 10);
-        
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateY(10px)';
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
-    }
-</script>
+        };
 
+        // --- Model Selector Logic ---
+        function toggleModelDropdown(e) {
+            e.stopPropagation();
+            document.getElementById('modelDropdown').classList.toggle('hidden');
+        }
+
+        function selectModel(provider, label) {
+            currentProvider = provider;
+            document.getElementById('currentModelLabel').innerText = label;
+            let icon = 'auto_awesome';
+            if (provider === 'ollama') icon = 'dns';
+            else if (provider === 'dify') icon = 'psychology';
+            else if (provider === 'qaute') icon = 'menu_book';
+            document.getElementById('activeModelChip').innerHTML = 
+                `<span class="material-symbols-outlined text-xs text-[#1d4ed8]">${icon}</span> ${label}`;
+            document.getElementById('modelDropdown').classList.add('hidden');
+            showToast('Chuyển mô hình', `Đã kích hoạt mô hình: ${label}`);
+        }
+
+        function toggleHeaderOverflow(e) {
+            e.stopPropagation();
+            document.getElementById('headerOverflow').classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', () => {
+            const md = document.getElementById('modelDropdown');
+            if (md) md.classList.add('hidden');
+            const ho = document.getElementById('headerOverflow');
+            if (ho) ho.classList.add('hidden');
+        });
+
+        // --- History & Sessions Management (Đồng bộ Backend Database) ---
+        async function loadSessions() {
+            try {
+                const res = await fetch('/api/ai/conversations', { credentials: 'include' });
+                if (res.ok) {
+                    const apiData = await res.json();
+                    const convList = (apiData.data || apiData) || [];
+                    if (Array.isArray(convList) && convList.length > 0) {
+                        sessions = convList.map(c => ({
+                            id: c.sessionId,
+                            dbId: c.id,
+                            title: c.title || 'Cuộc trò chuyện',
+                            timestamp: c.updatedAt ? new Date(c.updatedAt).getTime() : (c.createdAt ? new Date(c.createdAt).getTime() : Date.now()),
+                            messages: []
+                        }));
+                        saveSessions();
+                        renderHistoryList();
+                        
+                        // Nếu có sessionId từ URL, tự động khôi phục tin nhắn
+                        if (_pathSess || _querySess) {
+                            switchSession(currentSessionId, false);
+                        }
+                        return;
+                    }
+                }
+            } catch (err) {
+                console.warn('Không thể tải lịch sử từ server, fallback localStorage:', err);
+            }
+
+            // [LEGACY_CODE - ROLLBACK IF NEEDED]:
+            try {
+                const stored = localStorage.getItem('hcmute_ai_chat_sessions');
+                if (stored) {
+                    sessions = JSON.parse(stored);
+                } else {
+                    sessions = [];
+                    saveSessions();
+                }
+            } catch (e) {
+                sessions = [];
+            }
+            renderHistoryList();
+            if (_pathSess || _querySess) {
+                switchSession(currentSessionId, false);
+            }
+        }
+
+        function saveSessions() {
+            try {
+                localStorage.setItem('hcmute_ai_chat_sessions', JSON.stringify(sessions));
+            } catch (e) {}
+        }
+
+        function renderHistoryList(filterText = '') {
+            const listToday = document.getElementById('list-today');
+            const listRecent = document.getElementById('list-recent');
+            const listOlder = document.getElementById('list-older');
+            if (!listToday) return;
+
+            listToday.innerHTML = '';
+            listRecent.innerHTML = '';
+            listOlder.innerHTML = '';
+
+            const now = Date.now();
+            const oneDay = 24 * 60 * 60 * 1000;
+            const sevenDays = 7 * oneDay;
+
+            let cToday = 0, cRecent = 0, cOlder = 0;
+
+            sessions.forEach(sess => {
+                if (filterText && !sess.title.toLowerCase().includes(filterText.toLowerCase())) return;
+
+                const diff = now - sess.timestamp;
+                let targetList = listOlder;
+                if (diff < oneDay) {
+                    targetList = listToday;
+                    cToday++;
+                } else if (diff < sevenDays) {
+                    targetList = listRecent;
+                    cRecent++;
+                } else {
+                    cOlder++;
+                }
+
+                const isActive = sess.id === currentSessionId;
+                const item = document.createElement('div');
+                item.className = `group relative flex items-center justify-between px-2.5 py-2 rounded-xl cursor-pointer transition-all ${
+                    isActive ? 'bg-[#eff6ff] text-[#1d4ed8] font-semibold border border-[#1d4ed8]/20' : 'text-[#475569] hover:bg-[#f1f5f9] hover:text-[#0f172a]'
+                }`;
+                item.onclick = () => switchSession(sess.id);
+
+                item.innerHTML = `
+                    <div class="flex items-center gap-2 min-w-0 pr-1 flex-1">
+                        <span class="material-symbols-outlined text-base shrink-0 ${isActive ? 'text-[#1d4ed8]' : 'text-[#94a3b8]'}">chat_bubble_outline</span>
+                        <span class="text-xs truncate ${isActive ? 'text-[#1d4ed8]' : 'text-slate-800'}">${escapeHtml(sess.title)}</span>
+                    </div>
+                    <div class="relative shrink-0">
+                        <button class="opacity-0 group-hover:opacity-100 p-1 text-[#64748b] hover:text-[#0f172a] hover:bg-white rounded transition-opacity cursor-pointer" onclick="event.stopPropagation(); toggleItemMenu(this)">
+                            <span class="material-symbols-outlined text-base leading-none">more_vert</span>
+                        </button>
+                        <div class="hidden absolute right-0 top-full mt-1 w-36 bg-white rounded-xl shadow-lg border border-[#e2e8f0] p-1 z-30 text-xs text-[#0f172a]">
+                            <button class="w-full text-left px-2 py-1.5 rounded-lg hover:bg-[#f1f5f9] flex items-center gap-2 cursor-pointer" onclick="event.stopPropagation(); renameSession('${sess.id}')">
+                                <span class="material-symbols-outlined text-sm text-[#64748b]">edit</span> Đổi tên
+                            </button>
+                            <button class="w-full text-left px-2 py-1.5 rounded-lg hover:bg-[#f1f5f9] flex items-center gap-2 cursor-pointer" onclick="event.stopPropagation(); shareSession('${sess.id}')">
+                                <span class="material-symbols-outlined text-sm text-[#64748b]">share</span> Chia sẻ
+                            </button>
+                            <button class="w-full text-left px-2 py-1.5 rounded-lg hover:bg-red-50 text-red-600 flex items-center gap-2 cursor-pointer" onclick="event.stopPropagation(); deleteSession('${sess.id}')">
+                                <span class="material-symbols-outlined text-sm text-red-500">delete</span> Xóa
+                            </button>
+                        </div>
+                    </div>
+                `;
+                targetList.appendChild(item);
+            });
+
+            document.getElementById('todayCount').innerText = cToday;
+            document.getElementById('recentCount').innerText = cRecent;
+            document.getElementById('olderCount').innerText = cOlder;
+        }
+
+        function filterHistoryList(val) {
+            renderHistoryList(val);
+        }
+
+        function toggleItemMenu(btn) {
+            document.querySelectorAll('#historyGroupContainer .history-item-list div.relative > div').forEach(m => m.classList.add('hidden'));
+            const menu = btn.nextElementSibling;
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        function startNewChat() {
+            currentSessionId = 'session_' + Date.now();
+            window.history.pushState({}, '', '/ai-chat');
+            const container = document.getElementById('messageContainer');
+            if (container) {
+                if (!welcomeTemplate) {
+                    const w = document.getElementById('welcomeMessage');
+                    if (w) welcomeTemplate = w.cloneNode(true);
+                }
+                container.innerHTML = '';
+                if (welcomeTemplate) container.appendChild(welcomeTemplate.cloneNode(true));
+            }
+            renderHistoryList();
+            const input = document.getElementById('chatInput');
+            if (input) input.focus();
+        }
+
+        // [NEW_CODE]: Khôi phục toàn bộ tin nhắn thật từ Database khi click session
+        async function switchSession(sessId, pushHistory = true) {
+            currentSessionId = sessId;
+            renderHistoryList();
+            if (pushHistory) {
+                window.history.pushState({}, '', '/ai-chat/' + sessId);
+            }
+
+            const container = document.getElementById('messageContainer');
+            if (!container) return;
+
+            if (!welcomeTemplate) {
+                const w = document.getElementById('welcomeMessage');
+                if (w) welcomeTemplate = w.cloneNode(true);
+            }
+
+            container.innerHTML = `
+                <div class="flex items-center justify-center p-8 text-xs text-[#64748b] gap-2">
+                    <span class="w-2 h-2 rounded-full bg-[#1d4ed8] animate-bounce"></span>
+                    <span class="w-2 h-2 rounded-full bg-[#1d4ed8] animate-bounce [animation-delay:0.2s]"></span>
+                    <span class="w-2 h-2 rounded-full bg-[#1d4ed8] animate-bounce [animation-delay:0.4s]"></span>
+                    <span>Đang tải lịch sử hội thoại...</span>
+                </div>
+            `;
+
+            try {
+                const res = await fetch('/api/ai/conversations/session/' + sessId + '/messages', { credentials: 'include' });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const json = await res.json();
+                const msgList = (json.data || json) || [];
+
+                container.innerHTML = '';
+                if (!msgList || msgList.length === 0) {
+                    if (welcomeTemplate) container.appendChild(welcomeTemplate.cloneNode(true));
+                    return;
+                }
+
+                msgList.forEach(m => {
+                    const isUser = (m.role === 'USER' || m.role === 'user');
+                    if (isUser) {
+                        appendUserMessage(m.content);
+                    } else {
+                        let sources = [];
+                        if (m.metadata) {
+                            try {
+                                const meta = typeof m.metadata === 'string' ? JSON.parse(m.metadata) : m.metadata;
+                                if (meta.sources) sources = meta.sources;
+                            } catch (e) {}
+                        }
+                        appendAiMessage(m.content, sources, "0.1", "");
+                    }
+                });
+                scrollToBottom();
+            } catch (err) {
+                console.error('Lỗi tải tin nhắn lịch sử:', err);
+                container.innerHTML = '';
+                if (welcomeTemplate) container.appendChild(welcomeTemplate.cloneNode(true));
+            }
+        }
+
+        async function renameSession(sessId) {
+            const sess = sessions.find(s => s.id === sessId);
+            if (!sess) return;
+            const newTitle = prompt('Nhập tiêu đề mới cho hội thoại:', sess.title);
+            if (newTitle && newTitle.trim()) {
+                const clean = newTitle.trim();
+                sess.title = clean;
+                try {
+                    await fetch('/api/ai/conversations/' + sessId + '/title', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ title: clean })
+                    });
+                } catch (e) {}
+                saveSessions();
+                renderHistoryList();
+            }
+        }
+
+        function shareSession(sessId) {
+            navigator.clipboard.writeText(window.location.origin + '/ai-chat/' + sessId);
+            showToast('Đã sao chép liên kết', 'Liên kết chia sẻ đoạn chat đã được lưu vào khay nhớ tạm.');
+        }
+
+        async function deleteSession(sessId) {
+            if (confirm('Bạn có chắc chắn muốn xóa hội thoại này khỏi lịch sử?')) {
+                try {
+                    await fetch('/api/ai/conversations/' + sessId, { method: 'DELETE', credentials: 'include' });
+                } catch (e) {}
+                sessions = sessions.filter(s => s.id !== sessId);
+                saveSessions();
+                if (currentSessionId === sessId) startNewChat();
+                else renderHistoryList();
+            }
+        }
+
+        function clearCurrentConversation() {
+            if (confirm('Bạn có chắc chắn muốn làm mới toàn bộ cuộc trò chuyện hiện tại?')) {
+                startNewChat();
+            }
+        }
+
+        function toggleMobileSidebar() {
+            const sb = document.getElementById('historySidebar');
+            if (sb) sb.classList.toggle('hidden');
+        }
+
+        // --- Sending & Receiving Messages ---
+        function handleInputKey(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function fillPrompt(text) {
+            const input = document.getElementById('chatInput');
+            if (input) {
+                input.value = text;
+                input.focus();
+            }
+        }
+
+        function fillAndSend(text) {
+            const input = document.getElementById('chatInput');
+            if (input) {
+                input.value = text;
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const query = input.value.trim();
+            if (!query) return;
+
+            // Clear input & disable
+            input.value = '';
+            input.disabled = true;
+            sendBtn.disabled = true;
+
+            // Register session title if first message
+            const currentSess = sessions.find(s => s.id === currentSessionId);
+            if (!currentSess) {
+                sessions.unshift({
+                    id: currentSessionId,
+                    title: query.length > 40 ? query.substring(0, 40) + '...' : query,
+                    timestamp: Date.now(),
+                    messages: []
+                });
+                saveSessions();
+                renderHistoryList();
+            }
+
+            // Append Student Message
+            appendUserMessage(query);
+
+            // Append Typing Indicator
+            const typingEl = appendTypingIndicator();
+            scrollToBottom();
+
+            const startTime = Date.now();
+
+            try {
+                const res = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: query,
+                        session_id: currentSessionId,
+                        provider: currentProvider
+                    })
+                });
+
+                typingEl.remove();
+
+                const data = await res.json();
+                const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+
+                // [NEW_CODE]: Trích xuất an toàn từ ApiResponse<AiChatResponse> (data.data) hoặc trực tiếp (data)
+                const answerText = (data.data && data.data.answer) ? data.data.answer : (data.answer || '');
+                const sourcesList = (data.data && data.data.sources) ? data.data.sources : (data.sources || []);
+                
+                // [LEGACY_CODE - ROLLBACK IF NEEDED]:
+                // appendAiMessage(data.answer, data.sources, duration, query);
+                appendAiMessage(answerText, sourcesList, duration, query);
+
+                // Cập nhật sessionId từ backend và đồng bộ sidebar
+                if (data.data && data.data.sessionId) {
+                    currentSessionId = data.data.sessionId;
+                    window.history.pushState({}, '', '/ai-chat/' + currentSessionId);
+                }
+                setTimeout(loadSessions, 600);
+            } catch (err) {
+                if (typingEl) typingEl.remove();
+                appendAiMessage(
+                    "Xin lỗi bạn, hiện tại kết nối đến hệ thống máy chủ AI đang bị gián đoạn. Bạn vui lòng thử lại sau giây lát hoặc sử dụng chức năng [Tra cứu câu hỏi FAQ](/faqs) và [Gửi yêu cầu hỗ trợ (Ticket)](/tickets/create) nhé!",
+                    [],
+                    "0.1",
+                    query
+                );
+            } finally {
+                input.disabled = false;
+                sendBtn.disabled = false;
+                input.focus();
+                scrollToBottom();
+            }
+        }
+
+        function appendUserMessage(text) {
+            const container = document.getElementById('messageContainer');
+            const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+            const div = document.createElement('div');
+            div.className = "flex items-start justify-end gap-3 pl-8 md:pl-16 animate-in fade-in slide-in-from-bottom-2 duration-150";
+
+            div.innerHTML = `
+                <div class="flex flex-col items-end max-w-xl">
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <span class="text-xs font-semibold text-[#0f172a]">${escapeHtml(currentUserFullName)}</span>
+                        <span class="text-[11px] text-[#94a3b8]">${timeStr}</span>
+                    </div>
+                    <div class="p-3.5 rounded-2xl rounded-tr-xs bg-[#003882] text-white leading-relaxed text-sm shadow-xs whitespace-pre-line">${escapeHtml(text)}</div>
+                    <span class="mt-1 text-[11px] text-[#94a3b8] flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs text-[#10b981]">done_all</span> Đã gửi qua Portal
+                    </span>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-[#eff6ff] text-[#003882] font-bold text-xs flex items-center justify-center shrink-0 shadow-xs border border-[#003882]/30 mt-1">
+                    ${currentUserAvatar ? `<img src="${currentUserAvatar}" class="w-full h-full rounded-full object-cover"/>` : (currentUserFullName ? currentUserFullName.substring(0, 2).toUpperCase() : 'SV')}
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function appendTypingIndicator() {
+            const container = document.getElementById('messageContainer');
+            const div = document.createElement('div');
+            div.className = "flex items-start gap-3.5 pr-2 animate-in fade-in duration-150";
+            div.id = "typingIndicator";
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-[#eff6ff] p-0.5 border border-[#1d4ed8]/20 flex items-center justify-center shrink-0 shadow-xs mt-1">
+                    <img alt="HCMUTE AI Mascot" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg"/>
+                </div>
+                <div class="flex items-center gap-1.5 p-3 bg-white border border-[#e2e8f0] rounded-2xl rounded-tl-xs shadow-xs text-xs text-[#64748b]">
+                    <span class="w-2 h-2 rounded-full bg-[#1d4ed8] animate-bounce"></span>
+                    <span class="w-2 h-2 rounded-full bg-[#1d4ed8] animate-bounce [animation-delay:0.2s]"></span>
+                    <span class="w-2 h-2 rounded-full bg-[#1d4ed8] animate-bounce [animation-delay:0.4s]"></span>
+                    <span class="text-[11px] ml-1.5 font-medium text-slate-500">Trợ lý AI đang suy luận quy chế...</span>
+                </div>
+            `;
+            container.appendChild(div);
+            return div;
+        }
+
+        function appendAiMessage(answer, sources, duration, originalQuery) {
+            const container = document.getElementById('messageContainer');
+            const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            const modelLabel = currentProvider === 'gemini' ? 'Gemini 1.5 Pro' : 'Ollama Local';
+
+            const div = document.createElement('div');
+            div.className = "flex items-start gap-3.5 pr-2 animate-in fade-in slide-in-from-bottom-2 duration-200";
+
+            // Format markdown to HTML
+            const formattedContent = renderMarkdown(answer);
+
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-[#eff6ff] p-0.5 border border-[#1d4ed8]/20 flex items-center justify-center shrink-0 shadow-xs mt-1">
+                    <img alt="HCMUTE AI Mascot" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg"/>
+                </div>
+                <div class="flex-1 flex flex-col space-y-3 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span class="font-heading font-bold text-xs text-[#003882]">Trợ lý AI học vụ HCMUTE</span>
+                        <span class="px-2 py-0.2 rounded-full text-[10px] font-medium bg-[#eff6ff] text-[#003882] border border-[#bfdbfe]">${modelLabel}</span>
+                        <span class="text-[11px] text-[#94a3b8]">• ${timeStr} (${duration}s)</span>
+                    </div>
+
+                    <!-- Clean Document-Style Bubble -->
+                    <div class="text-sm text-[#0f172a] leading-relaxed space-y-3 bg-white p-4 rounded-2xl rounded-tl-xs border border-slate-200/90 shadow-xs">
+                        <div class="ai-content-body space-y-2.5">${formattedContent}</div>
+
+                        <!-- Action Bar below answer -->
+                        <div class="flex items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-500 action-buttons">
+                            <div class="flex items-center gap-2">
+                                <button class="p-1 hover:text-[#003882] hover:bg-slate-100 rounded flex items-center gap-1 transition-colors cursor-pointer" onclick="copyMessageText(this)" title="Sao chép nội dung">
+                                    <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                                    <span class="text-[11px]">Sao chép</span>
+                                </button>
+                                <button class="p-1 hover:text-emerald-600 hover:bg-slate-100 rounded transition-colors cursor-pointer" onclick="showToast('Cảm ơn!', 'Cảm ơn bạn đã phản hồi câu trả lời hữu ích.')" title="Câu trả lời hữu ích">
+                                    <span class="material-symbols-outlined text-[16px]">thumb_up</span>
+                                </button>
+                                <button class="p-1 hover:text-rose-600 hover:bg-slate-100 rounded transition-colors cursor-pointer" onclick="showToast('Ghi nhận', 'Chúng tôi sẽ rà soát và cải thiện chất lượng câu trả lời này.')" title="Câu trả lời chưa đúng">
+                                    <span class="material-symbols-outlined text-[16px]">thumb_down</span>
+                                </button>
+                            </div>
+
+                            <!-- Convert to Ticket Button -->
+                            <button class="px-2.5 py-1 rounded-lg bg-blue-50 text-[#003882] hover:bg-blue-100 font-medium text-[11px] flex items-center gap-1 transition-colors border border-blue-200 cursor-pointer" 
+                                    onclick="openTicketModalWithData('${escapeHtml(originalQuery)}', '${escapeHtml(answer.substring(0, 200))}')">
+                                <span class="material-symbols-outlined text-[14px]">confirmation_number</span>
+                                <span>Chuyển thành Ticket</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        // Simple Markdown Renderer
+        function renderMarkdown(md) {
+            if (!md) return '';
+            let html = md
+                .replace(/^### (.*$)/gim, '<h4 class="font-bold text-sm text-[#003882] mt-2 mb-1">$1</h4>')
+                .replace(/^## (.*$)/gim, '<h3 class="font-bold text-base text-[#003882] mt-3 mb-1.5">$1</h3>')
+                .replace(/^# (.*$)/gim, '<h2 class="font-bold text-lg text-[#003882] mt-3 mb-2">$1</h2>')
+                .replace(/\*\*(.*?)\*\*/gim, '<strong class="font-semibold text-slate-900">$1</strong>')
+                .replace(/\*(.*?)\*/gim, '<em class="italic">$1</em>')
+                .replace(/`([^`]+)`/gim, '<code class="px-1.5 py-0.5 rounded bg-slate-100 text-[#003882] font-mono text-xs">$1</code>');
+
+            // Format markdown links safely without triggering Thymeleaf inlining parser
+            const linkRegex = new RegExp('\\[' + '([^\\]]+)' + '\\]\\(([^)]+)\\)', 'gim');
+            html = html.replace(linkRegex, '<a href="$2" class="text-[#003882] font-medium underline hover:text-[#002456]" target="_blank">$1</a>');
+
+            html = html
+                .replace(/^\s*•\s+(.*$)/gim, '<li class="ml-4 list-disc">$1</li>')
+                .replace(/^\s*\*\s+(.*$)/gim, '<li class="ml-4 list-disc">$1</li>')
+                .replace(/^\s*-\s+(.*$)/gim, '<li class="ml-4 list-disc">$1</li>')
+                .replace(/^\s*(\d+)\.\s+(.*$)/gim, '<li class="ml-4 list-decimal">$2</li>');
+
+            return html.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+        }
+
+        function scrollToBottom() {
+            const stream = document.getElementById('chatStream');
+            if (stream) stream.scrollTop = stream.scrollHeight;
+        }
+
+        function copyMessageText(btn) {
+            const content = btn.closest('.text-sm').querySelector('.ai-content-body').innerText;
+            navigator.clipboard.writeText(content);
+            showToast('Đã sao chép', 'Nội dung câu trả lời đã được chép vào khay nhớ tạm.');
+        }
+
+        // --- Ticket Modal Logic ---
+        function openTicketModal() {
+            document.getElementById('ticketModal').classList.remove('hidden');
+        }
+
+        function openTicketModalWithData(title, summary) {
+            const titleInput = document.getElementById('ticketTitleInput');
+            const descInput = document.getElementById('ticketDescriptionInput');
+            if (titleInput && title) titleInput.value = title;
+            if (descInput && summary) descInput.value = "Trích từ phiên tư vấn AI:\n" + summary + "\n\nKính gửi Thầy/Cô hỗ trợ trường hợp của em với ạ.";
+            openTicketModal();
+        }
+
+        function closeTicketModal() {
+            document.getElementById('ticketModal').classList.add('hidden');
+        }
+
+        // --- Citation Drawer Logic ---
+        function openCitationDrawer(key) {
+            const item = citationDb[key];
+            if (!item) return;
+
+            document.getElementById('drawerDocTitle').innerText = item.title;
+            document.getElementById('drawerMeta').innerText = item.meta;
+            document.getElementById('drawerContent').innerText = item.content;
+            document.getElementById('citationDrawer').classList.remove('hidden');
+        }
+
+        function closeCitationDrawer() {
+            document.getElementById('citationDrawer').classList.add('hidden');
+        }
+
+        // --- Toast Alert ---
+        function showToast(title, message) {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastMessage').innerText = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3500);
+        }
+
+        function shareCurrentChat() {
+            navigator.clipboard.writeText(window.location.href);
+            showToast('Đã sao chép liên kết', 'Liên kết trang tư vấn AI đã được lưu vào khay nhớ tạm.');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.toString().replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const w = document.getElementById('welcomeMessage');
+            if (w) welcomeTemplate = w.cloneNode(true);
+            loadSessions();
+        });
+
+        // Header Account Dropdown Toggle
+        (function() {
+            const toggle = document.getElementById('headerAccountToggle');
+            const dropdown = document.getElementById('headerDropdownMenu');
+            if (!toggle || !dropdown) return;
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isHidden = dropdown.classList.contains('hidden');
+                dropdown.classList.toggle('hidden');
+                toggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+            });
+            document.addEventListener('click', function(e) {
+                if (!dropdown.classList.contains('hidden') && !toggle.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                    toggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && !dropdown.classList.contains('hidden')) {
+                    dropdown.classList.add('hidden');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.focus();
+                }
+            });
+        })();
+
+        function toggleMobileNav() {
+            const drawer = document.getElementById('mobileNavDrawer');
+            if (drawer) drawer.classList.toggle('hidden');
+        }
+    </script>
 </body>
 </html>

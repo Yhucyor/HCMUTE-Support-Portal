@@ -39,19 +39,48 @@ public class AuthWebController {
             return "redirect:/home";
         }
         if (error != null) {
-            Object lastException = request.getSession().getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
-            if (lastException instanceof org.springframework.security.authentication.DisabledException) {
-                model.addAttribute("errorMessage", "Tài khoản của bạn chưa được kích hoạt qua mã OTP! Vui lòng hoàn tất kích hoạt tài khoản để đăng nhập.");
-            } else if (lastException instanceof org.springframework.security.authentication.LockedException) {
-                model.addAttribute("errorMessage", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Quản trị viên.");
+            if ("oauth2".equalsIgnoreCase(error)) {
+                Object oauthEx = request.getSession().getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
+                String msg = (oauthEx instanceof Exception e && e.getMessage() != null)
+                        ? e.getMessage()
+                        : "Đăng nhập bằng tài khoản Google không thành công. Vui lòng thử lại!";
+                model.addAttribute("errorMessage", msg);
             } else {
-                model.addAttribute("errorMessage", "Tên đăng nhập hoặc mật khẩu không chính xác!");
+                Object lastException = request.getSession().getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
+                if (lastException instanceof org.springframework.security.authentication.DisabledException) {
+                    model.addAttribute("errorMessage", "Tài khoản của bạn chưa được kích hoạt qua mã OTP! Vui lòng hoàn tất kích hoạt tài khoản để đăng nhập.");
+                } else if (lastException instanceof org.springframework.security.authentication.LockedException) {
+                    model.addAttribute("errorMessage", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Quản trị viên.");
+                } else {
+                    model.addAttribute("errorMessage", "Tên đăng nhập hoặc mật khẩu không chính xác!");
+                }
             }
         }
         if (logout != null) {
             model.addAttribute("successMessage", "Bạn đã đăng xuất thành công khỏi hệ thống.");
         }
         return "login";
+    }
+
+    @PostMapping("/portal-login")
+    public String handlePortalLogin(@RequestParam("studentId") String studentId,
+                                    @RequestParam("portalPassword") String portalPassword,
+                                    HttpServletRequest request,
+                                    RedirectAttributes redirectAttributes) {
+        try {
+            authService.loginWithHcmutePortal(studentId, portalPassword, request);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Đăng nhập thành công qua Cổng Đào tạo HCMUTE! Hệ thống đang đồng bộ dữ liệu học vụ của bạn.");
+            return "redirect:/home";
+        } catch (AppException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:/auth/login";
+        } catch (Exception ex) {
+            log.error("Portal login failed", ex);
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Đăng nhập qua Cổng Đào tạo thất bại: " + ex.getMessage());
+            return "redirect:/auth/login";
+        }
     }
 
     @GetMapping("/register")

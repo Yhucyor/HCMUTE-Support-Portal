@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Tra Cứu Tiến Độ Yêu Cầu (Guest) - QAUTE Portal</title>
+</head>
+<body>
+<div th:fragment="content">
+
+    <!-- CSRF Metadata for Secure AJAX Requests -->
+    <input type="hidden" id="csrfToken" th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}" th:value="${_csrf != null ? _csrf.token : ''}" />
+    <input type="hidden" id="csrfHeader" th:value="${_csrf != null ? _csrf.headerName : 'X-CSRF-TOKEN'}" />
+
+    <!-- Toast Container góc phải -->
+    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090;"></div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            
+            <!-- Tracking Box -->
+            <div class="card p-4 shadow-sm mb-4 border-0 bg-white">
+                <div class="d-flex align-items-center justify-content-between border-bottom pb-3 mb-3">
+                    <div>
+                        <span class="badge bg-primary me-2">TRA CỨU TIẾN ĐỘ GUEST</span>
+                        <h4 class="fw-bold text-dark mb-0 d-inline align-middle" th:text="'Mã Ticket: ' + ${ticket.ticketCode}">TK-XXXX</h4>
+                    </div>
+                    <div id="ticketStatusBadge">
+                        <span th:if="${ticket.status == 'OPEN'}" class="badge bg-warning text-dark fs-6">Chờ tiếp nhận</span>
+                        <span th:if="${ticket.status == 'IN_PROGRESS'}" class="badge bg-info text-dark fs-6">Đang xử lý</span>
+                        <span th:if="${ticket.status == 'RESOLVED'}" class="badge bg-success fs-6">Đã giải quyết</span>
+                        <span th:if="${ticket.status == 'CLOSED'}" class="badge bg-secondary fs-6">Đã đóng</span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Người gửi:</small>
+                        <strong th:text="${ticket.guestName}">Nguyễn Văn Thí Sinh</strong> (<span th:text="${ticket.guestEmail}">email</span>)
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Đơn vị tiếp nhận:</small>
+                        <strong class="text-primary" th:text="${ticket.departmentName}">Phòng Tuyển sinh</strong>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Thời điểm gửi:</small>
+                        <span th:text="${#temporals.format(ticket.createdAt, 'HH:mm - dd/MM/yyyy')}">00:00 01/01/2026</span>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Hạn cam kết SLA:</small>
+                        <span class="text-danger fw-bold" th:text="${#temporals.format(ticket.dueDate, 'HH:mm - dd/MM/yyyy')}">00:00 02/01/2026</span>
+                    </div>
+                </div>
+
+                <!-- Title & Content -->
+                <div class="bg-light p-3 rounded mb-3">
+                    <h6 class="fw-bold text-dark mb-2" th:text="${ticket.title}">Tiêu đề</h6>
+                    <p class="mb-0 text-secondary" style="white-space: pre-line;" th:text="${ticket.description}">Nội dung yêu cầu</p>
+                </div>
+
+                <!-- Attachments -->
+                <div th:if="${!#lists.isEmpty(ticket.attachments)}" class="mb-3">
+                    <h6 class="fw-bold small text-muted mb-2">Tệp đính kèm:</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a th:each="att : ${ticket.attachments}" th:href="${att.fileUrl}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-paperclip me-1"></i><span th:text="${att.fileName}">file.pdf</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CSAT Rating Section -->
+            <div id="csatSection" class="card p-4 shadow-sm mb-4 border-0 bg-white">
+                <!-- Case 1: Đã đánh giá -->
+                <div th:if="${ticket.rating != null}" id="csatRatedBox">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                        <div>
+                            <span class="badge bg-warning-subtle text-dark border border-warning mb-1">
+                                <i class="bi bi-check-circle-fill text-warning me-1"></i>ĐÃ ĐÁNH GIÁ HÀI LÒNG (CSAT)
+                            </span>
+                            <h5 class="fw-bold text-dark mb-1">Cảm ơn bạn đã đánh giá buổi tư vấn!</h5>
+                            <small class="text-muted">Đánh giá của bạn giúp nhà trường nâng cao chất lượng hỗ trợ người học</small>
+                        </div>
+                        <div class="text-md-end">
+                            <div class="fs-4 text-warning">
+                                <span th:each="i : ${#numbers.sequence(1, ticket.rating)}">★</span>
+                                <span th:each="i : ${#numbers.sequence(ticket.rating + 1, 5)}" th:if="${ticket.rating < 5}" class="text-secondary opacity-25">★</span>
+                            </div>
+                            <span class="badge bg-light text-dark border fw-bold" th:text="${ticket.rating} + ' / 5 sao'">5 / 5 sao</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Case 2: Chưa đánh giá (Form gửi đánh giá CSAT) -->
+                <div th:if="${ticket.rating == null}" id="csatFormBox">
+                    <div class="border-bottom pb-2 mb-3">
+                        <span class="badge bg-primary-subtle text-primary border border-primary mb-1">
+                            <i class="bi bi-star-fill text-warning me-1"></i>ĐÁNH GIÁ CHẤT LƯỢNG TƯ VẤN (CSAT)
+                        </span>
+                        <h5 class="fw-bold text-dark mb-1">Bạn có hài lòng với câu trả lời của Cán bộ không?</h5>
+                        <small class="text-muted">Hãy để lại đánh giá của bạn (từ 1 đến 5 sao) để chúng tôi hoàn thiện dịch vụ tốt hơn.</small>
+                    </div>
+
+                    <form id="csatRatingForm" th:action="@{/tickets/guest-track/rate}" method="post">
+                        <input type="hidden" name="token" th:value="${ticket.guestToken}" id="guestTokenInput">
+                        <input type="hidden" name="rating" id="selectedRatingInput" value="5">
+
+                        <!-- Interactive Star Selector -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary d-block">Mức độ hài lòng của bạn:</label>
+                            <div class="star-rating d-inline-flex gap-2 align-items-center py-1 px-2 border rounded bg-light" id="starContainer">
+                                <i class="bi bi-star-fill text-warning fs-3 star-btn" data-value="1" style="cursor: pointer;"></i>
+                                <i class="bi bi-star-fill text-warning fs-3 star-btn" data-value="2" style="cursor: pointer;"></i>
+                                <i class="bi bi-star-fill text-warning fs-3 star-btn" data-value="3" style="cursor: pointer;"></i>
+                                <i class="bi bi-star-fill text-warning fs-3 star-btn" data-value="4" style="cursor: pointer;"></i>
+                                <i class="bi bi-star-fill text-warning fs-3 star-btn" data-value="5" style="cursor: pointer;"></i>
+                                <span class="ms-2 fw-semibold text-primary small" id="ratingLabel">5 sao - Rất hài lòng</span>
+                            </div>
+                        </div>
+
+                        <!-- Feedback Comment -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Ý kiến đóng góp thêm (Tùy chọn):</label>
+                            <textarea name="feedback" id="csatFeedbackInput" class="form-control form-control-sm" rows="2" 
+                                      placeholder="Chia sẻ thêm cảm nhận hoặc góp ý của bạn về buổi tư vấn này..."></textarea>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div>
+                            <button type="button" class="btn btn-warning btn-sm fw-semibold text-dark px-3 shadow-xs" id="btnSubmitCsat" onclick="submitCsatAjax()">
+                                <span id="btnSubmitCsatSpinner" class="spinner-border spinner-border-sm me-1 d-none" role="status" aria-hidden="true"></span>
+                                <i class="bi bi-send-fill me-1" id="btnSubmitCsatIcon"></i>Gửi Đánh Giá Hài Lòng
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- History Timeline -->
+            <div class="card p-4 shadow-sm border-0 bg-white">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-clock-history me-2 text-primary"></i>Lịch Sử Trao Đổi & Phản Hồi</h5>
+                
+                <div class="timeline" id="timelineList">
+                    <div th:if="${#lists.isEmpty(ticket.histories)}" class="text-muted small py-3 text-center">
+                        Chưa có lịch sử cập nhật nào.
+                    </div>
+                    <div th:each="h : ${ticket.histories}" class="border-start border-3 border-primary ps-3 pb-3 mb-2">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong class="text-dark" th:text="${h.actorName}">Người phản hồi</strong>
+                            <small class="text-muted" th:text="${#temporals.format(h.createdAt, 'HH:mm dd/MM/yyyy')}">Thời gian</small>
+                        </div>
+                        <div class="p-2 rounded bg-light border small text-secondary" style="white-space: pre-line;" th:text="${h.actionNote}">
+                            Nội dung phản hồi
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript Interactive CSAT Logic (Star Hover & AJAX Submission) -->
+    <script>
+        // --------------------------------------------------------------------------
+        // 1. Toast Notification Utility
+        // --------------------------------------------------------------------------
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toastId = 'toast-' + Date.now();
+            const icon = type === 'success' 
+                ? '<i class="bi bi-check-circle-fill text-success fs-5 me-2"></i>'
+                : '<i class="bi bi-exclamation-triangle-fill text-danger fs-5 me-2"></i>';
+
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center border-0 shadow-lg mb-2 show bg-white" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex p-3 align-items-center">
+                        ${icon}
+                        <div class="toast-body text-dark fw-semibold small flex-grow-1 p-0 pe-2">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close ms-auto me-1" onclick="this.closest('.toast').remove()" aria-label="Close"></button>
+                    </div>
+                    <div class="progress" style="height: 3px;">
+                        <div class="progress-bar ${type === 'success' ? 'bg-success' : 'bg-danger'}" style="width: 100%; transition: width 3s linear;"></div>
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', toastHtml);
+            const toastEl = document.getElementById(toastId);
+            const bar = toastEl.querySelector('.progress-bar');
+            requestAnimationFrame(() => {
+                if (bar) bar.style.width = '0%';
+            });
+
+            setTimeout(() => {
+                if (toastEl && toastEl.parentNode) {
+                    toastEl.classList.remove('show');
+                    setTimeout(() => toastEl.remove(), 250);
+                }
+            }, 3000);
+        }
+
+        // --------------------------------------------------------------------------
+        // 2. Interactive Star Rating Selector
+        // --------------------------------------------------------------------------
+        const ratingLabels = {
+            1: '1 sao - Rất thất vọng',
+            2: '2 sao - Chưa hài lòng',
+            3: '3 sao - Bình thường',
+            4: '4 sao - Hài lòng',
+            5: '5 sao - Rất hài lòng'
+        };
+
+        let currentRating = 5;
+        const starBtns = document.querySelectorAll('.star-btn');
+        const ratingInput = document.getElementById('selectedRatingInput');
+        const ratingLabel = document.getElementById('ratingLabel');
+
+        function updateStarsVisual(rating) {
+            starBtns.forEach(star => {
+                const val = parseInt(star.getAttribute('data-value'));
+                if (val <= rating) {
+                    star.className = 'bi bi-star-fill text-warning fs-3 star-btn';
+                } else {
+                    star.className = 'bi bi-star text-muted opacity-50 fs-3 star-btn';
+                }
+            });
+            if (ratingLabel) {
+                ratingLabel.textContent = ratingLabels[rating] || (rating + ' sao');
+            }
+        }
+
+        starBtns.forEach(star => {
+            star.addEventListener('mouseover', function() {
+                const hoverVal = parseInt(this.getAttribute('data-value'));
+                updateStarsVisual(hoverVal);
+            });
+
+            star.addEventListener('mouseout', function() {
+                updateStarsVisual(currentRating);
+            });
+
+            star.addEventListener('click', function() {
+                currentRating = parseInt(this.getAttribute('data-value'));
+                if (ratingInput) ratingInput.value = currentRating;
+                updateStarsVisual(currentRating);
+            });
+        });
+
+        // --------------------------------------------------------------------------
+        // 3. Submit CSAT Rating via AJAX (Zero Full-Page Refresh)
+        // --------------------------------------------------------------------------
+        async function submitCsatAjax() {
+            const token = document.getElementById('guestTokenInput')?.value;
+            const rating = parseInt(document.getElementById('selectedRatingInput')?.value || '5');
+            const feedback = document.getElementById('csatFeedbackInput')?.value || '';
+
+            if (!token) {
+                showToast('Không tìm thấy mã tra cứu hợp lệ!', 'danger');
+                return;
+            }
+
+            const btn = document.getElementById('btnSubmitCsat');
+            const spinner = document.getElementById('btnSubmitCsatSpinner');
+            const icon = document.getElementById('btnSubmitCsatIcon');
+            const csrfToken = document.getElementById('csrfToken')?.value || '';
+            const csrfHeader = document.getElementById('csrfHeader')?.value || 'X-CSRF-TOKEN';
+
+            btn.disabled = true;
+            spinner.classList.remove('d-none');
+            icon.classList.add('d-none');
+
+            const formData = new URLSearchParams();
+            formData.append('token', token);
+            formData.append('rating', rating);
+            formData.append('feedback', feedback);
+
+            try {
+                const response = await fetch('/tickets/guest-track/api/rate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        [csrfHeader]: csrfToken
+                    },
+                    body: formData.toString()
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showToast(result.message || 'Cảm ơn bạn đã gửi đánh giá hài lòng!', 'success');
+
+                    // Thay đổi giao diện sang hộp Đã Đánh Giá
+                    const csatSection = document.getElementById('csatSection');
+                    let starsHtml = '';
+                    for (let i = 1; i <= 5; i++) {
+                        if (i <= rating) {
+                            starsHtml += '<span class="text-warning">★</span>';
+                        } else {
+                            starsHtml += '<span class="text-secondary opacity-25">★</span>';
+                        }
+                    }
+
+                    csatSection.innerHTML = `
+                        <div id="csatRatedBox">
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                                <div>
+                                    <span class="badge bg-warning-subtle text-dark border border-warning mb-1">
+                                        <i class="bi bi-check-circle-fill text-warning me-1"></i>ĐÃ ĐÁNH GIÁ HÀI LÒNG (CSAT)
+                                    </span>
+                                    <h5 class="fw-bold text-dark mb-1">Cảm ơn bạn đã đánh giá buổi tư vấn!</h5>
+                                    <small class="text-muted">Đánh giá của bạn giúp nhà trường nâng cao chất lượng hỗ trợ người học</small>
+                                </div>
+                                <div class="text-md-end">
+                                    <div class="fs-4">
+                                        ${starsHtml}
+                                    </div>
+                                    <span class="badge bg-light text-dark border fw-bold">${rating} / 5 sao</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Cập nhật badge trạng thái sang ĐÃ ĐÓNG (CLOSED)
+                    const statusBadge = document.getElementById('ticketStatusBadge');
+                    if (statusBadge) {
+                        statusBadge.innerHTML = '<span class="badge bg-secondary fs-6">Đã đóng</span>';
+                    }
+
+                    // Bổ sung dòng vào Timeline
+                    const timeline = document.getElementById('timelineList');
+                    if (timeline) {
+                        const newHistory = `
+                            <div class="border-start border-3 border-primary ps-3 pb-3 mb-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="text-dark">Khách tra cứu</strong>
+                                    <small class="text-muted">Vừa xong</small>
+                                </div>
+                                <div class="p-2 rounded bg-light border small text-secondary">
+                                    Khách tra cứu gửi đánh giá CSAT: ${rating} sao ${feedback ? ' | Góp ý: ' + feedback : ''}
+                                </div>
+                            </div>
+                        `;
+                        timeline.insertAdjacentHTML('afterbegin', newHistory);
+                    }
+                } else {
+                    showToast(result.message || 'Gửi đánh giá không thành công!', 'danger');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi kết nối khi gửi đánh giá!', 'danger');
+            } finally {
+                btn.disabled = false;
+                spinner.classList.add('d-none');
+                icon.classList.remove('d-none');
+            }
+        }
+    </script>
+
+    <!-- Floating HCMUTE AI Mascot Widget (Góc phải dưới) -->
+    <div th:replace="~{layout/ai-mascot-floating :: ai-mascot}"></div>
+</div>
+</body>
+</html>

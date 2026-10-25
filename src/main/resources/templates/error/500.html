@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Sự Cố Hệ Thống (500 Server Error) - QAUTE Portal</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="row justify-content-center py-5">
+        <div class="col-md-8 col-lg-6 text-center">
+            <div class="card p-5 shadow-sm">
+                <i class="bi bi-exclamation-octagon-fill text-danger mb-3" style="font-size: 4rem;"></i>
+                <h2 class="fw-bold text-dark mb-2">500 - Sự Cố Máy Chủ</h2>
+                <p class="text-muted mb-4">
+                    Hệ thống đang gặp sự cố gián đoạn tạm thời. Đội ngũ kỹ thuật đã ghi nhận và đang khắc phục.
+                </p>
+                <div>
+                    <a th:href="@{/}" class="btn btn-primary px-4 fw-semibold">
+                        <i class="bi bi-house me-1"></i>Về Trang Chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

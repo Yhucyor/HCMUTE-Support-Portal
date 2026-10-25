@@ -15,15 +15,21 @@ import com.school.counseling.module.ticket.dto.TicketResponseDto.AttachmentDto;
 import com.school.counseling.module.ticket.dto.TicketResponseDto.HistoryDto;
 import com.school.counseling.module.ticket.entity.Ticket;
 import com.school.counseling.module.ticket.entity.TicketHistory;
+import com.school.counseling.module.ticket.entity.TicketTransferHistory;
+import com.school.counseling.module.auth.dto.UserPrincipal;
 import com.school.counseling.module.ticket.event.TicketClaimedEvent;
 import com.school.counseling.module.ticket.event.TicketCreatedEvent;
 import com.school.counseling.module.ticket.event.TicketResolvedEvent;
+import com.school.counseling.module.ticket.event.TicketTransferredEvent;
 import com.school.counseling.module.ticket.repository.TicketHistoryRepository;
 import com.school.counseling.module.ticket.repository.TicketRepository;
+import com.school.counseling.module.ticket.repository.TicketTransferHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,6 +47,7 @@ public class TicketService {
 
     private final TicketRepository ticketRepository;
     private final TicketHistoryRepository ticketHistoryRepository;
+    private final TicketTransferHistoryRepository ticketTransferHistoryRepository;
     private final DepartmentRepository departmentRepository;
     private final UserRepository userRepository;
     private final AttachmentRepository attachmentRepository;
@@ -67,21 +74,32 @@ public class TicketService {
         if (creatorId != null) {
             creator = userRepository.findById(creatorId).orElse(null);
         } else {
-            if (request.getGuestEmail() == null || request.getGuestEmail().isBlank()) {
+            String email = request.getGuestEmail() != null ? request.getGuestEmail().trim() : null;
+            if (email == null || email.isBlank()) {
                 throw new IllegalArgumentException("Vui lòng nhập địa chỉ email hợp lệ để nhận mã tra cứu và thông báo xử lý yêu cầu.");
             }
-            if (request.getGuestName() == null || request.getGuestName().isBlank()) {
+            request.setGuestEmail(email);
+
+            String name = request.getGuestName() != null ? request.getGuestName().trim() : null;
+            if (name == null || name.isBlank()) {
                 request.setGuestName("Khách vãng lai");
+            } else {
+                request.setGuestName(name);
             }
             guestToken = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
         }
 
-        String priority = request.getPriority() != null ? request.getPriority().toUpperCase() : "MEDIUM";
-        if ("MEDIUM".equalsIgnoreCase(priority)) {
+        // Tự động suy diễn Mức độ ưu tiên và Hạn chót SLA từ Loại thủ tục học vụ
+        String priority = slaCalculatorService.resolvePriority(request.getTopicCategory());
+        LocalDateTime dueDate = slaCalculatorService.calculateDueDateByCategory(request.getTopicCategory());
+
+        // AI Triage hỗ trợ nâng hạng ưu tiên nếu phát hiện tình huống khẩn cấp bất thường
+        if (!"URGENT".equalsIgnoreCase(priority)) {
             try {
                 TicketTriageResponseDto triage = suggestTicketTriage(request.getTitle(), request.getDescription());
                 if (triage != null && ("URGENT".equalsIgnoreCase(triage.getPriority()) || "HIGH".equalsIgnoreCase(triage.getPriority()))) {
                     priority = triage.getPriority();
+                    dueDate = slaCalculatorService.calculateDueDate(priority);
                     log.info("AI Triage phát hiện mức độ cấp bách, tự động nâng cấp độ ưu tiên Ticket lên: {}", priority);
                 }
             } catch (Exception e) {
@@ -89,7 +107,6 @@ public class TicketService {
             }
         }
 
-        LocalDateTime dueDate = slaCalculatorService.calculateDueDate(priority);
         String ticketCode = generateTicketCode();
 
         Ticket ticket = Ticket.builder()
@@ -222,6 +239,126 @@ public class TicketService {
                 deptName,
                 trackingUrl
         ));
+
+        return mapToDetailDto(ticket);
+    }
+
+    /**
+     * Quản trị viên (Admin) can thiệp khẩn cấp tiếp quản vé bị quá hạn SLA từ các đơn vị.
+     */
+    @Transactional
+    public TicketResponseDto adminTakeoverTicket(Long ticketId, Long adminId) {
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin", "id", adminId));
+
+        Ticket ticket = ticketRepository.findByIdWithRelations(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+
+        String oldStatus = ticket.getStatus();
+        String oldAssignee = ticket.getAssignedTo() != null ? ticket.getAssignedTo().getFullName() : "Chưa có cán bộ";
+
+        ticket.setAssignedTo(admin);
+        ticket.setStatus("IN_PROGRESS");
+        if (ticket.getDueDate() == null || ticket.getDueDate().isBefore(LocalDateTime.now())) {
+            ticket.setDueDate(LocalDateTime.now().plusHours(24));
+        }
+
+        ticketRepository.save(ticket);
+
+        saveHistory(ticket, admin, admin.getFullName(), oldStatus, "IN_PROGRESS",
+                String.format("Quản trị viên (Admin %s) can thiệp tiếp quản vé từ [%s] do yêu cầu quá hạn SLA.", admin.getFullName(), oldAssignee));
+
+        log.info("Admin ID={} đã can thiệp tiếp quản Ticket Code={} thành công", adminId, ticket.getTicketCode());
+        return mapToDetailDto(ticket);
+    }
+
+    /**
+     * Chuyển giao Ticket sang Khoa / Phòng ban tiếp nhận mới.
+     * Cán bộ của đơn vị hiện tại hoặc Quản trị viên (Admin) mới có quyền chuyển giao.
+     */
+    @Transactional
+    public TicketResponseDto transferTicket(Long ticketId, TicketTransferRequest request, UserPrincipal currentUser) {
+        if (currentUser == null) {
+            throw new AccessDeniedBusinessException("Vui lòng đăng nhập để thực hiện chuyển giao ticket!");
+        }
+
+        Ticket ticket = ticketRepository.findByIdWithRelations(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+
+        // 1. Kiểm tra trạng thái vé: Không được chuyển nếu đã đóng hoặc đã hủy
+        if ("CLOSED".equalsIgnoreCase(ticket.getStatus()) || "CANCELLED".equalsIgnoreCase(ticket.getStatus())) {
+            throw new IllegalArgumentException("Không thể chuyển giao ticket đã đóng hoặc đã hủy.");
+        }
+
+        // 2. Thẩm định quyền: Phải là Admin hoặc thuộc Khoa/Phòng hiện tại đang giữ vé
+        boolean isPrivileged = (currentUser.getRole() != null &&
+                (currentUser.getRole().equalsIgnoreCase("ROLE_ADMIN")
+                || currentUser.getRole().equalsIgnoreCase("ROLE_SUPER_ADMIN")
+                || currentUser.getRole().equalsIgnoreCase("ROLE_SUPERADMIN")))
+                || (currentUser.getAuthorities() != null && currentUser.getAuthorities().stream()
+                        .anyMatch(a -> a.getAuthority().equalsIgnoreCase("ROLE_ADMIN")
+                                || a.getAuthority().equalsIgnoreCase("ROLE_SUPER_ADMIN")));
+
+        Long currentDeptId = ticket.getDepartment() != null ? ticket.getDepartment().getId() : null;
+        if (!isPrivileged && !Objects.equals(currentDeptId, currentUser.getDepartmentId())) {
+            throw new AccessDeniedBusinessException("Bạn chỉ có quyền chuyển giao yêu cầu thuộc đơn vị của mình!");
+        }
+
+        // 3. Đơn vị tiếp nhận mới phải khác đơn vị hiện tại
+        if (Objects.equals(currentDeptId, request.getToDepartmentId())) {
+            throw new IllegalArgumentException("Đơn vị tiếp nhận mới phải khác với đơn vị hiện tại của ticket!");
+        }
+
+        Department toDepartment = departmentRepository.findById(request.getToDepartmentId())
+                .orElseThrow(() -> new ResourceNotFoundException("Đơn vị tiếp nhận mới", "id", request.getToDepartmentId()));
+
+        if (toDepartment.getIsActive() != null && !toDepartment.getIsActive()) {
+            throw new IllegalArgumentException("Đơn vị [" + toDepartment.getName() + "] hiện đang tạm dừng tiếp nhận yêu cầu.");
+        }
+
+        User transferrer = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cán bộ thực hiện", "id", currentUser.getId()));
+
+        Department fromDepartment = ticket.getDepartment();
+
+        // 4. Lưu bản ghi TicketTransferHistory
+        TicketTransferHistory transferHistory = TicketTransferHistory.builder()
+                .ticket(ticket)
+                .fromDepartment(fromDepartment)
+                .toDepartment(toDepartment)
+                .transferredBy(transferrer)
+                .reason(request.getReason().trim())
+                .build();
+        ticketTransferHistoryRepository.save(transferHistory);
+
+        // 5. Cập nhật Ticket: Đổi đơn vị, reset cán bộ phụ trách, đưa trạng thái về OPEN để đơn vị mới tiếp nhận
+        String oldStatus = ticket.getStatus();
+        ticket.setDepartment(toDepartment);
+        ticket.setAssignedTo(null);
+        ticket.setStatus("OPEN");
+        ticketRepository.save(ticket);
+
+        // 6. Ghi nhận nhật ký TicketHistory
+        String fromDeptName = fromDepartment != null ? fromDepartment.getName() : "Không xác định";
+        String historyNote = String.format("Chuyển giao đơn vị: [%s] ➔ [%s]. Lý do: %s",
+                fromDeptName, toDepartment.getName(), request.getReason().trim());
+        saveHistory(ticket, transferrer, transferrer.getFullName(), oldStatus, "OPEN", historyNote);
+
+        // 7. Bắn sự kiện TicketTransferredEvent
+        String trackingUrl = buildTrackingUrl(ticket);
+        eventPublisher.publishEvent(new TicketTransferredEvent(
+                ticket.getId(),
+                ticket.getTicketCode(),
+                ticket.getTitle(),
+                fromDeptName,
+                toDepartment.getName(),
+                transferrer.getFullName(),
+                request.getReason().trim(),
+                trackingUrl
+        ));
+
+        log.info("Ticket #{} đã được chuyển giao thành công từ [{}] sang [{}] bởi cán bộ [{}] (ID={})",
+                ticket.getTicketCode(), fromDeptName, toDepartment.getName(), transferrer.getFullName(), transferrer.getId());
 
         return mapToDetailDto(ticket);
     }
@@ -407,6 +544,11 @@ public class TicketService {
     }
 
     public List<TicketSummaryDto> getTicketSummaryByDepartment(Long departmentId, String status) {
+        if ("OVERDUE".equalsIgnoreCase(status)) {
+            return ticketRepository.findSummaryByDepartmentId(departmentId).stream()
+                    .filter(TicketSummaryDto::isOverdue)
+                    .toList();
+        }
         if (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status)) {
             return ticketRepository.findSummaryByDepartmentIdAndStatus(departmentId, status);
         }
@@ -414,6 +556,11 @@ public class TicketService {
     }
 
     public List<TicketSummaryDto> getAllTicketSummaries(String status) {
+        if ("OVERDUE".equalsIgnoreCase(status)) {
+            return ticketRepository.findAllSummaries().stream()
+                    .filter(TicketSummaryDto::isOverdue)
+                    .toList();
+        }
         if (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status)) {
             return ticketRepository.findAllSummariesByStatus(status);
         }
@@ -425,6 +572,74 @@ public class TicketService {
             return Collections.emptyList();
         }
         return ticketRepository.findSummaryByCreatorId(userId);
+    }
+
+    /**
+     * Lấy danh sách Ticket phân trang của sinh viên với các bộ lọc: trạng thái, đơn vị, từ khóa
+     */
+    public Page<TicketResponseDto> getMyTicketsPaged(Long userId, String status, Long departmentId, String keyword, Pageable pageable) {
+        if (userId == null) {
+            return Page.empty(pageable);
+        }
+        String normalizedStatus = (status == null || status.isBlank() || "ALL".equalsIgnoreCase(status)) ? null : status.toUpperCase();
+        String normalizedKeyword = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
+        Page<Ticket> page = ticketRepository.findMyTicketsPaged(userId, normalizedStatus, departmentId, normalizedKeyword, pageable);
+        return page.map(this::mapToSummaryResponseDto);
+    }
+
+    /**
+     * Đếm số lượng ticket của sinh viên theo các trạng thái phục vụ hiển thị Badges trên Tab
+     */
+    public Map<String, Long> getMyTicketStatusCounts(Long userId) {
+        Map<String, Long> counts = new HashMap<>();
+        if (userId == null) {
+            counts.put("total", 0L);
+            counts.put("pending", 0L);
+            counts.put("processing", 0L);
+            counts.put("waiting", 0L);
+            counts.put("resolved", 0L);
+            counts.put("closed", 0L);
+            return counts;
+        }
+        counts.put("total", ticketRepository.countMyTicketsTotal(userId));
+        counts.put("pending", ticketRepository.countMyTicketsPending(userId));
+        counts.put("processing", ticketRepository.countMyTicketsProcessing(userId));
+        counts.put("waiting", ticketRepository.countMyTicketsWaiting(userId));
+        counts.put("resolved", ticketRepository.countMyTicketsResolved(userId));
+        counts.put("closed", ticketRepository.countMyTicketsClosed(userId));
+        return counts;
+    }
+
+    /**
+     * Map gọn phục vụ hiển thị danh sách (không tải lịch sử hay tệp đính kèm nặng)
+     */
+    public TicketResponseDto mapToSummaryResponseDto(Ticket t) {
+        boolean isOverdue = slaCalculatorService.isOverdue(t.getDueDate(), t.getStatus());
+        boolean isDueSoon = slaCalculatorService.isDueSoon(t.getDueDate(), t.getStatus());
+
+        return TicketResponseDto.builder()
+                .id(t.getId())
+                .ticketCode(t.getTicketCode())
+                .title(t.getTitle())
+                .description(t.getDescription())
+                .departmentId(t.getDepartment() != null ? t.getDepartment().getId() : null)
+                .departmentName(t.getDepartment() != null ? t.getDepartment().getName() : "")
+                .creatorId(t.getCreator() != null ? t.getCreator().getId() : null)
+                .creatorName(t.getCreator() != null ? t.getCreator().getFullName() : (t.getGuestName() != null ? t.getGuestName() : ""))
+                .assignedStaffId(t.getAssignedTo() != null ? t.getAssignedTo().getId() : null)
+                .assignedStaffName(t.getAssignedTo() != null ? t.getAssignedTo().getFullName() : null)
+                .priority(t.getPriority())
+                .topicCategory(t.getTopicCategory())
+                .status(t.getStatus())
+                .dueDate(t.getDueDate())
+                .isOverdue(isOverdue)
+                .isDueSoon(isDueSoon)
+                .createdAt(t.getCreatedAt())
+                .updatedAt(t.getUpdatedAt())
+                .resolvedAt(t.getResolvedAt())
+                .closedAt(t.getClosedAt())
+                .rating(t.getRating())
+                .build();
     }
 
     @Transactional
@@ -567,6 +782,24 @@ public class TicketService {
         boolean isOverdue = slaCalculatorService.isOverdue(t.getDueDate(), t.getStatus());
         boolean isDueSoon = slaCalculatorService.isDueSoon(t.getDueDate(), t.getStatus());
 
+        List<TicketTransferResponse> transferResponses = ticketTransferHistoryRepository
+                .findByTicketIdWithRelations(t.getId())
+                .stream()
+                .map(tth -> TicketTransferResponse.builder()
+                        .id(tth.getId())
+                        .ticketId(t.getId())
+                        .ticketCode(t.getTicketCode())
+                        .fromDepartmentId(tth.getFromDepartment() != null ? tth.getFromDepartment().getId() : null)
+                        .fromDepartmentName(tth.getFromDepartment() != null ? tth.getFromDepartment().getName() : null)
+                        .toDepartmentId(tth.getToDepartment() != null ? tth.getToDepartment().getId() : null)
+                        .toDepartmentName(tth.getToDepartment() != null ? tth.getToDepartment().getName() : null)
+                        .transferredById(tth.getTransferredBy() != null ? tth.getTransferredBy().getId() : null)
+                        .transferredByName(tth.getTransferredBy() != null ? tth.getTransferredBy().getFullName() : null)
+                        .reason(tth.getReason())
+                        .transferredAt(tth.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+
         return TicketResponseDto.builder()
                 .id(t.getId())
                 .ticketCode(t.getTicketCode())
@@ -592,12 +825,14 @@ public class TicketService {
                 .isOverdue(isOverdue)
                 .isDueSoon(isDueSoon)
                 .createdAt(t.getCreatedAt())
+                .updatedAt(t.getUpdatedAt())
                 .resolvedAt(t.getResolvedAt())
                 .closedAt(t.getClosedAt())
                 .rating(t.getRating())
                 .attachments(attachments)
                 .initialAttachments(initialAttachments)
                 .histories(histories)
+                .transferHistories(transferResponses)
                 .build();
     }
 }

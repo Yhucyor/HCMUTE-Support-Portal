@@ -44,16 +44,31 @@ public class AdminDepartmentService {
 
     @Transactional
     public DepartmentAdminDto saveDepartment(SaveDepartmentDto dto) {
+        String normalizedCode = dto.getCode().trim().toUpperCase();
+        String normalizedName = dto.getName().trim();
+
         Department dept;
         if (dto.getId() != null) {
+            if (departmentRepository.existsByCodeAndIdNot(normalizedCode, dto.getId())) {
+                throw new IllegalArgumentException("Mã Đơn vị [" + normalizedCode + "] đã được sử dụng bởi đơn vị khác!");
+            }
+            if (departmentRepository.existsByNameAndIdNot(normalizedName, dto.getId())) {
+                throw new IllegalArgumentException("Tên Đơn vị [" + normalizedName + "] đã tồn tại trên hệ thống!");
+            }
             dept = departmentRepository.findById(dto.getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy Đơn vị với ID: " + dto.getId()));
         } else {
+            if (departmentRepository.existsByCode(normalizedCode)) {
+                throw new IllegalArgumentException("Mã Đơn vị [" + normalizedCode + "] đã tồn tại trên hệ thống!");
+            }
+            if (departmentRepository.existsByName(normalizedName)) {
+                throw new IllegalArgumentException("Tên Đơn vị [" + normalizedName + "] đã tồn tại trên hệ thống!");
+            }
             dept = new Department();
         }
 
-        dept.setName(dto.getName().trim());
-        dept.setCode(dto.getCode().trim().toUpperCase());
+        dept.setName(normalizedName);
+        dept.setCode(normalizedCode);
         dept.setOfficeLocation(dto.getOfficeLocation() != null ? dto.getOfficeLocation().trim() : null);
         dept.setContactEmail(dto.getContactEmail() != null ? dto.getContactEmail().trim() : null);
         dept.setContactPhone(dto.getContactPhone() != null ? dto.getContactPhone().trim() : null);

@@ -41,6 +41,7 @@ public class TicketResponseDto {
     private boolean isDueSoon;
 
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private LocalDateTime resolvedAt;
     private LocalDateTime closedAt;
     private Integer rating;
@@ -48,6 +49,7 @@ public class TicketResponseDto {
     private List<AttachmentDto> attachments;
     private List<AttachmentDto> initialAttachments;
     private List<HistoryDto> histories;
+    private List<TicketTransferResponse> transferHistories;
 
     @Getter
     @Setter

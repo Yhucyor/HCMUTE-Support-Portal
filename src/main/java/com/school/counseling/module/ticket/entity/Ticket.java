@@ -105,4 +105,9 @@ public class Ticket extends BaseEntity {
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OrderBy("createdAt ASC")
     private List<TicketHistory> histories = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OrderBy("createdAt DESC")
+    private List<TicketTransferHistory> transferHistories = new ArrayList<>();
 }

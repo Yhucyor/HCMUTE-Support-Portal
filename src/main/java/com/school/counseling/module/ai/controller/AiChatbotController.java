@@ -105,6 +105,17 @@ public class AiChatbotController {
     }
 
     /**
+     * [NEW_ENDPOINT]: Lấy tất cả messages theo sessionId trực tiếp
+     */
+    @GetMapping("/conversations/session/{sessionId}/messages")
+    public ResponseEntity<ApiResponse<List<AiChatMessage>>> getMessagesBySessionId(
+            @PathVariable String sessionId) {
+        Conversation conversation = conversationService.getConversationBySessionId(sessionId);
+        List<AiChatMessage> messages = conversationService.getConversationMessages(conversation.getId());
+        return ResponseEntity.ok(ApiResponse.success(messages));
+    }
+
+    /**
      * Xóa 1 conversation (soft delete - đổi status ARCHIVED)
      */
     @DeleteMapping("/conversations/{sessionId}")

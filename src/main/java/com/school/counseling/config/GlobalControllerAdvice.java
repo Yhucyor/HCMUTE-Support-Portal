@@ -38,6 +38,16 @@ public class GlobalControllerAdvice {
             return null;
         }
     }
+
+    /**
+     * Tự động inject Họ và tên đầy đủ của tài khoản đăng nhập vào Model toàn cục
+     */
+    @ModelAttribute("currentUserFullName")
+    public String currentUserFullName() {
+        return SecurityUtils.getCurrentUserPrincipal()
+                .map(com.school.counseling.module.auth.dto.UserPrincipal::getFullName)
+                .orElse(null);
+    }
     
     /**
      * Helper method check xem user hiện tại có phải STUDENT không

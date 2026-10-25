@@ -59,7 +59,21 @@ public class AiChatbotService {
         }
 
         String cleanQuery = query.trim();
+        // Giới hạn độ dài tối đa 1500 ký tự để chống DoS và cạn kiệt Token LLM
+        if (cleanQuery.length() > 1500) {
+            cleanQuery = cleanQuery.substring(0, 1500);
+        }
+
         String lowerQuery = cleanQuery.toLowerCase();
+
+        // Chặn các nỗ lực Prompt Injection / System Override
+        if (isPromptInjection(lowerQuery)) {
+            AiChatResponse safeResp = new AiChatResponse();
+            safeResp.setAnswer("⚠️ **Thông báo an toàn:** Trợ lý AI QAUTE chỉ hỗ trợ tư vấn học vụ, tuyển sinh và thủ tục sinh viên trường ĐH Sư phạm Kỹ thuật TP.HCM (HCMUTE). Hệ thống không hỗ trợ thực thi các câu lệnh can thiệp cấu hình hoặc ghi đè chỉ thị hệ thống.");
+            safeResp.setSessionId(sessionId);
+            safeResp.setProvider(provider != null ? provider : "qaute-safety-guard");
+            return safeResp;
+        }
 
         // 1. Phản hồi nhanh cho câu chào hỏi thân thiện (không gắn nguồn tham khảo)
         if (isGreeting(lowerQuery)) {
@@ -301,6 +315,19 @@ public class AiChatbotService {
         if (q.length() > 30) return false;
         String clean = q.trim().toLowerCase().replaceAll("[!?.~,]+$", "").replaceAll("\\s+", " ");
         return clean.matches("^(xin chào|chao|chào|hello|hi|helo|alo|hey|yo|hi+\\w*|he+l+o+|chào bạn|xin chao|chao ban|bạn là ai|ban la ai|tro ly|trợ lý|help|giúp với|giup voi)$");
+    }
+
+    private boolean isPromptInjection(String q) {
+        if (q == null || q.isBlank()) return false;
+        String lower = q.toLowerCase();
+        return lower.contains("ignore previous instructions")
+                || lower.contains("ignore all instructions")
+                || lower.contains("disregard all previous")
+                || lower.contains("system prompt")
+                || lower.contains("reveal your instructions")
+                || lower.contains("<|im_start|>")
+                || lower.contains("you are now in dan mode")
+                || lower.contains("jailbreak");
     }
 
     /**

@@ -38,6 +38,8 @@ public class StaffTicketWebController {
     public String staffDashboard(
             @RequestParam(value = "departmentId", required = false) Long departmentId,
             @RequestParam(value = "status", required = false, defaultValue = "ALL") String status,
+            @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") int size,
             Model model) {
 
         boolean isAdmin = SecurityUtils.getCurrentUserPrincipal()
@@ -80,12 +82,29 @@ public class StaffTicketWebController {
             filteredTickets = allTickets;
         } else if ("NEW_REPLY".equalsIgnoreCase(status)) {
             filteredTickets = allTickets.stream().filter(TicketSummaryDto::getHasStudentReply).toList();
+        } else if ("OVERDUE".equalsIgnoreCase(status)) {
+            filteredTickets = allTickets.stream().filter(TicketSummaryDto::isOverdue).toList();
         } else {
             filteredTickets = allTickets.stream().filter(t -> status.equalsIgnoreCase(t.getStatus())).toList();
         }
 
+        // ─── Phân trang danh sách vé hiển thị ───
+        int totalElements = filteredTickets.size();
+        int safePage = Math.max(0, page);
+        int safeSize = Math.max(1, size);
+        int fromIndex = Math.min(safePage * safeSize, totalElements);
+        int toIndex = Math.min(fromIndex + safeSize, totalElements);
+        List<TicketSummaryDto> pagedContent = filteredTickets.subList(fromIndex, toIndex);
+
+        org.springframework.data.domain.Page<TicketSummaryDto> ticketPage =
+                new org.springframework.data.domain.PageImpl<>(pagedContent, org.springframework.data.domain.PageRequest.of(safePage, safeSize), totalElements);
+
         model.addAttribute("currentDepartment", dept);
-        model.addAttribute("tickets", filteredTickets);
+        model.addAttribute("tickets", ticketPage.getContent());
+        model.addAttribute("ticketPage", ticketPage);
+        model.addAttribute("currentPage", safePage);
+        model.addAttribute("totalPages", ticketPage.getTotalPages());
+        model.addAttribute("totalElements", totalElements);
         model.addAttribute("selectedStatus", status);
         model.addAttribute("countOpen", countOpen);
         model.addAttribute("countInProgress", countInProgress);
@@ -119,12 +138,34 @@ public class StaffTicketWebController {
     public String handleResolveTicket(
             @PathVariable Long ticketId,
             @RequestParam(value = "note", required = false) String note,
+            @RequestParam(value = "closeTicket", required = false, defaultValue = "false") boolean closeTicket,
             RedirectAttributes redirectAttributes) {
 
         Long staffId = SecurityUtils.getCurrentUserId().orElse(null);
         TicketResponseDto ticket = ticketService.resolveTicket(ticketId, staffId, note);
 
-        redirectAttributes.addFlashAttribute("successMessage", "Đã đánh dấu hoàn tất yêu cầu #" + ticket.getTicketCode());
+        if (closeTicket) {
+            ticketService.closeTicket(ticketId, staffId, null, "Cán bộ đã giải quyết và đóng phiên tư vấn.");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã giải quyết và đóng yêu cầu #" + ticket.getTicketCode() + " thành công!");
+        } else {
+            redirectAttributes.addFlashAttribute("successMessage", "Đã đánh dấu hoàn tất giải quyết yêu cầu #" + ticket.getTicketCode());
+        }
         return "redirect:/tickets/detail/" + ticketId;
+    }
+
+    /**
+     * Quản trị viên (Admin) can thiệp khẩn cấp tiếp quản vé quá hạn SLA từ các đơn vị.
+     */
+    @PostMapping("/{ticketId}/takeover")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String handleAdminTakeover(@PathVariable Long ticketId, RedirectAttributes redirectAttributes) {
+        Long adminId = SecurityUtils.getCurrentUserId().orElse(null);
+        try {
+            ticketService.adminTakeoverTicket(ticketId, adminId);
+            redirectAttributes.addFlashAttribute("successMessage", "Quản trị viên đã tiếp quản xử lý Ticket quá hạn thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể tiếp quản vé: " + e.getMessage());
+        }
+        return "redirect:/staff/tickets?status=IN_PROGRESS";
     }
 }

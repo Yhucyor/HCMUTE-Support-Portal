@@ -70,8 +70,24 @@ public class AiServiceProcessManager {
             }
             File logFile = new File(logDir, "uvicorn_autostart.log");
 
+            // [NEW_CODE]: Tự động nhận diện môi trường ảo .venv chứa đầy đủ thư viện của ai-service
+            File venvPythonWin = new File(aiServiceDir, ".venv\\Scripts\\python.exe");
+            File venvPythonUnix = new File(aiServiceDir, ".venv/bin/python");
+            String pythonExecutable = "python";
+            if (venvPythonWin.exists()) {
+                pythonExecutable = venvPythonWin.getAbsolutePath();
+            } else if (venvPythonUnix.exists()) {
+                pythonExecutable = venvPythonUnix.getAbsolutePath();
+            }
+
+            // [LEGACY_CODE - ROLLBACK IF NEEDED]:
+            // ProcessBuilder pb = new ProcessBuilder(
+            //         "python", "-m", "uvicorn", "api.app:app",
+            //         "--host", host,
+            //         "--port", String.valueOf(port)
+            // );
             ProcessBuilder pb = new ProcessBuilder(
-                    "python", "-m", "uvicorn", "api.app:app",
+                    pythonExecutable, "-m", "uvicorn", "api.app:app",
                     "--host", host,
                     "--port", String.valueOf(port)
             );

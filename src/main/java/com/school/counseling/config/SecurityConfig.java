@@ -25,24 +25,26 @@ public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final com.school.counseling.module.auth.service.CustomOAuth2UserService customOAuth2UserService;
+    private final com.school.counseling.module.auth.service.CustomOidcUserService customOidcUserService;
 
-    public SecurityConfig(UserDetailsServiceImpl userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(UserDetailsServiceImpl userDetailsService,
+                          JwtAuthenticationFilter jwtAuthenticationFilter,
+                          com.school.counseling.module.auth.service.CustomOAuth2UserService customOAuth2UserService,
+                          com.school.counseling.module.auth.service.CustomOidcUserService customOidcUserService) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.customOAuth2UserService = customOAuth2UserService;
+        this.customOidcUserService = customOidcUserService;
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // thuant toan băm 1 chieu = chuoi ngẫu nhiên
-    } // trộm đc db nhg ko thể dịch ngược
-
-    @Bean
     // xác thực tk
-    public DaoAuthenticationProvider authenticationProvider() {
+    public DaoAuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(); // DaoAuthen... trọng tài xác thực tk
                                                                                   // khibaamws lgoin
         authProvider.setUserDetailsService(userDetailsService);// tim thong tin tk
-        authProvider.setPasswordEncoder(passwordEncoder());// xac thuc mk đưa giải mã bcrupt vào
+        authProvider.setPasswordEncoder(passwordEncoder);// xac thuc mk đưa giải mã bcrupt vào
         return authProvider;
     }
 
@@ -54,8 +56,10 @@ public class SecurityConfig {
 
     @Bean
     // bộ lọc chính bảo vê ngóc ngách hệ thôgns
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, DaoAuthenticationProvider authenticationProvider) throws Exception {
         http
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.sameOrigin()))
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/api/**", "/ws/**"))
                 // cho phép mọi người truy cập
@@ -66,16 +70,19 @@ public class SecurityConfig {
                                 "/academic/**", "/api/academic/**",
                                 "/grades", "/timetable", "/curriculum",
                                 "/faqs", "/faq", "/api/v1/faqs/**",
-                                "/feed/official/**", "/feed/forum/**",
+                                "/feed/official/**", "/feed/forum/**", "/api/v1/forum/**",
                                 "/auth/**", "/api/v1/auth/**",
+                                "/oauth2/**", "/login/oauth2/**",
                                 "/error",
-                                "/css/**", "/js/**", "/images/**", "/uploads/**", "/webjars/**", "/favicon.ico")
+                                "/files/**", "/image", "/documents/**", "/videos/**",
+                                "/css/**", "/js/**", "/vendor/**", "/images/**", "/uploads/**", "/webjars/**", "/favicon.ico")
                         .permitAll()
                         
                         // AI Chat - YÊU CẦU ĐĂNG NHẬP để track user & apply rate limiting
                         .requestMatchers("/ai/chat", "/ai/chat/**", "/ai-chat", "/ai-chat/**", "/api/ai/**").authenticated()
 
                         // Admin & Staff boundaries
+                        .requestMatchers("/admin/messages", "/admin/messages/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/admin/**", "/api/admin/**", "/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/staff/**", "/api/v1/staff/**", "/api/v1/internal-messages/**").hasAnyRole("STAFF", "ADMIN")
                         // All other requests require authentication
@@ -88,6 +95,13 @@ public class SecurityConfig {
                         .usernameParameter("username")
                         .passwordParameter("password")
                         .permitAll())
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/auth/login")
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                                .oidcUserService(customOidcUserService))
+                        .defaultSuccessUrl("/home", false)
+                        .failureUrl("/auth/login?error=oauth2"))
                 .logout(logout -> logout
                         .logoutRequestMatcher(new AntPathRequestMatcher("/auth/logout"))
                         .logoutSuccessUrl("/?logout=true")
@@ -97,7 +111,7 @@ public class SecurityConfig {
                         .permitAll())
                 .exceptionHandling(ex -> ex
                         .accessDeniedPage("/error"))
-                .authenticationProvider(authenticationProvider())
+                .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

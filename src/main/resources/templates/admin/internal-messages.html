@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Kênh Trao Đổi Ban Quản Trị - QAUTE Portal</title>
+</head>
+<body>
+<div th:fragment="content">
+    <!-- Portal Workspace Header với Tab active là admin-messages -->
+    <div th:replace="~{layout/portal-header :: portal-header('admin-messages')}"></div>
+
+    <style>
+        .msg-board-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+            overflow: hidden;
+            height: calc(100vh - 200px);
+            min-height: 560px;
+            display: flex;
+        }
+        .msg-sidebar {
+            width: 320px;
+            border-right: 1px solid #f1f5f9;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+        }
+        .msg-stream-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+        }
+        .msg-stream-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            background: #fdfdfd;
+        }
+        .msg-item-bubble {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            transition: all 0.2s ease;
+        }
+        .msg-item-bubble:hover {
+            box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
+            border-color: #cbd5e1;
+        }
+        .msg-item-bubble.from-admin {
+            border-left: 4px solid #dc2626;
+            background: #fffafa;
+        }
+        .msg-item-bubble.from-staff {
+            border-left: 4px solid #003882;
+            background: #f8faff;
+        }
+    </style>
+
+    <div class="msg-board-card">
+        <!-- Sidebar: Bộ lọc & Thông tin kênh -->
+        <div class="msg-sidebar p-3 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div class="rounded-3 p-2 text-white" style="background: #003882;">
+                        <i class="bi bi-chat-left-dots-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Kênh Chỉ Đạo Nội Bộ</h6>
+                        <small class="text-secondary" style="font-size: 0.72rem;">Trao đổi trực tiếp 2 chiều</small>
+                    </div>
+                </div>
+
+                <!-- Thống kê nhanh & Trạng thái Realtime -->
+                <div class="p-2.5 rounded-3 mb-3 border bg-white shadow-xs">
+                    <div class="d-flex align-items-center justify-content-between small text-muted mb-1">
+                        <span>Trạng thái kết nối:</span>
+                        <span class="badge bg-success-subtle text-success border border-success d-inline-flex align-items-center gap-1">
+                            <span class="spinner-grow spinner-grow-sm" style="width: 6px; height: 6px;" role="status"></span>
+                            Real-time 24/7
+                        </span>
+                    </div>
+                    <div class="small text-secondary" style="font-size: 0.75rem;">
+                        Tin nhắn được cập nhật tức thì, không cần tải lại trang.
+                    </div>
+                </div>
+
+                <!-- Bộ lọc theo Đơn vị -->
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-secondary mb-1">Phạm vi Khoa / Phòng:</label>
+                    <select id="filterDeptSelect" class="form-select form-select-sm" onchange="loadInternalMessages()">
+                        <option value="">-- Toàn thể các đơn vị --</option>
+                        <option th:each="d : ${departments}" 
+                                th:value="${d.id}" 
+                                th:text="${d.name}"
+                                th:selected="${selectedDepartmentId != null and selectedDepartmentId == d.id}"></option>
+                    </select>
+                </div>
+
+                <!-- Phân loại tin nhắn -->
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-secondary mb-1">Loại trao đổi:</label>
+                    <div class="d-flex flex-column gap-1" style="font-size: 0.8rem;">
+                        <span class="badge bg-warning-subtle text-dark border border-warning text-start py-1.5 px-2">
+                            <i class="bi bi-bell-fill me-1 text-warning"></i>Đôn đốc hạn SLA
+                        </span>
+                        <span class="badge bg-danger-subtle text-danger border border-danger text-start py-1.5 px-2">
+                            <i class="bi bi-exclamation-octagon-fill me-1 text-danger"></i>Cảnh báo / Phàn nàn
+                        </span>
+                        <span class="badge bg-primary-subtle text-primary border border-primary text-start py-1.5 px-2">
+                            <i class="bi bi-compass me-1 text-primary"></i>Chỉ đạo học vụ
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Sidebar -->
+            <div class="pt-2 border-top text-center text-muted" style="font-size: 0.75rem;">
+                <i class="bi bi-shield-lock me-1"></i>Kênh mật nội bộ Ban Quản Trị
+            </div>
+        </div>
+
+        <!-- Stream Pane: Dòng thời gian tin nhắn & Khung soạn thảo -->
+        <div class="msg-stream-pane">
+            <!-- Header Stream Pane -->
+            <div class="px-3 py-2.5 border-bottom d-flex align-items-center justify-content-between bg-white">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fw-bold text-dark" style="font-size: 0.95rem;">Lịch Sử Trao Đổi Nghiệp Vụ</span>
+                    <span class="badge bg-light text-secondary border" id="totalMsgCount">Đang tải...</span>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-light btn-sm border text-secondary" onclick="loadInternalMessages(true)" title="Làm mới thủ công">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Làm mới
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages Stream Viewport -->
+            <div class="msg-stream-body" id="messagesStreamContainer">
+                <div class="text-center text-muted py-5">
+                    <span class="spinner-border spinner-border-sm me-2"></span> Đang kết nối kênh trao đổi nội bộ...
+                </div>
+            </div>
+
+            <!-- Compose / Send Box -->
+            <div class="p-3 border-top bg-light">
+                <form id="internalChatForm" onsubmit="handleSendRealtimeMessage(event)">
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-4">
+                            <select class="form-select form-select-sm" id="msgTargetDeptId">
+                                <option value="">-- Gửi tới: Toàn trường / Chung --</option>
+                                <option th:each="d : ${departments}" th:value="${d.id}" th:text="${d.name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select form-select-sm" id="msgTypeSelect" required>
+                                <option value="REMINDER" selected>Đôn đốc hạn SLA</option>
+                                <option value="COMPLAINT">Cảnh báo / Phàn nàn</option>
+                                <option value="INQUIRY">Chỉ đạo học vụ</option>
+                                <option value="DIRECT_CHAT">Trao đổi nghiệp vụ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" class="form-control form-control-sm" id="msgSubjectInput" placeholder="Tiêu đề vắn tắt..." required>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <textarea class="form-control form-control-sm" id="msgContentInput" rows="2" 
+                                  placeholder="Nhập nội dung trao đổi, chỉ đạo hoặc phản ánh nghiệp vụ... (Enter để gửi)" required></textarea>
+                        <button type="submit" class="btn btn-primary px-3 d-flex flex-column align-items-center justify-content-center" id="btnSendChatMsg" style="min-width: 80px;">
+                            <i class="bi bi-send-fill fs-6"></i>
+                            <span style="font-size: 0.75rem;">Gửi</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- SockJS & StompJS for Real-time Streaming -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        let stompClient = null;
+        let knownMessageIds = new Set();
+        let isFirstLoad = true;
+
+        async function loadInternalMessages(manualClick = false) {
+            const container = document.getElementById('messagesStreamContainer');
+            const deptId = document.getElementById('filterDeptSelect').value;
+            const url = deptId ? `/api/v1/internal-messages?departmentId=${deptId}` : '/api/v1/internal-messages';
+
+            try {
+                const res = await fetch(url);
+                const result = await res.json();
+
+                if (result.success && result.data) {
+                    document.getElementById('totalMsgCount').textContent = result.data.length + ' tin';
+                    
+                    if (result.data.length === 0) {
+                        container.innerHTML = `<div class="text-center text-muted py-5 small"><i class="bi bi-chat-square-dots fs-3 d-block mb-2"></i>Chưa có trao đổi nào trong danh mục này.</div>`;
+                        return;
+                    }
+
+                    // Render danh sách
+                    container.innerHTML = result.data.map(m => renderMessageBubble(m)).join('');
+
+                    // Lưu các ID đã biết
+                    result.data.forEach(m => knownMessageIds.add(m.id));
+
+                    // Scroll to bottom nếu lần đầu hoặc manual click
+                    if (isFirstLoad || manualClick) {
+                        container.scrollTop = container.scrollHeight;
+                        isFirstLoad = false;
+                    }
+                }
+            } catch (err) {
+                console.error('Lỗi tải tin nhắn:', err);
+                if (isFirstLoad) {
+                    container.innerHTML = `<div class="text-center text-danger py-4 small">Lỗi kết nối máy chủ: ${err.message}</div>`;
+                }
+            }
+        }
+
+        function renderMessageBubble(m) {
+            const isAdminSender = m.senderRole && m.senderRole.includes('ADMIN');
+            const bubbleClass = isAdminSender ? 'msg-item-bubble from-admin' : 'msg-item-bubble from-staff';
+
+            const badgeType = m.messageType === 'COMPLAINT' ? 'badge bg-danger text-white' : 
+                             (m.messageType === 'REMINDER' ? 'badge bg-warning text-dark' : 'badge bg-primary text-white');
+            const typeText = m.messageType === 'COMPLAINT' ? 'Cảnh báo' : 
+                            (m.messageType === 'REMINDER' ? 'Đôn đốc SLA' : 'Chỉ đạo');
+            
+            const timeStr = m.createdAt ? new Date(m.createdAt).toLocaleString('vi-VN') : '';
+
+            return `
+                <div class="${bubbleClass}" data-msg-id="${m.id}">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                            <strong class="small text-dark">${escapeHtml(m.senderName || 'Người dùng')}</strong>
+                            <span class="badge ${isAdminSender ? 'bg-danger-subtle text-danger' : 'bg-primary-subtle text-primary'}" style="font-size: 0.68rem;">
+                                ${isAdminSender ? 'Ban Quản Trị' : 'Cán Bộ'}
+                            </span>
+                            <small class="text-secondary" style="font-size: 0.75rem;">• ${escapeHtml(m.departmentName || 'Toàn trường')}</small>
+                        </div>
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="${badgeType}" style="font-size: 0.68rem;">${typeText}</span>
+                            <small class="text-muted" style="font-size: 0.72rem;">${timeStr}</small>
+                        </div>
+                    </div>
+                    <div class="fw-bold text-dark small mb-1">${escapeHtml(m.subject || '')}</div>
+                    <div class="text-secondary small" style="white-space: pre-wrap; line-height: 1.45;">${escapeHtml(m.content)}</div>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        async function handleSendRealtimeMessage(event) {
+            event.preventDefault();
+            const btn = document.getElementById('btnSendChatMsg');
+            btn.disabled = true;
+
+            const deptVal = document.getElementById('msgTargetDeptId').value;
+            const payload = {
+                subject: document.getElementById('msgSubjectInput').value.trim(),
+                content: document.getElementById('msgContentInput').value.trim(),
+                messageType: document.getElementById('msgTypeSelect').value,
+                departmentId: deptVal ? parseInt(deptVal) : null
+            };
+
+            try {
+                const res = await fetch('/api/v1/internal-messages/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+
+                if (result.success && result.data) {
+                    document.getElementById('msgSubjectInput').value = '';
+                    document.getElementById('msgContentInput').value = '';
+
+                    // Append ngay tin nhắn mới mà KHÔNG RELOAD TRANG
+                    appendNewMessage(result.data);
+                } else {
+                    alert('Lỗi: ' + (result.message || 'Không thể gửi tin nhắn'));
+                }
+            } catch (err) {
+                alert('Lỗi gửi tin nhắn: ' + err.message);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function appendNewMessage(m) {
+            if (!m || knownMessageIds.has(m.id)) return;
+            knownMessageIds.add(m.id);
+
+            const container = document.getElementById('messagesStreamContainer');
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = renderMessageBubble(m);
+            const newEl = tempDiv.firstElementChild;
+            container.appendChild(newEl);
+
+            // Tự động scroll xuống cuối
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Kết nối WebSocket Real-time
+        function initWebSocketConnection() {
+            try {
+                const socket = new SockJS('/ws-chat');
+                stompClient = Stomp.over(socket);
+                stompClient.debug = null; // Tắt log debug verbose
+
+                stompClient.connect({}, function (frame) {
+                    // Lắng nghe topic broadcast nội bộ
+                    stompClient.subscribe('/topic/internal-messages', function (response) {
+                        try {
+                            const newMsg = JSON.parse(response.body);
+                            appendNewMessage(newMsg);
+                        } catch (e) {
+                            console.error('Lỗi parse websocket message:', e);
+                        }
+                    });
+                }, function (err) {
+                    console.warn('WebSocket kết nối gián đoạn, chuyển sang Smart Polling:', err);
+                });
+            } catch (err) {
+                console.warn('Không thể khởi tạo WebSocket:', err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInternalMessages(true);
+            initWebSocketConnection();
+
+            // Smart Polling mỗi 3 giây để đảm bảo tin nhắn không bao giờ bị sót
+            setInterval(function() {
+                loadInternalMessages(false);
+            }, 3000);
+        });
+        /*]]>*/
+    </script>
+</div>
+</body>
+</html>

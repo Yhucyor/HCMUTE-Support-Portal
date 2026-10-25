@@ -1,6 +1,7 @@
 package com.school.counseling.module.admin.controller;
 
 import com.school.counseling.common.dto.ApiResponse;
+import com.school.counseling.common.util.SecurityUtils;
 import com.school.counseling.module.admin.dto.AdminSlaDashboardDto;
 import com.school.counseling.module.admin.service.AdminDashboardService;
 import com.school.counseling.module.auth.entity.Department;
@@ -18,7 +19,7 @@ import java.util.List;
 @Slf4j
 @Controller
 @RequestMapping("/admin")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
 @RequiredArgsConstructor
 public class AdminDashboardWebController {
 
@@ -26,11 +27,13 @@ public class AdminDashboardWebController {
     private final DepartmentRepository departmentRepository;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public String adminIndex() {
         return "redirect:/admin/dashboard";
     }
 
     @GetMapping("/dashboard")
+    @PreAuthorize("hasRole('ADMIN')")
     public String adminSlaDashboard(
             @RequestParam(value = "timeRange", required = false, defaultValue = "ALL") String timeRange,
             @RequestParam(value = "departmentId", required = false) Long departmentId,
@@ -47,8 +50,30 @@ public class AdminDashboardWebController {
         return "admin/dashboard";
     }
 
+    /**
+     * Kênh Trao Đổi Ban Quản Trị (Dedicated Workspace Tab cho Cán bộ & Admin)
+     */
+    @GetMapping("/messages")
+    public String internalMessagesPage(
+            @RequestParam(value = "departmentId", required = false) Long departmentId,
+            Model model) {
+        boolean isAdmin = SecurityUtils.hasAnyRole("ADMIN");
+        Long currentDeptId = departmentId;
+        if (!isAdmin && currentDeptId == null) {
+            currentDeptId = SecurityUtils.getCurrentDepartmentId().orElse(null);
+        }
+
+        List<Department> departments = departmentRepository.findAll();
+        model.addAttribute("departments", departments);
+        model.addAttribute("selectedDepartmentId", currentDeptId);
+        model.addAttribute("isAdmin", isAdmin);
+
+        return "admin/internal-messages";
+    }
+
     @ResponseBody
     @GetMapping("/api/stats")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<AdminSlaDashboardDto>> getDashboardStatsJson(
             @RequestParam(value = "timeRange", required = false, defaultValue = "ALL") String timeRange,
             @RequestParam(value = "departmentId", required = false) Long departmentId) {
