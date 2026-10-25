@@ -4,6 +4,8 @@ import com.school.counseling.module.auth.entity.User;
 import com.school.counseling.module.ticket.dto.TicketAccessAuthInfo;
 import com.school.counseling.module.ticket.dto.TicketSummaryDto;
 import com.school.counseling.module.ticket.entity.Ticket;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -267,6 +269,35 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     """)
     Double getAverageRatingFiltered(@Param("since") LocalDateTime since, @Param("deptId") Long deptId);
 
+    /**
+     * Tối ưu hóa Dashboard SLA: Gom 7 truy vấn đếm riêng lẻ thành 1 truy vấn Conditional Aggregation duy nhất.
+     * Cột trả về:
+     * [0]: COUNT(t) -> total
+     * [1]: SUM(status = 'OPEN')
+     * [2]: SUM(status = 'IN_PROGRESS')
+     * [3]: SUM(status = 'RESOLVED')
+     * [4]: SUM(status = 'CLOSED')
+     * [5]: SUM(OVERDUE)
+     * [6]: SUM(ON_TIME)
+     * [7]: AVG(rating)
+     */
+    @Query("""
+        SELECT
+            COUNT(t),
+            SUM(CASE WHEN t.status = 'OPEN' THEN 1L ELSE 0L END),
+            SUM(CASE WHEN t.status = 'IN_PROGRESS' THEN 1L ELSE 0L END),
+            SUM(CASE WHEN t.status = 'RESOLVED' THEN 1L ELSE 0L END),
+            SUM(CASE WHEN t.status = 'CLOSED' THEN 1L ELSE 0L END),
+            SUM(CASE WHEN (t.status = 'OVERDUE' OR (t.status IN ('OPEN', 'IN_PROGRESS') AND t.dueDate < CURRENT_TIMESTAMP)) THEN 1L ELSE 0L END),
+            SUM(CASE WHEN t.status IN ('RESOLVED', 'CLOSED') AND (t.resolvedAt IS NOT NULL AND t.resolvedAt <= t.dueDate) THEN 1L ELSE 0L END),
+            AVG(CASE WHEN t.rating IS NOT NULL THEN t.rating ELSE NULL END)
+        FROM Ticket t
+        WHERE t.isDeleted = false
+          AND (:since IS NULL OR t.createdAt >= :since)
+          AND (:deptId IS NULL OR t.department.id = :deptId)
+    """)
+    List<Object[]> getOverallSlaAggregate(@Param("since") LocalDateTime since, @Param("deptId") Long deptId);
+
     @Query("""
         SELECT t.priority, COUNT(t) FROM Ticket t
         WHERE t.isDeleted = false
@@ -315,4 +346,51 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
         ORDER BY t.dueDate ASC
     """)
     List<TicketSummaryDto> findTopOverdueTicketsFiltered(@Param("deptId") Long deptId);
+
+    // ─── PHÂN TRANG & TÌM KIẾM DÀNH CHO SINH VIÊN (MY-TICKETS) ───
+
+    @Query(value = """
+        SELECT t FROM Ticket t
+        LEFT JOIN FETCH t.department
+        LEFT JOIN FETCH t.creator
+        LEFT JOIN FETCH t.assignedTo
+        WHERE (:userId IS NULL OR t.creator.id = :userId)
+          AND (:status IS NULL OR :status = 'ALL' OR t.status = :status OR (:status = 'WAITING' AND (t.status = 'WAITING_FOR_STUDENT' OR t.hasStudentReply = true)))
+          AND (:departmentId IS NULL OR t.department.id = :departmentId)
+          AND (:keyword IS NULL OR LOWER(t.ticketCode) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(t.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(t.topicCategory) LIKE LOWER(CONCAT('%', :keyword, '%')))
+          AND t.isDeleted = false
+    """,
+    countQuery = """
+        SELECT COUNT(t) FROM Ticket t
+        WHERE (:userId IS NULL OR t.creator.id = :userId)
+          AND (:status IS NULL OR :status = 'ALL' OR t.status = :status OR (:status = 'WAITING' AND (t.status = 'WAITING_FOR_STUDENT' OR t.hasStudentReply = true)))
+          AND (:departmentId IS NULL OR t.department.id = :departmentId)
+          AND (:keyword IS NULL OR LOWER(t.ticketCode) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(t.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(t.topicCategory) LIKE LOWER(CONCAT('%', :keyword, '%')))
+          AND t.isDeleted = false
+    """)
+    Page<Ticket> findMyTicketsPaged(
+            @Param("userId") Long userId,
+            @Param("status") String status,
+            @Param("departmentId") Long departmentId,
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
+
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.creator.id = :userId AND t.isDeleted = false")
+    long countMyTicketsTotal(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.creator.id = :userId AND (t.status = 'OPEN' OR t.status = 'PENDING') AND t.isDeleted = false")
+    long countMyTicketsPending(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.creator.id = :userId AND t.status = 'IN_PROGRESS' AND t.isDeleted = false")
+    long countMyTicketsProcessing(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.creator.id = :userId AND (t.status = 'WAITING_FOR_STUDENT' OR t.hasStudentReply = true) AND t.isDeleted = false")
+    long countMyTicketsWaiting(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.creator.id = :userId AND t.status = 'RESOLVED' AND t.isDeleted = false")
+    long countMyTicketsResolved(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.creator.id = :userId AND t.status = 'CLOSED' AND t.isDeleted = false")
+    long countMyTicketsClosed(@Param("userId") Long userId);
 }

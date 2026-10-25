@@ -2,8 +2,8 @@ package com.school.counseling.module.ticket.controller;
 
 import com.school.counseling.common.exception.TicketAlreadyClaimedException;
 import com.school.counseling.common.util.SecurityUtils;
-import com.school.counseling.module.auth.entity.Department;
-import com.school.counseling.module.auth.repository.DepartmentRepository;
+import com.school.counseling.module.admin.dto.DepartmentAdminDto;
+import com.school.counseling.module.admin.service.AdminDepartmentService;
 import com.school.counseling.module.ticket.dto.TicketResponseDto;
 import com.school.counseling.module.ticket.dto.TicketSummaryDto;
 import com.school.counseling.module.ticket.service.TicketService;
@@ -31,13 +31,15 @@ import java.util.List;
 public class StaffTicketWebController {
 
     private final TicketService ticketService;
-    private final DepartmentRepository departmentRepository;
+    private final AdminDepartmentService adminDepartmentService;
 
     @GetMapping
     @PreAuthorize("#departmentId == null or @deptSecurity.canAccessDepartment(#departmentId)")
     public String staffDashboard(
             @RequestParam(value = "departmentId", required = false) Long departmentId,
             @RequestParam(value = "status", required = false, defaultValue = "ALL") String status,
+            @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") int size,
             Model model) {
 
         boolean isAdmin = SecurityUtils.getCurrentUserPrincipal()
@@ -54,16 +56,16 @@ public class StaffTicketWebController {
             return "error/403";
         }
 
-        List<Department> allDepartments = departmentRepository.findAll();
+        List<DepartmentAdminDto> allDepartments = adminDepartmentService.getAllDepartments();
         model.addAttribute("allDepartments", allDepartments);
         model.addAttribute("isAdmin", isAdmin);
 
-        Department dept = null;
+        DepartmentAdminDto dept = null;
         List<TicketSummaryDto> allTickets;
         List<TicketSummaryDto> filteredTickets;
 
         if (currentDeptId != null) {
-            dept = departmentRepository.findById(currentDeptId).orElse(null);
+            dept = adminDepartmentService.findDepartmentDtoById(currentDeptId).orElse(null);
             allTickets = ticketService.getTicketSummaryByDepartment(currentDeptId, "ALL");
         } else {
             // Admin xem toàn bộ vé toàn trường
@@ -80,12 +82,29 @@ public class StaffTicketWebController {
             filteredTickets = allTickets;
         } else if ("NEW_REPLY".equalsIgnoreCase(status)) {
             filteredTickets = allTickets.stream().filter(TicketSummaryDto::getHasStudentReply).toList();
+        } else if ("OVERDUE".equalsIgnoreCase(status)) {
+            filteredTickets = allTickets.stream().filter(TicketSummaryDto::isOverdue).toList();
         } else {
             filteredTickets = allTickets.stream().filter(t -> status.equalsIgnoreCase(t.getStatus())).toList();
         }
 
+        // ─── Phân trang danh sách vé hiển thị ───
+        int totalElements = filteredTickets.size();
+        int safePage = Math.max(0, page);
+        int safeSize = Math.max(1, size);
+        int fromIndex = Math.min(safePage * safeSize, totalElements);
+        int toIndex = Math.min(fromIndex + safeSize, totalElements);
+        List<TicketSummaryDto> pagedContent = filteredTickets.subList(fromIndex, toIndex);
+
+        org.springframework.data.domain.Page<TicketSummaryDto> ticketPage =
+                new org.springframework.data.domain.PageImpl<>(pagedContent, org.springframework.data.domain.PageRequest.of(safePage, safeSize), totalElements);
+
         model.addAttribute("currentDepartment", dept);
-        model.addAttribute("tickets", filteredTickets);
+        model.addAttribute("tickets", ticketPage.getContent());
+        model.addAttribute("ticketPage", ticketPage);
+        model.addAttribute("currentPage", safePage);
+        model.addAttribute("totalPages", ticketPage.getTotalPages());
+        model.addAttribute("totalElements", totalElements);
         model.addAttribute("selectedStatus", status);
         model.addAttribute("countOpen", countOpen);
         model.addAttribute("countInProgress", countInProgress);
@@ -119,12 +138,62 @@ public class StaffTicketWebController {
     public String handleResolveTicket(
             @PathVariable Long ticketId,
             @RequestParam(value = "note", required = false) String note,
+            @RequestParam(value = "closeTicket", required = false, defaultValue = "false") boolean closeTicket,
             RedirectAttributes redirectAttributes) {
 
         Long staffId = SecurityUtils.getCurrentUserId().orElse(null);
         TicketResponseDto ticket = ticketService.resolveTicket(ticketId, staffId, note);
 
-        redirectAttributes.addFlashAttribute("successMessage", "Đã đánh dấu hoàn tất yêu cầu #" + ticket.getTicketCode());
+        if (closeTicket) {
+            ticketService.closeTicket(ticketId, staffId, null, "Cán bộ đã giải quyết và đóng phiên tư vấn.");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã giải quyết và đóng yêu cầu #" + ticket.getTicketCode() + " thành công!");
+        } else {
+            redirectAttributes.addFlashAttribute("successMessage", "Đã đánh dấu hoàn tất giải quyết yêu cầu #" + ticket.getTicketCode());
+        }
         return "redirect:/tickets/detail/" + ticketId;
+    }
+
+    /**
+     * Quản trị viên (Admin) can thiệp khẩn cấp tiếp quản vé quá hạn SLA từ các đơn vị.
+     */
+    @PostMapping("/{ticketId}/takeover")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String handleAdminTakeover(@PathVariable Long ticketId, RedirectAttributes redirectAttributes) {
+        Long adminId = SecurityUtils.getCurrentUserId().orElse(null);
+        try {
+            ticketService.adminTakeoverTicket(ticketId, adminId);
+            redirectAttributes.addFlashAttribute("successMessage", "Quản trị viên đã tiếp quản xử lý Ticket quá hạn thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể tiếp quản vé: " + e.getMessage());
+        }
+        return "redirect:/staff/tickets?status=IN_PROGRESS";
+    }
+
+    /**
+     * Chuyển giao Ticket sang Khoa/Phòng ban khác từ Web UI
+     */
+    @PostMapping("/{ticketId}/transfer")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN', 'HEAD', 'DEPARTMENT_HEAD', 'DEPT_HEAD')")
+    public String handleTransferTicket(
+            @PathVariable Long ticketId,
+            @RequestParam("toDepartmentId") Long toDepartmentId,
+            @RequestParam(value = "reason", required = false) String reason,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.school.counseling.module.auth.dto.UserPrincipal currentUser,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            com.school.counseling.module.ticket.dto.TicketTransferRequest request = com.school.counseling.module.ticket.dto.TicketTransferRequest.builder()
+                    .toDepartmentId(toDepartmentId)
+                    .reason(reason != null && !reason.trim().isEmpty() ? reason.trim() : "Chuyển giao chuyên môn liên phòng ban")
+                    .build();
+
+            TicketResponseDto ticket = ticketService.transferTicket(ticketId, request, currentUser);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Đã chuyển giao thành công yêu cầu #" + ticket.getTicketCode() + " sang đơn vị mới!");
+            return "redirect:/staff/tickets";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể chuyển giao vé: " + e.getMessage());
+            return "redirect:/tickets/detail/" + ticketId;
+        }
     }
 }

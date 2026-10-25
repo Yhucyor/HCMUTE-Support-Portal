@@ -10,6 +10,10 @@ import com.school.counseling.module.ticket.dto.TicketSummaryDto;
 import com.school.counseling.module.ticket.service.TicketService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -20,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * WEB CONTROLLER ĐIỀU HƯỚNG GIAO DIỆN THYMELEAF CHO TICKET
@@ -31,6 +36,8 @@ import java.util.List;
  * - GET /tickets/detail/{ticketId}: Chi tiết vé trao đổi 2 chiều
  * - GET /tickets/guest-track: Tra cứu vé vãng lai không cần đăng nhập
  */
+import com.school.counseling.module.ticket.entity.TicketCategoryEnum;
+
 @Controller
 @RequestMapping("/tickets")
 @RequiredArgsConstructor
@@ -44,6 +51,7 @@ public class TicketWebController {
     public String createTicketPage(@RequestParam(value = "title", required = false, defaultValue = "") String title, Model model) {
         model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
         model.addAttribute("initialTitle", title);
+        model.addAttribute("categories", TicketCategoryEnum.values());
         return "ticket/create";
     }
 
@@ -58,6 +66,7 @@ public class TicketWebController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
+            model.addAttribute("categories", TicketCategoryEnum.values());
             model.addAttribute("initialTitle", request.getTitle());
             return "ticket/create";
         }
@@ -74,13 +83,34 @@ public class TicketWebController {
         return "redirect:/tickets/my-tickets";
     }
 
-    @GetMapping("/my-tickets")
+    @GetMapping({"", "/", "/my-tickets", "/list"})
     @PreAuthorize("isAuthenticated()")
-    public String myTicketsPage(Model model) {
+    public String myTicketsPage(
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(name = "status", required = false, defaultValue = "ALL") String status,
+            @RequestParam(name = "departmentId", required = false) Long departmentId,
+            @RequestParam(name = "keyword", required = false) String keyword,
+            Model model) {
+
         Long currentUserId = SecurityUtils.getCurrentUserId().orElse(null);
-        // Dùng TicketSummaryDto (1 SQL query nhẹ) thay vì TicketResponseDto để triệt tiêu N+1 Query
-        List<TicketSummaryDto> tickets = ticketService.getMyTicketSummaries(currentUserId);
+        Page<TicketResponseDto> tickets = ticketService.getMyTicketsPaged(currentUserId, status, departmentId, keyword, pageable);
+        Map<String, Long> statusCounts = ticketService.getMyTicketStatusCounts(currentUserId);
+
         model.addAttribute("tickets", tickets);
+        model.addAttribute("statusCounts", statusCounts);
+        model.addAttribute("totalCount", statusCounts.getOrDefault("total", 0L));
+        model.addAttribute("pendingCount", statusCounts.getOrDefault("pending", 0L));
+        model.addAttribute("processingCount", statusCounts.getOrDefault("processing", 0L));
+        model.addAttribute("waitingCount", statusCounts.getOrDefault("waiting", 0L));
+        model.addAttribute("resolvedCount", statusCounts.getOrDefault("resolved", 0L));
+        model.addAttribute("closedCount", statusCounts.getOrDefault("closed", 0L));
+
+        model.addAttribute("currentStatus", status != null ? status : "ALL");
+        model.addAttribute("selectedDept", departmentId);
+        model.addAttribute("keyword", keyword != null ? keyword : "");
+        model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
+        SecurityUtils.getCurrentUser().ifPresent(u -> model.addAttribute("currentUser", u));
+
         return "ticket/my-tickets";
     }
 
@@ -126,6 +156,7 @@ public class TicketWebController {
         model.addAttribute("ticket", ticket);
         model.addAttribute("currentUserId", currentUserId);
         model.addAttribute("isStaffOrAdmin", isStaffOrAdmin);
+        model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
         return "ticket/detail";
     }
 

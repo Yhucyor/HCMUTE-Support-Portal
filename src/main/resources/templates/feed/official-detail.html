@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title th:text="${post.title + ' | HCMUTE Support Portal'}">Chi Tiết Thông Báo Chính Thức</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <!-- Tailwind CSS with HCMUTE Identity Tokens -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "brand-red": "#991b1e",
+                        "brand-red-hover": "#831518",
+                        "brand-blue": "#003882",
+                        "brand-blue-dark": "#002456",
+                        "brand-gold": "#d97706"
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        headline: ["Outfit", "Inter", "sans-serif"]
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+        ::-webkit-scrollbar {
+            width: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .article-html-body h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .article-html-body h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #003882;
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .article-html-body p {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+            color: #334155;
+        }
+        .article-html-body ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+            margin-bottom: 1.25rem;
+            line-height: 1.8;
+            color: #334155;
+        }
+        .article-html-body strong {
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Global Unified Header HCMUTE -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <!-- 2. MAIN DETAIL CONTENT -->
+    <main class="w-full flex-1">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+            <!-- Top Action Toolbar -->
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-200">
+                <a th:href="@{/feed/official}" 
+                   class="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#003882] hover:text-[#991b1e] transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    <span>Quay lại Bảng tin chính thức</span>
+                </a>
+
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="copyPostLink()" 
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-sm transition-all">
+                        <span class="material-symbols-outlined text-[16px]">link</span>
+                        <span id="copyLinkText">Sao chép link</span>
+                    </button>
+                    <button type="button" onclick="window.print()" 
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-sm transition-all">
+                        <span class="material-symbols-outlined text-[16px]">print</span>
+                        <span>In thông báo</span>
+                    </button>
+
+                    <!-- Staff & Admin Actions -->
+                    <div sec:authorize="hasAnyRole('STAFF', 'ADMIN')" class="flex items-center gap-2 pl-2 border-l border-slate-200">
+                        <a th:href="@{'/feed/official/edit/' + ${post.id}}" 
+                           class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-[#003882] text-xs font-semibold transition-all">
+                            <span class="material-symbols-outlined text-[16px]">edit</span>
+                            <span>Sửa</span>
+                        </a>
+                        <form th:action="@{/feed/official/delete/{id}(id=${post.id})}" method="post" class="inline"
+                              onsubmit="return confirm('Bạn có chắc chắn muốn xóa thông báo chính thức này không?');">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <button type="submit" 
+                                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-[#991b1e] text-xs font-semibold transition-all">
+                                <span class="material-symbols-outlined text-[16px]">delete</span>
+                                <span>Xóa</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Announcement Card -->
+            <article class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-10 mb-8 overflow-hidden">
+                
+                <!-- Metadata Header -->
+                <div class="border-b border-slate-200 pb-6 mb-6">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="px-3 py-1 rounded-md text-xs font-bold bg-blue-50 text-[#003882] border border-blue-100" 
+                                  th:text="${post.departmentName != null ? post.departmentName : 'Ban Giám Hiệu'}">Phòng Ban</span>
+                            <span th:if="${post.isPinned}" 
+                                  class="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-bold bg-[#991b1e] text-white shadow-sm">
+                                <span class="material-symbols-outlined text-[14px]">keep</span>
+                                <span>Thông báo ghim</span>
+                            </span>
+                        </div>
+
+                        <!-- Admin Pin Toggle Form -->
+                        <form sec:authorize="hasRole('ADMIN')" th:action="@{/feed/official/toggle-pin/{id}(id=${post.id})}" method="post" class="inline">
+                            <button type="submit" 
+                                    class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold border transition-all"
+                                    th:classappend="${post.isPinned ? 'border-red-200 bg-red-50 text-[#991b1e] hover:bg-red-100' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'}">
+                                <span class="material-symbols-outlined text-[14px]" th:text="${post.isPinned ? 'bookmark_remove' : 'keep'}">keep</span>
+                                <span th:text="${post.isPinned ? 'Bỏ ghim tin này' : 'Ghim lên đầu trang'}">Ghim tin</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Title -->
+                    <h1 class="font-headline font-bold text-2xl sm:text-3xl text-slate-900 leading-snug mb-4" th:text="${post.title}">
+                        Tiêu đề chi tiết bài thông báo
+                    </h1>
+
+                    <!-- Author & Info Row -->
+                    <div class="flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-slate-500">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center text-slate-600 font-bold">
+                                <img th:if="${post.authorAvatar != null}" th:src="${post.authorAvatar}" class="w-full h-full object-cover">
+                                <span th:unless="${post.authorAvatar != null}" class="material-symbols-outlined text-[18px]">account_circle</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 block text-[10px]">Ban hành bởi</span>
+                                <strong class="text-slate-800 text-xs font-semibold" th:text="${post.authorName != null ? post.authorName : 'Cán bộ quản lý'}">Ban Đào Tạo</strong>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px] text-slate-400">calendar_month</span>
+                            <span>Ngày đăng: <strong class="text-slate-700" th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy HH:mm')}">01/09/2026</strong></span>
+                        </div>
+
+                        <div class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px] text-slate-400">visibility</span>
+                            <span>Lượt xem: <strong class="text-[#003882]" th:text="${post.viewCount != null ? post.viewCount : 0}">0</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Featured Image Banner (If Image Attachment Exists) -->
+                <div th:if="${post.attachments != null and !post.attachments.empty and post.attachments[0].fileType == 'IMAGE'}" 
+                     class="mb-8 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                    <img th:src="${post.attachments[0].fileUrl}" 
+                         th:alt="${post.title}" 
+                         class="w-full max-h-[460px] object-cover">
+                </div>
+
+                <!-- Embedded Video Player Section -->
+                <div class="mb-8" th:if="${post.videoUrl != null and !#strings.isEmpty(post.videoUrl)}">
+                    <div class="p-4 bg-slate-900 rounded-2xl shadow-md text-white">
+                        <div class="flex items-center justify-between mb-3 text-xs font-bold">
+                            <span class="inline-flex items-center gap-1.5 text-rose-400">
+                                <span class="material-symbols-outlined text-[18px]">play_circle</span>
+                                <span>Video hướng dẫn & thông báo chính thức</span>
+                            </span>
+                            <span th:if="${post.youtubeVideo}" class="px-2 py-0.5 rounded bg-rose-600 text-white text-[10px]">YouTube</span>
+                            <span th:if="${post.driveVideo}" class="px-2 py-0.5 rounded bg-blue-600 text-white text-[10px]">Google Drive</span>
+                            <span th:if="${post.directVideo}" class="px-2 py-0.5 rounded bg-emerald-600 text-white text-[10px]">Video Server</span>
+                        </div>
+
+                        <!-- 1. YouTube Player -->
+                        <div th:if="${post.youtubeVideo}" class="aspect-video w-full rounded-xl overflow-hidden shadow">
+                            <iframe th:src="${post.youtubeEmbedUrl}" 
+                                    class="w-full h-full border-0"
+                                    title="Video Thông Báo" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                    allowfullscreen></iframe>
+                        </div>
+
+                        <!-- 2. Google Drive Player -->
+                        <div th:if="${post.driveVideo}" class="aspect-video w-full rounded-xl overflow-hidden shadow">
+                            <iframe th:src="${post.driveEmbedUrl}" 
+                                    class="w-full h-full border-0"
+                                    title="Video Thông Báo Google Drive" 
+                                    allow="autoplay" 
+                                    allowfullscreen></iframe>
+                        </div>
+
+                        <!-- 3. Direct HTML5 Video Player -->
+                        <div th:if="${post.directVideo}">
+                            <video controls preload="metadata" class="w-full max-h-[460px] rounded-xl shadow bg-black">
+                                <source th:src="${post.videoUrl}" type="video/mp4">
+                                Trình duyệt của bạn không hỗ trợ phát thẻ video HTML5.
+                            </video>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Article Content (Render HTML & typography) -->
+                <div class="article-html-body text-slate-800 text-sm sm:text-base leading-relaxed mb-8" 
+                     th:utext="${post.content}">
+                    Nội dung thông báo chi tiết...
+                </div>
+
+                <!-- PDF Embedded Viewer -->
+                <div th:if="${post.attachments != null}" th:each="att : ${post.attachments}">
+                    <div th:if="${att.fileType == 'PDF'}" class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm my-6 bg-slate-50">
+                        <div class="bg-white flex flex-wrap justify-between items-center py-3 px-4 border-b border-slate-200 gap-2">
+                            <span class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-rose-600 text-[22px]">picture_as_pdf</span>
+                                <span>Xem trực tiếp văn bản: <span class="text-[#003882]" th:text="${att.fileName}">van-ban.pdf</span></span>
+                            </span>
+                            <div class="flex items-center gap-2">
+                                <a th:href="@{/feed/official/attachment/{id}/view(id=${att.id})}" target="_blank" 
+                                   class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors shadow-sm">
+                                    <span class="material-symbols-outlined text-[15px]">open_in_new</span>
+                                    <span>Toàn màn hình</span>
+                                </a>
+                                <a th:href="@{/feed/official/attachment/{id}/download(id=${att.id})}" 
+                                   class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#003882] hover:bg-[#002456] text-xs font-semibold text-white transition-colors shadow-sm">
+                                    <span class="material-symbols-outlined text-[15px]">download</span>
+                                    <span>Tải PDF</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="w-full h-[680px] bg-slate-700">
+                            <iframe th:src="@{/feed/official/attachment/{id}/view(id=${att.id})}" class="w-full h-full border-0" title="PDF Document Viewer"></iframe>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attachments Download List -->
+                <div class="border-t border-slate-200 pt-6" th:if="${post.attachments != null and !post.attachments.isEmpty()}">
+                    <h3 class="font-headline font-bold text-sm sm:text-base text-slate-900 mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[#003882] text-[20px]">attach_file</span>
+                        <span>Tài liệu & Tệp đính kèm chính thức:</span>
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div th:each="att : ${post.attachments}" 
+                             class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3 hover:border-slate-300 transition-colors">
+                            <div class="flex items-center gap-3 overflow-hidden">
+                                <span class="material-symbols-outlined text-[28px] text-rose-600 flex-shrink-0" th:if="${att.fileType == 'PDF'}">picture_as_pdf</span>
+                                <span class="material-symbols-outlined text-[28px] text-blue-600 flex-shrink-0" th:if="${att.fileType == 'DOCX'}">description</span>
+                                <span class="material-symbols-outlined text-[28px] text-emerald-600 flex-shrink-0" th:if="${att.fileType == 'XLSX'}">table_chart</span>
+                                <span class="material-symbols-outlined text-[28px] text-amber-600 flex-shrink-0" th:if="${att.fileType == 'MP4'}">video_file</span>
+                                <span class="material-symbols-outlined text-[28px] text-purple-600 flex-shrink-0" th:if="${att.fileType == 'IMAGE'}">image</span>
+                                <span class="material-symbols-outlined text-[28px] text-slate-600 flex-shrink-0" th:if="${att.fileType != 'PDF' and att.fileType != 'DOCX' and att.fileType != 'XLSX' and att.fileType != 'MP4' and att.fileType != 'IMAGE'}">draft</span>
+
+                                <div class="truncate">
+                                    <p class="text-xs sm:text-sm font-semibold text-slate-800 truncate" th:text="${att.fileName}">tentep.pdf</p>
+                                    <p class="text-[11px] text-slate-400" th:text="${att.fileSize != null and att.fileSize > 0 ? #numbers.formatDecimal(att.fileSize / 1024.0 / 1024.0, 1, 2) + ' MB' : (att.fileType != null ? att.fileType : 'Tệp đính kèm')}">1.2 MB</p>
+                                </div>
+                            </div>
+
+                            <a th:href="@{/feed/official/attachment/{id}/download(id=${att.id})}" 
+                               class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#003882] hover:bg-[#002456] text-white text-xs font-semibold shadow-sm transition-all flex-shrink-0">
+                                <span class="material-symbols-outlined text-[15px]">download</span>
+                                <span>Tải về</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </article>
+
+        </div>
+    </main>
+
+    <!-- 3. FOOTER -->
+    <footer class="bg-slate-900 text-white border-t border-slate-800 py-10 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div class="md:col-span-2">
+                    <div class="flex items-center gap-3 mb-3">
+                        <img alt="HCMUTE Logo White" class="h-10 w-auto brightness-0 invert" 
+                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKSHNb9YZP8QFQKzZ-_B_glnPE615kLoTh0DIZM9-id7Eb1Z7EZXRKcjBeCckK7VOaTPGdnMs7Cl7qdtjr1Mry3Y7d1U0S8maxw8fAHipOBnT-HFyaVBuqc6xe0fMZJf4fPlHw6UIkL0vHJV2kfl-tnjJgobCtm7Cy-KazrUCaEZefkxCcT9HC_-zWiT9twVqKg6xymALE7_hrVpAjI-XYdTFsbm3wyDRY8PxAR-vjOB00BqpW9wX9dVryQuIfZgdSA">
+                        <span class="font-headline font-bold text-base text-white">HCMUTE Support Portal</span>
+                    </div>
+                    <p class="text-xs text-slate-400 max-w-md leading-relaxed mb-4">
+                        Cổng dịch vụ hành chính công và tư vấn sinh viên tích hợp Trí tuệ Nhân tạo - Trường Đại học Sư phạm Kỹ thuật TP. Hồ Chí Minh.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-headline font-bold text-sm text-white mb-3">Kênh truy cập nhanh</h4>
+                    <ul class="space-y-2 text-xs text-slate-400">
+                        <li><a th:href="@{/feed/official}" class="hover:text-white transition-colors">Bảng tin chính thức</a></li>
+                        <li><a th:href="@{/feed/forum}" class="hover:text-white transition-colors">Diễn đàn sinh viên</a></li>
+                        <li><a th:href="@{/faqs}" class="hover:text-white transition-colors">Tra cứu câu hỏi FAQ</a></li>
+                        <li><a th:href="@{/ai-chat}" class="hover:text-white transition-colors">Trợ lý ảo AI Chatbot</a></li>
+                        <li><a th:href="@{/tickets/my-tickets}" class="hover:text-white transition-colors">Gửi Ticket yêu cầu hỗ trợ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-headline font-bold text-sm text-white mb-3">Liên kết nội bộ</h4>
+                    <ul class="space-y-2 text-xs text-slate-400">
+                        <li><a href="https://hcmute.edu.vn" target="_blank" class="hover:text-white transition-colors">Website chính thức Nhà trường</a></li>
+                        <li><a href="https://online.hcmute.edu.vn" target="_blank" class="hover:text-white transition-colors">Cổng đào tạo trực tuyến</a></li>
+                        <li><a href="https://dkmh.hcmute.edu.vn" target="_blank" class="hover:text-white transition-colors">Trang đăng ký môn học</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
+                <p>&copy; 2026 Trường ĐH Sư phạm Kỹ thuật TP.HCM (HCMUTE). Mọi quyền được bảo lưu.</p>
+                <p>Thiết kế bởi Đội ngũ Công nghệ thông tin HCMUTE Support Portal</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive scripts -->
+    <script>
+        function toggleMobileNav() {
+            const drawer = document.getElementById('mobileNavDrawer');
+            if (drawer) {
+                drawer.classList.toggle('hidden');
+            }
+        }
+
+        function copyPostLink() {
+            navigator.clipboard.writeText(window.location.href).then(function() {
+                const label = document.getElementById('copyLinkText');
+                if (label) {
+                    label.textContent = 'Đã sao chép!';
+                    setTimeout(() => label.textContent = 'Sao chép link', 2500);
+                }
+            }).catch(function(err) {
+                alert('Không thể sao chép liên kết: ' + err);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('officialDetailAccountToggle');
+            const menu = document.getElementById('officialDetailAccountDropdown');
+            if (toggle && menu) {
+                toggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    menu.classList.toggle('hidden');
+                });
+                document.addEventListener('click', function(e) {
+                    if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+                        menu.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

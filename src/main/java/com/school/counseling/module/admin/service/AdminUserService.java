@@ -22,13 +22,18 @@ import java.util.List;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AdminUserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final DepartmentRepository departmentRepository;
+
+    public AdminUserService(UserRepository userRepository, RoleRepository roleRepository, DepartmentRepository departmentRepository) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.departmentRepository = departmentRepository;
+    }
 
     public Page<UserManagementDto> getUsers(String keyword, Long roleId, Long departmentId, String status, Pageable pageable) {
         String kw = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
@@ -77,7 +82,12 @@ public class AdminUserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + id));
 
         user.setFullName(dto.getFullName().trim());
-        user.setEmail(dto.getEmail().trim());
+
+        String normalizedEmail = dto.getEmail().trim();
+        if (userRepository.existsByEmailAndIdNot(normalizedEmail, id)) {
+            throw new IllegalArgumentException("Email [" + normalizedEmail + "] đã được sử dụng bởi tài khoản khác!");
+        }
+        user.setEmail(normalizedEmail);
         user.setPhone(dto.getPhone() != null ? dto.getPhone().trim() : null);
 
         if (dto.getRoleId() != null) {
@@ -97,7 +107,9 @@ public class AdminUserService {
         if (dto.getStatus() != null && !dto.getStatus().trim().isEmpty()) {
             try {
                 user.setStatus(UserStatus.valueOf(dto.getStatus().trim().toUpperCase()));
-            } catch (IllegalArgumentException ignored) {}
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalArgumentException("Trạng thái người dùng [" + dto.getStatus() + "] không hợp lệ! (Cho phép: ACTIVE, LOCKED, PENDING_ACTIVATION)");
+            }
         }
 
         User updated = userRepository.save(user);

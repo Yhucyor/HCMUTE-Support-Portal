@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head></head>
+
+<body>
+    <!-- ========================================================================= -->
+    <!-- CLEAN VERSION 2 ADMIN & STAFF WORKSPACE SUB-BANNER                        -->
+    <!-- ========================================================================= -->
+    <div th:fragment="portal-header(activeTab)" class="mb-4">
+        <style>
+            .portal-v2-banner {
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 16px;
+                box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+                overflow: hidden;
+                border-top: 4px solid #003882;
+            }
+            .portal-v2-nav-tab {
+                font-size: 0.82rem;
+                font-weight: 600;
+                color: #475569;
+                padding: 0.45rem 1rem;
+                border-radius: 9999px;
+                text-decoration: none;
+                transition: all 0.2s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                white-space: nowrap;
+            }
+            .portal-v2-nav-tab:hover {
+                background: #f1f5f9;
+                color: #003882;
+            }
+            .portal-v2-nav-tab.active-staff {
+                background: #003882 !important;
+                color: #ffffff !important;
+                box-shadow: 0 2px 8px rgba(0, 56, 130, 0.28);
+            }
+            .portal-v2-nav-tab.active-admin {
+                background: #dc2626 !important;
+                color: #ffffff !important;
+                box-shadow: 0 2px 8px rgba(220, 38, 38, 0.28);
+            }
+        </style>
+
+        <div class="portal-v2-banner">
+            <!-- Top Info Header -->
+            <div class="p-3 px-md-4 py-md-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div>
+                        <h4 class="fw-bold mb-0" style="color: #003882; letter-spacing: -0.01em;">
+                            Trung Tâm Tiếp Nhận &amp; Điều Phối Yêu Cầu
+                        </h4>
+                        <small class="text-secondary">
+                            Cổng dịch vụ sinh viên &amp; quản trị học vụ - Trường ĐH Sư phạm Kỹ thuật TP.HCM (HCMUTE)
+                        </small>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <a th:href="@{/}" class="btn btn-outline-secondary btn-sm rounded-pill px-3"
+                           title="Chuyển sang giao diện sinh viên">
+                            <span>Xem Cổng Sinh Viên</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clean Tab Navigation Bar -->
+            <div class="px-3 px-md-4 py-2 border-top overflow-auto" style="background: #f8fafc; border-color: #f1f5f9 !important;">
+                <nav class="d-flex align-items-center gap-1.5 flex-nowrap">
+                    <!-- Staff Tabs -->
+                    <a th:href="@{/staff/tickets}" 
+                       class="portal-v2-nav-tab"
+                       th:classappend="${activeTab == 'tickets' ? 'active-staff' : ''}">
+                        <i class="bi bi-kanban"></i>
+                        <span>Bàn Xử Lý Ticket</span>
+                    </a>
+
+                    <a th:href="@{/moderation/posts}" 
+                       class="portal-v2-nav-tab"
+                       th:classappend="${activeTab == 'moderation' ? 'active-staff' : ''}">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Duyệt Bài Diễn Đàn</span>
+                    </a>
+
+                    <!-- Kênh Trao Đổi Ban Quản Trị (Cả Staff và Admin) -->
+                    <a th:href="@{/admin/messages}" 
+                       class="portal-v2-nav-tab"
+                       th:classappend="${activeTab == 'admin-messages' ? 'active-staff' : ''}">
+                        <i class="bi bi-chat-left-dots-fill"></i>
+                        <span>Trao Đổi Ban Quản Trị</span>
+                    </a>
+
+                    <div sec:authorize="hasRole('ADMIN')" class="vr mx-2 text-secondary opacity-25" style="height: 1.25rem;"></div>
+
+                    <!-- Admin Only Tabs -->
+                    <a sec:authorize="hasRole('ADMIN')" 
+                       th:href="@{/admin/dashboard}" 
+                       class="portal-v2-nav-tab"
+                       th:classappend="${activeTab == 'admin-dashboard' ? 'active-admin' : ''}">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>SLA Dashboard</span>
+                    </a>
+
+                    <a sec:authorize="hasRole('ADMIN')" 
+                       th:href="@{/admin/users}" 
+                       class="portal-v2-nav-tab"
+                       th:classappend="${activeTab == 'admin-users' ? 'active-admin' : ''}">
+                        <i class="bi bi-people"></i>
+                        <span>Quản Trị Người Dùng</span>
+                    </a>
+
+                    <a sec:authorize="hasRole('ADMIN')" 
+                       th:href="@{/admin/departments}" 
+                       class="portal-v2-nav-tab"
+                       th:classappend="${activeTab == 'admin-depts' ? 'active-admin' : ''}">
+                        <i class="bi bi-buildings"></i>
+                        <span>Quản Lý Đơn Vị</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,8 +1,9 @@
 package com.school.counseling.module.notification.service;
 
 import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -11,12 +12,19 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class EmailAsyncService {
 
+    private static final Logger log = LoggerFactory.getLogger(EmailAsyncService.class);
+
     private final JavaMailSender mailSender;
+
+    @Value("${spring.mail.username:trt571983@gmail.com}")
+    private String fromEmail;
+
+    public EmailAsyncService(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
 
     @Async("mailTaskExecutor")
     public void sendTicketCreatedEmail(String toEmail, String recipientName, String ticketCode, String title,
@@ -206,6 +214,9 @@ public class EmailAsyncService {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            if (fromEmail != null && !fromEmail.isBlank()) {
+                helper.setFrom(fromEmail, "QAUTE Portal - HCMUTE");
+            }
             helper.setTo(toEmail);
             helper.setSubject(subject);
             helper.setText(htmlBody, true);

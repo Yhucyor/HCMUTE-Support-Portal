@@ -68,4 +68,11 @@ public class TicketEventListener {
             );
         }
     }
+
+    @Async("mailTaskExecutor")
+    @EventListener
+    public void handleTicketTransferred(TicketTransferredEvent event) {
+        log.info("[Event Bus] Nhận TicketTransferredEvent #{} -> Chuyển từ [{}] sang [{}] bởi [{}]. Lý do: {}",
+                event.ticketCode(), event.fromDeptName(), event.toDeptName(), event.transferredByName(), event.reason());
+    }
 }

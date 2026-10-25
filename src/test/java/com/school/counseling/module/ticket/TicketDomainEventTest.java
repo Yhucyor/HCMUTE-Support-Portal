@@ -5,7 +5,7 @@ import com.school.counseling.module.auth.entity.Department;
 import com.school.counseling.module.auth.entity.User;
 import com.school.counseling.module.auth.repository.DepartmentRepository;
 import com.school.counseling.module.auth.repository.UserRepository;
-import com.school.counseling.module.chat.repository.AttachmentRepository;
+import com.school.counseling.module.ticket.repository.AttachmentRepository;
 import com.school.counseling.module.ticket.entity.Ticket;
 import com.school.counseling.module.ticket.event.TicketClaimedEvent;
 import com.school.counseling.module.ticket.repository.TicketHistoryRepository;
@@ -53,6 +53,9 @@ class TicketDomainEventTest {
 
     @Mock
     private TicketHistoryRepository ticketHistoryRepository;
+
+    @Mock
+    private com.school.counseling.module.ticket.repository.TicketTransferHistoryRepository ticketTransferHistoryRepository;
 
     @Mock
     private AttachmentRepository attachmentRepository;

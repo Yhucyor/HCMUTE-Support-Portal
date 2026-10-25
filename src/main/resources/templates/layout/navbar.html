@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head></head>
+<body>
+
+<!-- ========================================================================= -->
+<!-- UNIFIED HCMUTE VERSION 2 TOPBAR (DÙNG CHUNG DUY NHẤT TOÀN BỘ HỆ THỐNG)   -->
+<!-- ========================================================================= -->
+<header th:fragment="navbar" id="hcmuteGlobalNavbar" class="hcmute-unified-topbar">
+    <style>
+        .hcmute-unified-topbar {
+            position: sticky;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: 74px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05);
+            z-index: 1040;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .hcmute-topbar-container {
+            max-width: 1536px;
+            height: 100%;
+            margin: 0 auto;
+            padding: 0 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        /* Brand & Logo */
+        .hcmute-brand-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+        .hcmute-brand-link:hover {
+            transform: scale(1.01);
+        }
+        .hcmute-brand-logo {
+            height: 48px;
+            width: auto;
+            object-fit: contain;
+        }
+        .hcmute-brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+        .hcmute-brand-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #003882;
+            letter-spacing: -0.01em;
+        }
+        .hcmute-brand-sub {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #003882;
+            opacity: 0.85;
+            letter-spacing: 0.01em;
+        }
+
+        /* Horizontal Nav Links */
+        .hcmute-nav-menu {
+            display: none;
+            align-items: center;
+            gap: 1.5rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            height: 74px;
+        }
+        @media (min-width: 1200px) {
+            .hcmute-nav-menu {
+                display: flex;
+            }
+        }
+        .hcmute-nav-link {
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: #475569;
+            text-decoration: none;
+            padding: 0 0.25rem;
+            height: 74px;
+            display: inline-flex;
+            align-items: center;
+            position: relative;
+            border-bottom: 3px solid transparent;
+            transition: color 0.15s ease, border-color 0.15s ease;
+        }
+        .hcmute-nav-link:hover {
+            color: #003882;
+        }
+        .hcmute-nav-link.active {
+            color: #003882 !important;
+            font-weight: 700 !important;
+            border-bottom: 3px solid #003882 !important;
+        }
+
+        /* Action Buttons */
+        .hcmute-topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex-shrink: 0;
+        }
+
+        .btn-topbar-admin-red {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #dc2626;
+            color: #ffffff !important;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.45rem 0.95rem;
+            border-radius: 9999px;
+            text-decoration: none;
+            box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .btn-topbar-admin-red:hover {
+            background: #b91c1c;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(220, 38, 38, 0.35);
+        }
+
+        .btn-topbar-staff-blue {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #003882;
+            color: #ffffff !important;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.45rem 0.95rem;
+            border-radius: 9999px;
+            text-decoration: none;
+            box-shadow: 0 2px 6px rgba(0, 56, 130, 0.25);
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .btn-topbar-staff-blue:hover {
+            background: #002657;
+            transform: translateY(-1px);
+        }
+
+        /* User Dropdown Trigger */
+        .hcmute-user-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: #003882;
+            color: #ffffff !important;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.45rem 0.85rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 56, 130, 0.15);
+            transition: all 0.2s ease;
+        }
+        .hcmute-user-toggle:hover {
+            background: #00285d;
+        }
+
+        /* Dropdown Popup Menu */
+        .hcmute-dropdown-wrapper {
+            position: relative;
+        }
+        .hcmute-dropdown-menu-box {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 8px);
+            width: 250px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+            padding: 0.4rem 0;
+            z-index: 1050;
+            animation: hcmuteFadeIn 0.15s ease-out;
+        }
+        .hcmute-dropdown-menu-box.show {
+            display: block;
+        }
+        @keyframes hcmuteFadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hcmute-dropdown-header {
+            padding: 0.5rem 1rem 0.4rem;
+            background: #f8fafc;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .hcmute-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.55rem 1rem;
+            font-size: 0.84rem;
+            font-weight: 500;
+            color: #334155;
+            text-decoration: none;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+        .hcmute-dropdown-item:hover {
+            background: #f1f5f9;
+            color: #003882;
+        }
+        .hcmute-dropdown-item i, .hcmute-dropdown-item .material-symbols-outlined {
+            font-size: 1.1rem;
+            width: 1.25rem;
+            text-align: center;
+        }
+        .hcmute-dropdown-divider {
+            height: 1px;
+            background: #f1f5f9;
+            margin: 0.3rem 0;
+        }
+
+        /* Mobile Hamburger */
+        .hcmute-mobile-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            color: #334155;
+            cursor: pointer;
+        }
+        @media (min-width: 1200px) {
+            .hcmute-mobile-btn {
+                display: none;
+            }
+        }
+        .hcmute-mobile-drawer {
+            display: none;
+            position: absolute;
+            top: 74px;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            padding: 1rem 1.25rem;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .hcmute-mobile-drawer.show {
+            display: flex;
+        }
+    </style>
+
+    <div class="hcmute-topbar-container">
+        <!-- 1. HCMUTE BRAND & LOGO -->
+        <a class="hcmute-brand-link" th:href="@{/}">
+            <img class="hcmute-brand-logo" 
+                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKSHNb9YZP8QFQKzZ-_B_glnPE615kLoTh0DIZM9-id7Eb1Z7EZXRKcjBeCckK7VOaTPGdnMs7Cl7qdtjr1Mry3Y7d1U0S8maxw8fAHipOBnT-HFyaVBuqc6xe0fMZJf4fPlHw6UIkL0vHJV2kfl-tnjJgobCtm7Cy-KazrUCaEZefkxCcT9HC_-zWiT9twVqKg6xymALE7_hrVpAjI-XYdTFsbm3wyDRY8PxAR-vjOB00BqpW9wX9dVryQuIfZgdSA" 
+                 alt="HCMUTE Logo">
+            <div class="hcmute-brand-text">
+                <span class="hcmute-brand-title">Trường Đại học Sư phạm Kỹ thuật Tp. Hồ Chí Minh</span>
+                <span class="hcmute-brand-sub">HCMC University of Technology and Education</span>
+            </div>
+        </a>
+
+        <!-- 2. CENTRAL NAVIGATION (DESKTOP) -->
+        <nav>
+            <ul class="hcmute-nav-menu">
+                <li><a class="hcmute-nav-link" th:href="@{/}">Trang chủ</a></li>
+                <li><a class="hcmute-nav-link" th:href="@{/feed/official}">Bảng tin</a></li>
+                <li><a class="hcmute-nav-link" th:href="@{/feed/forum}">Diễn đàn</a></li>
+                <li><a class="hcmute-nav-link" th:href="@{/ai-chat}">Hỗ trợ AI</a></li>
+                <li><a class="hcmute-nav-link" th:href="@{/faqs}">Tra cứu FAQ</a></li>
+                <li><a class="hcmute-nav-link" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a></li>
+            </ul>
+        </nav>
+
+        <!-- 3. RIGHT ACTIONS & USER ACCOUNT -->
+        <div class="hcmute-topbar-actions">
+
+            <!-- Khi ĐÃ ĐĂNG NHẬP: Menu Tài Khoản Đa Năng -->
+            <div sec:authorize="isAuthenticated()" class="hcmute-dropdown-wrapper">
+                <button type="button" class="hcmute-user-toggle" id="hcmuteUserDropdownBtn" onclick="toggleHcmuteUserMenu(event)">
+                    <i class="bi bi-person-circle"></i>
+                    <span th:text="${userAccountMenu != null and userAccountMenu.fullName != null ? userAccountMenu.fullName : (currentUserFullName != null ? currentUserFullName : (currentUser != null ? currentUser.fullName : #authentication.name))}">Họ Tên</span>
+                    <i class="bi bi-chevron-down" style="font-size: 0.75rem;"></i>
+                </button>
+
+                <div class="hcmute-dropdown-menu-box" id="hcmuteUserDropdownMenu">
+                    <!-- Role Badge Header -->
+                    <div class="hcmute-dropdown-header">
+                        <small style="color: #64748b; font-size: 0.7rem; display: block; margin-bottom: 2px;">Vai trò tài khoản:</small>
+                        <span sec:authorize="hasRole('ADMIN')" style="display:inline-block; font-size: 0.72rem; font-weight: 700; color: #dc2626; background: #fee2e2; padding: 2px 8px; border-radius: 4px;">Quản Trị Viên</span>
+                        <span sec:authorize="hasRole('STAFF') and !hasRole('ADMIN')" style="display:inline-block; font-size: 0.72rem; font-weight: 700; color: #d97706; background: #fef3c7; padding: 2px 8px; border-radius: 4px;">Cán Bộ Tư Vấn</span>
+                        <span sec:authorize="hasRole('STUDENT')" style="display:inline-block; font-size: 0.72rem; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 2px 8px; border-radius: 4px;">Sinh Viên HCMUTE</span>
+                    </div>
+
+                    <!-- Quản Trị Viên Quick Links -->
+                    <div sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{/admin/dashboard}" class="hcmute-dropdown-item" style="color: #dc2626; font-weight: 600;">
+                            <i class="bi bi-speedometer2"></i>
+                            <span>Bảng Quản Trị (Admin)</span>
+                        </a>
+                        <a th:href="@{/admin/users}" class="hcmute-dropdown-item">
+                            <i class="bi bi-people"></i>
+                            <span>Quản lý người dùng</span>
+                        </a>
+                        <a th:href="@{/admin/departments}" class="hcmute-dropdown-item">
+                            <i class="bi bi-buildings"></i>
+                            <span>Quản lý Khoa / Phòng</span>
+                        </a>
+                        <a th:href="@{/staff/tickets}" class="hcmute-dropdown-item" style="color: #003882; font-weight: 600;">
+                            <i class="bi bi-headset"></i>
+                            <span>Bàn tiếp nhận Ticket</span>
+                        </a>
+                        <div class="hcmute-dropdown-divider"></div>
+                    </div>
+
+                    <!-- Cán Bộ Tư Vấn Quick Links -->
+                    <div sec:authorize="hasRole('STAFF') and !hasRole('ADMIN')">
+                        <a th:href="@{/staff/tickets}" class="hcmute-dropdown-item" style="color: #003882; font-weight: 600;">
+                            <i class="bi bi-headset"></i>
+                            <span>Bàn tiếp nhận Ticket</span>
+                        </a>
+                        <a th:href="@{/moderation/posts}" class="hcmute-dropdown-item">
+                            <i class="bi bi-shield-check"></i>
+                            <span>Duyệt bài diễn đàn</span>
+                        </a>
+                        <div class="hcmute-dropdown-divider"></div>
+                    </div>
+
+                    <!-- Hồ Sơ Cá Nhân (Dùng chung cho mọi đối tượng) -->
+                    <a th:href="@{/profile}" class="hcmute-dropdown-item">
+                        <i class="bi bi-person-gear"></i>
+                        <span>Thông tin cá nhân</span>
+                    </a>
+
+                    <!-- Sinh Viên & Học Vụ Cá Nhân: CHỈ HIỂN THỊ CHO SINH VIÊN (Admin và Staff không bị rác menu) -->
+                    <div sec:authorize="hasRole('STUDENT')">
+                        <a th:href="@{/academic/sync}" class="hcmute-dropdown-item">
+                            <i class="bi bi-mortarboard"></i>
+                            <span>Tổng quan học tập</span>
+                        </a>
+                        <a th:href="@{/academic/grades}" class="hcmute-dropdown-item">
+                            <i class="bi bi-award"></i>
+                            <span>Bảng điểm học tập</span>
+                        </a>
+                        <a th:href="@{/academic/timetable}" class="hcmute-dropdown-item">
+                            <i class="bi bi-calendar3"></i>
+                            <span>Thời khóa biểu</span>
+                        </a>
+                        <a th:href="@{/academic/curriculum}" class="hcmute-dropdown-item">
+                            <i class="bi bi-book"></i>
+                            <span>Chương trình đào tạo</span>
+                        </a>
+                        <a th:href="@{/tickets/my-tickets}" class="hcmute-dropdown-item">
+                            <i class="bi bi-ticket-perforated"></i>
+                            <span>Ticket của tôi</span>
+                        </a>
+                    </div>
+
+                    <div class="hcmute-dropdown-divider"></div>
+
+                    <!-- Đăng Xuất -->
+                    <a th:href="@{/auth/logout}" class="hcmute-dropdown-item" style="color: #dc2626;">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Đăng xuất</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Khi CHƯA ĐĂNG NHẬP -->
+            <div sec:authorize="!isAuthenticated()" style="display: flex; align-items: center; gap: 0.5rem;">
+                <a th:href="@{/auth/login}" style="background: #991b1e; color: #ffffff; font-size: 0.8rem; font-weight: 600; padding: 0.45rem 1rem; border-radius: 6px; text-decoration: none;">
+                    Đăng nhập
+                </a>
+            </div>
+
+            <!-- Nút Menu Mobile -->
+            <button type="button" class="hcmute-mobile-btn" onclick="toggleHcmuteMobileMenu(event)" aria-label="Mở menu">
+                <i class="bi bi-list" style="font-size: 1.4rem;"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div class="hcmute-mobile-drawer" id="hcmuteMobileDrawer">
+        <a th:href="@{/}" style="text-decoration:none; color:#1e293b; font-weight:500; font-size:0.9rem;">Trang chủ</a>
+        <a th:href="@{/feed/official}" style="text-decoration:none; color:#1e293b; font-weight:500; font-size:0.9rem;">Bảng tin</a>
+        <a th:href="@{/feed/forum}" style="text-decoration:none; color:#1e293b; font-weight:500; font-size:0.9rem;">Diễn đàn</a>
+        <a th:href="@{/ai-chat}" style="text-decoration:none; color:#1e293b; font-weight:500; font-size:0.9rem;">Hỗ trợ AI</a>
+        <a th:href="@{/faqs}" style="text-decoration:none; color:#1e293b; font-weight:500; font-size:0.9rem;">Tra cứu FAQ</a>
+        <a th:href="@{/tickets/my-tickets}" style="text-decoration:none; color:#1e293b; font-weight:500; font-size:0.9rem;">Ticket hỗ trợ</a>
+        <div sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/admin/dashboard}" style="text-decoration:none; color:#dc2626; font-weight:700; font-size:0.9rem;">Trang Quản Lý (Admin)</a>
+        </div>
+        <div sec:authorize="hasRole('STAFF') and !hasRole('ADMIN')">
+            <a th:href="@{/staff/tickets}" style="text-decoration:none; color:#003882; font-weight:700; font-size:0.9rem;">Bàn Cán Bộ</a>
+        </div>
+    </div>
+
+    <!-- Self-contained Vanilla JS Script -->
+    <script>
+        function toggleHcmuteUserMenu(e) {
+            e.stopPropagation();
+            const menu = document.getElementById('hcmuteUserDropdownMenu');
+            if (menu) menu.classList.toggle('show');
+        }
+
+        function toggleHcmuteMobileMenu(e) {
+            e.stopPropagation();
+            const drawer = document.getElementById('hcmuteMobileDrawer');
+            if (drawer) drawer.classList.toggle('show');
+        }
+
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('hcmuteUserDropdownMenu');
+            const toggle = document.getElementById('hcmuteUserDropdownBtn');
+            if (menu && menu.classList.contains('show') && (!toggle || !toggle.contains(e.target))) {
+                menu.classList.remove('show');
+            }
+            const drawer = document.getElementById('hcmuteMobileDrawer');
+            if (drawer && drawer.classList.contains('show') && !e.target.closest('#hcmuteMobileDrawer') && !e.target.closest('.hcmute-mobile-btn')) {
+                drawer.classList.remove('show');
+            }
+        });
+
+        // Tự động nhận diện và làm nổi bật (active) tab trên Topbar khi chuyển trang
+        (function() {
+            function updateActiveNavbar() {
+                var rawPath = window.location.pathname || '/';
+                var currentPath = (rawPath.length > 1 && rawPath.endsWith('/')) ? rawPath.slice(0, -1) : rawPath;
+
+                var desktopLinks = document.querySelectorAll('.hcmute-nav-link');
+                desktopLinks.forEach(function(link) {
+                    var href = link.getAttribute('href');
+                    if (!href) return;
+                    var cleanHref = (href.length > 1 && href.endsWith('/')) ? href.slice(0, -1) : href;
+                    
+                    var isActive = false;
+                    if (cleanHref === '/' || cleanHref === '') {
+                        isActive = (currentPath === '/' || currentPath === '');
+                    } else {
+                        isActive = (currentPath === cleanHref || currentPath.startsWith(cleanHref + '/'));
+                    }
+
+                    if (isActive) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+
+                var mobileLinks = document.querySelectorAll('#hcmuteMobileDrawer a');
+                mobileLinks.forEach(function(link) {
+                    var href = link.getAttribute('href');
+                    if (!href) return;
+                    var cleanHref = (href.length > 1 && href.endsWith('/')) ? href.slice(0, -1) : href;
+
+                    var isActive = false;
+                    if (cleanHref === '/' || cleanHref === '') {
+                        isActive = (currentPath === '/' || currentPath === '');
+                    } else {
+                        isActive = (currentPath === cleanHref || currentPath.startsWith(cleanHref + '/'));
+                    }
+
+                    if (isActive) {
+                        link.style.color = '#003882';
+                        link.style.fontWeight = '700';
+                        link.style.borderLeft = '3px solid #003882';
+                        link.style.paddingLeft = '0.5rem';
+                    }
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', updateActiveNavbar);
+            } else {
+                updateActiveNavbar();
+            }
+        })();
+    </script>
+</header>
+
+</body>
+</html>

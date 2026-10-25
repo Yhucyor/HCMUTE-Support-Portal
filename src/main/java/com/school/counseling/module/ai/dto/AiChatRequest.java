@@ -1,45 +1,48 @@
 package com.school.counseling.module.ai.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * DTO cho yêu cầu chat với AI
+ * Bao gồm validation và mapping JSON chuẩn
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AiChatRequest {
+    
+    @NotBlank(message = "Câu hỏi không được để trống")
+    @Size(min = 3, max = 500, message = "Câu hỏi phải từ 3 đến 500 ký tự")
+    @com.fasterxml.jackson.annotation.JsonAlias({"message", "question", "prompt", "text", "content"})
     private String query;
-    private String session_id;
-    private String provider;
+    
+    @JsonProperty("session_id")
+    @com.fasterxml.jackson.annotation.JsonAlias({"sessionId", "session_id"})
+    private String sessionId; // UUID của conversation
+    
+    @Pattern(regexp = "gemini|ollama|dify|python|default", message = "Provider không hợp lệ")
+    @Builder.Default
+    private String provider = "gemini"; // Default engine
+    
+    @JsonProperty("department_id")
+    private Long departmentId; // Filter FAQ theo Khoa/Phòng
+    
+    @JsonProperty("include_history")
+    @Builder.Default
+    private Boolean includeHistory = false; // Có gửi lịch sử chat không
+    
+    @JsonProperty("max_history_messages")
+    @Builder.Default
+    private Integer maxHistoryMessages = 5; // Số tin nhắn context
 
-    public AiChatRequest() {}
-
-    public AiChatRequest(String query, String session_id) {
-        this.query = query;
-        this.session_id = session_id;
-        this.provider = "ollama";
-    }
-
-    public AiChatRequest(String query, String session_id, String provider) {
-        this.query = query;
-        this.session_id = session_id;
-        this.provider = provider;
-    }
-
-    public String getQuery() {
-        return query;
-    }
-
-    public void setQuery(String query) {
-        this.query = query;
-    }
-
-    public String getSession_id() {
-        return session_id;
-    }
-
-    public void setSession_id(String session_id) {
-        this.session_id = session_id;
-    }
-
-    public String getProvider() {
-        return provider;
-    }
-
-    public void setProvider(String provider) {
-        this.provider = provider;
-    }
+    @JsonProperty("history")
+    private java.util.List<java.util.Map<String, String>> history; // Ngữ cảnh hội thoại gần nhất [{'role':'user'/'assistant', 'content':'...'}]
 }

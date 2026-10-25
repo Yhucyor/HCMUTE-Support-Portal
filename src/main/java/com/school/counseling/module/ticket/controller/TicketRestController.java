@@ -2,16 +2,14 @@ package com.school.counseling.module.ticket.controller;
 
 import com.school.counseling.common.dto.ApiResponse;
 import com.school.counseling.common.util.SecurityUtils;
-import com.school.counseling.module.ticket.dto.CreateTicketRequest;
-import com.school.counseling.module.ticket.dto.TicketReplyRequest;
-import com.school.counseling.module.ticket.dto.TicketResponseDto;
-import com.school.counseling.module.ticket.dto.TicketSummaryDto;
-import com.school.counseling.module.ticket.dto.TicketTriageResponseDto;
+import com.school.counseling.module.auth.dto.UserPrincipal;
+import com.school.counseling.module.ticket.dto.*;
 import com.school.counseling.module.ticket.service.TicketService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -147,5 +145,24 @@ public class TicketRestController {
     public ResponseEntity<ApiResponse<TicketResponseDto>> trackGuestTicket(@RequestParam("token") String token) {
         TicketResponseDto ticket = ticketService.getTicketByGuestToken(token);
         return ResponseEntity.ok(ApiResponse.success(ticket, "Tra cứu tiến độ thành công"));
+    }
+
+    /**
+     * Chuyển giao Ticket sang Khoa/Phòng ban khác
+     */
+    @PostMapping("/{ticketId}/transfer")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN', 'HEAD', 'DEPARTMENT_HEAD', 'DEPT_HEAD')")
+    public ResponseEntity<ApiResponse<TicketResponseDto>> transferTicket(
+            @PathVariable Long ticketId,
+            @Valid @RequestBody TicketTransferRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+
+        if (currentUser == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Vui lòng đăng nhập để thực hiện thao tác này"));
+        }
+
+        TicketResponseDto response = ticketService.transferTicket(ticketId, request, currentUser);
+        return ResponseEntity.ok(ApiResponse.success(response, "Chuyển giao yêu cầu hỗ trợ sang đơn vị mới thành công"));
     }
 }

@@ -3,7 +3,6 @@ package com.school.counseling.module.ticket.entity;
 import com.school.counseling.common.entity.BaseEntity;
 import com.school.counseling.module.auth.entity.Department;
 import com.school.counseling.module.auth.entity.User;
-import com.school.counseling.module.chat.entity.Attachment;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -105,4 +104,9 @@ public class Ticket extends BaseEntity {
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OrderBy("createdAt ASC")
     private List<TicketHistory> histories = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OrderBy("createdAt DESC")
+    private List<TicketTransferHistory> transferHistories = new ArrayList<>();
 }

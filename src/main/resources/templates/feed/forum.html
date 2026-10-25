@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Diễn đàn Sinh viên HCMUTE | Cổng Thông Tin Hỗ Trợ Sinh Viên</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <!-- Quill.js Snow Editor (Local Offline) -->
+    <link rel="stylesheet" th:href="@{/vendor/quill/quill.snow.css}">
+    <style>
+        /* Custom visible scrollbars for all panels and window */
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+        ::-webkit-scrollbar {
+            width: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .forum-scrollbar::-webkit-scrollbar {
+            width: 7px;
+        }
+        .forum-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 9999px;
+        }
+        .forum-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        .forum-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .forum-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+    </style>
+    <!-- Tailwind CSS with configuration matching Academic Horizon & HCMUTE Tokens -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "brand-red": "#991b1e",
+                        "brand-red-hover": "#831518",
+                        "brand-blue": "#003882",
+                        "brand-blue-dark": "#002456",
+                        "surface": "#f8f9ff",
+                        "surface-dim": "#cbdbf5",
+                        "surface-bright": "#f8f9ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#eff4ff",
+                        "surface-container": "#e5eeff",
+                        "surface-container-high": "#dce9ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-surface": "#0b1c30",
+                        "on-surface-variant": "#434655",
+                        "inverse-surface": "#213145",
+                        "inverse-on-surface": "#eaf1ff",
+                        "outline": "#747686",
+                        "outline-variant": "#c4c5d7",
+                        "surface-tint": "#2151da",
+                        "primary": "#0037b0",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#1d4ed8",
+                        "on-primary-container": "#cad3ff",
+                        "inverse-primary": "#b7c4ff",
+                        "secondary": "#565e74",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#dae2fd",
+                        "on-secondary-container": "#5c647a",
+                        "tertiary": "#003ca3",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#0051d6",
+                        "on-tertiary-container": "#c9d4ff",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#dce1ff",
+                        "primary-fixed-dim": "#b7c4ff",
+                        "on-primary-fixed": "#001551",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "secondary-fixed": "#dae2fd",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-secondary-fixed": "#131b2e",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "tertiary-fixed": "#dbe1ff",
+                        "tertiary-fixed-dim": "#b4c5ff",
+                        "on-tertiary-fixed": "#00174b",
+                        "on-tertiary-fixed-variant": "#003ea8",
+                        "background": "#f8f9ff",
+                        "on-background": "#0b1c30",
+                        "surface-variant": "#d3e4fe"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "space-xs": "0.25rem",
+                        "space-sm": "0.5rem",
+                        "space-md": "1rem",
+                        "space-lg": "1.5rem",
+                        "space-xl": "2rem",
+                        "margin-sm": "1rem",
+                        "margin": "2rem",
+                        "margin-lg": "3rem",
+                        "gutter-sm": "1rem",
+                        "gutter": "1.5rem",
+                        "gutter-lg": "2rem"
+                    },
+                    fontFamily: {
+                        headline: ["Outfit", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                        "title-md": ["Outfit", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "body-sm": ["Inter", "sans-serif"],
+                        "headline-lg-mobile": ["Outfit", "sans-serif"],
+                        "headline-md": ["Outfit", "sans-serif"],
+                        "headline-sm": ["Outfit", "sans-serif"],
+                        "headline-lg": ["Outfit", "sans-serif"],
+                        display: ["Outfit", "sans-serif"],
+                        "label-lg": ["Inter", "sans-serif"],
+                        "label-md": ["Inter", "sans-serif"],
+                        "label-caps": ["Inter", "sans-serif"]
+                    },
+                    fontSize: {
+                        "title-md": ["16px", { lineHeight: "24px", letterSpacing: "0em", fontWeight: "600" }],
+                        "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }],
+                        "headline-lg-mobile": ["28px", { lineHeight: "36px", letterSpacing: "-0.01em", fontWeight: "600" }],
+                        "headline-md": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
+                        "label-lg": ["14px", { lineHeight: "20px", fontWeight: "600" }],
+                        "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+                        "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.01em", fontWeight: "500" }],
+                        "headline-lg": ["36px", { lineHeight: "44px", letterSpacing: "-0.015em", fontWeight: "600" }],
+                        display: ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "headline-sm": ["20px", { lineHeight: "28px", letterSpacing: "0em", fontWeight: "600" }],
+                        "label-caps": ["11px", { lineHeight: "14px", letterSpacing: "0.05em", fontWeight: "600" }]
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-[#f8fafc] font-body text-slate-800 antialiased selection:bg-[#991b1e] selection:text-white min-h-screen">
+
+    <!-- Global Unified Header HCMUTE -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <!-- MAIN FORUM CONTENT (COMMON HEADER + 3 COLUMNS) -->
+    <main class="w-full bg-background min-h-screen">
+        
+        <!-- PHẦN CHUNG: BANNER DIỄN ĐÀN SINH VIÊN (Nằm trên 3 cột, cuộn tự nhiên theo trang) -->
+        <div class="w-full max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6 pt-4 pb-2">
+            <div class="bg-white border border-slate-200/80 rounded-xl px-5 py-4 shadow-xs">
+                <div class="flex flex-col gap-0.5">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded-full bg-secondary-container text-primary text-[11px] font-bold uppercase tracking-wider">HCMUTE Community Hub</span>
+                        <span class="flex h-2 w-2 relative">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        <span class="text-xs text-secondary font-medium">Không gian kết nối &amp; học tập</span>
+                    </div>
+                    <h1 class="text-xl sm:text-2xl font-bold text-on-surface tracking-tight leading-tight mt-1">Diễn đàn sinh viên</h1>
+                    <p class="text-xs sm:text-sm text-slate-600 mt-0.5">Kết nối sinh viên HCMUTE, chia sẻ kiến thức chuyên ngành và cùng nhau phát triển.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- KHU VỰC 3 CỘT (Có thanh kéo ngang điều chỉnh kích thước giữa 3 phần) -->
+        <div id="forumColumnsContainer" class="w-full max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6 py-2 flex flex-col lg:flex-row items-start relative gap-0">
+            
+            <!-- 1. LEFT COLUMN: NAVIGATION & GROUPS (Sticky + Thanh kéo riêng + Điều chỉnh độ rộng) -->
+            <aside id="leftForumPanel" class="hidden lg:flex shrink-0 sticky top-[84px] max-h-[calc(100vh-96px)] overflow-y-auto pr-2 pb-6 flex-col gap-4 forum-scrollbar" style="width: 290px; min-width: 200px; max-width: 480px;">
+                <!-- Navigation Card -->
+                <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-xs">
+                        <div class="px-2 py-1 mb-1">
+                            <span class="font-label-caps text-label-caps text-secondary uppercase tracking-wider font-semibold">Điều hướng cộng đồng</span>
+                        </div>
+                        <nav class="space-y-1">
+                            <a th:href="@{/feed/forum(tab='all')}" 
+                               th:class="${currentTab == 'all' ? 'flex items-center justify-between px-3 py-2.5 rounded-lg bg-secondary-container text-primary font-label-lg text-label-lg transition-colors' : 'flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-lg text-label-lg'}">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">dynamic_feed</span>
+                                    <span>Bảng tin chung</span>
+                                </div>
+                                <span th:if="${currentTab == 'all'}" class="w-2 h-2 rounded-full bg-primary"></span>
+                            </a>
+                            <a th:href="@{/feed/forum(tab='my_posts')}" 
+                               th:class="${currentTab == 'my_posts' ? 'flex items-center justify-between px-3 py-2.5 rounded-lg bg-secondary-container text-primary font-label-lg text-label-lg transition-colors' : 'flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-lg text-label-lg'}">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="material-symbols-outlined text-lg">article</span>
+                                    <span>Bài viết của tôi</span>
+                                </div>
+                                <span th:if="${currentTab == 'my_posts'}" class="w-2 h-2 rounded-full bg-primary"></span>
+                            </a>
+                            <a href="#trending-section" class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-lg text-label-lg">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="material-symbols-outlined text-lg text-rose-600">local_fire_department</span>
+                                    <span>Chủ đề thịnh hành</span>
+                                </div>
+                            </a>
+                            <a href="javascript:void(0)" onclick="openRulesModal()" class="flex items-center justify-between px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-lg text-label-lg">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="material-symbols-outlined text-lg text-amber-600">verified_user</span>
+                                    <span>Quy tắc cộng đồng</span>
+                                </div>
+                            </a>
+                        </nav>
+                    </div>
+
+                    <!-- Tiện ích sinh viên Card -->
+                    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-2 border border-slate-200/60">
+                        <div class="px-1 py-0.5">
+                            <span class="font-label-caps text-label-caps text-secondary uppercase tracking-wider font-semibold">Tiện ích học tập</span>
+                        </div>
+                        <div class="space-y-1">
+                            <a href="https://online.hcmute.edu.vn" target="_blank" class="flex items-center justify-between p-2 rounded-lg hover:bg-surface-container-low transition-colors text-xs text-slate-700">
+                                <span class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-base text-[#003882]">calendar_month</span>
+                                    <span>Thời khóa biểu &amp; Lịch thi</span>
+                                </span>
+                                <span class="material-symbols-outlined text-xs text-slate-400">open_in_new</span>
+                            </a>
+                            <a href="https://dkmh.hcmute.edu.vn" target="_blank" class="flex items-center justify-between p-2 rounded-lg hover:bg-surface-container-low transition-colors text-xs text-slate-700">
+                                <span class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-base text-[#003882]">app_registration</span>
+                                    <span>Cổng đăng ký môn học</span>
+                                </span>
+                                <span class="material-symbols-outlined text-xs text-slate-400">open_in_new</span>
+                            </a>
+                            <a th:href="@{/faqs}" class="flex items-center justify-between p-2 rounded-lg hover:bg-surface-container-low transition-colors text-xs text-slate-700">
+                                <span class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-base text-[#003882]">quiz</span>
+                                    <span>Tra cứu câu hỏi FAQ</span>
+                                </span>
+                                <span class="material-symbols-outlined text-xs text-slate-400">chevron_right</span>
+                            </a>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- RESIZER 1: Thanh kéo điều chỉnh kích thước giữa Cột trái & Cột giữa -->
+                <div id="resizerLeft" title="Kéo để điều chỉnh kích thước cột trái" 
+                     class="hidden lg:flex w-3 shrink-0 sticky top-[84px] h-[calc(100vh-96px)] items-center justify-center cursor-col-resize group z-20 hover:bg-blue-50/70 rounded-full transition-colors mx-1 select-none">
+                    <div class="w-1 h-14 rounded-full bg-slate-300 group-hover:bg-[#003882] group-hover:w-1.5 transition-all shadow-xs flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity">drag_indicator</span>
+                    </div>
+                </div>
+
+                <!-- 2. CENTER COLUMN: FEED & POSTS (Co giãn linh hoạt theo thanh kéo) -->
+                <section id="centerForumPanel" class="flex-1 min-w-0 flex flex-col gap-4 pb-16 px-1 sm:px-3">
+                    
+                    <!-- Toast Flash Messages -->
+                    <div th:if="${successMessage}" class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between shadow-xs">
+                        <div class="flex items-center gap-2.5">
+                            <span class="material-symbols-outlined text-emerald-600">check_circle</span>
+                            <span class="text-sm font-medium" th:text="${successMessage}">Thành công!</span>
+                        </div>
+                        <button onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">
+                            <span class="material-symbols-outlined text-base">close</span>
+                        </button>
+                    </div>
+                    <div th:if="${errorMessage}" class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center justify-between shadow-xs">
+                        <div class="flex items-center gap-2.5">
+                            <span class="material-symbols-outlined text-rose-600">error</span>
+                            <span class="text-sm font-medium" th:text="${errorMessage}">Đã xảy ra lỗi!</span>
+                        </div>
+                        <button onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700">
+                            <span class="material-symbols-outlined text-base">close</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Search & Filter Bar -->
+                    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+                        <form th:action="@{/feed/forum}" method="get" class="flex flex-col gap-3">
+                            <input type="hidden" name="tab" th:value="${currentTab}">
+                            <div class="flex items-center justify-between flex-wrap gap-2">
+                                <h2 class="font-title-md text-title-md text-on-surface font-bold">Bảng tin cộng đồng</h2>
+                                <div class="flex items-center gap-1 bg-surface-container-low p-1 rounded-lg">
+                                    <a th:href="@{/feed/forum(tab='all')}" 
+                                       th:class="${currentTab == 'all' ? 'px-3 py-1 rounded-md bg-white text-[#003882] font-label-md text-label-md font-semibold shadow-xs' : 'px-3 py-1 rounded-md text-secondary hover:text-on-surface font-label-md text-label-md transition-colors'}">Tất cả</a>
+                                    <a th:href="@{/feed/forum(tab='my_posts')}" 
+                                       th:class="${currentTab == 'my_posts' ? 'px-3 py-1 rounded-md bg-white text-[#003882] font-label-md text-label-md font-semibold shadow-xs' : 'px-3 py-1 rounded-md text-secondary hover:text-on-surface font-label-md text-label-md transition-colors'}">Của tôi</a>
+                                </div>
+                            </div>
+                            
+                            <!-- Search Input & Dept Select -->
+                            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                                <div class="sm:col-span-8 relative">
+                                    <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-lg">search</span>
+                                    <input type="text" name="q" th:value="${query}" id="academic-search-input"
+                                           placeholder="Tìm kiếm chủ đề, bài viết, môn học..."
+                                           class="w-full pl-9 pr-3 py-2 bg-surface-container-low border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-800 focus:outline-none focus:border-[#003882] focus:bg-white transition-all">
+                                </div>
+                                <div class="sm:col-span-4">
+                                    <select name="departmentId" onchange="this.form.submit()" 
+                                            class="w-full py-2 px-2.5 bg-surface-container-low border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-700 focus:outline-none focus:border-[#003882]">
+                                        <option value="">Tất cả khoa</option>
+                                        <option th:each="dept : ${departments}" 
+                                                th:value="${dept.id}" 
+                                                th:text="${dept.name}"
+                                                th:selected="${selectedDept == dept.id}">Khoa CNTT</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Post Composer Card -->
+                    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-md border border-slate-200/60">
+                        <div class="flex items-center gap-space-sm">
+                            <div class="relative shrink-0">
+                                <img class="w-10 h-10 rounded-full object-cover shadow-xs border border-slate-200" 
+                                     th:src="${currentUserAvatar != null and !currentUserAvatar.isEmpty() ? currentUserAvatar : 'https://lh3.googleusercontent.com/aida-public/AB6AXuDvy6lk6rdWThe7VDawUThXqrZ6Oqhjv1kmn1kfYyMX3KLVmSW_JJ98dgHtt8vzVk3hRcq9k1jFjZcCo2WjcUrzuFQwfHV3HgDOtr6H-3q930mwuaw6uWBjF7c-5kG6xJfbpHJ64kIDyD9EDoYS-JiOogDWrE0ut8uCnFa6RlXIqJsyo20uO5GZxmqdsx3yyGTfoyZa1HkBhKcLNBMAVpJJysrNGlcm_swLJhttassJQLuVVKeWlpka'}"
+                                     alt="Avatar">
+                                <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                            </div>
+                            <button type="button" onclick="openCreateModal()" class="flex-1 bg-surface-container-low hover:bg-surface-container rounded-full px-4 py-2.5 cursor-pointer transition-colors flex items-center justify-between group text-left">
+                                <span class="font-body-md text-body-md text-slate-500 text-xs sm:text-sm group-hover:text-slate-800 transition-colors">Bạn đang muốn chia sẻ hay đặt câu hỏi học tập điều gì?</span>
+                                <span class="material-symbols-outlined text-slate-400 group-hover:text-[#003882] text-lg transition-colors">edit_square</span>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between flex-wrap gap-2 pt-1 border-t border-slate-100">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <button type="button" onclick="openCreateModal()" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors text-xs font-medium cursor-pointer">
+                                    <span class="material-symbols-outlined text-base text-emerald-600">photo_library</span>
+                                    <span>Ảnh / Đính kèm</span>
+                                </button>
+                                <button type="button" onclick="openCreateModal()" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors text-xs font-medium cursor-pointer">
+                                    <span class="material-symbols-outlined text-base text-indigo-600">help</span>
+                                    <span>Hỏi đáp học tập</span>
+                                </button>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="openCreateModal()" class="px-4 py-1.5 rounded-lg bg-[#003882] text-white text-xs font-semibold hover:bg-[#002456] shadow-sm transition-all flex items-center gap-1 cursor-pointer" type="button">
+                                    <span class="material-symbols-outlined text-sm">post_add</span>
+                                    <span>Đăng bài thảo luận</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SMART CREATE POST MODAL (Quill.js Snow + Live Preview at Bottom Left) -->
+                    <div id="createPostModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs items-center justify-center p-3 sm:p-4">
+                        <div class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in duration-200" onclick="event.stopPropagation()">
+                            
+                            <!-- Modal Header -->
+                            <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-[#003882]"></span>
+                                    <h3 class="font-bold text-sm sm:text-base text-slate-900">Tạo bài viết thảo luận sinh viên</h3>
+                                </div>
+                                <button type="button" class="trigger-close-create-modal w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer">
+                                    <span class="material-symbols-outlined text-lg">close</span>
+                                </button>
+                            </div>
+
+                            <!-- Form đăng bài -->
+                            <form th:action="@{/feed/forum/create}" method="post" enctype="multipart/form-data" id="createPostForm" class="flex flex-col flex-1 overflow-y-auto forum-scrollbar">
+                                <input type="hidden" name="content" id="hiddenPostContent">
+
+                                <!-- Modal Body: Editor Section -->
+                                <div id="modalEditorSection" class="p-5 space-y-4 flex-1">
+                                    <!-- Author & Department Selector -->
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                                        <div class="flex items-center gap-2.5">
+                                            <img class="w-9 h-9 rounded-full object-cover shadow-2xs border border-slate-200"
+                                                 th:src="${currentUserAvatar != null and !currentUserAvatar.isEmpty() ? currentUserAvatar : 'https://lh3.googleusercontent.com/aida-public/AB6AXuDvy6lk6rdWThe7VDawUThXqrZ6Oqhjv1kmn1kfYyMX3KLVmSW_JJ98dgHtt8vzVk3hRcq9k1jFjZcCo2WjcUrzuFQwfHV3HgDOtr6H-3q930mwuaw6uWBjF7c-5kG6xJfbpHJ64kIDyD9EDoYS-JiOogDWrE0ut8uCnFa6RlXIqJsyo20uO5GZxmqdsx3yyGTfoyZa1HkBhKcLNBMAVpJJysrNGlcm_swLJhttassJQLuVVKeWlpka'}"
+                                                 alt="Avatar">
+                                            <div>
+                                                <span class="text-xs font-bold text-slate-800 block" th:text="${currentUserFullName != null ? currentUserFullName : 'Sinh viên HCMUTE'}">Sinh viên</span>
+                                                <span class="text-[11px] text-slate-500" th:text="${currentUserDept != null ? currentUserDept : 'Đại học SPKT TP.HCM'}">Khoa CNTT</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Dropdown Khoa -->
+                                        <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1">
+                                            <span class="material-symbols-outlined text-sm text-[#003882]">domain</span>
+                                            <select name="departmentId" id="modalPostDept" class="bg-transparent text-xs text-slate-700 font-medium border-0 focus:ring-0 p-0 cursor-pointer">
+                                                <option value="">Toàn trường (Chung)</option>
+                                                <option th:each="dept : ${departments}" 
+                                                        th:value="${dept.id}" 
+                                                        th:text="${dept.name}"
+                                                        th:selected="${currentUser != null && currentUser.department != null && currentUser.department.id == dept.id}">Khoa CNTT</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tiêu đề bài viết -->
+                                    <div class="space-y-1">
+                                        <div class="flex items-center justify-between text-xs">
+                                            <label for="modalPostTitle" class="font-bold text-slate-800">Tiêu đề thảo luận <span class="text-rose-500">*</span></label>
+                                            <span id="modalTitleCounter" class="text-slate-400 font-medium">0/150</span>
+                                        </div>
+                                        <input type="text" id="modalPostTitle" name="title" required maxlength="150"
+                                               placeholder="Ví dụ: Kinh nghiệm ôn thi AVĐR tháng 11, review môn học..."
+                                               class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#003882] focus:bg-white transition-all">
+                                    </div>
+
+                                    <!-- Quill.js Editor Container -->
+                                    <div class="space-y-1">
+                                        <label class="block text-xs font-bold text-slate-800">Nội dung bài viết <span class="text-rose-500">*</span></label>
+                                        <div class="rounded-xl border border-slate-200 overflow-hidden bg-white">
+                                            <div id="quillEditor" class="min-h-[160px] text-sm"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Image Attachment Preview Box (Ẩn khi chưa chọn ảnh) -->
+                                    <div id="modalImagePreviewBox" class="hidden relative rounded-xl border border-slate-200 overflow-hidden max-h-48 bg-slate-100 group">
+                                        <img id="modalImagePreviewImg" src="" alt="Ảnh đính kèm" class="w-full h-48 object-cover">
+                                        <button type="button" id="modalRemoveImageBtn" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-slate-900/70 text-white flex items-center justify-center hover:bg-rose-600 transition-colors shadow-sm cursor-pointer" title="Xóa ảnh này">
+                                            <span class="material-symbols-outlined text-base">close</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Modal Body: LIVE PREVIEW SECTION (Ẩn khi đang soạn thảo, hiện khi bấm Xem trước) -->
+                                <div id="modalPreviewSection" class="hidden p-5 space-y-4 flex-1">
+                                    <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl flex items-center gap-2 text-xs text-[#003882]">
+                                        <span class="material-symbols-outlined text-base">info</span>
+                                        <span>Bản xem trước chính xác giao diện bài viết của bạn trên Bảng tin Diễn đàn.</span>
+                                    </div>
+
+                                    <!-- Card mô phỏng xem trước -->
+                                    <div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm border border-slate-200 flex flex-col gap-3">
+                                        <div class="flex items-center gap-3">
+                                            <img class="w-10 h-10 rounded-full object-cover shadow-xs border border-slate-200"
+                                                 th:src="${currentUserAvatar != null and !currentUserAvatar.isEmpty() ? currentUserAvatar : 'https://lh3.googleusercontent.com/aida-public/AB6AXuDvy6lk6rdWThe7VDawUThXqrZ6Oqhjv1kmn1kfYyMX3KLVmSW_JJ98dgHtt8vzVk3hRcq9k1jFjZcCo2WjcUrzuFQwfHV3HgDOtr6H-3q930mwuaw6uWBjF7c-5kG6xJfbpHJ64kIDyD9EDoYS-JiOogDWrE0ut8uCnFa6RlXIqJsyo20uO5GZxmqdsx3yyGTfoyZa1HkBhKcLNBMAVpJJysrNGlcm_swLJhttassJQLuVVKeWlpka'}"
+                                                 alt="Avatar">
+                                            <div class="flex flex-col">
+                                                <div class="flex items-center gap-1.5 flex-wrap">
+                                                    <span class="font-bold text-sm text-slate-900" th:text="${currentUserFullName != null ? currentUserFullName : 'Sinh viên'}">Họ tên</span>
+                                                    <span id="previewCardDept" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-medium">Khoa CNTT</span>
+                                                </div>
+                                                <div class="flex items-center gap-1.5 text-xs text-slate-500">
+                                                    <span>Vừa xong</span>
+                                                    <span>•</span>
+                                                    <span class="material-symbols-outlined text-xs">public</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <h3 id="previewCardTitle" class="font-bold text-base text-slate-900 leading-snug">Tiêu đề bài viết</h3>
+                                            <div id="previewCardContent" class="text-sm text-slate-700 leading-relaxed ql-snow"><div class="ql-editor p-0">Nội dung bài viết...</div></div>
+                                        </div>
+                                        <div id="previewCardImageBox" class="hidden rounded-xl overflow-hidden max-h-60 bg-slate-100 border border-slate-200">
+                                            <img id="previewCardImage" src="" alt="Ảnh xem trước" class="w-full h-full object-cover">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Modal Footer -->
+                                <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2">
+                                    <!-- Góc dưới bên trái: Nút Xem trước (Live Preview Toggle) & Nút Thêm ảnh -->
+                                    <div class="flex items-center gap-1.5">
+                                        <!-- NÚT XEM TRƯỚC ĐỊNH DẠNG BÀI VIẾT Ở GÓC DƯỚI BÊN TRÁI -->
+                                        <button type="button" id="btnTogglePreview" 
+                                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-[#003882] text-xs font-semibold shadow-2xs transition-all cursor-pointer">
+                                            <span id="previewBtnIcon" class="material-symbols-outlined text-base">visibility</span>
+                                            <span id="previewBtnText">Xem trước bài viết</span>
+                                        </button>
+
+                                        <!-- Nút đính kèm ảnh -->
+                                        <label for="modalPostImage" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-200/70 text-xs font-medium cursor-pointer transition-colors" title="Thêm ảnh đính kèm">
+                                            <span class="material-symbols-outlined text-base text-emerald-600">photo_camera</span>
+                                            <span class="hidden sm:inline">Thêm ảnh</span>
+                                        </label>
+                                        <input type="file" id="modalPostImage" name="image" accept="image/*" class="hidden">
+                                    </div>
+
+                                    <!-- Góc dưới bên phải: Nút Hủy và Nút Đăng bài -->
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" class="trigger-close-create-modal px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer">
+                                            Hủy
+                                        </button>
+                                        <button type="submit" class="px-4 py-1.5 rounded-lg bg-[#003882] hover:bg-[#002456] text-white text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer">
+                                            <span class="material-symbols-outlined text-sm">send</span>
+                                            <span>Đăng bài thảo luận</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- DYNAMIC POSTS FROM DATABASE -->
+                    <div th:if="${posts != null and !posts.empty}" class="space-y-4">
+                        <article th:each="post : ${posts.content}" th:id="'post_' + ${post.id}" class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md hover:shadow-md transition-shadow border border-slate-200/60">
+                            <!-- Author Header -->
+                            <div class="flex items-start justify-between">
+                                <div class="flex items-center gap-3">
+                                    <img class="w-10 h-10 rounded-full object-cover shadow-xs border border-slate-200" 
+                                         th:src="${post.authorAvatar != null and !post.authorAvatar.isEmpty() ? post.authorAvatar : 'https://lh3.googleusercontent.com/aida-public/AB6AXuAVU9HbZTIOX9rzxeKlQgVSwXNZRAKh1GYcUUU13fLLlr_C27_HVGExFs3bJ3wjKYEUUPeSGyn8hsm4wIagD_gBb6DJZlTYX4oeAADm21fv8gh-f1FQW4IPK1nGNtvINyB2OGWFOtoI1tAQAbSFYiLFbV51m6ohOSpl3KXPceHt6lzdJCmlQyWMaOoYGogQS96vAXmP68P998VH-k0qfCCou7DyEICE320G7ZhDIqf1p9VmagWMDAiG'}" 
+                                         alt="Avatar">
+                                    <div class="flex flex-col">
+                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                            <span class="font-title-md text-sm font-bold text-slate-900" th:text="${post.authorFullName}">Họ tên tác giả</span>
+                                            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-medium" th:text="${post.departmentName != null ? post.departmentName : 'HCMUTE'}">Khoa CNTT</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5 text-xs text-slate-500">
+                                            <span th:text="${post.createdAt != null ? #temporals.format(post.createdAt, 'dd/MM/yyyy HH:mm') : 'Vừa xong'}">15 phút trước</span>
+                                            <span>•</span>
+                                            <span class="material-symbols-outlined text-xs">public</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Actions Menu (Delete if Author) -->
+                                <div class="flex items-center gap-1">
+                                    <form th:if="${currentUserId != null and currentUserId == post.authorId}" 
+                                          th:action="@{'/feed/forum/delete/' + ${post.id}}" method="post" 
+                                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa bài viết này?')">
+                                        <input type="hidden" name="redirectTab" th:value="${currentTab}">
+                                        <button type="submit" class="p-1 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Xóa bài viết">
+                                            <span class="material-symbols-outlined text-lg">delete</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Post Content -->
+                            <div class="space-y-1.5">
+                                <h3 class="font-bold text-base text-slate-900 leading-snug" th:text="${post.title}">Tiêu đề bài viết</h3>
+                                <div class="text-sm text-slate-700 leading-relaxed ql-snow">
+                                    <div class="ql-editor p-0 whitespace-pre-line" th:utext="${post.content}">Nội dung bài viết thảo luận...</div>
+                                </div>
+                            </div>
+
+                            <!-- Post Image (if any) -->
+                            <div th:if="${post.attachments != null and !post.attachments.empty}" class="rounded-xl overflow-hidden max-h-[420px] bg-slate-100 border border-slate-200">
+                                <img th:src="${post.attachments[0].fileUrl}" class="w-full h-full object-cover" alt="Hình ảnh đính kèm">
+                            </div>
+
+                            <!-- Reaction Bar -->
+                            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                                <div class="flex items-center gap-4">
+                                    <!-- Interactive Like Button (Zero Reload) -->
+                                    <button type="button" 
+                                            class="btn-like-post flex items-center gap-1.5 text-xs font-semibold hover:text-[#003882] transition-colors cursor-pointer"
+                                            th:data-post-id="${post.id}"
+                                            th:data-liked="${post.userLiked}"
+                                            th:data-like-count="${post.likeCount != null ? post.likeCount : 0}"
+                                            th:classappend="${post.userLiked ? 'text-rose-600 font-bold' : 'text-slate-600'}">
+                                        <span class="material-symbols-outlined text-lg like-heart-icon transition-transform duration-200" 
+                                              th:style="${post.userLiked ? 'font-variation-settings: ''FILL'' 1;' : ''}">favorite</span>
+                                        <span class="like-count-text" th:text="${post.likeCount != null ? post.likeCount : 0} + ' Thích'">0 Thích</span>
+                                    </button>
+
+                                    <!-- Toggle Comments Accordion Button -->
+                                    <button type="button" 
+                                            class="btn-toggle-comments flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-[#003882] transition-colors cursor-pointer"
+                                            th:data-post-id="${post.id}">
+                                        <span class="material-symbols-outlined text-lg text-blue-600">chat_bubble</span>
+                                        <span th:class="'comment-count-badge-' + ${post.id}" th:data-count="${post.commentCount != null ? post.commentCount : 0}"
+                                              th:text="${post.commentCount != null ? post.commentCount : 0} + ' Thảo luận'">0 Thảo luận</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Expandable Comments Accordion Drawer -->
+                            <div th:id="'comments-accordion-' + ${post.id}" class="hidden pt-3 border-t border-slate-100 space-y-3">
+                                <!-- Comments List -->
+                                <div th:id="'comments-list-' + ${post.id}" class="space-y-2 max-h-72 overflow-y-auto forum-scrollbar pr-1">
+                                    <!-- Comment Items from Database -->
+                                    <div th:if="${post.comments != null and !post.comments.empty}" th:each="cmt : ${post.comments}"
+                                         class="flex items-start gap-2.5 p-2 rounded-xl hover:bg-slate-50 transition-colors">
+                                        <img class="w-8 h-8 rounded-full object-cover shadow-2xs border border-slate-200 shrink-0" 
+                                             th:src="${cmt.authorAvatar != null and !cmt.authorAvatar.isEmpty() ? cmt.authorAvatar : 'https://ui-avatars.com/api/?name=' + cmt.authorName + '&background=003882&color=fff'}" 
+                                             alt="Avatar">
+                                        <div class="flex-1 bg-slate-100/70 rounded-2xl p-2.5 text-xs">
+                                            <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                                                <span class="font-bold text-slate-900" th:text="${cmt.authorName}">Họ tên</span>
+                                                <span th:if="${cmt.authorRole == 'STAFF' or cmt.authorRole == 'ADMIN' or cmt.authorRole == 'TEACHER'}" 
+                                                      class="px-2 py-0.2 rounded-full text-[10px] bg-blue-100 text-[#003882] font-bold" 
+                                                      th:text="${cmt.authorDepartment != null ? cmt.authorDepartment : 'Cán bộ HCMUTE'}">Cán bộ</span>
+                                                <span th:unless="${cmt.authorRole == 'STAFF' or cmt.authorRole == 'ADMIN' or cmt.authorRole == 'TEACHER'}" 
+                                                      class="px-2 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600 font-medium" 
+                                                      th:text="${cmt.authorDepartment != null ? cmt.authorDepartment : 'Sinh viên'}">Khoa CNTT</span>
+                                                <span class="text-[10px] text-slate-400" 
+                                                      th:text="${cmt.createdAt != null ? '• ' + #temporals.format(cmt.createdAt, 'dd/MM/yyyy HH:mm') : ''}">• Vừa xong</span>
+                                            </div>
+                                            <p class="text-slate-800 leading-relaxed whitespace-pre-line" th:text="${cmt.content}">Nội dung bình luận...</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Placeholder when empty -->
+                                    <div th:if="${post.comments == null or post.comments.empty}" class="no-comments-placeholder py-3 text-center text-xs text-slate-400 italic">
+                                        Chưa có bình luận nào. Hãy là người đầu tiên trao đổi ý kiến!
+                                    </div>
+                                </div>
+
+                                <!-- Quick Comment Input Form inside Accordion -->
+                                <form class="form-comment-ajax flex items-center gap-2 pt-1" th:data-post-id="${post.id}">
+                                    <div class="flex-1 relative">
+                                        <input type="text" name="content" required placeholder="Viết câu trả lời hoặc thảo luận..." 
+                                               class="comment-input-field w-full bg-slate-50 border border-slate-200 rounded-full pl-4 pr-10 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#003882] focus:bg-white transition-all">
+                                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-[#003882] hover:text-[#002456] p-1 flex items-center justify-center cursor-pointer" title="Gửi bình luận">
+                                            <span class="material-symbols-outlined text-base">send</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </article>
+
+                        <!-- Pagination -->
+                        <div th:if="${posts.totalPages > 1}" class="flex items-center justify-center gap-2 pt-4">
+                            <a th:if="${currentPage > 0}" th:href="@{/feed/forum(page=${currentPage - 1}, tab=${currentTab}, q=${query}, departmentId=${selectedDept})}" 
+                               class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium text-slate-700 hover:bg-slate-50">Trước</a>
+                            <span class="text-xs text-slate-600 font-medium" th:text="'Trang ' + (${currentPage} + 1) + ' / ' + ${posts.totalPages}">Trang 1 / 1</span>
+                            <a th:if="${currentPage < posts.totalPages - 1}" th:href="@{/feed/forum(page=${currentPage + 1}, tab=${currentTab}, q=${query}, departmentId=${selectedDept})}" 
+                               class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium text-slate-700 hover:bg-slate-50">Sau</a>
+                        </div>
+                    </div>
+
+                    <!-- Empty State (Khi không có bài viết hoặc không tìm thấy bài viết phù hợp) -->
+                    <div th:if="${posts == null or posts.empty}" class="p-8 rounded-2xl bg-white border border-slate-200 text-center space-y-3">
+                        <div class="w-12 h-12 rounded-full bg-blue-50 text-[#003882] flex items-center justify-center mx-auto shadow-xs">
+                            <span class="material-symbols-outlined text-[26px]">chat_bubble_outline</span>
+                        </div>
+                        <div class="font-bold text-base text-slate-900">Không tìm thấy bài viết thảo luận nào</div>
+                        <p class="text-xs text-slate-500 max-w-md mx-auto">
+                            Hãy thử tìm kiếm với từ khóa khác hoặc bạn có thể là người đầu tiên chia sẻ câu hỏi học tập cho cộng đồng sinh viên HCMUTE!
+                        </p>
+                        <div class="pt-2">
+                            <button onclick="openCreateModal()" type="button" class="px-4 py-2 rounded-xl bg-[#003882] text-white text-xs font-semibold hover:bg-[#002456] shadow-sm transition-all cursor-pointer">
+                                Đăng bài thảo luận ngay
+                            </button>
+                        </div>
+                    </div>
+
+                </section>
+
+                <!-- RESIZER 2: Thanh kéo điều chỉnh kích thước giữa Cột giữa & Cột phải -->
+                <div id="resizerRight" title="Kéo để điều chỉnh kích thước cột phải" 
+                     class="hidden lg:flex w-3 shrink-0 sticky top-[84px] h-[calc(100vh-96px)] items-center justify-center cursor-col-resize group z-20 hover:bg-blue-50/70 rounded-full transition-colors mx-1 select-none">
+                    <div class="w-1 h-14 rounded-full bg-slate-300 group-hover:bg-[#003882] group-hover:w-1.5 transition-all shadow-xs flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity">drag_indicator</span>
+                    </div>
+                </div>
+
+                <!-- 3. RIGHT COLUMN: TRENDING & AI (Sticky + Thanh kéo riêng + Điều chỉnh độ rộng) -->
+                <aside id="rightForumPanel" class="hidden lg:flex shrink-0 sticky top-[84px] max-h-[calc(100vh-96px)] overflow-y-auto pl-2 pb-16 flex-col gap-4 forum-scrollbar" style="width: 320px; min-width: 240px; max-width: 500px;">
+                    
+                    <!-- Trending Topics -->
+                    <div id="trending-section" class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm border border-slate-200/60">
+                        <div class="flex items-center justify-between px-1">
+                            <div class="flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-base text-primary">trending_up</span>
+                                <span class="font-label-caps text-label-caps text-secondary uppercase tracking-wider font-semibold">Chủ đề sôi nổi</span>
+                            </div>
+                            <span class="font-label-caps text-label-caps text-primary font-semibold">Tuần này</span>
+                        </div>
+                        <div class="flex flex-col gap-1.5 pt-1">
+                            <a th:href="@{/feed/forum(q='DangKyHocPhan')}" class="flex flex-col p-2 rounded-lg hover:bg-surface-container-low transition-colors group">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-label-md text-xs text-primary font-bold group-hover:underline">#DangKyHocPhanHK2</span>
+                                    <span class="text-xs">🔥</span>
+                                </div>
+                                <span class="font-body-sm text-[11px] text-secondary">Đăng ký tín chỉ &amp; môn học</span>
+                            </a>
+                            <a th:href="@{/feed/forum(q='ThucTap')}" class="flex flex-col p-2 rounded-lg hover:bg-surface-container-low transition-colors group">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-label-md text-xs text-on-surface font-semibold group-hover:text-primary transition-colors">#TuyenDungThucTap2026</span>
+                                </div>
+                                <span class="font-body-sm text-[11px] text-secondary">Kinh nghiệm OJT &amp; tuyển dụng</span>
+                            </a>
+                            <a th:href="@{/feed/forum(q='HocBong')}" class="flex flex-col p-2 rounded-lg hover:bg-surface-container-low transition-colors group">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-label-md text-xs text-on-surface font-semibold group-hover:text-primary transition-colors">#HocBongKhuyenKhich</span>
+                                </div>
+                                <span class="font-body-sm text-[11px] text-secondary">Học bổng &amp; Điểm rèn luyện</span>
+                            </a>
+                            <a th:href="@{/feed/forum(q='DoAn')}" class="flex flex-col p-2 rounded-lg hover:bg-surface-container-low transition-colors group">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-label-md text-xs text-on-surface font-semibold group-hover:text-primary transition-colors">#DoAnTotNghiep</span>
+                                </div>
+                                <span class="font-body-sm text-[11px] text-secondary">Đồ án &amp; Khóa luận tốt nghiệp</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Right Side In-panel Mini Footer -->
+                    <div class="pt-2 pb-6 px-1 flex flex-col gap-2 text-[11px] text-slate-400">
+                        <div class="flex flex-wrap gap-x-3 gap-y-1">
+                            <a href="#" class="hover:text-primary transition-colors">Chính sách bảo mật</a>
+                            <a href="#" class="hover:text-primary transition-colors">Điều khoản</a>
+                            <a href="javascript:void(0)" onclick="openRulesModal()" class="hover:text-primary transition-colors">Quy tắc</a>
+                            <a th:href="@{/faqs}" class="hover:text-primary transition-colors">Trợ giúp</a>
+                        </div>
+                        <div>
+                            © 2026 Trường ĐH Sư phạm Kỹ thuật TP.HCM (HCMUTE)
+                        </div>
+                    </div>
+                </aside>
+
+        </div>
+    </main>
+
+    <!-- 7. WIDGET CHATBOT TRỢ LÝ HCMUTE (Floating Mascot AI giống như trang index) -->
+    <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <!-- Chatbox container -->
+        <div id="hcmuteChatWindow" class="hidden w-[330px] sm:w-[360px] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden mb-3 transition-all duration-300">
+            <!-- Header Chatbox -->
+            <div class="bg-white border-b border-slate-100 p-3.5 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-full bg-blue-50 border border-slate-200 overflow-hidden flex items-center justify-center shadow-xs flex-shrink-0">
+                        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDal19qGXszE1yVLlWrchkc2CRKylUftJRlipfnB8gqWSMxky8egEKvmKMHQQKEU_fq_LKN60MpD2MH5d-pAEGA9J3dhIfW0NBRKsFh9ehXbY3_KekJ9sYMYlzW6L0xCxQuTZMqo24VsLxo5ZMlKMHfCq5QhGCv1sA05dB4KsRYz0H-FDl5LCT8fpVgvL_Lrmonh6Ba7PbMA0Sj0iwJOc4RJmWQYmskr2D6mhPNyouFBffj6oaMOADNfOKOqbkm_MgPQA" 
+                             alt="Trợ lý HCMUTE Mascot" class="w-full h-full object-contain p-0.5">
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold text-slate-900 leading-none">Trợ lý HCMUTE</div>
+                        <div class="text-[10px] text-emerald-600 font-medium flex items-center gap-1 mt-0.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            <span>Sẵn sàng hỗ trợ</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 text-slate-400">
+                    <a th:href="@{/ai-chat}" title="Mở trang tư vấn AI chuyên sâu" class="hover:text-[#003882] p-1 text-slate-500" target="_blank">
+                        <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+                    </a>
+                    <button aria-label="Đóng" class="hover:text-slate-600 p-1" onclick="toggleChatWindow()">
+                        <span class="material-symbols-outlined text-[16px]">close</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages Body -->
+            <div id="chatScrollArea" class="p-4 bg-[#f8fafc] space-y-3 text-xs max-h-[340px] overflow-y-auto forum-scrollbar">
+                <div class="bg-slate-200/60 text-slate-800 p-3 rounded-2xl rounded-tl-none max-w-[90%] leading-relaxed shadow-xs">
+                    Xin chào! 👋 Tôi là trợ lý ảo QAUTE của HCMUTE. Bạn cần hỗ trợ thông tin gì hôm nay?
+                </div>
+                <!-- 4 Gợi ý bấm nhanh -->
+                <div id="quickPromptContainer" class="flex flex-col gap-1.5 pt-1">
+                    <button class="text-left px-3 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#003882] hover:text-[#003882] transition-colors text-[11px] font-medium text-slate-700 shadow-2xs" 
+                            onclick="handleQuickClick('Quy định và cách tính điểm học phần')">
+                        👉 Quy chế đào tạo &amp; Tính điểm
+                    </button>
+                    <button class="text-left px-3 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#003882] hover:text-[#003882] transition-colors text-[11px] font-medium text-slate-700 shadow-2xs" 
+                            onclick="handleQuickClick('Thời gian và hướng dẫn đăng ký học phần HK2')">
+                        🔍 Lịch &amp; Đăng ký môn học HK2
+                    </button>
+                    <button class="text-left px-3 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#003882] hover:text-[#003882] transition-colors text-[11px] font-medium text-slate-700 shadow-2xs" 
+                            onclick="handleQuickClick('Điều kiện xét học bổng khuyến khích học tập')">
+                        🎓 Học bổng khuyến khích học tập
+                    </button>
+                    <button class="text-left px-3 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#003882] hover:text-[#003882] transition-colors text-[11px] font-medium text-slate-700 shadow-2xs" 
+                            onclick="handleQuickClick('Quy trình gửi Ticket yêu cầu hỗ trợ')">
+                        🎫 Gửi yêu cầu hỗ trợ (Ticket SLA)
+                    </button>
+                </div>
+                <!-- Typing Indicator -->
+                <div id="chatTypingIndicator" class="hidden flex items-center gap-1.5 p-2.5 bg-slate-200/60 rounded-2xl rounded-tl-none w-fit text-slate-500 shadow-xs">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0.2s]"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0.4s]"></span>
+                    <span class="text-[10px] ml-1 text-slate-500 font-medium">Trợ lý đang phản hồi...</span>
+                </div>
+            </div>
+
+            <!-- Input Chat -->
+            <div class="p-2.5 bg-white border-t border-slate-100 flex items-center gap-2">
+                <input id="chatMessageInput" class="flex-1 text-xs border border-slate-200 rounded-full px-3.5 py-2 outline-none focus:border-[#003882] transition-colors" 
+                       onkeydown="if(event.key === 'Enter') sendUserMsg();" placeholder="Hỏi về quy chế, học vụ, môn học..." type="text">
+                <button id="chatSendBtn" aria-label="Gửi tin nhắn" class="w-8 h-8 rounded-full bg-[#003882] hover:bg-[#002456] disabled:opacity-50 text-white flex items-center justify-center flex-shrink-0 transition-transform active:scale-95 shadow" onclick="sendUserMsg()">
+                    <span class="material-symbols-outlined text-[16px]">send</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Floating Circular Bot Button -->
+        <button aria-label="Mở Trợ lý HCMUTE" class="w-16 h-16 rounded-full bg-transparent hover:scale-105 active:scale-95 flex items-center justify-center transition-all cursor-pointer group drop-shadow-xl focus:outline-none" onclick="toggleChatWindow()">
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDal19qGXszE1yVLlWrchkc2CRKylUftJRlipfnB8gqWSMxky8egEKvmKMHQQKEU_fq_LKN60MpD2MH5d-pAEGA9J3dhIfW0NBRKsFh9ehXbY3_KekJ9sYMYlzW6L0xCxQuTZMqo24VsLxo5ZMlKMHfCq5QhGCv1sA05dB4KsRYz0H-FDl5LCT8fpVgvL_Lrmonh6Ba7PbMA0Sj0iwJOc4RJmWQYmskr2D6mhPNyouFBffj6oaMOADNfOKOqbkm_MgPQA" 
+                 alt="HCMUTE AI Mascot" class="w-full h-full object-contain filter group-hover:scale-110 transition-transform">
+        </button>
+    </div>
+
+    <!-- MODAL: Tạo bài viết mới -->
+    <div id="createPostModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#003882] text-xl">post_add</span>
+                    <h3 class="font-bold text-base text-slate-900">Tạo bài viết thảo luận mới</h3>
+                </div>
+                <button onclick="closeCreateModal()" class="text-slate-400 hover:text-slate-700">
+                    <span class="material-symbols-outlined text-lg">close</span>
+                </button>
+            </div>
+            
+            <form th:action="@{/feed/forum/create}" method="post" enctype="multipart/form-data" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tiêu đề bài viết <span class="text-rose-500">*</span></label>
+                    <input type="text" name="title" required placeholder="Nhập tiêu đề rõ ràng, súc tích..." 
+                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-[#003882] focus:bg-white transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nội dung chi tiết <span class="text-rose-500">*</span></label>
+                    <textarea name="content" required rows="5" placeholder="Chia sẻ câu hỏi, kinh nghiệm hoặc nội dung bạn cần thảo luận..." 
+                              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-[#003882] focus:bg-white transition-all"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Hình ảnh đính kèm (Tùy chọn)</label>
+                    <input type="file" name="image" accept="image/*" 
+                           class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-[#003882] hover:file:bg-blue-100 cursor-pointer">
+                </div>
+                
+                <div class="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs leading-relaxed">
+                    Theo quy định, bài đăng sẽ được hiển thị công khai trên Diễn đàn sau khi được Cán bộ kiểm duyệt.
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeCreateModal()" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-semibold">Hủy</button>
+                    <button type="submit" class="px-5 py-2 rounded-lg bg-[#003882] text-white hover:bg-[#002456] text-xs font-semibold shadow-sm">Đăng thảo luận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Quy tắc cộng đồng -->
+    <div id="rulesModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden p-6 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#003882] text-xl">verified_user</span>
+                    <h3 class="font-bold text-base text-slate-900">Quy tắc cộng đồng HCMUTE</h3>
+                </div>
+                <button onclick="closeRulesModal()" class="text-slate-400 hover:text-slate-700">
+                    <span class="material-symbols-outlined text-lg">close</span>
+                </button>
+            </div>
+            <div class="space-y-3 text-xs text-slate-600 leading-relaxed max-h-80 overflow-y-auto">
+                <p>1. <strong>Tôn trọng lẫn nhau:</strong> Mọi thành viên đều bình đẳng. Không sử dụng từ ngữ xúc phạm, khiêu dâm, đả kích cá nhân hoặc quấy rối.</p>
+                <p>2. <strong>Học thuật trung thực:</strong> Không đăng tải các nội dung mua bán điểm, gian lận thi cử hoặc tài liệu độc quyền vi phạm pháp luật.</p>
+                <p>3. <strong>Không Spam &amp; Quảng cáo:</strong> Tuyệt đối cấm chia sẻ link lừa đảo, cờ bạc, đa cấp hoặc bán hàng không liên quan đến học tập.</p>
+                <p>4. <strong>Kiểm duyệt bài viết:</strong> Mọi bài viết vi phạm sẽ bị gỡ bỏ ngay lập tức và tài khoản sinh viên có thể bị khóa quyền truy cập diễn đàn.</p>
+            </div>
+            <div class="pt-3 border-t border-slate-200 text-right">
+                <button onclick="closeRulesModal()" class="px-4 py-2 bg-[#003882] text-white rounded-lg text-xs font-semibold hover:bg-[#002456]">Tôi đã hiểu</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- INTERACTION SCRIPTS -->
+    <script>
+        function toggleMobileNav() {
+            const drawer = document.getElementById('mobileNavDrawer');
+            if (drawer) {
+                drawer.classList.toggle('hidden');
+            }
+        }
+
+        function focusSearchInput() {
+            const input = document.getElementById('academic-search-input');
+            if (input) {
+                input.focus();
+                input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function openCreateModal() {
+            const modal = document.getElementById('createPostModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeCreateModal() {
+            const modal = document.getElementById('createPostModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function openRulesModal() {
+            const modal = document.getElementById('rulesModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeRulesModal() {
+            const modal = document.getElementById('rulesModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // Close modal on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeCreateModal();
+                closeRulesModal();
+            }
+        });
+
+        // --- DRAGGABLE RESIZABLE 3 COLUMNS ---
+        (function initForumResizers() {
+            const leftPanel = document.getElementById('leftForumPanel');
+            const rightPanel = document.getElementById('rightForumPanel');
+            const centerPanel = document.getElementById('centerForumPanel');
+            const resizerLeft = document.getElementById('resizerLeft');
+            const resizerRight = document.getElementById('resizerRight');
+            const container = document.getElementById('forumColumnsContainer');
+
+            if (!leftPanel || !rightPanel || !resizerLeft || !resizerRight || !container) return;
+
+            // Restore saved sizes from localStorage
+            try {
+                const savedLeft = localStorage.getItem('forum_left_w');
+                const savedRight = localStorage.getItem('forum_right_w');
+                if (savedLeft && window.innerWidth >= 1024) {
+                    leftPanel.style.width = Math.max(200, Math.min(480, parseInt(savedLeft, 10))) + 'px';
+                }
+                if (savedRight && window.innerWidth >= 1024) {
+                    rightPanel.style.width = Math.max(240, Math.min(500, parseInt(savedRight, 10))) + 'px';
+                }
+            } catch (err) {
+                console.warn('Cannot read localStorage for forum panel widths', err);
+            }
+
+            const MIN_LEFT = 200;
+            const MAX_LEFT = 480;
+            const MIN_RIGHT = 240;
+            const MAX_RIGHT = 500;
+            const MIN_CENTER = 360;
+
+            function attachDrag(resizer, onDrag) {
+                function startDrag(e) {
+                    if (window.innerWidth < 1024) return;
+                    e.preventDefault();
+
+                    const bar = resizer.querySelector('div');
+                    if (bar) {
+                        bar.classList.add('bg-[#003882]', 'w-1.5', 'shadow-md');
+                    }
+                    document.body.classList.add('select-none');
+                    document.body.style.cursor = 'col-resize';
+
+                    function onMove(e) {
+                        const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                        onDrag(clientX);
+                    }
+
+                    function onEnd() {
+                        document.removeEventListener('mousemove', onMove);
+                        document.removeEventListener('mouseup', onEnd);
+                        document.removeEventListener('touchmove', onMove);
+                        document.removeEventListener('touchend', onEnd);
+
+                        if (bar) {
+                            bar.classList.remove('bg-[#003882]', 'w-1.5', 'shadow-md');
+                        }
+                        document.body.classList.remove('select-none');
+                        document.body.style.cursor = '';
+
+                        try {
+                            localStorage.setItem('forum_left_w', parseInt(leftPanel.style.width, 10));
+                            localStorage.setItem('forum_right_w', parseInt(rightPanel.style.width, 10));
+                        } catch (err) {}
+                    }
+
+                    document.addEventListener('mousemove', onMove);
+                    document.addEventListener('mouseup', onEnd);
+                    document.addEventListener('touchmove', onMove, { passive: false });
+                    document.addEventListener('touchend', onEnd);
+                }
+
+                resizer.addEventListener('mousedown', startDrag);
+                resizer.addEventListener('touchstart', startDrag, { passive: false });
+            }
+
+            // Drag Resizer 1 (Left panel)
+            attachDrag(resizerLeft, (clientX) => {
+                const containerRect = container.getBoundingClientRect();
+                let newLeftW = clientX - containerRect.left;
+
+                const currentRightW = rightPanel.offsetWidth;
+                const availableForCenter = containerRect.width - newLeftW - currentRightW - 24;
+
+                if (availableForCenter < MIN_CENTER) {
+                    newLeftW = containerRect.width - currentRightW - MIN_CENTER - 24;
+                }
+                if (newLeftW < MIN_LEFT) newLeftW = MIN_LEFT;
+                if (newLeftW > MAX_LEFT) newLeftW = MAX_LEFT;
+
+                leftPanel.style.width = newLeftW + 'px';
+            });
+
+            // Drag Resizer 2 (Right panel)
+            attachDrag(resizerRight, (clientX) => {
+                const containerRect = container.getBoundingClientRect();
+                let newRightW = containerRect.right - clientX;
+
+                const currentLeftW = leftPanel.offsetWidth;
+                const availableForCenter = containerRect.width - currentLeftW - newRightW - 24;
+
+                if (availableForCenter < MIN_CENTER) {
+                    newRightW = containerRect.width - currentLeftW - MIN_CENTER - 24;
+                }
+                if (newRightW < MIN_RIGHT) newRightW = MIN_RIGHT;
+                if (newRightW > MAX_RIGHT) newRightW = MAX_RIGHT;
+
+                rightPanel.style.width = newRightW + 'px';
+            });
+        })();
+
+        // --- MASCOT AI CHATBOT CONTROLS (Giống trang index) ---
+        function toggleChatWindow(forceOpen) {
+            const chat = document.getElementById('hcmuteChatWindow');
+            if (!chat) return;
+            if (forceOpen === true) {
+                chat.classList.remove('hidden');
+            } else {
+                chat.classList.toggle('hidden');
+            }
+        }
+
+        function getChatSessionId() {
+            let sid = sessionStorage.getItem('hcmute_ai_session_id');
+            if (!sid) {
+                sid = 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+                sessionStorage.setItem('hcmute_ai_session_id', sid);
+            }
+            return sid;
+        }
+
+        function formatMarkdown(text) {
+            if (!text) return '';
+            let escaped = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-slate-900">$1</strong>');
+            escaped = escaped.replace(/\*(.*?)\*/g, '<em class="italic">$1</em>');
+            escaped = escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline font-medium hover:text-blue-800 break-all">$1</a>');
+            escaped = escaped.replace(/^• (.*?)$/gm, '<div class="flex items-start gap-1.5 my-0.5"><span class="text-[#003882] font-bold">•</span><span>$1</span></div>');
+            escaped = escaped.replace(/^👉 (.*?)$/gm, '<div class="flex items-start gap-1.5 my-0.5"><span class="text-amber-600">👉</span><span>$1</span></div>');
+            escaped = escaped.replace(/\n/g, '<br>');
+            return escaped;
+        }
+
+        let isAiChatLoading = false;
+
+        function setChatLoading(loading) {
+            isAiChatLoading = loading;
+            const indicator = document.getElementById('chatTypingIndicator');
+            const btn = document.getElementById('chatSendBtn');
+            const input = document.getElementById('chatMessageInput');
+            if (indicator) {
+                if (loading) {
+                    indicator.classList.remove('hidden');
+                } else {
+                    indicator.classList.add('hidden');
+                }
+            }
+            if (btn) btn.disabled = loading;
+            if (input) input.disabled = loading;
+            const scrollArea = document.getElementById('chatScrollArea');
+            if (scrollArea) scrollArea.scrollTop = scrollArea.scrollHeight;
+        }
+
+        function appendUser(txt) {
+            const body = document.getElementById('chatScrollArea');
+            const indicator = document.getElementById('chatTypingIndicator');
+            const div = document.createElement('div');
+            div.className = 'bg-[#003882] text-white p-2.5 rounded-2xl rounded-tr-none max-w-[85%] ml-auto text-xs leading-relaxed shadow-xs';
+            div.innerText = txt;
+            if (indicator) {
+                body.insertBefore(div, indicator);
+            } else {
+                body.appendChild(div);
+            }
+            body.scrollTop = body.scrollHeight;
+        }
+
+        function appendBot(txt, provider) {
+            const body = document.getElementById('chatScrollArea');
+            const indicator = document.getElementById('chatTypingIndicator');
+            const div = document.createElement('div');
+            div.className = 'bg-slate-200/60 text-slate-800 p-3 rounded-2xl rounded-tl-none max-w-[92%] text-xs leading-relaxed shadow-xs';
+            
+            let badgeHtml = '';
+            if (provider === 'hcmute-faq-knowledge') {
+                badgeHtml = '<div class="text-[10px] font-semibold text-[#003882] mb-1.5 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>Cơ sở tri thức HCMUTE (FAQ)</div>';
+            } else if (provider === 'gemini' || provider === 'ollama') {
+                badgeHtml = '<div class="text-[10px] font-semibold text-purple-700 mb-1.5 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-purple-600"></span>Trợ lý AI Trực tuyến</div>';
+            } else {
+                badgeHtml = '<div class="text-[10px] font-semibold text-[#003882] mb-1.5 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#003882]"></span>Trợ lý QAUTE</div>';
+            }
+
+            div.innerHTML = badgeHtml + '<div class="text-slate-800 space-y-1">' + formatMarkdown(txt) + '</div>';
+            if (indicator) {
+                body.insertBefore(div, indicator);
+            } else {
+                body.appendChild(div);
+            }
+            body.scrollTop = body.scrollHeight;
+        }
+
+        async function sendToAi(messageText) {
+            if (isAiChatLoading) return;
+            const text = messageText.trim();
+            if (!text) return;
+
+            appendUser(text);
+            setChatLoading(true);
+
+            try {
+                const response = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        query: text,
+                        session_id: getChatSessionId(),
+                        provider: 'gemini'
+                    })
+                });
+
+                if (response.ok) {
+                    const res = await response.json();
+                    const data = (res.success && res.data) ? res.data : (res.data || res);
+                    const botAnswer = data.answer || data.reply || data.content || 'Xin chào! Tôi đã ghi nhận thông tin từ bạn.';
+                    appendBot(botAnswer, data.provider);
+                } else {
+                    appendBot('Xin lỗi, hệ thống AI hiện chưa thể phản hồi câu hỏi này. Bạn có thể mở trang <a href="/ai-chat" class="underline text-blue-600 font-bold" target="_blank">Tư vấn AI chuyên sâu</a> hoặc tra cứu mục <a href="/faqs" class="underline text-blue-600 font-bold">Hỏi đáp FAQ</a> nhé!');
+                }
+            } catch (err) {
+                console.error('Lỗi kết nối AI chatbot:', err);
+                appendBot('Không thể kết nối đến máy chủ AI. Vui lòng kiểm tra lại mạng hoặc gửi Ticket hỗ trợ cho Phòng Đào tạo!');
+            } finally {
+                setChatLoading(false);
+                const input = document.getElementById('chatMessageInput');
+                if (input) {
+                    input.focus();
+                }
+            }
+        }
+
+        function handleQuickClick(query) {
+            sendToAi(query);
+        }
+
+        function sendUserMsg() {
+            const input = document.getElementById('chatMessageInput');
+            if (!input) return;
+            const msg = input.value;
+            input.value = '';
+            sendToAi(msg);
+        }
+
+        // Header Account Dropdown Toggle
+        (function() {
+            const toggle = document.getElementById('headerAccountToggle');
+            const dropdown = document.getElementById('headerDropdownMenu');
+            if (!toggle || !dropdown) return;
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isHidden = dropdown.classList.contains('hidden');
+                dropdown.classList.toggle('hidden');
+                toggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+            });
+            document.addEventListener('click', function(e) {
+                if (!dropdown.classList.contains('hidden') && !toggle.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                    toggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && !dropdown.classList.contains('hidden')) {
+                    dropdown.classList.add('hidden');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.focus();
+                }
+            });
+        })();
+
+        function toggleMobileNav() {
+            const drawer = document.getElementById('mobileNavDrawer');
+            if (drawer) drawer.classList.toggle('hidden');
+        }
+    </script>
+
+    <!-- Quill.js Snow Editor (Local Offline) -->
+    <script th:src="@{/vendor/quill/quill.min.js}"></script>
+    <!-- Forum Interactions Module (Live Preview, Ajax Like & Comments) -->
+    <script th:src="@{/js/modules/forum.js}"></script>
+</body>
+</html>

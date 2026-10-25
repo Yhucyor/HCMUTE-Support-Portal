@@ -1,91 +1,61 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <th:block th:replace="~{fragments/head :: publicHead('Thông báo lỗi')}"></th:block>
-    <style>
-        .error-container {
-            min-height: 70vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 2rem;
-        }
-        .error-card {
-            background: white;
-            padding: 3rem 2.5rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            max-width: 550px;
-            width: 100%;
-        }
-        .error-badge {
-            font-size: 4.5rem;
-            font-weight: 800;
-            color: var(--crimson, #a51c30);
-            line-height: 1;
-            margin-bottom: 1rem;
-        }
-        .error-title {
-            font-size: 1.5rem;
-            color: #333;
-            margin-bottom: 1rem;
-        }
-        .error-desc {
-            color: #666;
-            margin-bottom: 2rem;
-            line-height: 1.6;
-        }
-        .error-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-        .btn-action {
-            display: inline-block;
-            padding: 10px 24px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        .btn-home {
-            background: var(--crimson, #a51c30);
-            color: white;
-        }
-        .btn-home:hover {
-            background: #871626;
-        }
-        .btn-back {
-            background: #f0f0f0;
-            color: #444;
-        }
-        .btn-back:hover {
-            background: #e4e4e4;
-        }
-    </style>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title th:text="'Lỗi ' + ${errorCode != null ? errorCode : 'Hệ Thống'} + ' | HCMUTE Support Portal'">Thông Báo Lỗi | QAUTE Portal</title>
+    <!-- Google Fonts & Material Symbols -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-[#f8fafc] font-sans text-slate-800 antialiased min-h-screen flex flex-col justify-between">
 
-    <!-- Header / Navbar Fragment -->
-    <header th:replace="~{fragments/navbar :: navbar('error')}"></header>
+    <!-- 1. TOP GLOBAL HEADER -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
 
-    <div class="error-container">
-        <div class="error-card">
-            <div class="error-badge" th:text="${errorCode != null ? errorCode : '500'}">500</div>
-            <h2 class="error-title">Rất tiếc! Đã xảy ra sự cố</h2>
-            <p class="error-desc" th:text="${errorMessage != null ? errorMessage : 'Hệ thống không thể xử lý yêu cầu này lúc này. Vui lòng thử lại sau.'}">
-                Đã xảy ra lỗi nội bộ máy chủ.
+    <!-- 2. MAIN ERROR CONTENT -->
+    <main class="flex-1 flex items-center justify-center px-4 pt-28 pb-12">
+        <div class="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-200/80 p-8 text-center">
+            <!-- Icon -->
+            <div class="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
+                 th:classappend="${errorCode == '403' ? 'bg-amber-50 text-amber-600' : (errorCode == '404' ? 'bg-blue-50 text-blue-600' : 'bg-rose-50 text-rose-600')}">
+                <span th:if="${errorCode == '403'}" class="material-symbols-outlined text-4xl">lock</span>
+                <span th:if="${errorCode == '404'}" class="material-symbols-outlined text-4xl">travel_explore</span>
+                <span th:if="${errorCode != '403' and errorCode != '404'}" class="material-symbols-outlined text-4xl">warning</span>
+            </div>
+
+            <!-- Title -->
+            <h1 class="text-2xl font-bold text-slate-900 mb-2 font-['Outfit']"
+                th:text="${errorCode != null ? ('Mã Lỗi: ' + errorCode) : 'Sự Cố Hệ Thống'}">Mã Lỗi: 500</h1>
+
+            <!-- Description -->
+            <p class="text-sm text-slate-500 mb-8 leading-relaxed"
+               th:text="${errorMessage != null ? errorMessage : 'Hệ thống đang gặp sự cố xử lý nội bộ. Đội ngũ kỹ thuật đang kiểm tra.'}">
+                Hệ thống đang gặp sự cố xử lý nội bộ. Đội ngũ kỹ thuật đang kiểm tra.
             </p>
-            <div class="error-actions">
-                <a href="javascript:history.back()" class="btn-action btn-back">Quay lại</a>
-                <a th:href="@{/}" class="btn-action btn-home">Về Trang chủ</a>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <a th:href="@{/}" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#003882] hover:bg-[#002860] text-white text-xs font-semibold rounded-lg shadow-sm transition-all">
+                    <span class="material-symbols-outlined text-base">home</span>
+                    Về Trang Chủ
+                </a>
+                <button type="button" onclick="history.back()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-all">
+                    <span class="material-symbols-outlined text-base">arrow_back</span>
+                    Quay Lại
+                </button>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- Footer Fragment -->
-    <th:block th:replace="~{fragments/footer :: footer}"></th:block>
+    <!-- 3. FOOTER (Chuẩn bản 2) -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+        <p>© 2026 Trường Đại học Sư phạm Kỹ thuật TP.HCM. Cổng Dịch Vụ Hỗ Trợ QAUTE Portal.</p>
+    </footer>
 
 </body>
 </html>

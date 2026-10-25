@@ -9,33 +9,39 @@ CÁCH GIAO TIẾP:
 - Từ ngữ: Sử dụng từ ngữ chuẩn mực, rõ ràng; tránh tiếng lóng.
 
 NGUYÊN TẮC TRẢ LỜI (QUAN TRỌNG):
-CHỈ dùng thông tin CÓ SẴN trong CONTEXT bên dưới
-Trình bày rõ ràng, dễ hiểu, có cấu trúc (dùng bullet points nếu nhiều mục)
-Nếu có nhiều lựa chọn: Liệt kê từng mục rõ ràng
-KHÔNG tự bịa thêm thông tin
-KHÔNG đưa ra ý kiến cá nhân
-KHÔNG suy luận ngoài dữ liệu có sẵn
+- Dựa trên thông tin trong CONTEXT bên dưới để trả lời câu hỏi.
+- Trình bày rõ ràng, dễ hiểu, có cấu trúc (dùng bullet points • và in đậm các số liệu quan trọng).
+- Nếu CONTEXT có các bảng học phí hoặc văn bản hành chính có ký tự viết tắt/OCR (như Kh6a = Khóa, hgc phi = học phí, dAu = đầu, D6ng = Đồng), hãy đọc hiểu và diễn giải thành văn bản tiếng Việt chuẩn, mạch lạc và dễ hiểu cho sinh viên.
+- BẮT BUỘC PHẢI HOÀN THÀNH CÂU TRẢ LỜI ĐẦY ĐỦ, CHI TIẾT TỪ ĐẦU ĐẾN CUỐI, TUYỆT ĐỐI KHÔNG DỪNG GIỮA CHỪNG.
+- Không tự suy diễn ra các quy định không có liên quan đến trường HCMUTE.
 
 KHI KHÔNG CÓ THÔNG TIN:
-Trả lời: "Mình không tìm thấy thông tin về vấn đề này trong dữ liệu hiện tại nè. Bạn có thể hỏi mình về các quy định, chương trình học, hoặc thông tin hỗ trợ sinh viên của HCMUTE nhé! 😊"
-
-VÍ DỤ TRẢ LỜI TỐT:
-"Chào bạn! 👋 Về câu lạc bộ, trường mình có một số CLB tiêu biểu như:
-• Đội Công tác xã hội - Dành cho các bạn thích hoạt động thiện nguyện
-• CLB Kỹ năng mềm - Giúp rèn luyện kỹ năng giao tiếp, thuyết trình
-Bạn có hứng thú với mảng nào nhất? 😊"
+Trả lời: "Mình không tìm thấy thông tin chi tiết về vấn đề này trong dữ liệu hiện tại nè. Bạn có thể liên hệ trực tiếp Phòng Đào tạo hoặc gửi phiếu hỗ trợ (Ticket) trên Portal để được Thầy/Cô giải đáp chính xác nhất nhé! 😊"
 """
 
-def build_prompt(context: str, question: str) -> str:
+def build_prompt(context: str, question: str, history: list = None) -> str:
+    history_section = ""
+    if history and len(history) > 0:
+        history_lines = []
+        for item in history[-6:]: # Tối đa 3 lượt đối thoại gần nhất
+            role = "Sinh viên" if item.get("role", "").lower() == "user" else "Trợ lý"
+            content = item.get("content", "").strip()
+            if role == "Trợ lý" and len(content) > 200:
+                content = content[:200] + "..."
+            if content:
+                history_lines.append(f"{role}: {content}")
+        if history_lines:
+            history_section = "LỊCH SỬ TRAO ĐỔI TRƯỚC ĐÓ:\n" + "\n".join(history_lines) + "\n\n"
+
     return f"""
 {SYSTEM_PROMPT}
 
-CONTEXT (Thông tin từ cơ sở dữ liệu):
+{history_section}CONTEXT (Thông tin từ cơ sở dữ liệu quy chế HCMUTE):
 {context}
 
 QUESTION: {question}
 
-Hãy trả lời câu hỏi bằng tiếng Việt, phong cách thân thiện GenZ, CHỈ dùng thông tin từ CONTEXT.
+Hãy trả lời câu hỏi bằng tiếng Việt, phong cách thân thiện GenZ, dựa trên CONTEXT và giữ sự liền mạch tự nhiên với lịch sử trao đổi.
 
 ANSWER:
 """.strip()

@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Tạo bài viết mới | Diễn đàn Sinh viên HCMUTE</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <style>
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+        ::-webkit-scrollbar {
+            width: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .forum-scrollbar::-webkit-scrollbar {
+            width: 7px;
+        }
+        .forum-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .forum-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        .forum-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+    </style>
+    <!-- Tailwind CSS with configuration matching Academic Horizon & HCMUTE Tokens -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "brand-red": "#991b1e",
+                        "brand-red-hover": "#831518",
+                        "brand-blue": "#003882",
+                        "brand-blue-dark": "#002456",
+                        "surface": "#f8f9ff",
+                        "surface-dim": "#cbdbf5",
+                        "surface-bright": "#f8f9ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#eff4ff",
+                        "surface-container": "#e5eeff",
+                        "surface-container-high": "#dce9ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-surface": "#0b1c30",
+                        "on-surface-variant": "#434655",
+                        "inverse-surface": "#213145",
+                        "inverse-on-surface": "#eaf1ff",
+                        "outline": "#747686",
+                        "outline-variant": "#c4c5d7",
+                        "surface-tint": "#2151da",
+                        "primary": "#0037b0",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#1d4ed8",
+                        "on-primary-container": "#cad3ff",
+                        "inverse-primary": "#b7c4ff",
+                        "secondary": "#565e74",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#dae2fd",
+                        "on-secondary-container": "#5c647a",
+                        "tertiary": "#003ca3",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#0051d6",
+                        "on-tertiary-container": "#c9d4ff",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#dce1ff",
+                        "primary-fixed-dim": "#b7c4ff",
+                        "on-primary-fixed": "#001551",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "secondary-fixed": "#dae2fd",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-secondary-fixed": "#131b2e",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "tertiary-fixed": "#dbe1ff",
+                        "tertiary-fixed-dim": "#b4c5ff",
+                        "on-tertiary-fixed": "#00174b",
+                        "on-tertiary-fixed-variant": "#003ea8",
+                        "background": "#f8f9ff",
+                        "on-background": "#0b1c30",
+                        "surface-variant": "#d3e4fe"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        "2xl": "1rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        "gutter-sm": "1rem",
+                        "space-xs": "0.25rem",
+                        "space-sm": "0.5rem",
+                        "space-md": "1rem",
+                        "space-lg": "1.5rem",
+                        "space-xl": "2rem",
+                        "margin-sm": "1rem",
+                        "margin": "2rem",
+                        "margin-lg": "3rem"
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        display: ["Outfit", "sans-serif"],
+                        headline: ["Outfit", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                        "title-md": ["Outfit", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "body-sm": ["Inter", "sans-serif"],
+                        "headline-lg-mobile": ["Outfit", "sans-serif"],
+                        "headline-md": ["Outfit", "sans-serif"],
+                        "headline-sm": ["Outfit", "sans-serif"],
+                        "headline-lg": ["Outfit", "sans-serif"],
+                        "label-lg": ["Inter", "sans-serif"],
+                        "label-md": ["Inter", "sans-serif"],
+                        "label-caps": ["Inter", "sans-serif"]
+                    },
+                    fontSize: {
+                        "title-md": ["16px", { lineHeight: "24px", letterSpacing: "0em", fontWeight: "600" }],
+                        "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+                        "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }],
+                        "headline-lg-mobile": ["28px", { lineHeight: "36px", letterSpacing: "-0.01em", fontWeight: "600" }],
+                        "headline-md": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
+                        "headline-sm": ["20px", { lineHeight: "28px", letterSpacing: "0em", fontWeight: "600" }],
+                        "headline-lg": ["36px", { lineHeight: "44px", letterSpacing: "-0.015em", fontWeight: "600" }],
+                        display: ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "label-lg": ["14px", { lineHeight: "20px", fontWeight: "600" }],
+                        "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.01em", fontWeight: "500" }],
+                        "label-caps": ["11px", { lineHeight: "14px", letterSpacing: "0.05em", fontWeight: "600" }]
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-background font-body text-on-surface antialiased selection:bg-[#991b1e] selection:text-white min-h-screen">
+
+    <!-- Global Unified Header HCMUTE -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <!-- 2. MAIN CONTAINER -->
+    <main class="pt-4 pb-16 flex-1 bg-background">
+        <div class="flex flex-col w-full">
+
+            <!-- Flash Success / Error Messages -->
+            <div th:if="${successMessage}" class="max-w-5xl mx-auto w-full px-space-md mb-4">
+                <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between shadow-xs">
+                    <div class="flex items-center gap-2.5">
+                        <span class="material-symbols-outlined text-emerald-600">check_circle</span>
+                        <span class="text-sm font-medium" th:text="${successMessage}">Thành công!</span>
+                    </div>
+                    <button onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">
+                        <span class="material-symbols-outlined text-base">close</span>
+                    </button>
+                </div>
+            </div>
+
+            <div th:if="${errorMessage}" class="max-w-5xl mx-auto w-full px-space-md mb-4">
+                <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center justify-between shadow-xs">
+                    <div class="flex items-center gap-2.5">
+                        <span class="material-symbols-outlined text-rose-600">error</span>
+                        <span class="text-sm font-medium" th:text="${errorMessage}">Đã xảy ra lỗi!</span>
+                    </div>
+                    <button onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700">
+                        <span class="material-symbols-outlined text-base">close</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Interactive Toast Notification -->
+            <div class="fixed top-24 right-8 z-50 flex items-center gap-space-md px-space-lg py-space-md rounded-xl bg-surface-container-lowest shadow-xl border border-slate-200/80 transition-all duration-300 translate-y-[-120%] opacity-0 pointer-events-none" id="toast-success">
+                <div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-[24px]">check_circle</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-title-md text-title-md text-on-surface">Đã lưu bản nháp!</span>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">Nội dung bài viết được lưu trữ an toàn.</span>
+                </div>
+                <button class="p-space-xs rounded-lg text-outline hover:text-on-surface transition-colors ml-2" onclick="hideToast()">
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                </button>
+            </div>
+
+            <div class="w-full max-w-5xl mx-auto px-space-md md:px-space-xl py-space-sm">
+                <!-- Breadcrumb & Back Link Navigation -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-lg">
+                    <nav class="flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant">
+                        <a class="hover:text-primary transition-colors flex items-center gap-1" th:href="@{/}">
+                            <span class="material-symbols-outlined text-[16px]">home</span>
+                            Trang chủ
+                        </a>
+                        <span class="material-symbols-outlined text-[14px] text-outline">chevron_right</span>
+                        <a class="hover:text-primary transition-colors" th:href="@{/feed/forum}">Diễn đàn sinh viên</a>
+                        <span class="material-symbols-outlined text-[14px] text-outline">chevron_right</span>
+                        <span class="text-primary font-semibold">Tạo bài viết</span>
+                    </nav>
+                    <a class="inline-flex items-center gap-space-xs font-label-lg text-label-lg text-secondary hover:text-primary transition-colors group" th:href="@{/feed/forum}">
+                        <span class="material-symbols-outlined text-[18px] transition-transform group-hover:-translate-x-1">arrow_back</span>
+                        <span>Quay lại diễn đàn</span>
+                    </a>
+                </div>
+
+                <!-- Editorial Header Section -->
+                <div class="mb-space-lg flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+                    <div>
+                        <div class="inline-flex items-center gap-space-xs px-space-sm py-0.5 rounded-full bg-surface-container-high text-primary font-label-caps text-label-caps uppercase tracking-wider mb-space-xs">
+                            <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                            Cộng đồng học thuật trực tuyến
+                        </div>
+                        <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight font-bold">Tạo bài viết mới</h1>
+                        <p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Chia sẻ kiến thức, đặt câu hỏi và kết nối với cộng đồng sinh viên HCMUTE.</p>
+                    </div>
+                    <div class="flex items-center gap-space-xs font-body-sm text-body-sm text-secondary bg-surface-container-low px-space-md py-space-xs rounded-lg self-start md:self-auto border border-slate-200/50">
+                        <span class="material-symbols-outlined text-[18px] text-primary">schedule</span>
+                        <span>Lưu bản nháp tự động: <span class="font-semibold text-on-surface" id="last-saved-time">Chưa lưu</span></span>
+                    </div>
+                </div>
+
+                <!-- Main Composer Surface Card -->
+                <form th:action="@{/feed/forum/create}" method="post" enctype="multipart/form-data" id="composer-form" 
+                      class="bg-surface-container-lowest rounded-2xl shadow-sm border border-slate-200/80 p-space-lg md:p-space-xl flex flex-col gap-space-lg">
+                    
+                    <!-- Hidden field for active category -->
+                    <input type="hidden" name="category" id="selected-category" value="Chia sẻ kiến thức">
+                    <!-- Hidden field for tags string -->
+                    <input type="hidden" name="tags" id="hidden-tags-input" value="#CongNgheThongTin #HocTap">
+
+                    <!-- Author Profile & Visibility Scope Selector -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md pb-space-md border-b border-slate-100">
+                        <div class="flex items-center gap-space-md">
+                            <div class="relative">
+                                <div th:if="${currentUserAvatar != null and !currentUserAvatar.isEmpty()}" 
+                                     class="w-12 h-12 rounded-full overflow-hidden shadow-xs border border-slate-200">
+                                    <img th:src="${currentUserAvatar}" alt="Avatar" class="w-full h-full object-cover">
+                                </div>
+                                <div th:unless="${currentUserAvatar != null and !currentUserAvatar.isEmpty()}" 
+                                     class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-primary font-title-md text-title-md font-bold shadow-xs">
+                                    <span th:text="${currentUser != null and currentUser.fullName != null ? currentUser.fullName.substring(0, 1) : 'U'}">SV</span>
+                                </div>
+                                <span class="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-full bg-primary text-on-primary font-label-caps text-label-caps shadow-sm"
+                                      th:text="${currentUserRole != null ? currentUserRole : 'SV'}">SV</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <div class="flex items-center gap-space-xs">
+                                    <span class="font-title-md text-title-md text-on-surface font-bold" 
+                                          th:text="${currentUserFullName != null ? currentUserFullName : (currentUser != null ? currentUser.fullName : 'Sinh viên HCMUTE')}">Nguyễn Văn An</span>
+                                    <span class="material-symbols-outlined text-[16px] text-primary" title="Tài khoản sinh viên đã xác minh">verified</span>
+                                </div>
+                                <div class="flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm">
+                                    <span th:text="${currentUserDept != null ? currentUserDept : 'Trường ĐH Sư phạm Kỹ thuật'}">Khoa CNTT</span>
+                                    <span>•</span>
+                                    <span sec:authorize="isAuthenticated()" class="text-emerald-600 font-medium">Đang hoạt động</span>
+                                    <span sec:authorize="!isAuthenticated()" class="text-amber-600 font-medium">Khách</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Scope / Visibility Dropdown Widget -->
+                        <div class="relative" id="visibility-widget">
+                            <button class="inline-flex items-center gap-space-sm px-space-md py-space-xs rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors shadow-xs border border-slate-200/60" onclick="toggleVisibilityMenu()" type="button">
+                                <span class="material-symbols-outlined text-[18px] text-primary" id="visibility-icon">public</span>
+                                <span class="font-label-lg text-label-lg font-medium" id="visibility-label">Cộng đồng HCMUTE</span>
+                                <span class="material-symbols-outlined text-[18px] text-outline">expand_more</span>
+                            </button>
+                            <!-- Dropdown Options Menu -->
+                            <div class="hidden absolute right-0 mt-2 w-72 rounded-xl bg-surface-container-lowest shadow-xl border border-slate-200 py-space-xs z-30" id="visibility-dropdown">
+                                <div class="px-space-md py-space-xs font-label-caps text-label-caps uppercase text-secondary font-semibold">Phạm vi hiển thị</div>
+                                <button class="w-full text-left px-space-md py-space-sm flex items-start gap-space-sm hover:bg-surface-container-low transition-colors" onclick="selectVisibility('public', 'Cộng đồng HCMUTE', 'public')" type="button">
+                                    <span class="material-symbols-outlined text-[20px] text-primary mt-0.5">public</span>
+                                    <div>
+                                        <p class="font-label-lg text-label-lg text-on-surface font-semibold">Cộng đồng HCMUTE</p>
+                                        <p class="font-body-sm text-body-sm text-on-surface-variant">Tất cả giảng viên và sinh viên toàn trường</p>
+                                    </div>
+                                </button>
+                                <button class="w-full text-left px-space-md py-space-sm flex items-start gap-space-sm hover:bg-surface-container-low transition-colors" onclick="selectVisibility('department', 'Khoa / Đơn vị cụ thể', 'domain')" type="button">
+                                    <span class="material-symbols-outlined text-[20px] text-primary mt-0.5">domain</span>
+                                    <div>
+                                        <p class="font-label-lg text-label-lg text-on-surface font-semibold">Khoa / Đơn vị cụ thể</p>
+                                        <p class="font-body-sm text-body-sm text-on-surface-variant">Chỉ định gắn bài viết với một Khoa/Phòng</p>
+                                    </div>
+                                </button>
+                                <button class="w-full text-left px-space-md py-space-sm flex items-start gap-space-sm hover:bg-surface-container-low transition-colors" onclick="selectVisibility('private', 'Riêng tư (Bản nháp)', 'lock')" type="button">
+                                    <span class="material-symbols-outlined text-[20px] text-outline mt-0.5">lock</span>
+                                    <div>
+                                        <p class="font-label-lg text-label-lg text-on-surface font-semibold">Riêng tư</p>
+                                        <p class="font-body-sm text-body-sm text-on-surface-variant">Chỉ lưu tạm trên trình duyệt của bạn</p>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Department Selector (Toggled via visibility scope or always available) -->
+                    <div class="p-space-md rounded-xl bg-surface-container-low border border-slate-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm" id="group-target-container">
+                        <div class="flex items-center gap-space-sm">
+                            <span class="material-symbols-outlined text-primary text-[22px]">domain</span>
+                            <div>
+                                <span class="font-label-lg text-label-lg text-on-surface font-semibold block">Gắn với Khoa / Phòng ban</span>
+                                <span class="font-body-sm text-body-sm text-on-surface-variant">Giúp sinh viên cùng khoa dễ dàng tìm kiếm và trao đổi</span>
+                            </div>
+                        </div>
+                        <select name="departmentId" id="departmentIdSelect" class="px-space-md py-space-xs rounded-lg bg-surface-container-lowest font-body-sm text-body-sm text-on-surface border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary shadow-xs">
+                            <option value="">Toàn trường (Chung)</option>
+                            <option th:each="dept : ${departments}" 
+                                    th:value="${dept.id}" 
+                                    th:text="${dept.name}"
+                                    th:selected="${currentUser != null && currentUser.department != null && currentUser.department.id == dept.id}">Khoa CNTT</option>
+                        </select>
+                    </div>
+
+                    <!-- Post Category Pills Segmented Control -->
+                    <div class="flex flex-col gap-space-xs">
+                        <label class="font-label-caps text-label-caps uppercase text-secondary font-bold tracking-wider">Phân loại bài viết</label>
+                        <div class="flex flex-wrap gap-space-xs" id="category-pills">
+                            <button class="category-pill active flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-primary text-on-primary font-label-md text-label-md shadow-xs transition-all cursor-pointer" onclick="setCategory(this, 'Chia sẻ kiến thức')" type="button">
+                                <span class="material-symbols-outlined text-[16px]">menu_book</span>
+                                <span>Chia sẻ kiến thức</span>
+                            </button>
+                            <button class="category-pill flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container font-label-md text-label-md transition-all cursor-pointer" onclick="setCategory(this, 'Hỏi đáp học tập')" type="button">
+                                <span class="material-symbols-outlined text-[16px] text-secondary">help</span>
+                                <span>Hỏi đáp học tập</span>
+                            </button>
+                            <button class="category-pill flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container font-label-md text-label-md transition-all cursor-pointer" onclick="setCategory(this, 'Chia sẻ tài liệu')" type="button">
+                                <span class="material-symbols-outlined text-[16px] text-secondary">folder_zip</span>
+                                <span>Chia sẻ tài liệu</span>
+                            </button>
+                            <button class="category-pill flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container font-label-md text-label-md transition-all cursor-pointer" onclick="setCategory(this, 'Kinh nghiệm sinh viên')" type="button">
+                                <span class="material-symbols-outlined text-[16px] text-secondary">lightbulb</span>
+                                <span>Kinh nghiệm sinh viên</span>
+                            </button>
+                            <button class="category-pill flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container font-label-md text-label-md transition-all cursor-pointer" onclick="setCategory(this, 'Hoạt động &amp; Sự kiện')" type="button">
+                                <span class="material-symbols-outlined text-[16px] text-secondary">event_available</span>
+                                <span>Hoạt động &amp; Sự kiện</span>
+                            </button>
+                            <button class="category-pill flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container font-label-md text-label-md transition-all cursor-pointer" onclick="setCategory(this, 'Thực tập &amp; Việc làm')" type="button">
+                                <span class="material-symbols-outlined text-[16px] text-secondary">work_outline</span>
+                                <span>Thực tập &amp; Việc làm</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Post Title Field -->
+                    <div class="flex flex-col gap-space-xs">
+                        <div class="flex items-center justify-between">
+                            <label class="font-label-lg text-label-lg text-on-surface font-semibold" for="post-title-input">
+                                Tiêu đề bài viết <span class="text-error font-bold">*</span>
+                            </label>
+                            <span class="font-label-caps text-label-caps text-outline font-semibold" id="title-char-counter">0/150</span>
+                        </div>
+                        <div class="relative">
+                            <input class="w-full px-space-md py-space-sm rounded-xl bg-surface-container-lowest text-on-surface font-headline-sm text-headline-sm placeholder:text-outline border border-slate-200 focus:border-primary focus:outline-none focus:bg-surface-container-low transition-all shadow-xs" 
+                                   id="post-title-input" name="title" maxlength="150" required oninput="updateCharCount(this)" 
+                                   placeholder="Nhập tiêu đề ngắn gọn, dễ hiểu..." type="text">
+                        </div>
+                    </div>
+
+                    <!-- WYSIWYG Content Editor -->
+                    <div class="flex flex-col rounded-xl overflow-hidden bg-surface-container-lowest border border-slate-200 shadow-xs">
+                        <!-- Formatting Toolbar -->
+                        <div class="flex flex-wrap items-center gap-1 p-space-xs bg-surface-container-low border-b border-slate-200/80">
+                            <button class="p-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-bold" title="In đậm (Ctrl+B)" type="button" onclick="formatDoc('bold')">
+                                <span class="material-symbols-outlined text-[18px]">format_bold</span>
+                            </button>
+                            <button class="p-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors italic" title="In nghiêng (Ctrl+I)" type="button" onclick="formatDoc('italic')">
+                                <span class="material-symbols-outlined text-[18px]">format_italic</span>
+                            </button>
+                            <button class="p-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" title="Gạch ngang" type="button" onclick="formatDoc('strike')">
+                                <span class="material-symbols-outlined text-[18px]">format_strikethrough</span>
+                            </button>
+                            <div class="w-px h-5 bg-outline-variant mx-1"></div>
+                            <button class="p-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" title="Danh sách chấm" type="button" onclick="formatDoc('bullet')">
+                                <span class="material-symbols-outlined text-[18px]">format_list_bulleted</span>
+                            </button>
+                            <button class="p-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" title="Danh sách số" type="button" onclick="formatDoc('number')">
+                                <span class="material-symbols-outlined text-[18px]">format_list_numbered</span>
+                            </button>
+                            <button class="p-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" title="Trích dẫn" type="button" onclick="formatDoc('quote')">
+                                <span class="material-symbols-outlined text-[18px]">format_quote</span>
+                            </button>
+                            <div class="w-px h-5 bg-outline-variant mx-1"></div>
+                            <button class="p-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-mono" title="Khối mã nguồn / Code" type="button" onclick="formatDoc('code')">
+                                <span class="material-symbols-outlined text-[18px]">code</span>
+                            </button>
+                            <button class="p-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" title="Chèn liên kết" type="button" onclick="formatDoc('link')">
+                                <span class="material-symbols-outlined text-[18px]">link</span>
+                            </button>
+                            <button class="p-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" title="Công thức toán / TeX" type="button" onclick="formatDoc('formula')">
+                                <span class="material-symbols-outlined text-[18px]">functions</span>
+                            </button>
+                            <div class="w-px h-5 bg-outline-variant mx-1"></div>
+                            <button class="p-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" title="Xóa định dạng" type="button" onclick="formatDoc('clear')">
+                                <span class="material-symbols-outlined text-[18px]">format_clear</span>
+                            </button>
+                            <div class="ml-auto flex items-center pr-space-xs">
+                                <span class="font-label-caps text-label-caps text-outline font-semibold">Markdown hỗ trợ</span>
+                            </div>
+                        </div>
+                        <!-- Textarea Field -->
+                        <textarea class="w-full p-space-md font-body-md text-body-md text-on-surface bg-surface-container-lowest placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest resize-y min-h-[240px] leading-relaxed" 
+                                  id="post-content-textarea" name="content" required 
+                                  placeholder="Bạn muốn chia sẻ điều gì với cộng đồng sinh viên? (Hỗ trợ định dạng văn bản, chèn liên kết, chia sẻ tài liệu học tập...)" rows="8"></textarea>
+                    </div>
+
+                    <!-- Topic Tags Section -->
+                    <div class="flex flex-col gap-space-xs">
+                        <label class="font-label-lg text-label-lg text-on-surface font-semibold">Chủ đề &amp; Thẻ tag</label>
+                        <div class="p-space-sm rounded-xl bg-surface-container-lowest border border-slate-200 flex flex-wrap items-center gap-space-xs shadow-xs focus-within:border-primary focus-within:bg-surface-container-low transition-all" id="tags-container">
+                            <!-- Active Chips -->
+                            <span class="tag-chip inline-flex items-center gap-1 px-space-sm py-1 rounded-full bg-secondary-container text-on-surface font-label-md text-label-md">
+                                <span>#CongNgheThongTin</span>
+                                <button class="hover:text-error transition-colors flex items-center cursor-pointer" onclick="removeTagChip(this)" type="button">
+                                    <span class="material-symbols-outlined text-[16px]">close</span>
+                                </button>
+                            </span>
+                            <span class="tag-chip inline-flex items-center gap-1 px-space-sm py-1 rounded-full bg-secondary-container text-on-surface font-label-md text-label-md">
+                                <span>#HocTap</span>
+                                <button class="hover:text-error transition-colors flex items-center cursor-pointer" onclick="removeTagChip(this)" type="button">
+                                    <span class="material-symbols-outlined text-[16px]">close</span>
+                                </button>
+                            </span>
+                            <input class="flex-1 min-w-[200px] bg-transparent py-1 px-space-xs font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none" 
+                                   id="custom-tag-input" onkeydown="handleTagInputKey(event)" 
+                                   placeholder="Gõ thẻ tag rồi nhấn Enter (vd: #KienTrucMayTinh)..." type="text">
+                        </div>
+                        <!-- Tag Suggestions -->
+                        <div class="flex items-center gap-space-xs flex-wrap pt-1 font-body-sm text-body-sm text-secondary">
+                            <span class="font-label-caps text-label-caps uppercase text-outline font-semibold">Gợi ý:</span>
+                            <button class="hover:text-primary transition-colors hover:underline cursor-pointer" onclick="addSuggestedTag('#KienTrucMayTinh')" type="button">#KienTrucMayTinh</button>
+                            <span class="text-outline">•</span>
+                            <button class="hover:text-primary transition-colors hover:underline cursor-pointer" onclick="addSuggestedTag('#OnThiK22')" type="button">#OnThiK22</button>
+                            <span class="text-outline">•</span>
+                            <button class="hover:text-primary transition-colors hover:underline cursor-pointer" onclick="addSuggestedTag('#TaiLieuHocTap')" type="button">#TaiLieuHocTap</button>
+                            <span class="text-outline">•</span>
+                            <button class="hover:text-primary transition-colors hover:underline cursor-pointer" onclick="addSuggestedTag('#HCMUTE_IT')" type="button">#HCMUTE_IT</button>
+                            <span class="text-outline">•</span>
+                            <button class="hover:text-primary transition-colors hover:underline cursor-pointer" onclick="addSuggestedTag('#DoAnTotNghiep')" type="button">#DoAnTotNghiep</button>
+                        </div>
+                    </div>
+
+                    <!-- Media & Document Attachments Section -->
+                    <div class="flex flex-col gap-space-md pt-space-xs">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+                            <label class="font-label-lg text-label-lg text-on-surface font-semibold">Thêm nội dung đính kèm</label>
+                            <div class="inline-flex p-0.5 rounded-lg bg-surface-container-low border border-slate-200/50">
+                                <button class="px-space-md py-1 rounded-md bg-surface-container-lowest text-primary font-label-md text-label-md font-semibold shadow-xs flex items-center gap-1" type="button" onclick="triggerFileInput()">
+                                    <span class="material-symbols-outlined text-[16px]">image</span>
+                                    Ảnh / Video
+                                </button>
+                                <button class="px-space-md py-1 rounded-md text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors flex items-center gap-1" type="button" onclick="triggerFileInput()">
+                                    <span class="material-symbols-outlined text-[16px]">description</span>
+                                    Tài liệu
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Real File Input (Hidden) -->
+                        <input type="file" name="image" id="file-upload-input" class="hidden" accept="image/*,.pdf,.docx,.doc,.zip" onchange="handleFileSelected(event)">
+
+                        <!-- Upload Dropzone Area -->
+                        <div class="rounded-xl p-space-lg bg-surface-container-low/60 hover:bg-surface-container-low border-2 border-dashed border-slate-300 hover:border-primary transition-all flex flex-col items-center justify-center text-center cursor-pointer group" 
+                             onclick="triggerFileInput()" id="upload-dropzone">
+                            <div class="w-12 h-12 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-xs mb-space-sm border border-slate-200">
+                                <span class="material-symbols-outlined text-[26px]">cloud_upload</span>
+                            </div>
+                            <p class="font-title-md text-title-md text-on-surface font-medium">Kéo thả hình ảnh hoặc tệp tài liệu vào đây</p>
+                            <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 mb-space-md">Hỗ trợ PNG, JPG, PDF, DOCX, ZIP dung lượng tối đa 25MB</p>
+                            <button class="px-space-md py-space-xs rounded-lg bg-surface-container-lowest text-primary hover:bg-surface-container font-label-lg text-label-lg shadow-xs border border-slate-200 transition-colors" type="button" onclick="event.stopPropagation(); triggerFileInput();">
+                                Chọn tệp từ máy tính
+                            </button>
+                        </div>
+
+                        <!-- Attachment Preview List (Dynamically updated) -->
+                        <div class="hidden flex-col gap-space-sm" id="attachment-preview-container">
+                            <span class="font-label-caps text-label-caps uppercase text-secondary font-semibold" id="attachment-count-label">Tệp đính kèm đã chọn (1)</span>
+                            <div class="flex items-center justify-between p-space-sm rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors shadow-xs border border-slate-200" id="preview-file-card">
+                                <div class="flex items-center gap-space-md min-w-0">
+                                    <div class="w-16 h-12 rounded-lg bg-surface-container-high overflow-hidden flex items-center justify-center shrink-0 border border-slate-200" id="preview-file-thumb">
+                                        <span class="material-symbols-outlined text-[24px] text-primary" id="preview-file-icon">attach_file</span>
+                                        <img id="preview-file-img" class="hidden w-full h-full object-cover" alt="Preview">
+                                    </div>
+                                    <div class="flex flex-col min-w-0">
+                                        <span class="font-title-md text-title-md text-on-surface truncate font-semibold" id="preview-file-name">tệp_dinh_kem.png</span>
+                                        <div class="flex items-center gap-space-sm text-on-surface-variant font-body-sm text-body-sm">
+                                            <span id="preview-file-size">1.2 MB</span>
+                                            <span>•</span>
+                                            <span class="inline-flex items-center gap-0.5 text-primary font-medium">
+                                                <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                                                Sẵn sàng tải lên
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="p-space-xs rounded-lg text-outline hover:text-error hover:bg-surface-container-lowest transition-colors cursor-pointer" onclick="clearSelectedFile()" title="Xóa tệp" type="button">
+                                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Community Guidelines Notice Box -->
+                    <div class="p-space-md rounded-xl bg-surface-container-high border border-blue-100 flex items-start gap-space-md shadow-xs">
+                        <span class="material-symbols-outlined text-primary text-[24px] mt-0.5 shrink-0">verified_user</span>
+                        <div class="flex flex-col">
+                            <span class="font-title-md text-title-md text-on-surface font-bold">Chia sẻ có trách nhiệm</span>
+                            <p class="font-body-md text-body-md text-on-surface-variant mt-0.5 leading-relaxed">
+                                Hãy sử dụng ngôn ngữ chuẩn mực, tôn trọng cộng đồng sinh viên HCMUTE và kiểm tra tính chính xác của tài liệu trước khi đăng tải. Không phát tán thông tin bảo mật hay sao chép bài tập không trích nguồn.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Publishing Actions Bar -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md pt-space-md border-t border-slate-100">
+                        <div>
+                            <button class="inline-flex items-center gap-space-xs px-space-md py-2.5 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors font-label-lg text-label-lg shadow-xs border border-slate-200/80 cursor-pointer" onclick="openPreviewModal()" type="button">
+                                <span class="material-symbols-outlined text-[20px] text-primary">visibility</span>
+                                <span>Xem trước bài viết</span>
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-space-sm self-end sm:self-auto">
+                            <a th:href="@{/feed/forum}" class="px-space-md py-2.5 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg transition-colors">
+                                Hủy
+                            </a>
+                            <button class="px-space-md py-2.5 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container-low font-label-lg text-label-lg shadow-xs border border-slate-200 transition-colors cursor-pointer" onclick="saveDraft()" type="button">
+                                Lưu bản nháp
+                            </button>
+                            <button class="px-6 py-2.5 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg hover:bg-[#002456] shadow-sm transition-all hover:shadow-md flex items-center gap-space-xs cursor-pointer" type="submit" id="submit-post-btn">
+                                <span class="material-symbols-outlined text-[18px]">send</span>
+                                <span>Đăng bài</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Interactive Modal: Preview Post (Xem trước bài viết) -->
+            <div class="fixed inset-0 z-50 hidden flex items-center justify-center p-space-md bg-inverse-surface/40 backdrop-blur-sm" id="preview-modal">
+                <div class="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-surface-container-lowest rounded-2xl shadow-2xl flex flex-col border border-slate-200 forum-scrollbar">
+                    <!-- Modal Header -->
+                    <div class="sticky top-0 bg-surface-container-lowest/95 backdrop-blur-md px-space-lg py-space-md flex items-center justify-between border-b border-slate-100 z-10">
+                        <div class="flex items-center gap-space-sm">
+                            <span class="material-symbols-outlined text-primary text-[24px]">preview</span>
+                            <span class="font-headline-sm text-headline-sm text-on-surface font-bold">Xem trước hiển thị bài viết</span>
+                        </div>
+                        <button class="p-space-xs rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer" onclick="closePreviewModal()" type="button">
+                            <span class="material-symbols-outlined text-[22px]">close</span>
+                        </button>
+                    </div>
+
+                    <!-- Feed Post Replica Preview Body -->
+                    <div class="p-space-lg md:p-space-xl flex flex-col gap-space-md">
+                        <!-- Author Meta Row -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-space-md">
+                                <div th:if="${currentUserAvatar != null and !currentUserAvatar.isEmpty()}" 
+                                     class="w-12 h-12 rounded-full overflow-hidden shadow-xs border border-slate-200">
+                                    <img th:src="${currentUserAvatar}" alt="Avatar" class="w-full h-full object-cover">
+                                </div>
+                                <div th:unless="${currentUserAvatar != null and !currentUserAvatar.isEmpty()}" 
+                                     class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-primary font-title-md text-title-md font-bold">
+                                    <span th:text="${currentUser != null and currentUser.fullName != null ? currentUser.fullName.substring(0, 1) : 'U'}">SV</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="font-title-md text-title-md text-on-surface font-bold" 
+                                              th:text="${currentUserFullName != null ? currentUserFullName : (currentUser != null ? currentUser.fullName : 'Sinh viên HCMUTE')}">Nguyễn Văn An</span>
+                                        <span class="material-symbols-outlined text-[16px] text-primary">verified</span>
+                                        <span class="px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-label-caps text-label-caps font-semibold" id="preview-category-badge">Chia sẻ kiến thức</span>
+                                    </div>
+                                    <span class="font-body-sm text-body-sm text-on-surface-variant">Vừa xong • Cộng đồng HCMUTE</span>
+                                </div>
+                            </div>
+                            <button class="p-space-xs text-outline hover:text-on-surface" type="button">
+                                <span class="material-symbols-outlined text-[20px]">more_horiz</span>
+                            </button>
+                        </div>
+
+                        <!-- Title Preview -->
+                        <h2 class="font-headline-md text-headline-md text-on-surface font-bold" id="preview-title">
+                            Tiêu đề bài viết
+                        </h2>
+
+                        <!-- Content Body Preview -->
+                        <div class="font-body-lg text-body-lg text-on-surface whitespace-pre-line leading-relaxed" id="preview-content">
+                            Nội dung bài viết sẽ hiển thị ở đây...
+                        </div>
+
+                        <!-- Tags Preview -->
+                        <div class="flex flex-wrap gap-space-xs pt-space-xs" id="preview-tags-container">
+                            <!-- Populated via JS -->
+                        </div>
+
+                        <!-- Media Attachment Preview In Feed -->
+                        <div class="hidden rounded-xl overflow-hidden shadow-sm mt-space-xs max-h-80 border border-slate-200" id="preview-image-container">
+                            <img alt="Ảnh đính kèm" class="w-full h-full object-cover" id="preview-modal-img" src="">
+                        </div>
+
+                        <!-- Document File Card Preview -->
+                        <div class="hidden p-space-md rounded-xl bg-surface-container-low flex items-center justify-between border border-slate-200" id="preview-doc-container">
+                            <div class="flex items-center gap-space-md min-w-0">
+                                <div class="w-10 h-10 rounded-lg bg-error-container text-on-error-container flex items-center justify-center font-bold">
+                                    <span class="material-symbols-outlined text-[20px]">description</span>
+                                </div>
+                                <div class="flex flex-col min-w-0">
+                                    <span class="font-title-md text-title-md text-on-surface truncate font-semibold" id="preview-doc-name">Tai_lieu.pdf</span>
+                                    <span class="font-body-sm text-body-sm text-on-surface-variant" id="preview-doc-info">3.4 MB • Tài liệu đính kèm</span>
+                                </div>
+                            </div>
+                            <button class="px-space-md py-1.5 rounded-lg bg-surface-container-lowest text-primary font-label-md text-label-md shadow-xs border border-slate-200 hover:bg-surface-container" type="button">
+                                Tải về
+                            </button>
+                        </div>
+
+                        <!-- Simulated Social Counters & Reactions -->
+                        <div class="flex items-center justify-between pt-space-md border-t border-slate-100 font-body-sm text-body-sm text-on-surface-variant">
+                            <div class="flex items-center gap-space-md">
+                                <span class="flex items-center gap-1 hover:text-primary cursor-pointer transition-colors">
+                                    <span class="material-symbols-outlined text-[20px]">favorite_border</span>
+                                    0 Thích
+                                </span>
+                                <span class="flex items-center gap-1 hover:text-primary cursor-pointer transition-colors">
+                                    <span class="material-symbols-outlined text-[20px]">mode_comment</span>
+                                    0 Bình luận
+                                </span>
+                            </div>
+                            <span class="flex items-center gap-1 hover:text-primary cursor-pointer transition-colors">
+                                <span class="material-symbols-outlined text-[20px]">share</span>
+                                Chia sẻ
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer Actions -->
+                    <div class="sticky bottom-0 bg-surface-container-lowest border-t border-slate-100 px-space-lg py-space-md flex items-center justify-end gap-space-sm">
+                        <button class="px-space-md py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container font-label-lg text-label-lg transition-colors border border-slate-200 cursor-pointer" onclick="closePreviewModal()" type="button">
+                            Quay lại chỉnh sửa
+                        </button>
+                        <button class="px-space-lg py-2 rounded-lg bg-primary text-on-primary hover:bg-[#002456] font-label-lg text-label-lg shadow-sm transition-colors cursor-pointer" onclick="closePreviewModal(); document.getElementById('composer-form').submit();" type="button">
+                            Xác nhận &amp; Đăng ngay
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 3. AI MASCOT FLOATING CHAT WIDGET (Bottom Right) -->
+    <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <!-- Chat Window Card -->
+        <div id="aiChatWindow" class="hidden mb-3 w-80 sm:w-96 rounded-2xl bg-white shadow-2xl border border-slate-200/90 overflow-hidden transition-all duration-300">
+            <!-- Header Chat -->
+            <div class="bg-gradient-to-r from-[#003882] to-[#1e40af] p-3.5 text-white flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center p-1 backdrop-blur-xs">
+                        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDal19qGXszE1yVLlWrchkc2CRKylUftJRlipfnB8gqWSMxky8egEKvmKMHQQKEU_fq_LKN60MpD2MH5d-pAEGA9J3dhIfW0NBRKsFh9ehXbY3_KekJ9sYMYlzW6L0xCxQuTZMqo24VsLxo5ZMlKMHfCq5QhGCv1sA05dB4KsRYz0H-FDl5LCT8fpVgvL_Lrmonh6Ba7PbMA0Sj0iwJOc4RJmWQYmskr2D6mhPNyouFBffj6oaMOADNfOKOqbkm_MgPQA" 
+                             alt="AI Avatar" class="w-full h-full object-contain">
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold leading-tight flex items-center gap-1.5">
+                            Trợ lý ảo HCMUTE
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        </div>
+                        <div class="text-[10px] text-blue-200">Giải đáp thắc mắc &amp; Học vụ 24/7</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 text-slate-300">
+                    <a th:href="@{/ai-chat}" title="Mở trang tư vấn AI chuyên sâu" class="hover:text-white p-1" target="_blank">
+                        <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+                    </a>
+                    <button aria-label="Đóng" class="hover:text-white p-1 cursor-pointer" onclick="toggleChatWindow()">
+                        <span class="material-symbols-outlined text-[16px]">close</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages Body -->
+            <div id="chatScrollArea" class="p-4 bg-[#f8fafc] space-y-3 text-xs max-h-[320px] overflow-y-auto forum-scrollbar">
+                <div class="bg-slate-200/60 text-slate-800 p-3 rounded-2xl rounded-tl-none max-w-[90%] leading-relaxed shadow-xs">
+                    Xin chào! 👋 Bạn cần hỗ trợ gì về chủ đề viết bài hay nội dung học thuật trên diễn đàn hôm nay?
+                </div>
+                <!-- 4 Gợi ý bấm nhanh -->
+                <div id="quickPromptContainer" class="flex flex-col gap-1.5 pt-1">
+                    <button class="text-left px-3 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#003882] hover:text-[#003882] transition-colors text-[11px] font-medium text-slate-700 shadow-2xs cursor-pointer" 
+                            onclick="handleQuickClick('Gợi ý cách đặt tiêu đề bài viết học tập thu hút')">
+                        👉 Cách đặt tiêu đề bài viết hay
+                    </button>
+                    <button class="text-left px-3 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#003882] hover:text-[#003882] transition-colors text-[11px] font-medium text-slate-700 shadow-2xs cursor-pointer" 
+                            onclick="handleQuickClick('Quy định đăng tài liệu và trích dẫn trên diễn đàn')">
+                        📚 Quy định chia sẻ tài liệu
+                    </button>
+                    <button class="text-left px-3 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#003882] hover:text-[#003882] transition-colors text-[11px] font-medium text-slate-700 shadow-2xs cursor-pointer" 
+                            onclick="handleQuickClick('Quy trình kiểm duyệt bài thảo luận')">
+                        🛡️ Quy trình kiểm duyệt bài viết
+                    </button>
+                </div>
+                <!-- Typing Indicator -->
+                <div id="chatTypingIndicator" class="hidden flex items-center gap-1.5 p-2.5 bg-slate-200/60 rounded-2xl rounded-tl-none w-fit text-slate-500 shadow-xs">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0.2s]"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0.4s]"></span>
+                    <span class="text-[10px] ml-1 text-slate-500 font-medium">Trợ lý đang phản hồi...</span>
+                </div>
+            </div>
+
+            <!-- Input Chat -->
+            <div class="p-2.5 bg-white border-t border-slate-100 flex items-center gap-2">
+                <input id="chatMessageInput" class="flex-1 text-xs border border-slate-200 rounded-full px-3.5 py-2 outline-none focus:border-[#003882] transition-colors" 
+                       onkeydown="if(event.key === 'Enter') sendUserMsg();" placeholder="Hỏi về quy chế, học vụ, bài viết..." type="text">
+                <button id="chatSendBtn" aria-label="Gửi tin nhắn" class="w-8 h-8 rounded-full bg-[#003882] hover:bg-[#002456] disabled:opacity-50 text-white flex items-center justify-center shrink-0 transition-transform active:scale-95 shadow cursor-pointer" onclick="sendUserMsg()">
+                    <span class="material-symbols-outlined text-[16px]">send</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Floating Circular Bot Button -->
+        <button aria-label="Mở Trợ lý HCMUTE" class="w-16 h-16 rounded-full bg-transparent hover:scale-105 active:scale-95 flex items-center justify-center transition-all cursor-pointer group drop-shadow-xl focus:outline-none" onclick="toggleChatWindow()">
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDal19qGXszE1yVLlWrchkc2CRKylUftJRlipfnB8gqWSMxky8egEKvmKMHQQKEU_fq_LKN60MpD2MH5d-pAEGA9J3dhIfW0NBRKsFh9ehXbY3_KekJ9sYMYlzW6L0xCxQuTZMqo24VsLxo5ZMlKMHfCq5QhGCv1sA05dB4KsRYz0H-FDl5LCT8fpVgvL_Lrmonh6Ba7PbMA0Sj0iwJOc4RJmWQYmskr2D6mhPNyouFBffj6oaMOADNfOKOqbkm_MgPQA" 
+                 alt="HCMUTE AI Mascot" class="w-full h-full object-contain filter group-hover:scale-110 transition-transform">
+        </button>
+    </div>
+
+    <!-- Client-side Micro-interactions Script -->
+    <script>
+        let activeCategory = 'Chia sẻ kiến thức';
+        let currentFileObject = null;
+
+        // Character counter
+        function updateCharCount(el) {
+            const counter = document.getElementById('title-char-counter');
+            if (counter) counter.innerText = el.value.length + '/150';
+        }
+
+        // Visibility Dropdown
+        function toggleVisibilityMenu() {
+            const menu = document.getElementById('visibility-dropdown');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        function selectVisibility(scope, label, icon) {
+            document.getElementById('visibility-label').innerText = label;
+            document.getElementById('visibility-icon').innerText = icon;
+            document.getElementById('visibility-dropdown').classList.add('hidden');
+
+            const groupContainer = document.getElementById('group-target-container');
+            if (scope === 'department') {
+                groupContainer.classList.remove('hidden');
+                document.getElementById('departmentIdSelect').focus();
+            } else if (scope === 'private') {
+                // Riêng tư
+                groupContainer.classList.add('hidden');
+            } else {
+                groupContainer.classList.remove('hidden');
+            }
+        }
+
+        // Category Pills
+        function setCategory(btn, catName) {
+            activeCategory = catName;
+            document.getElementById('selected-category').value = catName;
+
+            document.querySelectorAll('#category-pills .category-pill').forEach(b => {
+                b.className = 'category-pill flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container font-label-md text-label-md transition-all cursor-pointer';
+                const icon = b.querySelector('.material-symbols-outlined');
+                if (icon) icon.className = 'material-symbols-outlined text-[16px] text-secondary';
+            });
+
+            btn.className = 'category-pill active flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-primary text-on-primary font-label-md text-label-md shadow-xs transition-all cursor-pointer';
+            const activeIcon = btn.querySelector('.material-symbols-outlined');
+            if (activeIcon) activeIcon.className = 'material-symbols-outlined text-[16px] text-on-primary';
+        }
+
+        // Markdown / Formatting Toolbar Actions
+        function formatDoc(cmd) {
+            const textarea = document.getElementById('post-content-textarea');
+            if (!textarea) return;
+
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            let replacement = '';
+            let cursorOffset = 0;
+
+            switch(cmd) {
+                case 'bold':
+                    replacement = '**' + (selectedText || 'Văn bản in đậm') + '**';
+                    cursorOffset = 2;
+                    break;
+                case 'italic':
+                    replacement = '*' + (selectedText || 'Văn bản in nghiêng') + '*';
+                    cursorOffset = 1;
+                    break;
+                case 'strike':
+                    replacement = '~~' + (selectedText || 'Văn bản gạch ngang') + '~~';
+                    cursorOffset = 2;
+                    break;
+                case 'bullet':
+                    replacement = '\n- ' + (selectedText || 'Mục danh sách');
+                    cursorOffset = 3;
+                    break;
+                case 'number':
+                    replacement = '\n1. ' + (selectedText || 'Mục số');
+                    cursorOffset = 4;
+                    break;
+                case 'quote':
+                    replacement = '\n> ' + (selectedText || 'Nội dung trích dẫn');
+                    cursorOffset = 3;
+                    break;
+                case 'code':
+                    replacement = '\n```\n' + (selectedText || '// Khối mã nguồn') + '\n```\n';
+                    cursorOffset = 5;
+                    break;
+                case 'link':
+                    replacement = '[' + (selectedText || 'Tên liên kết') + '](https://hcmute.edu.vn)';
+                    cursorOffset = 1;
+                    break;
+                case 'formula':
+                    replacement = '$' + (selectedText || 'E = mc^2') + '$';
+                    cursorOffset = 1;
+                    break;
+                case 'clear':
+                    replacement = selectedText.replace(/[*~`>#$_\[\]()]/g, '');
+                    break;
+                default:
+                    return;
+            }
+
+            textarea.setRangeText(replacement, start, end, 'end');
+            textarea.focus();
+        }
+
+        // Tags Management
+        function handleTagInputKey(e) {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                const input = e.target;
+                let val = input.value.trim().replace(/^#/, '');
+                if (val) {
+                    addTag('#' + val);
+                    input.value = '';
+                }
+            }
+        }
+
+        function addSuggestedTag(tagName) {
+            addTag(tagName);
+        }
+
+        function addTag(tagName) {
+            const container = document.getElementById('tags-container');
+            const input = document.getElementById('custom-tag-input');
+
+            // Check if already exists
+            const existing = Array.from(container.querySelectorAll('.tag-chip span:first-child'))
+                                 .map(s => s.innerText.toLowerCase());
+            if (existing.includes(tagName.toLowerCase())) return;
+
+            const chip = document.createElement('span');
+            chip.className = 'tag-chip inline-flex items-center gap-1 px-space-sm py-1 rounded-full bg-secondary-container text-on-surface font-label-md text-label-md';
+            chip.innerHTML = `<span>${tagName}</span><button class="hover:text-error transition-colors flex items-center cursor-pointer" onclick="removeTagChip(this)" type="button"><span class="material-symbols-outlined text-[16px]">close</span></button>`;
+
+            container.insertBefore(chip, input);
+            syncTagsHiddenInput();
+        }
+
+        function removeTagChip(btn) {
+            btn.closest('.tag-chip').remove();
+            syncTagsHiddenInput();
+        }
+
+        function syncTagsHiddenInput() {
+            const chips = document.querySelectorAll('#tags-container .tag-chip span:first-child');
+            const tagList = Array.from(chips).map(c => c.innerText);
+            document.getElementById('hidden-tags-input').value = tagList.join(' ');
+        }
+
+        // File Upload & Preview
+        function triggerFileInput() {
+            document.getElementById('file-upload-input').click();
+        }
+
+        function handleFileSelected(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            currentFileObject = file;
+            const previewContainer = document.getElementById('attachment-preview-container');
+            const previewName = document.getElementById('preview-file-name');
+            const previewSize = document.getElementById('preview-file-size');
+            const previewImg = document.getElementById('preview-file-img');
+            const previewIcon = document.getElementById('preview-file-icon');
+
+            previewName.innerText = file.name;
+            const sizeInMB = (file.size / (1024 * 1024)).toFixed(1);
+            previewSize.innerText = sizeInMB > 0 ? sizeInMB + ' MB' : (file.size / 1024).toFixed(0) + ' KB';
+
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.classList.remove('hidden');
+                    previewIcon.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewImg.classList.add('hidden');
+                previewIcon.classList.remove('hidden');
+                if (file.name.endsWith('.pdf')) {
+                    previewIcon.innerText = 'picture_as_pdf';
+                } else if (file.name.endsWith('.doc') || file.name.endsWith('.docx')) {
+                    previewIcon.innerText = 'description';
+                } else {
+                    previewIcon.innerText = 'folder_zip';
+                }
+            }
+
+            previewContainer.classList.remove('hidden');
+            previewContainer.classList.add('flex');
+        }
+
+        function clearSelectedFile() {
+            const input = document.getElementById('file-upload-input');
+            input.value = '';
+            currentFileObject = null;
+            const previewContainer = document.getElementById('attachment-preview-container');
+            previewContainer.classList.add('hidden');
+            previewContainer.classList.remove('flex');
+        }
+
+        // Drag and Drop
+        const dropzone = document.getElementById('upload-dropzone');
+        if (dropzone) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.add('border-primary', 'bg-surface-container-low');
+                }, false);
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.remove('border-primary', 'bg-surface-container-low');
+                }, false);
+            });
+            dropzone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files.length > 0) {
+                    document.getElementById('file-upload-input').files = files;
+                    handleFileSelected({ target: { files: files } });
+                }
+            }, false);
+        }
+
+        // Preview Modal
+        function openPreviewModal() {
+            const title = document.getElementById('post-title-input').value || 'Tiêu đề chưa đặt';
+            const content = document.getElementById('post-content-textarea').value || 'Chưa có nội dung bài viết';
+
+            document.getElementById('preview-title').innerText = title;
+            document.getElementById('preview-content').innerText = content;
+            document.getElementById('preview-category-badge').innerText = activeCategory;
+
+            // Render tags
+            const previewTags = document.getElementById('preview-tags-container');
+            previewTags.innerHTML = '';
+            const chips = document.querySelectorAll('#tags-container .tag-chip span:first-child');
+            chips.forEach(chip => {
+                const span = document.createElement('span');
+                span.className = 'px-space-sm py-0.5 rounded-full bg-secondary-container text-on-surface font-label-caps text-label-caps';
+                span.innerText = chip.innerText;
+                previewTags.appendChild(span);
+            });
+
+            // Handle attachment preview in modal
+            const imgContainer = document.getElementById('preview-image-container');
+            const docContainer = document.getElementById('preview-doc-container');
+            if (currentFileObject) {
+                if (currentFileObject.type.startsWith('image/')) {
+                    const modalImg = document.getElementById('preview-modal-img');
+                    modalImg.src = document.getElementById('preview-file-img').src;
+                    imgContainer.classList.remove('hidden');
+                    docContainer.classList.add('hidden');
+                } else {
+                    document.getElementById('preview-doc-name').innerText = currentFileObject.name;
+                    document.getElementById('preview-doc-info').innerText = (currentFileObject.size / (1024 * 1024)).toFixed(1) + ' MB • Tài liệu đính kèm';
+                    docContainer.classList.remove('hidden');
+                    imgContainer.classList.add('hidden');
+                }
+            } else {
+                imgContainer.classList.add('hidden');
+                docContainer.classList.add('hidden');
+            }
+
+            const modal = document.getElementById('preview-modal');
+            modal.classList.remove('hidden');
+        }
+
+        function closePreviewModal() {
+            document.getElementById('preview-modal').classList.add('hidden');
+        }
+
+        // Draft Saving
+        function saveDraft() {
+            const title = document.getElementById('post-title-input').value;
+            const content = document.getElementById('post-content-textarea').value;
+            const tags = document.getElementById('hidden-tags-input').value;
+
+            const draftData = {
+                title,
+                content,
+                tags,
+                category: activeCategory,
+                time: new Date().toLocaleTimeString('vi-VN')
+            };
+
+            try {
+                localStorage.setItem('hcmute_post_draft', JSON.stringify(draftData));
+                document.getElementById('last-saved-time').innerText = draftData.time;
+
+                const toast = document.getElementById('toast-success');
+                toast.querySelector('.font-title-md').innerText = 'Đã lưu bản nháp!';
+                toast.querySelector('.font-body-sm').innerText = 'Nội dung bài viết được lưu trữ lúc ' + draftData.time;
+                showToast();
+            } catch (e) {
+                console.error("Failed to save draft:", e);
+            }
+        }
+
+        function restoreDraft() {
+            try {
+                const saved = localStorage.getItem('hcmute_post_draft');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    if (data.title && !document.getElementById('post-title-input').value) {
+                        document.getElementById('post-title-input').value = data.title;
+                        updateCharCount(document.getElementById('post-title-input'));
+                    }
+                    if (data.content && !document.getElementById('post-content-textarea').value) {
+                        document.getElementById('post-content-textarea').value = data.content;
+                    }
+                    if (data.time) {
+                        document.getElementById('last-saved-time').innerText = data.time;
+                    }
+                }
+            } catch(e) {}
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast-success');
+            toast.classList.remove('translate-y-[-120%]', 'opacity-0', 'pointer-events-none');
+            setTimeout(hideToast, 4000);
+        }
+
+        function hideToast() {
+            const toast = document.getElementById('toast-success');
+            if (toast) toast.classList.add('translate-y-[-120%]', 'opacity-0', 'pointer-events-none');
+        }
+
+        // AI Chat Floating Widget
+        function toggleChatWindow() {
+            const win = document.getElementById('aiChatWindow');
+            if (win) {
+                win.classList.toggle('hidden');
+                if (!win.classList.contains('hidden')) {
+                    const inp = document.getElementById('chatMessageInput');
+                    if (inp) inp.focus();
+                }
+            }
+        }
+
+        function handleQuickClick(query) {
+            const inp = document.getElementById('chatMessageInput');
+            if (inp) {
+                inp.value = query;
+                sendUserMsg();
+            }
+        }
+
+        async function sendUserMsg() {
+            const inp = document.getElementById('chatMessageInput');
+            const scrollArea = document.getElementById('chatScrollArea');
+            const typing = document.getElementById('chatTypingIndicator');
+            const sendBtn = document.getElementById('chatSendBtn');
+            const msg = inp.value.trim();
+            if (!msg) return;
+
+            // Render User bubble
+            const userBubble = document.createElement('div');
+            userBubble.className = "bg-[#003882] text-white p-3 rounded-2xl rounded-tr-none ml-auto max-w-[85%] leading-relaxed shadow-xs";
+            userBubble.textContent = msg;
+            scrollArea.insertBefore(userBubble, typing);
+
+            inp.value = '';
+            inp.disabled = true;
+            sendBtn.disabled = true;
+            typing.classList.remove('hidden');
+            scrollArea.scrollTop = scrollArea.scrollHeight;
+
+            try {
+                const res = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await res.json();
+                typing.classList.add('hidden');
+
+                const botBubble = document.createElement('div');
+                const botAnswer = (data.data && (data.data.answer || data.data.reply)) || data.answer || data.reply || "Tôi đã ghi nhận câu hỏi của bạn và sẽ phản hồi sớm.";
+                botBubble.textContent = botAnswer;
+                scrollArea.insertBefore(botBubble, typing);
+            } catch (err) {
+                typing.classList.add('hidden');
+                const errBubble = document.createElement('div');
+                errBubble.className = "bg-rose-50 text-rose-800 p-3 rounded-2xl rounded-tl-none border border-rose-200 max-w-[90%] leading-relaxed shadow-xs";
+                errBubble.textContent = "Bạn có thể đăng câu hỏi trực tiếp trên diễn đàn để được các thầy cô và bạn bè hỗ trợ nhanh chóng.";
+                scrollArea.insertBefore(errBubble, typing);
+            } finally {
+                inp.disabled = false;
+                sendBtn.disabled = false;
+                inp.focus();
+                scrollArea.scrollTop = scrollArea.scrollHeight;
+            }
+        }
+
+        // Close popovers if clicking outside
+        document.addEventListener('click', function(e) {
+            const widget = document.getElementById('visibility-widget');
+            if (widget && !widget.contains(e.target)) {
+                const dd = document.getElementById('visibility-dropdown');
+                if (dd) dd.classList.add('hidden');
+            }
+        });
+
+        // Initialize on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('post-title-input');
+            if (input) updateCharCount(input);
+            syncTagsHiddenInput();
+            restoreDraft();
+        });
+    </script>
+</body>
+</html>

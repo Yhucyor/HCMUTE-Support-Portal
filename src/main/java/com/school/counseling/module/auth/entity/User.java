@@ -35,6 +35,13 @@ public class User extends BaseEntity {
     @Column(name = "avatar_url", length = 500)
     private String avatarUrl;
 
+    @Column(name = "portal_username", length = 100)
+    private String portalUsername;
+
+    // Lưu mật khẩu Portal mã hoá Base64 (không phải bcrypt — cần giải mã để đồng bộ)
+    @Column(name = "portal_password_enc", length = 500)
+    private String portalPasswordEnc;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;

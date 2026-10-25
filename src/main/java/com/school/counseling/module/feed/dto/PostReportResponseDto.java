@@ -25,6 +25,16 @@ public class PostReportResponseDto {
         public PostSummary(Long id, String title, String content, AuthorSummary author) {
             this(id, title, content, "APPROVED", author);
         }
+
+        public String getPlainTextSummary() {
+            if (content == null || content.isBlank()) return "";
+            String plain = content.replaceAll("<[^>]*>", "").replaceAll("&nbsp;", " ").trim();
+            return plain.length() > 120 ? plain.substring(0, 120) + "..." : plain;
+        }
+
+        public String plainTextSummary() {
+            return getPlainTextSummary();
+        }
     }
     public record AuthorSummary(Long id, String fullName, String email) {}
     public record ReporterSummary(Long id, String fullName, String email) {}

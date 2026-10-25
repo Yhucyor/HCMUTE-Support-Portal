@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Tạo Yêu cầu hỗ trợ | HCMUTE QAUTE Support Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@500;600;700&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
+    <style>
+        @layer base {
+            html, body { margin: 0; padding: 0; }
+            body { overscroll-behavior: none; }
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.2s ease-out forwards;
+        }
+        .font-headline-lg { font-family: Outfit, sans-serif; font-size: 1.875rem; font-weight: 600; line-height: 2.25rem; }
+        .font-headline-md { font-family: Outfit, sans-serif; font-size: 1.5rem; font-weight: 600; line-height: 2rem; }
+        .font-title-md { font-family: Outfit, sans-serif; font-size: 1.125rem; font-weight: 600; line-height: 1.75rem; }
+        .font-label-lg { font-family: Inter, sans-serif; font-size: 0.875rem; font-weight: 600; line-height: 1.25rem; }
+        .font-label-md { font-family: Inter, sans-serif; font-size: 0.8125rem; font-weight: 500; line-height: 1.25rem; }
+        .font-label-caps { font-family: Inter, sans-serif; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .font-body-md { font-family: Inter, sans-serif; font-size: 0.875rem; font-weight: 400; line-height: 1.35rem; }
+        .font-body-sm { font-family: Inter, sans-serif; font-size: 0.75rem; font-weight: 400; line-height: 1.15rem; }
+        /* Quill custom styling */
+        .ql-toolbar.ql-snow {
+            border-top-left-radius: 0.75rem;
+            border-top-right-radius: 0.75rem;
+            border-color: rgba(203, 213, 225, 0.7);
+            background-color: #f8fafc;
+        }
+        .ql-container.ql-snow {
+            border-bottom-left-radius: 0.75rem;
+            border-bottom-right-radius: 0.75rem;
+            border-color: rgba(203, 213, 225, 0.7);
+            font-family: Inter, sans-serif;
+            font-size: 0.875rem;
+            background-color: #ffffff;
+        }
+        .ql-editor {
+            min-height: 160px;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        .ql-editor.ql-blank::before {
+            color: #94a3b8;
+            font-style: normal;
+        }
+    </style>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0037b0",
+                        "on-primary": "#ffffff",
+                        "primary-hover": "#1e40af",
+                        "primary-container": "#1d4ed8",
+                        "on-primary-container": "#cad3ff",
+                        "surface": "#f8fafc",
+                        "surface-container": "#e5eeff",
+                        "surface-container-low": "#eff4ff",
+                        "surface-container-high": "#dce9ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#d3e4fe",
+                        "background": "#f8fafc",
+                        "border-soft": "#e2e8f0",
+                        "border-subtle": "#f1f5f9",
+                        "text-main": "#0f172a",
+                        "text-muted": "#64748b",
+                        "text-subtle": "#94a3b8",
+                        "on-surface": "#0b1c30",
+                        "secondary": "#565e74",
+                        "secondary-container": "#dae2fd",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "outline": "#747686",
+                        "outline-variant": "#c4c5d7",
+                        "inverse-surface": "#213145",
+                        "inverse-on-surface": "#eaf1ff"
+                    },
+                    fontFamily: {
+                        body: ["Inter", "sans-serif"],
+                        display: ["Outfit", "sans-serif"]
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-[#f8fafc] font-body text-[#0f172a] antialiased min-h-screen flex flex-col">
+
+    <!-- Global Unified Header HCMUTE -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <!-- Main Content Canvas -->
+    <div class="flex-1 flex flex-col">
+        <main class="flex-1 w-full max-w-7xl mx-auto px-6 py-7 flex flex-col gap-6">
+            <div class="flex flex-col w-full">
+                <!-- Top Navigation & Breadcrumbs -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
+                    <nav aria-label="Breadcrumb" class="flex items-center gap-1.5 font-label-md text-secondary">
+                        <a class="hover:text-primary transition-colors flex items-center gap-1" th:href="@{/}">
+                            <span class="material-symbols-outlined text-[16px]">home</span>
+                            <span>Trang chủ</span>
+                        </a>
+                        <span class="material-symbols-outlined text-[14px] text-outline-variant">chevron_right</span>
+                        <a class="hover:text-primary transition-colors" th:href="@{/faqs}">Dịch vụ sinh viên</a>
+                        <span class="material-symbols-outlined text-[14px] text-outline-variant">chevron_right</span>
+                        <a class="hover:text-primary transition-colors" th:href="@{/tickets/my-tickets}">Ticket hỗ trợ</a>
+                        <span class="material-symbols-outlined text-[14px] text-outline-variant">chevron_right</span>
+                        <span class="text-on-surface font-semibold">Tạo yêu cầu</span>
+                    </nav>
+                    <a class="inline-flex items-center gap-1.5 text-secondary hover:text-primary font-label-md transition-colors group self-start sm:self-auto" th:href="@{/faqs}">
+                        <span class="material-symbols-outlined text-[18px] group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
+                        <span>Quay lại trang FAQ</span>
+                    </a>
+                </div>
+
+                <!-- Page Title & Subhead -->
+                <div class="flex flex-col gap-1 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-2.5 h-7 bg-primary rounded-full"></div>
+                        <h1 class="font-headline-lg text-on-surface tracking-tight">Tạo yêu cầu hỗ trợ</h1>
+                        <span class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-primary font-label-caps uppercase tracking-wider text-[11px] font-bold">Mới</span>
+                    </div>
+                </div>
+
+                <!-- Main Form Workspace -->
+                <div class="gap-8 items-start">
+                    <section class="flex flex-col gap-6 max-w-4xl mx-auto w-full">
+                        <form class="bg-surface-container-lowest rounded-2xl p-7 sm:p-9 shadow-sm border border-border-soft flex flex-col gap-7" id="ticketCreateForm" th:action="@{/tickets/create}" method="post" enctype="multipart/form-data">
+                            
+                            <!-- FIELD 1: Tiêu đề yêu cầu -->
+                            <div class="flex flex-col gap-2">
+                                <div class="flex items-center justify-between">
+                                    <label class="font-label-lg text-on-surface flex items-center gap-1" for="ticketTitle">
+                                        <span>Tiêu đề yêu cầu</span>
+                                        <span class="text-error font-bold">*</span>
+                                    </label>
+                                    <span class="font-label-md text-secondary" id="titleCounter">0 / 120 ký tự</span>
+                                </div>
+                                <div class="relative">
+                                    <input class="w-full h-11 px-4 text-on-surface font-body-md placeholder:text-outline/70 bg-surface rounded-xl border border-outline-variant/60 focus:bg-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-xs" 
+                                           id="ticketTitle" 
+                                           maxlength="120" 
+                                           name="title" 
+                                           th:value="${initialTitle}"
+                                           oninput="updateTitleCounter(this)" 
+                                           placeholder="Ví dụ: Không thể đăng ký học phần Đồ án Chuyên ngành HK2 (2025-2026)" 
+                                           required>
+                                </div>
+                            </div>
+
+                            <!-- 2-COL ROW: Danh mục & Đơn vị tiếp nhận -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <!-- FIELD 2: Loại thủ tục học vụ (Custom Dropdown luôn mở xuống dưới, có scroll) -->
+                                <div class="flex flex-col gap-2 relative">
+                                    <label class="font-label-lg text-on-surface flex items-center gap-1" for="ticketCategoryInput">
+                                        <span>Loại thủ tục học vụ</span>
+                                        <span class="text-error font-bold">*</span>
+                                    </label>
+                                    <input type="hidden" name="topicCategory" id="ticketCategoryInput" required>
+                                    <div class="relative" id="customCategoryDropdown">
+                                        <button type="button" 
+                                                id="categoryDropdownBtn" 
+                                                onclick="toggleCategoryMenu()" 
+                                                class="w-full h-11 pl-11 pr-10 text-left text-on-surface font-body-md bg-surface rounded-xl border border-outline-variant/60 focus:bg-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-xs cursor-pointer flex items-center justify-between text-xs sm:text-sm">
+                                            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[20px] text-primary pointer-events-none">category</span>
+                                            <span id="selectedCategoryText" class="truncate text-secondary">Chọn loại thủ tục học vụ cần giải quyết</span>
+                                            <span class="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 text-[20px] text-secondary pointer-events-none transition-transform duration-200" id="categoryChevron">expand_more</span>
+                                        </button>
+                                        <!-- Dropdown Menu: luôn luôn mở xuống dưới, có max-height và scroll -->
+                                        <div id="categoryMenu" class="absolute left-0 right-0 top-full mt-1.5 z-40 bg-white border border-outline-variant/60 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden divide-y divide-slate-100">
+                                            <div class="p-1">
+                                                <th:block th:if="${categories != null}">
+                                                    <div th:each="cat : ${categories}" 
+                                                         th:data-value="${cat.name()}" 
+                                                         th:data-label="${cat.displayName}" 
+                                                         onclick="selectCategory(this.getAttribute('data-value'), this.getAttribute('data-label'))" 
+                                                         class="category-option px-3.5 py-2.5 rounded-lg text-xs sm:text-sm text-slate-700 hover:bg-blue-50 hover:text-primary cursor-pointer transition-colors flex items-center justify-between">
+                                                        <span th:text="${cat.displayName}">Tên thủ tục</span>
+                                                    </div>
+                                                </th:block>
+                                                <th:block th:unless="${categories != null}">
+                                                    <div data-value="DEFER_EXAM" data-label="Đơn xin hoãn thi / Thi bổ sung" onclick="selectCategory('DEFER_EXAM', 'Đơn xin hoãn thi / Thi bổ sung')" class="category-option px-3.5 py-2.5 rounded-lg text-xs sm:text-sm text-slate-700 hover:bg-blue-50 hover:text-primary cursor-pointer">Đơn xin hoãn thi / Thi bổ sung</div>
+                                                    <div data-value="ACADEMIC_SUSPENSION" data-label="Tạm dừng tiến độ / Bảo lưu học kỳ" onclick="selectCategory('ACADEMIC_SUSPENSION', 'Tạm dừng tiến độ / Bảo lưu học kỳ')" class="category-option px-3.5 py-2.5 rounded-lg text-xs sm:text-sm text-slate-700 hover:bg-blue-50 hover:text-primary cursor-pointer">Tạm dừng tiến độ / Bảo lưu học kỳ</div>
+                                                    <div data-value="COURSE_REGISTRATION_ISSUE" data-label="Lỗi đăng ký tín chỉ học phần tốt nghiệp" onclick="selectCategory('COURSE_REGISTRATION_ISSUE', 'Lỗi đăng ký tín chỉ học phần tốt nghiệp')" class="category-option px-3.5 py-2.5 rounded-lg text-xs sm:text-sm text-slate-700 hover:bg-blue-50 hover:text-primary cursor-pointer">Lỗi đăng ký tín chỉ học phần tốt nghiệp</div>
+                                                    <div data-value="TRANSCRIPT_REQUEST" data-label="Trích lục bảng điểm / Bảng điểm song ngữ" onclick="selectCategory('TRANSCRIPT_REQUEST', 'Trích lục bảng điểm / Bảng điểm song ngữ')" class="category-option px-3.5 py-2.5 rounded-lg text-xs sm:text-sm text-slate-700 hover:bg-blue-50 hover:text-primary cursor-pointer">Trích lục bảng điểm / Bảng điểm song ngữ</div>
+                                                    <div data-value="PROFILE_UPDATE" data-label="Cập nhật thông tin CCCD / Hộ khẩu" onclick="selectCategory('PROFILE_UPDATE', 'Cập nhật thông tin CCCD / Hộ khẩu')" class="category-option px-3.5 py-2.5 rounded-lg text-xs sm:text-sm text-slate-700 hover:bg-blue-50 hover:text-primary cursor-pointer">Cập nhật thông tin CCCD / Hộ khẩu</div>
+                                                </th:block>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- FIELD 3: Đơn vị tiếp nhận -->
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex items-center justify-between">
+                                        <label class="font-label-lg text-on-surface flex items-center gap-1" for="ticketDepartment">
+                                            <span>Đơn vị tiếp nhận</span>
+                                            <span class="text-error font-bold">*</span>
+                                        </label>
+                                        <span class="bg-surface-container text-primary font-label-caps px-2 py-0.5 rounded flex items-center gap-1 text-[11px]">
+                                            <span class="material-symbols-outlined text-[12px]">auto_awesome</span>
+                                            Khoa / Phòng ban
+                                        </span>
+                                    </div>
+                                    <div class="relative">
+                                        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[20px] text-primary pointer-events-none">account_balance</span>
+                                        <select class="w-full h-11 pl-11 pr-10 appearance-none text-on-surface font-body-md bg-surface rounded-xl border border-outline-variant/60 focus:bg-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-xs cursor-pointer text-xs sm:text-sm" 
+                                                id="ticketDepartment" 
+                                                name="departmentId" 
+                                                required>
+                                            <option disabled selected value="">Chọn Khoa hoặc Phòng ban phụ trách</option>
+                                            <th:block th:if="${departments != null}">
+                                                <option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}">Phòng Đào tạo</option>
+                                            </th:block>
+                                            <th:block th:unless="${departments != null}">
+                                                <option value="1">Phòng Đào tạo &amp; Công tác Sinh viên</option>
+                                                <option value="2">Khoa Công nghệ Thông tin</option>
+                                                <option value="3">Phòng Tuyển sinh &amp; Truyền thông</option>
+                                                <option value="4">Đoàn Thanh niên - Hội Sinh viên</option>
+                                            </th:block>
+                                        </select>
+                                        <span class="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 text-[20px] text-secondary pointer-events-none">unfold_more</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- FIELD 4: Chi tiết vấn đề (Tích hợp Rich-text Quill.js) -->
+                            <div class="flex flex-col gap-2">
+                                <label class="font-label-lg text-on-surface flex items-center gap-1" for="quillEditorContainer">
+                                    <span>Mô tả chi tiết vấn đề</span>
+                                    <span class="text-error font-bold">*</span>
+                                </label>
+                                <div id="quillEditorContainer" class="bg-white rounded-xl border border-outline-variant/60 shadow-xs transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+                                    <div id="quillToolbar">
+                                        <span class="ql-formats">
+                                            <button class="ql-bold" title="In đậm (Ctrl+B)"></button>
+                                            <button class="ql-italic" title="In nghiêng (Ctrl+I)"></button>
+                                            <button class="ql-underline" title="Gạch chân (Ctrl+U)"></button>
+                                        </span>
+                                        <span class="ql-formats">
+                                            <button class="ql-list" value="ordered" title="Danh sách số"></button>
+                                            <button class="ql-list" value="bullet" title="Danh sách chấm"></button>
+                                        </span>
+                                        <span class="ql-formats">
+                                            <button class="ql-blockquote" title="Trích dẫn"></button>
+                                            <button class="ql-code-block" title="Mã nguồn"></button>
+                                            <button class="ql-clean" title="Xóa định dạng"></button>
+                                        </span>
+                                    </div>
+                                    <div id="quillEditor"></div>
+                                </div>
+                                <input type="hidden" name="description" id="hiddenDescription" required>
+                                <div class="flex items-center gap-2 text-secondary font-body-sm bg-surface-container-low px-3.5 py-2 rounded-lg border border-border-soft">
+                                    <span class="material-symbols-outlined text-primary text-[18px]">info</span>
+                                    <span>Gợi ý: Cung cấp đầy đủ mã học phần &amp; ảnh chụp màn hình giúp chuyên viên xử lý ngay từ lượt đầu tiên.</span>
+                            </div>
+
+                            <!-- FIELD 6: Tệp minh chứng & Tài liệu đính kèm -->
+                            <div class="flex flex-col gap-3">
+                                <div class="flex items-center justify-between">
+                                    <label class="font-label-lg text-on-surface flex items-center gap-1.5">
+                                        <span>Tệp minh chứng đính kèm</span>
+                                        <span class="font-label-md text-secondary font-normal">(Tùy chọn)</span>
+                                    </label>
+                                    <span class="font-label-md text-secondary">Hỗ trợ JPG, PNG, PDF (Tối đa 10MB)</span>
+                                </div>
+                                <!-- Drag and Drop Zone -->
+                                <div class="relative rounded-2xl bg-surface border-2 border-dashed border-outline-variant/60 hover:bg-surface-container p-6 text-center cursor-pointer transition-colors group flex flex-col items-center justify-center gap-2" 
+                                     id="dropzone" 
+                                     ondragleave="handleDragLeave(event)" 
+                                     ondragover="handleDragOver(event)" 
+                                     ondrop="handleFileDrop(event)">
+                                    <input accept=".jpg,.jpeg,.png,.pdf" 
+                                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                                           id="fileInput" 
+                                           name="files"
+                                           multiple 
+                                           onchange="handleFileSelect(event)" 
+                                           type="file">
+                                    <div class="w-12 h-12 rounded-full bg-surface-container-high group-hover:bg-primary-container text-primary group-hover:text-on-primary flex items-center justify-center transition-colors">
+                                        <span class="material-symbols-outlined text-[24px]">cloud_upload</span>
+                                    </div>
+                                    <div class="flex flex-col items-center">
+                                        <p class="font-label-lg text-on-surface">
+                                            Kéo thả ảnh chụp màn hình hoặc biên lai vào đây, hoặc <span class="text-primary underline">chọn tệp từ máy tính</span>
+                                        </p>
+                                        <p class="font-body-sm text-secondary mt-0.5">Đính kèm tối đa 5 tài liệu minh chứng</p>
+                                    </div>
+                                </div>
+                                <!-- File Attachment List -->
+                                <div class="flex flex-col gap-2 pt-1" id="fileList">
+                                </div>
+                            </div>
+
+                            <!-- FORM ACTION FOOTER -->
+                            <div class="pt-6 border-t border-border-soft flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
+                                <button class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-label-md text-secondary hover:text-on-surface hover:bg-surface transition-colors" onclick="resetTicketForm()" type="button">
+                                    <span class="material-symbols-outlined text-[18px]">restart_alt</span>
+                                    <span>Làm mới biểu mẫu</span>
+                                </button>
+                                <div class="w-full sm:w-auto flex items-center gap-3">
+                                    <a class="flex-1 sm:flex-initial inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-label-md text-secondary bg-surface hover:bg-surface-container transition-colors" th:href="@{/faqs}">
+                                        Hủy bỏ
+                                    </a>
+                                    <button class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-7 py-2.5 rounded-xl font-label-lg text-white bg-primary-container hover:bg-primary shadow-sm hover:shadow-md transition-all active:scale-[0.98] cursor-pointer" id="submitButton" type="submit">
+                                        <span class="material-symbols-outlined text-[20px]">send</span>
+                                        <span>Gửi yêu cầu hỗ trợ</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </section>
+                </div>
+
+                <!-- SUCCESS MODAL DIALOG -->
+                <!-- SUCCESS MODAL DIALOG -->
+                <div class="fixed inset-0 z-50 bg-[#0f172a]/60 backdrop-blur-sm hidden items-center justify-center p-4" id="successModal">
+                    <div class="bg-surface-container-lowest rounded-2xl max-w-lg w-full p-8 shadow-xl flex flex-col items-center text-center transform scale-95 opacity-0 transition-all duration-300 border border-border-soft" id="successModalCard">
+                        <div class="w-16 h-16 rounded-full bg-surface-container-high text-primary flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-[36px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-surface-container text-primary font-label-caps uppercase font-bold tracking-wider mb-2">Thành công</span>
+                        <h3 class="font-headline-md text-on-surface text-xl font-bold">Yêu cầu hỗ trợ đã được gửi!</h3>
+                        <p class="font-body-md text-secondary mt-1 max-w-sm text-sm">
+                            Hệ thống QAUTE đã ghi nhận yêu cầu và tự động chuyển đến đơn vị phụ trách xử lý.
+                        </p>
+                        <!-- Ticket Receipt Card -->
+                        <div class="w-full bg-surface rounded-xl p-4 my-6 flex flex-col gap-2.5 text-left border border-border-soft">
+                            <div class="flex items-center justify-between pb-2 border-b border-border-soft">
+                                <span class="font-label-md text-secondary text-sm">Mã Ticket:</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="font-title-md text-primary font-bold" id="modalTicketCode">TKT-2026-00125</span>
+                                    <button class="p-1 rounded text-secondary hover:text-primary transition-colors cursor-pointer" onclick="copyTicketId(document.getElementById('modalTicketCode').textContent)" type="button" title="Sao chép">
+                                        <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-secondary">Đơn vị thụ lý:</span>
+                                <strong class="text-on-surface font-semibold" id="modalDeptName">Phòng Đào tạo HCMUTE</strong>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-secondary">Thời gian tạo:</span>
+                                <span class="text-on-surface" id="modalCreatedTime">14:28 - 25/02/2026</span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-secondary">Trạng thái:</span>
+                                <span class="px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#b45309] font-label-caps font-bold text-xs">Chờ tiếp nhận</span>
+                            </div>
+                        </div>
+                        <!-- Modal Action Buttons -->
+                        <div class="flex flex-col sm:flex-row items-center gap-3 w-full">
+                            <a class="w-full sm:flex-1 py-2.5 px-4 rounded-xl font-label-md text-secondary bg-surface hover:bg-surface-container transition-colors text-center text-sm font-semibold" th:href="@{/faqs}">
+                                Quay lại danh sách FAQ
+                            </a>
+                            <a class="w-full sm:flex-1 py-2.5 px-4 rounded-xl font-label-lg text-white bg-primary-container hover:bg-primary transition-colors shadow-sm flex items-center justify-center gap-1.5 text-center text-sm font-semibold" th:href="@{/tickets/my-tickets}">
+                                <span>Xem Ticket của tôi</span>
+                                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IMAGE PREVIEW LIGHTBOX MODAL -->
+                <div id="imagePreviewModal" class="fixed inset-0 z-50 bg-[#0f172a]/80 backdrop-blur-sm hidden items-center justify-center p-4">
+                    <div class="relative max-w-4xl max-h-[90vh] bg-white rounded-2xl p-4 shadow-2xl flex flex-col items-center">
+                        <div class="w-full flex items-center justify-between pb-2 border-b border-slate-200">
+                            <span id="previewModalTitle" class="text-xs sm:text-sm font-semibold text-slate-800 truncate max-w-md">Xem trước tệp minh chứng</span>
+                            <button type="button" onclick="closeImagePreview()" class="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+                                <span class="material-symbols-outlined text-xl">close</span>
+                            </button>
+                        </div>
+                        <div class="mt-3 flex items-center justify-center overflow-auto max-h-[75vh]">
+                            <img id="previewModalImg" src="" alt="Minh chứng" class="max-w-full max-h-[75vh] object-contain rounded-lg">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOAST NOTIFICATION CONTAINER -->
+                <div class="fixed bottom-6 left-6 z-50 transform translate-y-16 opacity-0 transition-all duration-300 pointer-events-none" id="toast-notification">
+                    <div class="bg-[#213145] text-[#eaf1ff] px-4 py-3 rounded-xl shadow-lg flex items-center gap-2.5 font-label-md text-sm">
+                        <span class="material-symbols-outlined text-[20px] text-[#d3e4fe]">info</span>
+                        <span id="toast-message">Thông báo hệ thống</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer HCMUTE -->
+        <footer class="w-full bg-white border-t border-border-soft py-4 mt-auto">
+            <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-secondary">
+                <p>© 2026 Trường Đại học Sư phạm Kỹ thuật TP.HCM (HCMUTE). All rights reserved.</p>
+                <div class="flex items-center gap-4">
+                    <a class="hover:text-primary transition-colors" th:href="@{/faqs}">Chính sách bảo mật</a>
+                    <a class="hover:text-primary transition-colors" th:href="@{/faqs}">Điều khoản sử dụng</a>
+                    <a class="hover:text-primary transition-colors" th:href="@{/faqs}">Hỗ trợ kỹ thuật</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
+    <script th:inline="none">
+    /*<![CDATA[*/
+        let quill;
+        let fileDataTransfer = new DataTransfer();
+
+        function updateTitleCounter(input) {
+            const counter = document.getElementById('titleCounter');
+            if (counter) {
+                counter.textContent = input.value.length + ' / 120 ký tự';
+            }
+        }
+
+        // Custom Category Dropdown handlers (luôn mở xuống dưới, có scroll)
+        function toggleCategoryMenu() {
+            const menu = document.getElementById('categoryMenu');
+            const chevron = document.getElementById('categoryChevron');
+            if (!menu) return;
+            const isHidden = menu.classList.contains('hidden');
+            if (isHidden) {
+                menu.classList.remove('hidden');
+                if (chevron) chevron.style.transform = 'rotate(180deg)';
+            } else {
+                menu.classList.add('hidden');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function selectCategory(val, label) {
+            document.getElementById('ticketCategoryInput').value = val;
+            const textEl = document.getElementById('selectedCategoryText');
+            if (textEl) {
+                textEl.textContent = label;
+                textEl.classList.remove('text-secondary');
+                textEl.classList.add('text-on-surface', 'font-medium');
+            }
+            toggleCategoryMenu();
+        }
+
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('customCategoryDropdown');
+            const menu = document.getElementById('categoryMenu');
+            const chevron = document.getElementById('categoryChevron');
+            if (dropdown && !dropdown.contains(e.target) && menu && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+        });
+
+        // Drag & Drop
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('bg-surface-container-high', 'border-primary');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('bg-surface-container-high', 'border-primary');
+        }
+
+        function handleFileDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('bg-surface-container-high', 'border-primary');
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                addUploadedFiles(e.dataTransfer.files);
+            }
+        }
+
+        function handleFileSelect(e) {
+            if (e.target.files && e.target.files.length > 0) {
+                addUploadedFiles(e.target.files);
+            }
+        }
+
+        function addUploadedFiles(files) {
+            const list = document.getElementById('fileList');
+            const input = document.getElementById('fileInput');
+            if (!list || !input) return;
+
+            Array.from(files).forEach((file) => {
+                fileDataTransfer.items.add(file);
+                input.files = fileDataTransfer.files;
+
+                const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+                const isImage = file.type.startsWith('image/');
+                const isPdf = file.type === 'application/pdf' || file.name.endsWith('.pdf');
+                const objectUrl = URL.createObjectURL(file);
+
+                const fileItem = document.createElement('div');
+                fileItem.className = 'flex items-center justify-between p-3 rounded-xl bg-white border border-border-soft shadow-xs animate-fadeIn hover:border-primary/40 transition-all';
+
+                let previewThumbnail = '';
+                if (isImage) {
+                    previewThumbnail = '<img src="' + objectUrl + '" alt="Preview" class="w-10 h-10 object-cover rounded-lg border border-slate-200 cursor-pointer shadow-xs hover:opacity-90" onclick="openImagePreview(\'' + objectUrl + '\', \'' + file.name + '\')">';
+                } else if (isPdf) {
+                    previewThumbnail = '<div class="w-10 h-10 rounded-lg bg-red-50 text-red-600 flex items-center justify-center font-bold text-xs border border-red-100">PDF</div>';
+                } else {
+                    previewThumbnail = '<div class="w-10 h-10 rounded-lg bg-blue-50 text-primary flex items-center justify-center border border-blue-100"><span class="material-symbols-outlined text-lg">attach_file</span></div>';
+                }
+
+                let actionBtns = '';
+                if (isImage) {
+                    actionBtns += '<button type="button" onclick="openImagePreview(\'' + objectUrl + '\', \'' + file.name + '\')" title="Xem trước ảnh lớn" class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-blue-50 transition-colors"><span class="material-symbols-outlined text-[18px]">visibility</span></button>';
+                }
+                if (isPdf) {
+                    actionBtns += '<a href="' + objectUrl + '" target="_blank" title="Xem trước PDF" class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-blue-50 transition-colors"><span class="material-symbols-outlined text-[18px]">open_in_new</span></a>';
+                }
+                actionBtns += '<button type="button" onclick="removeFileItem(this, \'' + file.name + '\')" title="Xóa tệp" class="p-1.5 rounded-lg text-secondary hover:text-error hover:bg-error-container/40 transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>';
+
+                fileItem.innerHTML = 
+                    '<div class="flex items-center gap-3 min-w-0">' +
+                        previewThumbnail +
+                        '<div class="flex flex-col min-w-0">' +
+                            '<span class="font-label-md text-on-surface truncate font-medium">' + file.name + '</span>' +
+                            '<div class="flex items-center gap-2 text-secondary font-body-sm text-[11px]">' +
+                                '<span>' + sizeMB + ' MB</span>' +
+                                '<span class="text-outline-variant">•</span>' +
+                                '<span class="text-[#16a34a] font-medium flex items-center gap-0.5">' +
+                                    '<span class="material-symbols-outlined text-[13px]">check_circle</span>' +
+                                    ' Sẵn sàng tải lên' +
+                                '</span>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="flex items-center gap-1">' +
+                        actionBtns +
+                    '</div>';
+                list.appendChild(fileItem);
+            });
+
+            showToast('Đã thêm ' + files.length + ' tệp minh chứng');
+        }
+
+        function removeFileItem(btn, fileName) {
+            const fileItem = btn.closest('.animate-fadeIn');
+            if (fileItem) fileItem.remove();
+
+            const newDt = new DataTransfer();
+            for (let i = 0; i < fileDataTransfer.files.length; i++) {
+                if (fileDataTransfer.files[i].name !== fileName) {
+                    newDt.items.add(fileDataTransfer.files[i]);
+                }
+            }
+            fileDataTransfer = newDt;
+            const input = document.getElementById('fileInput');
+            if (input) input.files = fileDataTransfer.files;
+            showToast('Đã xóa tệp đính kèm');
+        }
+
+        function openImagePreview(url, title) {
+            const modal = document.getElementById('imagePreviewModal');
+            const img = document.getElementById('previewModalImg');
+            const titleEl = document.getElementById('previewModalTitle');
+            if (!modal || !img) return;
+            img.src = url;
+            if (titleEl) titleEl.textContent = title || 'Xem trước hình ảnh';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeImagePreview() {
+            const modal = document.getElementById('imagePreviewModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function resetTicketForm() {
+            const form = document.getElementById('ticketCreateForm');
+            if (form) {
+                form.reset();
+                if (quill) quill.setContents([]);
+                document.getElementById('hiddenDescription').value = '';
+                document.getElementById('ticketCategoryInput').value = '';
+                const textEl = document.getElementById('selectedCategoryText');
+                if (textEl) {
+                    textEl.textContent = 'Chọn loại thủ tục học vụ cần giải quyết';
+                    textEl.classList.add('text-secondary');
+                    textEl.classList.remove('text-on-surface', 'font-medium');
+                }
+                const list = document.getElementById('fileList');
+                if (list) list.innerHTML = '';
+                fileDataTransfer = new DataTransfer();
+                const input = document.getElementById('fileInput');
+                if (input) input.files = fileDataTransfer.files;
+                updateTitleCounter(document.getElementById('ticketTitle'));
+                showToast('Đã làm mới toàn bộ biểu mẫu');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Khởi tạo Quill Editor
+            quill = new Quill('#quillEditor', {
+                theme: 'snow',
+                placeholder: 'Vui lòng cung cấp chi tiết: \n1. Hoàn cảnh và thời điểm xảy ra sự việc (vd: Đăng ký đợt 2 ngày 14/02)\n2. Mã môn học, tên môn học, mã lớp học phần nếu liên quan\n3. Nội dung thông báo lỗi cụ thể trên màn hình\n4. Nguyện vọng mong muốn được hỗ trợ giải quyết...',
+                modules: {
+                    toolbar: '#quillToolbar'
+                }
+            });
+
+            const hiddenDesc = document.getElementById('hiddenDescription');
+            quill.on('text-change', function() {
+                hiddenDesc.value = quill.getText().trim().length === 0 ? '' : quill.root.innerHTML;
+            });
+
+            // Form Submit Interceptor
+            const form = document.getElementById('ticketCreateForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const catVal = document.getElementById('ticketCategoryInput').value;
+                    if (!catVal) {
+                        e.preventDefault();
+                        showToast('Vui lòng chọn loại thủ tục học vụ cần giải quyết');
+                        toggleCategoryMenu();
+                        return;
+                    }
+
+                    if (!hiddenDesc.value || quill.getText().trim().length === 0) {
+                        e.preventDefault();
+                        showToast('Vui lòng nhập mô tả chi tiết vấn đề');
+                        quill.focus();
+                        return;
+                    }
+
+                    const submitBtn = document.getElementById('submitButton');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span><span>Đang gửi yêu cầu...</span>';
+                    }
+                });
+            }
+        });
+
+        function copyTicketId(id) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(id).then(() => {
+                    showToast('Đã sao chép mã ' + id + ' vào clipboard');
+                }).catch(() => {
+                    showToast('Đã chọn mã ' + id);
+                });
+            } else {
+                showToast('Đã chọn mã ' + id);
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast-notification');
+            const msgEl = document.getElementById('toast-message');
+            if (!toast || !msgEl) return;
+            msgEl.textContent = message;
+            toast.classList.remove('translate-y-16', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-16', 'opacity-0');
+            }, 2500);
+        }
+    /*]]>*/
+    </script>
+
+    <!-- Floating HCMUTE AI Mascot Widget (Góc phải dưới) -->
+    <div th:replace="~{layout/ai-mascot-floating :: ai-mascot}"></div>
+</body>
+</html>

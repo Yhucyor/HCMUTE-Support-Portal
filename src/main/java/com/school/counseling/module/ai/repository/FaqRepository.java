@@ -28,8 +28,8 @@ public interface FaqRepository extends JpaRepository<Faq, Long> {
     @Query("SELECT COUNT(f) FROM Faq f WHERE f.isActive = true")
     long countActive();
 
-    // Lấy toàn bộ FAQs kèm Department bằng 1 câu query duy nhất (chống Lazy và N+1)
-    @Query("SELECT f FROM Faq f LEFT JOIN FETCH f.department WHERE f.isActive = true")
+    // Lấy toàn bộ FAQs kèm Department bằng 1 câu query duy nhất (ưu tiên năm 2026, 2025 lên đầu)
+    @Query("SELECT f FROM Faq f LEFT JOIN FETCH f.department WHERE f.isActive = true ORDER BY COALESCE(f.postDate, f.createdAt) DESC, f.viewCount DESC, f.id DESC")
     List<Faq> findAllActiveWithDepartment();
 
     // Lấy Top FAQs tiêu biểu kèm Department (ưu tiên câu hỏi cập nhật mới nhất)

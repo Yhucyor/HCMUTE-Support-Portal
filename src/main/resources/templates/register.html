@@ -1,65 +1,301 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HCMUTE - Student Portal | Đăng ký</title>
-    <!-- Google Fonts for Classic Typography -->
+    <title>Tạo tài khoản sinh viên | QAUTE Portal - HCMUTE</title>
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif']
+                    },
+                    colors: {
+                        primary: '#1d4ed8',
+                        'primary-dark': '#1e40af',
+                        secondary: '#2563eb',
+                        navy: '#0f172a',
+                        hcmute: '#a6192e'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        h1, h2, h3, h4, .font-heading { font-family: 'Outfit', sans-serif; }
+    </style>
 </head>
+<body class="min-h-screen w-full bg-white text-slate-800 antialiased selection:bg-blue-600 selection:text-white p-0 m-0">
 
-<body class="login-body">
-
-    <!-- Header -->
-    <header class="header login-header">
-        <div class="logo">
-            <a th:href="@{/}"><img src="/images/logo.png" alt="HCMUTE Logo"></a>
-        </div>
-        <nav>
-            <ul class="nav-links">
-                <li><a th:href="@{/}">← Quay lại trang chủ</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <div class="login-container">
-        <div class="login-card">
-            <h2 class="login-title">Student Portal</h2>
-            <p class="login-subtitle">Đăng ký tài khoản Sinh viên mới</p>
-
-            <form action="#" method="post">
-                <div class="input-group">
-                    <label for="fullname">Họ và tên</label>
-                    <input type="text" id="fullname" name="fullname" placeholder="Nhập họ và tên" required>
-                </div>
-                <div class="input-group">
-                    <label for="studentId">Mã số sinh viên (MSSV)</label>
-                    <input type="text" id="studentId" name="studentId" placeholder="Nhập MSSV" required>
-                </div>
-                <div class="input-group">
-                    <label for="email">Email trường</label>
-                    <input type="email" id="email" name="email" placeholder="example@student.hcmute.edu.vn" required>
-                </div>
-                <div class="input-group">
-                    <label for="password">Mật khẩu</label>
-                    <input type="password" id="password" name="password" placeholder="Tạo mật khẩu" required>
-                </div>
-
-                <button type="submit" class="btn-primary btn-full" style="margin-top: 1rem;">Đăng ký</button>
-            </form>
-
-            <div class="login-footer">
-                <p>Đã có tài khoản? <a th:href="@{/auth/login}">Đăng nhập ngay</a></p>
+    <!-- Main Container: Full Screen Edge-to-Edge Split Layout -->
+    <div class="w-full min-h-screen flex flex-col lg:flex-row bg-white">
+        
+        <!-- LEFT PANEL: Campus Branding (42% Width on Desktop, Full Height) -->
+        <div class="relative w-full lg:w-[42%] min-h-[380px] lg:min-h-screen flex flex-col justify-between p-8 lg:p-12 xl:p-16 text-white overflow-hidden bg-slate-900">
+            <!-- Background Image -->
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnA7CdsiBMtKduvKR_jttWWi26-E07ILVKz2TN4mwv8VfDHYENE6RsFVPGn5FcTaKSVsHHYe0OL0foHWUilz4RdsyF-XK2QtwIQB3LWliH7Nep3iCphBC9EndSyqlAvIY51tsnWp-m5fePxzdoOrqBDVf_OkbsCdHPqQQCISzJ7r3pcsHLDQ4lJ_ycGkigoKyF8Pu5ZfnZnN32LcEwgrhxkD1BV25BIg_LtRo--O4t1gvU2v4j-O_BtbCM2RqrV0BfKQ" 
+                 alt="Toàn cảnh Đại học Sư phạm Kỹ thuật TP.HCM" 
+                 class="absolute inset-0 w-full h-full object-cover object-center filter">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/50 to-slate-900/40"></div>
+            
+            <!-- Top Brand -->
+            <div class="relative z-10">
+                <a th:href="@{/}" class="flex items-center gap-3.5 group">
+                    <div class="w-12 h-12 p-1.5 bg-white/95 backdrop-blur-md rounded-2xl shadow-lg ring-1 ring-white/30 flex items-center justify-center transition-transform group-hover:scale-105">
+                        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3Z5S2F5Z_XypTRt_FJzTrIMO1datZuVhCD_s1JUn_JLO8VVCT8pm0yT7mXymsfJeMtn27CAgCQ6-oOKzzKdmn_1Gmue3Dp33vmA0MvsxrR4F1t6ilntUg2rua8RZA2FCUVNIhreCUfdOZcVrM0SnCFJnqnTJXT1DjpATGSsjEoMIK6QW555CWujYT8ZyKeB1AjniY-X-u4d9wBEAD-tj4lJaYuNCneX_96DPnNkEOFzaF8N46vqQ-DWxUweq-K4Pk3A" 
+                             alt="Logo HCM-UTE" class="h-9 w-auto object-contain">
+                    </div>
+                    <div>
+                        <div class="text-[12px] font-bold tracking-widest text-blue-300 uppercase">QAUTE Portal</div>
+                        <div class="text-sm font-semibold tracking-wide text-white/90">Đại học Sư phạm Kỹ thuật TP.HCM</div>
+                    </div>
+                </a>
             </div>
+
+            <!-- Center Message -->
+            <div class="relative z-10 my-auto py-8 lg:py-0 max-w-md">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-600/30 border border-blue-400/40 backdrop-blur-md text-blue-100 text-xs font-semibold mb-4 shadow-sm">
+                    <svg class="w-3.5 h-3.5 text-blue-200" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path></svg>
+                    Hệ sinh thái học tập 4.0
+                </div>
+                <h2 class="text-3xl font-extrabold text-white tracking-tight leading-snug font-heading drop-shadow-md">
+                    Khởi đầu hành trình mới tại HCMUTE
+                </h2>
+                <p class="mt-3 text-sm text-slate-100/95 leading-relaxed drop-shadow-sm font-medium">
+                    Đăng ký để kích hoạt tài khoản sinh viên chính thức, truy cập nguồn học liệu số, phòng lab hiện đại và mạng lưới kết nối doanh nghiệp hàng đầu.
+                </p>
+                <div class="mt-6 space-y-3">
+                    <div class="flex items-center gap-3 text-xs text-white bg-slate-900/60 backdrop-blur-md p-2.5 rounded-xl border border-white/20 shadow-md">
+                        <span class="w-5 h-5 rounded-full bg-blue-500/50 text-blue-200 flex items-center justify-center font-bold">✓</span>
+                        <span class="font-medium">Đồng bộ tự động thông tin từ hệ thống Tuyển sinh</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs text-white bg-slate-900/60 backdrop-blur-md p-2.5 rounded-xl border border-white/20 shadow-md">
+                        <span class="w-5 h-5 rounded-full bg-blue-500/50 text-blue-200 flex items-center justify-center font-bold">✓</span>
+                        <span class="font-medium">Kích hoạt email sinh viên <code>@student.hcmute.edu.vn</code></span>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs text-white bg-slate-900/60 backdrop-blur-md p-2.5 rounded-xl border border-white/20 shadow-md">
+                        <span class="w-5 h-5 rounded-full bg-blue-500/50 text-blue-200 flex items-center justify-center font-bold">✓</span>
+                        <span class="font-medium">Nhận thông báo lịch học, điểm thi &amp; học bổng tức thì</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Status -->
+            <div class="relative z-10 text-xs text-slate-200 border-t border-white/20 pt-4 flex items-center justify-between drop-shadow-sm">
+                <span class="font-medium">Cổng Xác thực Sinh viên Chính quy</span>
+                <span class="text-emerald-400 font-semibold flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block"></span>
+                    Hệ thống sẵn sàng
+                </span>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: Registration Form (58% Width on Desktop, Full Height) -->
+        <div class="w-full lg:w-[58%] min-h-screen p-8 lg:p-12 xl:p-16 flex flex-col justify-between bg-white overflow-y-auto">
+            
+            <!-- Top Nav Link -->
+            <div class="flex items-center justify-between pb-4">
+                <a th:href="@{/auth/login}" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-blue-600 transition group">
+                    <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Quay lại Đăng nhập
+                </a>
+                <div class="text-xs text-slate-500">
+                    Đã có tài khoản? <a th:href="@{/auth/login}" class="text-blue-600 font-bold hover:underline">Đăng nhập</a>
+                </div>
+            </div>
+
+            <!-- Registration Form Area -->
+            <div class="w-full max-w-xl mx-auto my-auto py-2">
+                
+                <div class="mb-5">
+                    <h2 class="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight font-heading">Tạo tài khoản sinh viên</h2>
+                    <p class="text-xs lg:text-sm text-slate-500 mt-1">Tham gia QAUTE để trải nghiệm các tiện ích học vụ thông minh.</p>
+                </div>
+
+                <!-- Alert Messages (Error / Validation) -->
+                <div th:if="${errorMessage}" class="mb-4 p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs font-medium text-red-700 flex items-center gap-2.5">
+                    <svg class="w-4 h-4 flex-shrink-0 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <span th:text="${errorMessage}">Đã có lỗi xảy ra trong quá trình đăng ký.</span>
+                </div>
+
+                <!-- Registration Form -->
+                <form th:action="@{/auth/register}" th:object="${registerRequest}" method="post" class="space-y-3.5">
+                    
+                    <!-- Row 1: MSSV + Họ và tên -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                Mã số sinh viên <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" th:field="*{username}" required="" 
+                                   placeholder="Nhập mã số sinh viên (8 số)" 
+                                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition">
+                            <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="text-[11px] text-red-600 font-medium block mt-1"></span>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                Họ và tên <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" th:field="*{fullName}" required="" 
+                                   placeholder="Nhập họ và tên đầy đủ" 
+                                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition">
+                            <span th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}" class="text-[11px] text-red-600 font-medium block mt-1"></span>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Email trường + Khoa quản lý -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                Email trường <span class="text-red-500">*</span>
+                            </label>
+                            <input type="email" th:field="*{email}" required="" 
+                                   placeholder="22110058@student.hcmute.edu.vn" 
+                                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition">
+                            <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-[11px] text-red-600 font-medium block mt-1"></span>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                Khoa quản lý <span class="text-red-500">*</span>
+                            </label>
+                            <select th:field="*{departmentId}" required="" 
+                                    class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition">
+                                <option value="">-- Chọn khoa trực thuộc --</option>
+                                <option th:each="dept : ${departments}" 
+                                        th:value="${dept.id}" 
+                                        th:text="${dept.name} + ' (' + ${dept.code} + ')'"></option>
+                            </select>
+                            <span th:if="${#fields.hasErrors('departmentId')}" th:errors="*{departmentId}" class="text-[11px] text-red-600 font-medium block mt-1"></span>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Mật khẩu + Xác nhận mật khẩu -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                Mật khẩu <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <input type="password" id="regPass" th:field="*{password}" required="" 
+                                       oninput="validatePasswordRules(this.value)"
+                                       placeholder="Tối thiểu 6 ký tự" 
+                                       class="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition">
+                                <button type="button" onclick="togglePasswordVisibility('regPass', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                </button>
+                            </div>
+                            <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-[11px] text-red-600 font-medium block mt-1"></span>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                Xác nhận mật khẩu <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <input type="password" id="regConfirmPass" th:field="*{confirmPassword}" required="" 
+                                       placeholder="Nhập lại mật khẩu" 
+                                       class="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition">
+                                <button type="button" onclick="togglePasswordVisibility('regConfirmPass', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                </button>
+                            </div>
+                            <span th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" class="text-[11px] text-red-600 font-medium block mt-1"></span>
+                        </div>
+                    </div>
+
+                    <!-- Password requirements indicator -->
+                    <div class="bg-blue-50/70 border border-blue-100 rounded-xl p-3 text-[11px] text-slate-600 grid grid-cols-2 gap-2">
+                        <div id="ruleLength" class="flex items-center gap-1.5 text-slate-500 font-medium">
+                            <span class="rule-icon font-bold">○</span>
+                            Ít nhất 6 ký tự
+                        </div>
+                        <div id="ruleCase" class="flex items-center gap-1.5 text-slate-500 font-medium">
+                            <span class="rule-icon font-bold">○</span>
+                            Chữ hoa &amp; chữ thường
+                        </div>
+                        <div id="ruleNumber" class="flex items-center gap-1.5 text-slate-500 font-medium">
+                            <span class="rule-icon font-bold">○</span>
+                            Có ít nhất 1 chữ số
+                        </div>
+                        <div id="ruleSpecial" class="flex items-center gap-1.5 text-slate-500 font-medium">
+                            <span class="rule-icon font-bold">○</span>
+                            Ký tự đặc biệt (@, #, $, !...)
+                        </div>
+                    </div>
+
+                    <!-- Terms Checkbox -->
+                    <div class="pt-1">
+                        <label class="flex items-start gap-2.5 cursor-pointer">
+                            <input type="checkbox" required="" checked="" class="w-4 h-4 mt-0.5 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                            <span class="text-xs text-slate-600 leading-normal">
+                                Tôi đồng ý với <a th:href="@{/about}" class="text-blue-600 font-medium underline" target="_blank">Điều khoản sử dụng</a> và <a th:href="@{/about}" class="text-blue-600 font-medium underline" target="_blank">Chính sách bảo mật thông tin</a> của Trường ĐH Sư phạm Kỹ thuật TP.HCM.
+                            </span>
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="regBtn" class="w-full mt-3 py-3 px-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white rounded-xl text-sm font-bold tracking-wide shadow-md shadow-blue-600/25 transition flex items-center justify-center gap-2 group">
+                        <span>Tiến hành Đăng ký &amp; Nhận mã OTP</span>
+                        <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </form>
+
+                <!-- Alternative Help Link -->
+                <div class="mt-4 text-center">
+                    <div class="text-xs text-slate-400">
+                        Cần kích hoạt theo diện chuyển trường hoặc liên thông? <a th:href="@{/ticket}" class="text-blue-600 font-medium underline">Gửi yêu cầu hỗ trợ</a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Footer -->
+            <div class="pt-3 text-center text-[11px] text-slate-400 border-t border-slate-100">
+                Phòng Đào tạo &amp; Tuyển sinh HCMUTE • Hotline hỗ trợ: 028 3896 8641 • Email: tuyensinh@hcmute.edu.vn
+            </div>
+
         </div>
     </div>
 
-</body>
+    <script>
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.innerHTML = `<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path></svg>`;
+            } else {
+                input.type = 'password';
+                btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>`;
+            }
+        }
 
+        function validatePasswordRules(pwd) {
+            setRule('ruleLength', pwd.length >= 6);
+            setRule('ruleCase', /[a-z]/.test(pwd) && /[A-Z]/.test(pwd));
+            setRule('ruleNumber', /\d/.test(pwd));
+            setRule('ruleSpecial', /[^a-zA-Z0-9]/.test(pwd));
+        }
+
+        function setRule(elementId, passed) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const icon = el.querySelector('.rule-icon');
+            if (passed) {
+                el.className = 'flex items-center gap-1.5 text-emerald-600 font-medium';
+                if (icon) icon.textContent = '✓';
+            } else {
+                el.className = 'flex items-center gap-1.5 text-slate-500 font-medium';
+                if (icon) icon.textContent = '○';
+            }
+        }
+    </script>
+</body>
 </html>

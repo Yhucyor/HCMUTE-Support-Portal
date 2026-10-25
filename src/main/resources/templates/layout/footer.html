@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head></head>
+
+<body>
+    <footer th:fragment="footer" class="mt-auto py-5 text-white-50 border-top"
+        style="background-color: #17191d; border-color: #2a2e36 !important;">
+        <div class="container">
+            <div class="row gy-4">
+                <div class="col-lg-5 col-md-6">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <img th:src="@{/images/logo.png}" alt="HCMUTE" height="38" class="bg-white rounded-1 p-1">
+                        <span class="fw-bold text-white fs-6 font-serif">TRƯỜNG ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</span>
+                    </div>
+                    <p class="small mb-2 text-white-50"><i class="bi bi-geo-alt me-2 text-crimson"></i>Số 01 Võ Văn
+                        Ngân, Phường Linh Chiểu, TP. Thủ Đức, TP. Hồ Chí Minh</p>
+                    <p class="small mb-1 text-white-50"><i class="bi bi-telephone me-2 text-crimson"></i>Hotline Học Vụ:
+                        (028) 3896 8641 | Tuyển Sinh: (028) 3722 5766</p>
+                    <p class="small mb-0 text-white-50"><i class="bi bi-envelope me-2 text-crimson"></i>Email Hỗ Trợ:
+                        <span class="text-white">counseling@hcmute.edu.vn</span></p>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-white fw-bold mb-3 font-serif position-relative pb-2"
+                        style="border-bottom: 2px solid var(--crimson); display: inline-block;">Đơn Vị Trực Thuộc</h6>
+                    <ul class="list-unstyled small mb-0 d-flex flex-column gap-2 text-white-50">
+                        <li><a href="#" class="text-decoration-none text-white-50 hover-white"><i
+                                    class="bi bi-chevron-right me-1 small text-crimson"></i>Phòng Đào tạo & CTSV
+                                (A1-201)</a></li>
+                        <li><a href="#" class="text-decoration-none text-white-50 hover-white"><i
+                                    class="bi bi-chevron-right me-1 small text-crimson"></i>Phòng Tuyển sinh & TT
+                                (A1-203)</a></li>
+                        <li><a href="#" class="text-decoration-none text-white-50 hover-white"><i
+                                    class="bi bi-chevron-right me-1 small text-crimson"></i>Đoàn Thanh niên - Hội SV
+                            </a></li>
+                        <li><a href="#" class="text-decoration-none text-white-50 hover-white"><i
+                                    class="bi bi-chevron-right me-1 small text-crimson"></i>Khoa CNTT (A1-304)</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-12">
+                    <h6 class="text-white fw-bold mb-3 font-serif position-relative pb-2"
+                        style="border-bottom: 2px solid var(--crimson); display: inline-block;">Cổng Hỗ Trợ Sinh Viên
+                        QAUTE</h6>
+                    <p class="small text-white-50 mb-3">
+                        Hệ thống tiếp nhận Ticket, giải đáp quy chế bằng Trợ lý AI và phân luồng tự động theo cam kết
+                        chất lượng dịch vụ SLA của HCMUTE.
+                    </p>
+                    <div class="d-flex align-items-center gap-2 small text-success">
+                        <span
+                            class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-2 py-1">
+                            <i class="bi bi-shield-check me-1"></i>SLA Engine Active (24/7)
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="border-top border-secondary border-opacity-25 mt-4 pt-3 d-flex flex-column flex-md-row justify-content-between align-items-center small text-white-50">
+                <div>&copy; 2026 HCMUTE - QAUTE Student Counseling Portal. All rights reserved.</div>
+                <div class="mt-2 mt-md-0">Chuẩn nhận diện thương hiệu Đại học Công Nghệ Kỹ Thuật TP.HCM</div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

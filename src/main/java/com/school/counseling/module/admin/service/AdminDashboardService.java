@@ -17,13 +17,18 @@ import java.util.*;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AdminDashboardService {
 
     private final TicketRepository ticketRepository;
     private final DepartmentRepository departmentRepository;
     private final UserRepository userRepository;
+
+    public AdminDashboardService(TicketRepository ticketRepository, DepartmentRepository departmentRepository, UserRepository userRepository) {
+        this.ticketRepository = ticketRepository;
+        this.departmentRepository = departmentRepository;
+        this.userRepository = userRepository;
+    }
 
     public AdminSlaDashboardDto getSlaDashboardStats(String timeRange, Long departmentId) {
         LocalDateTime since = null;
@@ -35,15 +40,30 @@ public class AdminDashboardService {
             timeRange = "ALL";
         }
 
-        long total = ticketRepository.countTicketsFiltered(since, departmentId);
-        long open = ticketRepository.countTicketsByStatusFiltered("OPEN", since, departmentId);
-        long inProgress = ticketRepository.countTicketsByStatusFiltered("IN_PROGRESS", since, departmentId);
-        long resolved = ticketRepository.countTicketsByStatusFiltered("RESOLVED", since, departmentId);
-        long closed = ticketRepository.countTicketsByStatusFiltered("CLOSED", since, departmentId);
-        long overdue = ticketRepository.countOverdueTicketsFiltered(since, departmentId);
-        long totalResolved = resolved + closed;
-        long onTime = ticketRepository.countResolvedOnTimeFiltered(since, departmentId);
+        // Tối ưu hóa: Dùng 1 truy vấn Conditional Aggregation duy nhất thay vì 7 truy vấn COUNT rời rạc
+        long total = 0;
+        long open = 0;
+        long inProgress = 0;
+        long resolved = 0;
+        long closed = 0;
+        long overdue = 0;
+        long onTime = 0;
+        Double avgRating = null;
 
+        List<Object[]> aggList = ticketRepository.getOverallSlaAggregate(since, departmentId);
+        if (!aggList.isEmpty() && aggList.get(0) != null) {
+            Object[] row = aggList.get(0);
+            total = row[0] != null ? ((Number) row[0]).longValue() : 0L;
+            open = row[1] != null ? ((Number) row[1]).longValue() : 0L;
+            inProgress = row[2] != null ? ((Number) row[2]).longValue() : 0L;
+            resolved = row[3] != null ? ((Number) row[3]).longValue() : 0L;
+            closed = row[4] != null ? ((Number) row[4]).longValue() : 0L;
+            overdue = row[5] != null ? ((Number) row[5]).longValue() : 0L;
+            onTime = row[6] != null ? ((Number) row[6]).longValue() : 0L;
+            avgRating = row[7] != null ? ((Number) row[7]).doubleValue() : null;
+        }
+
+        long totalResolved = resolved + closed;
         double complianceRate = 100.0;
         if (totalResolved > 0) {
             complianceRate = Math.round(((double) onTime / totalResolved * 100.0) * 10.0) / 10.0;
@@ -51,7 +71,6 @@ public class AdminDashboardService {
             complianceRate = Math.round(((double) (total - overdue) / total * 100.0) * 10.0) / 10.0;
         }
 
-        Double avgRating = ticketRepository.getAverageRatingFiltered(since, departmentId);
         if (avgRating != null) {
             avgRating = Math.round(avgRating * 10.0) / 10.0;
         }

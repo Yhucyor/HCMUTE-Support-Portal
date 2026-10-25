@@ -110,4 +110,11 @@ public class PostResponseDto {
     public boolean getDirectVideo() {
         return isDirectVideo();
     }
+
+    public String getPlainTextSummary() {
+        if (content == null || content.isBlank()) {
+            return "";
+        }
+        return content.replaceAll("<[^>]*>", "").replaceAll("&nbsp;", " ").replaceAll("\\s+", " ").trim();
+    }
 }

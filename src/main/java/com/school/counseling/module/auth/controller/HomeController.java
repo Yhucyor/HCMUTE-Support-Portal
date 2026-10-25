@@ -9,10 +9,35 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
-@RequiredArgsConstructor
 public class HomeController {
 
     private final DepartmentRepository departmentRepository;
+    private final com.school.counseling.module.academic.service.HcmuteCrawlerService crawlerService;
+    private final com.school.counseling.module.ticket.service.TicketService ticketService;
+
+    public HomeController(DepartmentRepository departmentRepository,
+                          com.school.counseling.module.academic.service.HcmuteCrawlerService crawlerService,
+                          com.school.counseling.module.ticket.service.TicketService ticketService) {
+        this.departmentRepository = departmentRepository;
+        this.crawlerService = crawlerService;
+        this.ticketService = ticketService;
+    }
+
+    @GetMapping({"/dashboard", "/student/dashboard"})
+    public String dashboard(Model model) {
+        if (SecurityUtils.hasRole("ROLE_ADMIN")) {
+            return "redirect:/admin/dashboard";
+        } else if (SecurityUtils.hasRole("ROLE_STAFF")) {
+            return "redirect:/staff/tickets";
+        }
+
+        UserPrincipal currentUser = SecurityUtils.getCurrentUser().orElse(null);
+        if (currentUser == null) {
+            return "redirect:/auth/login";
+        }
+
+        return "redirect:/academic/sync";
+    }
 
     @GetMapping({"/", "/home"})
     public String home(Model model) {
@@ -42,8 +67,24 @@ public class HomeController {
         return "explore";
     }
 
-    @GetMapping("/ai-chat")
-    public String aiChat(Model model) {
-        return "ai-chat";
+    @GetMapping({"/grades", "/academic-grades"})
+    public String redirectGrades() {
+        return "redirect:/academic/grades";
+    }
+
+    @GetMapping({"/timetable", "/academic-timetable"})
+    public String redirectTimetable() {
+        return "redirect:/academic/timetable";
+    }
+
+    @GetMapping({"/curriculum", "/academic-curriculum", "/chuong-trinh-dao-tao"})
+    public String redirectCurriculum() {
+        return "redirect:/academic/curriculum";
+    }
+
+    @GetMapping({"/feed", "/bang-tin"})
+    public String redirectFeed() {
+        return "redirect:/feed/official";
     }
 }
+

@@ -1,66 +1,24 @@
-# 🛡️ QUY TẮC PHÂN CHIA VAI TRÒ BẮT BUỘC: DEV A (BACKEND) VS DEV B (FRONTEND)
+# 🛡️ QUY TẮC VAI TRÒ VÀ RANH GIỚI DỰ ÁN: DEV A (FULLSTACK & ARCHITECT)
 
-> [!CAUTION]
-> **CHỈ THỊ TỐI CAO DÀNH CHO MỌI AI ASSISTANT**:
-> Người dùng hiện tại là **Dev A (Backend Lead & Database Architect)**.
-> AI **BẮT BUỘC** phải tuân thủ nghiêm ngặt các ranh giới phân công công việc dưới đây.
-> **TUYỆT ĐỐI NGHIÊM CẤM AI can thiệp, tự ý viết đè, sửa đổi hoặc code lấn sang phần việc của DEV B!**
-
----
-
-## 🎯 1. PHẠM VI TRÁCH NHIỆM CỦA DEV A (BACKEND LEAD & DATABASE ARCHITECT)
-Dev A toàn quyền quản lý tầng **Dữ liệu & Logic Nghiệp vụ Phía Máy Chủ (Backend & Database)**:
-
-1. **Cơ sở dữ liệu (Database & JPA ORM):**
-   - Thiết kế & quản lý 17 bảng Entity JPA (`@Entity`, `@Table`, `@Id`, quan hệ `@ManyToOne`, `@OneToMany`).
-   - Repository Interfaces (`JpaRepository`, `@Query`, Specification tìm kiếm lọc dữ liệu).
-   - Data Seeder / `DataInitializer` nạp dữ liệu mẫu ban đầu (Roles, Departments, Admin, Sample Users).
-   - Quản lý trạng thái bằng `Enum` (`UserStatus`, `TicketStatus`, `SlaLevel`...).
-
-2. **Tầng Nghiệp Vụ (Service & Domain Business Logic):**
-   - Xử lý logic nghiệp vụ toàn bộ module: `AuthService`, `OtpService`, `ProfileService`, `TicketService`, `SlaEngine`, `NotificationService`, `FeedService`, `FaqAiService`, `AnalyticsService`.
-   - Cơ chế tính toán thời hạn SLA tự động (URGENT 24h, HIGH 48h, MEDIUM 72h, LOW 7d).
-   - Quản lý mã OTP trong Database (bảng `otp_tokens`) và gửi email bất đồng bộ qua `@Async JavaMailSender` (`EmailAsyncService`).
-
-3. **Bảo mật & Phân quyền (Spring Security 6 & RBAC):**
-   - Cấu hình `SecurityFilterChain`, `PasswordEncoder` (BCrypt).
-   - Cơ chế phân quyền chi tiết SpEL chống IDOR chéo Khoa/Phòng (`@deptSecurity` / `DepartmentAccessEvaluator`).
-   - JWT Token Provider & Filter cho REST API.
-
-4. **Tầng Điều Khiển Dữ Liệu (Controllers & DTOs):**
-   - Thiết kế DTOs (Request/Response) và kiểm tra hợp lệ dữ liệu Bean Validation (`@Valid`, `@NotBlank`, `@Size`, `@Email`).
-   - Xây dựng toàn bộ `@RestController` (trả về `ApiResponse<T>` JSON chuẩn RESTful).
-   - Xây dựng phần điều hướng dữ liệu của `@Controller` (nhận Request, gọi Service, truyền dữ liệu vào `Model.addAttribute("key", value)`, xử lý `BindingResult`, `RedirectAttributes`).
+> [!IMPORTANT]
+> **CHỈ THỊ DÀNH CHO AI ASSISTANT**:
+> Người dùng hiện tại là **Dev A (Fullstack & Software Architect)**.
+> Dev A chịu trách nhiệm toàn bộ hệ thống web Spring Boot (Backend, Database, Security, Thymeleaf Templates, CSS & JS giao diện).
+> **RANH GIỚI DUY NHẤT CỦA DEV B CẦN TRÁNH**: 
+> ❌ **TUYỆT ĐỐI KHÔNG can thiệp, sửa đổi hoặc tự ý code phần Python service và module AI chuyên biệt của Dev B** (trừ khi có yêu cầu tích hợp API client gọi sang service AI).
 
 ---
 
-## 🎨 2. PHẠM VI TRÁCH NHIỆM CỦA DEV B (FRONTEND LEAD & UI/UX SPECIALIST)
-Dev B toàn quyền phụ trách **Giao diện người dùng (UI/UX) và Lưu trữ Đa phương tiện**:
+## 🎯 1. PHẠM VI TRÁCH NHIỆM CỦA DEV A
+Dev A toàn quyền quản lý và phát triển toàn diện hệ thống Spring Boot:
+1. **Cơ sở dữ liệu & Backend:** JPA Entities, Repositories, Services, Spring Security 6, JWT, Controllers, DTOs, Event/Notification.
+2. **Giao diện & Trải nghiệm (Web UI):** Thymeleaf templates, HTML/CSS/JS, giao tiếp WebSocket/REST, tối ưu hóa UI/UX cho người dùng.
 
-1. **Giao diện Người Dùng & Templates (Thymeleaf HTML):**
-   - Thiết kế cấu trúc giao diện HTML toàn bộ hệ thống (`src/main/resources/templates/**`).
-   - Xây dựng hệ thống layout chuẩn dùng chung (Header, Footer, Navbar, Sidebar, Breadcrumb, Modal fragments).
-   - Xây dựng các màn hình chức năng: Đăng nhập/Đăng ký/Kích hoạt OTP, Dashboard cá nhân, Danh sách vé, Bảng tin, Diễn đàn, Quản trị Admin.
+---
 
-2. **Thiết Kế Mỹ Thuật & Giao Diện (CSS / SCSS / Styling):**
-   - Toàn bộ phong cách thiết kế, typography, hệ màu thương hiệu HCMUTE (`src/main/resources/static/css/**`).
-   - Tối ưu Responsive Layout (Mobile, Tablet, Desktop) sử dụng Bootstrap 5 và CSS tùy biến.
-   - Hiệu ứng thị giác, Dark/Light Mode, Card UI, Glassmorphism, Animation chuyển trang.
-
-3. **Tương Tác Phía Trình Duyệt (Client-side JavaScript):**
-   - Xử lý tương tác DOM, sự kiện giao diện (`src/main/resources/static/js/**`).
-   - Tích hợp thư viện hiển thị phía Client: Chart.js (biểu đồ thống kê), SweetAlert2 / Toastr (thông báo popup), WYSIWYG Editor (soạn thảo bài viết).
-   - WebSocket Client (STOMP JS) lắng nghe sự kiện đẩy thông báo và chat thời gian thực trên trình duyệt.
-   - Client-side validation kiểm tra form trực quan trước khi gửi dữ liệu về máy chủ.
-
-4. **Lưu Trữ Tệp Đa Phương Tiện (Media & Storage Service):**
-   - Quản lý tích hợp Cloudinary CDN, xem trước hình ảnh (Image preview) và tải lên đa phương tiện phía giao diện.
-
-> [!WARNING]
-> **RANH GIỚI NGHIÊM CẤM ĐỐI VỚI AI KHI HỖ TRỢ DEV A:**
-> - ❌ **CẤM** tự ý viết đè, sửa đổi hoặc xóa code trong `templates/**`.
-> - ❌ **CẤM** can thiệp vào CSS (`static/css/**`) hoặc JS giao diện (`static/js/**`).
-> - Khi Dev A cần truyền dữ liệu sang View, chỉ tạo dữ liệu trong Model Controller và thông báo tên biến Model cho Dev B sử dụng.
+## 🤖 2. PHẠM VI CỦA DEV B (AI & PYTHON SPECIALIST)
+- Các microservice Python, huấn luyện mô hình AI, xử lý NLP/LLM độc lập.
+- Dev A chỉ đóng vai trò tích hợp gọi API tới dịch vụ của Dev B khi cần.
 
 ---
 
@@ -73,11 +31,21 @@ Dev B toàn quyền phụ trách **Giao diện người dùng (UI/UX) và Lưu t
   + AI **TỰ ĐỘNG** chạy lệnh `git push origin <feature-branch>` lên GitHub theo nhánh tương ứng.
   + **KHÔNG CẦN CHỜ LỆNH THỦ CÔNG TỪ USER** cho các thao tác commit & push trên nhánh tính năng này.
 
-### B. Quy tắc Gộp Nhánh (`merge`) - BẮT BUỘC CHỜ LỆNH:
-- ⛔ **CHỈ KHI NGƯỜI DÙNG BẢO "HOÀN THIỆN" / RA LỆNH MERGE:**
-  * AI mới được phép chuyển sang nhánh `dev`, thực hiện merge `feature/*` vào `dev` (`git merge --no-ff`), kiểm tra build và push lên `origin dev`.
-  * Và chỉ khi người dùng bảo release/hoàn thành module lớn mới tiếp tục merge từ `dev` vào `main` (`git merge --no-ff dev`), gắn Tag phiên bản và push `main` + `tags`.
-- ⛔ **TUYỆT ĐỐI KHÔNG TỰ ĐỘNG MERGE VÀO `dev` HOẶC `main` KHI NGƯỜI DÙNG CHƯA RA TÍN HIỆU HOÀN THIỆN!**
+### B. Quy tắc Gộp Nhánh (`merge`) - BẮT BUỘC CHỜ LỆNH TỪ USER:
+- ⛔ **CHỈ KHI NGƯỜI DÙNG BẢO "HOÀN THIỆN" / RA LỆNH MERGE TÍNH NĂNG VÀO DEV:**
+  * AI chuyển sang nhánh `dev`: `git checkout dev && git pull origin dev`.
+  * Áp dụng **SQUASH AND MERGE** để làm sạch lịch sử: `git merge --squash <feature-branch>`.
+  * Chạy kiểm tra biên dịch an toàn: `mvn test-compile`.
+  * AI tự động tạo **1 COMMIT DUY NHẤT** tổng hợp toàn bộ tính năng theo chuẩn:
+    `feat(<scope>): <tóm tắt tính năng hoàn chỉnh>` kèm danh sách bullet points các thay đổi chính trong body commit.
+  * Push commit lên nhánh phát triển: `git push origin dev`.
+  * (Tùy chọn) Xóa nhánh local tính năng nếu người dùng yêu cầu dọn dẹp.
+- ⛔ **KHI NGƯỜI DÙNG RA LỆNH RELEASE LÊN `main` (BẢO VỆ ĐỒ ÁN / GIAI ĐOẠN LỚN):**
+  * AI chuyển sang `main`: `git checkout main && git pull origin main`.
+  * Thực hiện **Merge Commit bảo toàn mốc phát hành**: `git merge --no-ff dev -m "release: phiên bản <vX.Y.Z> - <tên milestone>"`.
+  * Gắn Git Tag: `git tag -a vX.Y.Z -m "<mô tả tag>"`.
+  * Push lên GitHub: `git push origin main --tags`.
+- ⛔ **TUYỆT ĐỐI KHÔNG TỰ ĐỘNG MERGE KHI NGƯỜI DÙNG CHƯA RA TÍN HIỆU HOÀN THIỆN!**
 
 ---
 

@@ -9,5 +9,7 @@ import java.util.List;
 @Repository
 public interface CourseScheduleRepository extends JpaRepository<CourseSchedule, Long> {
     List<CourseSchedule> findByStudentIdOrderByDayOfWeekAsc(String studentId);
+    List<CourseSchedule> findByStudentIdAndSemesterOrderByDayOfWeekAsc(String studentId, String semester);
+    List<CourseSchedule> findByStudentIdAndSemesterAndPhaseOrderByDayOfWeekAsc(String studentId, String semester, String phase);
     void deleteByStudentId(String studentId);
 }

@@ -1,12 +1,11 @@
 package com.school.counseling.module.ai.controller;
 
-import com.school.counseling.module.ai.entity.Faq;
-import com.school.counseling.module.ai.repository.FaqRepository;
-import com.school.counseling.module.ai.service.SmartFaqMatcherService;
-import com.school.counseling.module.auth.entity.Department;
-import com.school.counseling.module.auth.repository.DepartmentRepository;
+import com.school.counseling.common.util.SecurityUtils;
+import com.school.counseling.module.ai.dto.FaqCategoryCountDto;
+import com.school.counseling.module.ai.dto.FaqItemDto;
+import com.school.counseling.module.ai.service.FaqService;
+import com.school.counseling.module.auth.dto.UserPrincipal;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,45 +13,44 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
+/**
+ * Controller điều hướng giao diện tra cứu FAQ.
+ * Tuân thủ SoC: Chỉ phụ trách tiếp nhận request, gọi FaqService và truyền DTO vào Model.
+ */
 @Controller
 @RequiredArgsConstructor
 public class FaqWebController {
 
-    private final FaqRepository faqRepository;
-    private final DepartmentRepository departmentRepository;
-    private final SmartFaqMatcherService faqMatcherService;
+    private final FaqService faqService;
 
-    @GetMapping("/faqs")
+    @GetMapping({"/faqs", "/faq"})
     public String searchFaqs(
             @RequestParam(value = "q", required = false, defaultValue = "") String query,
             @RequestParam(value = "departmentId", required = false) Long departmentId,
             Model model) {
 
-        boolean isSearchMode = query != null && !query.trim().isEmpty();
-        List<SmartFaqMatcherService.FaqMatchResult> searchResults = List.of();
-        List<Faq> topFaqs = List.of();
+        // Luôn nạp trọn vẹn 351 câu hỏi ra View để Client-side Filter và Pagination
+        // hoạt động mượt mà, không bao giờ bị cắt cụt còn 25 câu khi có param tìm kiếm
+        List<FaqItemDto> allFaqs = faqService.getAllActiveFaqs();
+        FaqCategoryCountDto counts = faqService.calculateCategoryCounts(allFaqs);
 
-        if (isSearchMode) {
-            // Tìm kiếm thông minh theo từ khóa không phân biệt dấu tiếng Việt và chuẩn hóa teencode
-            searchResults = faqMatcherService.matchQuestion(query.trim(), departmentId);
-        } else {
-            // Trạng thái ban đầu: Hiển thị Top 15 câu hỏi quy chế phổ biến nhất
-            if (departmentId != null) {
-                topFaqs = faqRepository.findTopByDepartmentWithDepartment(departmentId, PageRequest.of(0, 15));
-            } else {
-                topFaqs = faqRepository.findTopActiveWithDepartment(PageRequest.of(0, 15));
-            }
-        }
+        SecurityUtils.getCurrentUser().ifPresent(currentUser -> {
+            model.addAttribute("currentUser", currentUser);
+            model.addAttribute("currentUserFullName", currentUser.getFullName());
+            model.addAttribute("currentUserAvatar", currentUser.getAvatarUrl());
+            String role = (currentUser.getRole() != null) ? currentUser.getRole().replace("ROLE_", "") : "STUDENT";
+            model.addAttribute("currentUserRole", role);
+        });
 
-        List<Department> departments = departmentRepository.findByIsActiveTrue();
-
-        model.addAttribute("isSearchMode", isSearchMode);
-        model.addAttribute("searchResults", searchResults);
-        model.addAttribute("topFaqs", topFaqs);
-        model.addAttribute("departments", departments);
+        model.addAttribute("isSearchMode", query != null && !query.trim().isEmpty());
+        model.addAttribute("faqs", allFaqs);
+        model.addAttribute("topFaqs", allFaqs);
+        model.addAttribute("counts", counts);
+        model.addAttribute("departments", faqService.getActiveDepartments());
         model.addAttribute("selectedDept", departmentId);
-        model.addAttribute("query", query);
+        model.addAttribute("query", query != null ? query : "");
+        model.addAttribute("totalCount", allFaqs.size());
 
-        return "faq/search";
+        return "faqs";
     }
 }

@@ -5,6 +5,8 @@ import com.school.counseling.common.util.SecurityUtils;
 import com.school.counseling.module.auth.dto.RegisterRequest;
 import com.school.counseling.module.auth.repository.DepartmentRepository;
 import com.school.counseling.module.auth.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,21 +19,42 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Slf4j
 @Controller
 @RequestMapping("/auth")
-@RequiredArgsConstructor
 public class AuthWebController {
 
     private final AuthService authService;
     private final DepartmentRepository departmentRepository;
 
+    public AuthWebController(AuthService authService, DepartmentRepository departmentRepository) {
+        this.authService = authService;
+        this.departmentRepository = departmentRepository;
+    }
+
     @GetMapping("/login")
     public String loginPage(@RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "logout", required = false) String logout,
+                            HttpServletRequest request,
                             Model model) {
+        request.getSession(true);
         if (SecurityUtils.isAuthenticated()) {
             return "redirect:/home";
         }
         if (error != null) {
-            model.addAttribute("errorMessage", "Tên đăng nhập hoặc mật khẩu không chính xác!");
+            if ("oauth2".equalsIgnoreCase(error)) {
+                Object oauthEx = request.getSession().getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
+                String msg = (oauthEx instanceof Exception e && e.getMessage() != null)
+                        ? e.getMessage()
+                        : "Đăng nhập bằng tài khoản Google không thành công. Vui lòng thử lại!";
+                model.addAttribute("errorMessage", msg);
+            } else {
+                Object lastException = request.getSession().getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
+                if (lastException instanceof org.springframework.security.authentication.DisabledException) {
+                    model.addAttribute("errorMessage", "Tài khoản của bạn chưa được kích hoạt qua mã OTP! Vui lòng hoàn tất kích hoạt tài khoản để đăng nhập.");
+                } else if (lastException instanceof org.springframework.security.authentication.LockedException) {
+                    model.addAttribute("errorMessage", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Quản trị viên.");
+                } else {
+                    model.addAttribute("errorMessage", "Tên đăng nhập hoặc mật khẩu không chính xác!");
+                }
+            }
         }
         if (logout != null) {
             model.addAttribute("successMessage", "Bạn đã đăng xuất thành công khỏi hệ thống.");
@@ -39,8 +62,30 @@ public class AuthWebController {
         return "login";
     }
 
+    @PostMapping("/portal-login")
+    public String handlePortalLogin(@RequestParam("studentId") String studentId,
+                                    @RequestParam("portalPassword") String portalPassword,
+                                    HttpServletRequest request,
+                                    RedirectAttributes redirectAttributes) {
+        try {
+            authService.loginWithHcmutePortal(studentId, portalPassword, request);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Đăng nhập thành công qua Cổng Đào tạo HCMUTE! Hệ thống đang đồng bộ dữ liệu học vụ của bạn.");
+            return "redirect:/home";
+        } catch (AppException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:/auth/login";
+        } catch (Exception ex) {
+            log.error("Portal login failed", ex);
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Đăng nhập qua Cổng Đào tạo thất bại: " + ex.getMessage());
+            return "redirect:/auth/login";
+        }
+    }
+
     @GetMapping("/register")
-    public String registerPage(Model model) {
+    public String registerPage(HttpServletRequest request, Model model) {
+        request.getSession(true);
         if (SecurityUtils.isAuthenticated()) {
             return "redirect:/home";
         }
@@ -81,7 +126,10 @@ public class AuthWebController {
     }
 
     @GetMapping("/activate")
-    public String activatePage(@RequestParam(value = "email", required = false) String email, Model model) {
+    public String activatePage(@RequestParam(value = "email", required = false) String email,
+                               HttpServletRequest request,
+                               Model model) {
+        request.getSession(true);
         if (SecurityUtils.isAuthenticated()) {
             return "redirect:/home";
         }
@@ -146,13 +194,34 @@ public class AuthWebController {
     @GetMapping("/forgot-password")
     public String forgotPasswordPage(@RequestParam(value = "email", required = false) String email,
                                      @RequestParam(value = "step", defaultValue = "1") int step,
+                                     @RequestParam(value = "otpCode", required = false) String otpCode,
+                                     HttpServletRequest request,
                                      Model model) {
+        request.getSession(true);
         if (SecurityUtils.isAuthenticated()) {
             return "redirect:/home";
         }
         model.addAttribute("email", email);
         model.addAttribute("step", step);
+        model.addAttribute("otpCode", otpCode);
+        if (step == 2 || step == 3) {
+            return "reset-password";
+        }
         return "forgot-password";
+    }
+
+    @GetMapping("/reset-password")
+    public String resetPasswordPage(@RequestParam(value = "email", required = false) String email,
+                                    @RequestParam(value = "otpCode", required = false) String otpCode,
+                                    HttpServletRequest request,
+                                    Model model) {
+        request.getSession(true);
+        if (SecurityUtils.isAuthenticated()) {
+            return "redirect:/home";
+        }
+        model.addAttribute("email", email);
+        model.addAttribute("otpCode", otpCode);
+        return "reset-password";
     }
 
     @PostMapping("/forgot-password/send-otp")
@@ -212,5 +281,15 @@ public class AuthWebController {
             return "redirect:/auth/forgot-password?step=2&email="
                     + java.net.URLEncoder.encode(email.trim(), java.nio.charset.StandardCharsets.UTF_8);
         }
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request,
+                         HttpServletResponse response,
+                         org.springframework.security.core.Authentication authentication) {
+        if (authentication != null) {
+            new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler().logout(request, response, authentication);
+        }
+        return "redirect:/?logout=true";
     }
 }

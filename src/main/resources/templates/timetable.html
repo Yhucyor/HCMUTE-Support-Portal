@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Thời khóa biểu sinh viên | HCMUTE Student Portal</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <style>
+        @layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } }
+        ::-webkit-scrollbar { display: none; }
+    </style>
+    <!-- Tailwind CSS — Academic Horizon + HCMUTE Tokens -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "brand-blue":  "#003882", "brand-blue-dark": "#002456", "brand-red": "#991b1e",
+                        "primary":               "#0037b0", "on-primary":             "#ffffff",
+                        "primary-container":     "#1d4ed8", "on-primary-container":   "#cad3ff",
+                        "primary-fixed":         "#dce1ff", "on-primary-fixed":       "#001551",
+                        "on-primary-fixed-variant": "#0039b5", "primary-fixed-dim":   "#b7c4ff",
+                        "secondary":             "#565e74", "on-secondary":           "#ffffff",
+                        "secondary-container":   "#dae2fd", "on-secondary-container": "#5c647a",
+                        "on-secondary-fixed":    "#131b2e", "on-secondary-fixed-variant": "#3f465c",
+                        "secondary-fixed":       "#dae2fd", "secondary-fixed-dim":    "#bec6e0",
+                        "tertiary":              "#003ca3", "on-tertiary":            "#ffffff",
+                        "tertiary-container":    "#0051d6", "on-tertiary-container":  "#c9d4ff",
+                        "tertiary-fixed":        "#dbe1ff", "on-tertiary-fixed":      "#00174b",
+                        "on-tertiary-fixed-variant": "#003ea8", "tertiary-fixed-dim": "#b4c5ff",
+                        "error":                 "#ba1a1a", "on-error":               "#ffffff",
+                        "error-container":       "#ffdad6", "on-error-container":     "#93000a",
+                        "surface":               "#f8f9ff", "surface-bright":         "#f8f9ff",
+                        "surface-dim":           "#cbdbf5", "surface-variant":        "#d3e4fe",
+                        "surface-container-lowest":  "#ffffff",
+                        "surface-container-low":     "#eff4ff",
+                        "surface-container":         "#e5eeff",
+                        "surface-container-high":    "#dce9ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-surface":            "#0b1c30", "on-surface-variant":     "#434655",
+                        "inverse-surface":       "#213145", "inverse-on-surface":     "#eaf1ff",
+                        "outline":               "#747686", "outline-variant":        "#c4c5d7",
+                        "background":            "#f8f9ff", "on-background":          "#0b1c30",
+                        "surface-tint":          "#2151da", "inverse-primary":        "#b7c4ff"
+                    },
+                    borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+                    spacing: {
+                        "space-xs": "0.25rem", "space-sm": "0.5rem", "space-md": "1rem",
+                        "space-lg": "1.5rem",  "space-xl": "2rem",
+                        "gutter-sm": "1rem",   "gutter":   "1.5rem",  "gutter-lg": "2rem",
+                        "margin-sm": "1rem",   "margin":   "2rem",    "margin-lg": "3rem"
+                    },
+                    fontFamily: {
+                        "headline": ["Outfit","sans-serif"], "body": ["Inter","sans-serif"],
+                        "title-md": ["Outfit","sans-serif"]
+                    },
+                    fontSize: {
+                        "headline-lg":      ["36px",{lineHeight:"44px",letterSpacing:"-0.015em",fontWeight:"600"}],
+                        "headline-md":      ["24px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"600"}],
+                        "headline-sm":      ["20px",{lineHeight:"28px",fontWeight:"600"}],
+                        "title-md":         ["16px",{lineHeight:"24px",fontWeight:"600"}],
+                        "body-lg":          ["16px",{lineHeight:"24px",fontWeight:"400"}],
+                        "body-md":          ["14px",{lineHeight:"20px",fontWeight:"400"}],
+                        "body-sm":          ["12px",{lineHeight:"16px",fontWeight:"400"}],
+                        "label-lg":         ["14px",{lineHeight:"20px",fontWeight:"600"}],
+                        "label-md":         ["12px",{lineHeight:"16px",letterSpacing:"0.01em",fontWeight:"500"}],
+                        "label-caps":       ["11px",{lineHeight:"14px",letterSpacing:"0.05em",fontWeight:"600"}]
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-background font-body text-on-surface antialiased min-h-screen selection:bg-[#991b1e] selection:text-white"
+      th:data-student-id="${currentStudentId}"
+      th:data-portal-linked="${portalLinked}"
+      th:data-portal-user="${savedPortalUsername}">
+
+    <!-- ═══════════════════════════ UNIFIED HCMUTE TOPBAR ═══════════════════════════ -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <!-- ═══════════════════════════ MAIN CONTENT ═══════════════════════════ -->
+    <main class="w-full bg-background min-h-screen">
+        <div class="flex flex-col w-full">
+            <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-space-lg flex flex-col gap-space-lg">
+
+                <!-- Section 1: Breadcrumb & Title -->
+                <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md">
+                    <div class="flex flex-col gap-space-xs">
+                        <nav aria-label="Breadcrumb" class="flex items-center gap-space-xs">
+                            <a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors flex items-center gap-1" th:href="@{/}">
+                                <span class="material-symbols-outlined text-base">home</span> Trang chủ
+                            </a>
+                            <span class="text-outline text-xs">/</span>
+                            <a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors" href="/academic/sync">Học vụ cá nhân</a>
+                            <span class="text-outline text-xs">/</span>
+                            <span class="font-label-md text-label-md text-primary font-semibold">Thời khóa biểu</span>
+                        </nav>
+                        <div class="flex flex-wrap items-center gap-2 mt-1">
+                            <h1 class="font-headline text-headline-lg text-on-surface font-bold tracking-tight">Thời khóa biểu sinh viên</h1>
+                            <!-- Badge trạng thái liên kết Portal -->
+                            <span th:if="${portalLinked}" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                Dữ liệu thật từ Portal (MSSV: <strong th:text="${savedPortalUsername}">21110123</strong>)
+                            </span>
+                            <a th:unless="${portalLinked}" href="/profile" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition-colors shadow-2xs">
+                                <span class="material-symbols-outlined text-[15px]">link</span>
+                                Chưa liên kết Cổng trường trong Profile &rarr;
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Schedule Badge -->
+                    <div class="flex flex-wrap items-center gap-space-sm self-start lg:self-end">
+                        <div class="flex items-center gap-2 px-3.5 py-2 bg-surface-container-low rounded-lg border border-outline-variant/30 text-xs font-medium text-secondary shadow-2xs">
+                            <span class="material-symbols-outlined text-primary text-base">calendar_month</span>
+                            <span>Thời khóa biểu: <strong class="text-on-surface">Lịch học & Thời khóa biểu môn</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: HCMUTE Portal Standard Filter Toolbar (Giao diện theo Đợt học chuẩn Cổng trường HCMUTE) -->
+                <div class="bg-surface-container-lowest rounded-xl p-4 sm:p-5 shadow-sm border border-outline-variant/30 flex flex-col gap-4">
+                    <!-- Hàng trên: Năm học, Học kỳ và Chuyển Đợt học (Đợt 1 / Đợt 2 / Cả kỳ) -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <!-- 1. Năm học -->
+                            <fieldset class="border border-slate-300 rounded-md px-3 pb-1 pt-0 bg-white hover:border-slate-400 focus-within:border-primary transition-colors flex-1 sm:flex-initial min-w-[150px] sm:w-48 shadow-2xs">
+                                <legend class="text-[11px] text-slate-500 font-medium px-1 select-none">Năm học</legend>
+                                <select id="filterYear" onchange="onSemesterFilterChange()"
+                                        class="w-full bg-transparent text-[14px] text-slate-800 font-medium outline-none cursor-pointer py-1 border-0 focus:ring-0">
+                                    <option value="2026-2027" selected>2026-2027</option>
+                                    <option value="2025-2026">2025-2026</option>
+                                    <option value="2024-2025">2024-2025</option>
+                                    <option value="2023-2024">2023-2024</option>
+                                </select>
+                            </fieldset>
+
+                            <!-- 2. Học kỳ -->
+                            <fieldset class="border border-slate-300 rounded-md px-3 pb-1 pt-0 bg-white hover:border-slate-400 focus-within:border-primary transition-colors flex-1 sm:flex-initial min-w-[150px] sm:w-48 shadow-2xs">
+                                <legend class="text-[11px] text-slate-500 font-medium px-1 select-none">Học kỳ</legend>
+                                <select id="filterTerm" onchange="onSemesterFilterChange()"
+                                        class="w-full bg-transparent text-[14px] text-slate-800 font-medium outline-none cursor-pointer py-1 border-0 focus:ring-0">
+                                    <option value="HK01" selected>Học kỳ 1</option>
+                                    <option value="HK02">Học kỳ 2</option>
+                                    <option value="HK03">Học kỳ 3 (Hè)</option>
+                                </select>
+                            </fieldset>
+                        </div>
+
+                        <!-- 3. Phân loại Đợt học (Đợt 1 / Đợt 2 / Cả kỳ) -->
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-semibold text-secondary uppercase tracking-wider hidden sm:inline">Xem theo:</span>
+                            <div class="inline-flex p-1 bg-surface-container-low rounded-lg shrink-0 border border-outline-variant/30">
+                                <button id="phase1" onclick="setPhase('DOT_1')" type="button"
+                                        class="px-3.5 py-1.5 rounded-md font-label-md text-label-md font-semibold bg-surface-container-lowest text-primary shadow-sm transition-colors" title="Nửa đầu học kỳ (Tuần 1 - 10)">
+                                    <span class="inline-block w-2 h-2 rounded-full bg-amber-500 mr-1.5"></span>Đợt 1 (Tuần 1 - 10)
+                                </button>
+                                <button id="phase2" onclick="setPhase('DOT_2')" type="button"
+                                        class="px-3.5 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors" title="Nửa sau học kỳ (Tuần 11 - 20)">
+                                    <span class="inline-block w-2 h-2 rounded-full bg-purple-500 mr-1.5"></span>Đợt 2 (Tuần 11 - 20)
+                                </button>
+                                <button id="phaseAll" onclick="setPhase('ALL')" type="button"
+                                        class="px-3.5 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors" title="Xem tất cả đợt trong học kỳ">Cả kỳ</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hàng dưới: Chuyển chế độ xem (Hôm nay, Danh sách môn), Tìm kiếm, Chỉ báo trạng thái & Đồng bộ -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-outline-variant/20">
+                        <!-- View switcher: Hôm nay, Danh sách môn -->
+                        <div class="inline-flex p-1 bg-surface-container-low rounded-lg border border-outline-variant/30">
+                            <button id="viewDay" onclick="setView('day')"
+                                    class="px-4 py-1.5 rounded-md font-label-md text-label-md font-semibold bg-surface-container-lowest text-primary shadow-sm transition-colors flex items-center gap-1.5" type="button">
+                                <span class="material-symbols-outlined text-base">today</span> Hôm nay
+                            </button>
+                            <button id="viewList" onclick="setView('list')"
+                                    class="px-4 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors flex items-center gap-1.5" type="button">
+                                <span class="material-symbols-outlined text-base">format_list_bulleted</span> Danh sách môn
+                            </button>
+                        </div>
+
+                        <!-- Status text -->
+                        <div class="hidden lg:flex items-center gap-2 text-secondary text-xs bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant/20">
+                            <span class="material-symbols-outlined text-sm text-primary">event_repeat</span>
+                            <span id="scheduleStatusText" class="font-medium text-on-surface">Đang xem: Đợt 1 (Tuần 1 - 10) · Nửa đầu học kỳ</span>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-2.5 flex-1 justify-end">
+                            <!-- Search -->
+                            <div class="relative w-full sm:w-60">
+                                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-base">search</span>
+                                <input id="searchInput" type="text" placeholder="Tìm môn, phòng, GV..."
+                                       oninput="filterSchedule()"
+                                       class="w-full pl-9 pr-3 py-1.5 rounded-lg bg-surface-container-low border border-outline-variant/30 text-sm text-on-surface placeholder-secondary focus:outline-none focus:border-primary focus:bg-white transition-colors">
+                            </div>
+
+                            <!-- Sync Button -->
+                            <button id="syncBtn" onclick="triggerSync()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors shadow-sm" type="button" title="Đồng bộ trực tiếp dữ liệu thật từ Portal HCMUTE">
+                                <span class="material-symbols-outlined text-base">sync</span> Đồng bộ Portal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: KPI Summary Cards -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-space-md">
+                    <!-- Card 1: Tổng số buổi -->
+                    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                        <div class="flex items-start justify-between">
+                            <div class="flex flex-col">
+                                <span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary">Tổng buổi học</span>
+                                <div class="flex items-baseline gap-2 mt-1">
+                                    <span id="kpiTotal" class="font-headline text-headline-md font-bold text-on-surface">--</span>
+                                    <span class="font-body-md text-body-md text-secondary">buổi/tuần</span>
+                                </div>
+                            </div>
+                            <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined">calendar_view_week</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+                            <div id="kpiTotalBar" class="bg-primary h-full rounded-full transition-all" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <!-- Card 2: Môn học -->
+                    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                        <div class="flex items-start justify-between">
+                            <div class="flex flex-col">
+                                <span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary">Môn học đăng ký</span>
+                                <div class="flex items-baseline gap-2 mt-1">
+                                    <span id="kpiSubjects" class="font-headline text-headline-md font-bold text-on-surface">--</span>
+                                    <span class="font-body-md text-body-md text-secondary">môn chính thức</span>
+                                </div>
+                            </div>
+                            <div class="w-10 h-10 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-fixed">
+                                <span class="material-symbols-outlined">auto_stories</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between pt-2">
+                            <span class="font-label-md text-label-md text-secondary">Tổng số tín chỉ:</span>
+                            <span id="kpiCredits" class="font-label-md text-label-md font-bold text-primary px-2.5 py-0.5 rounded-full bg-surface-container">-- TC</span>
+                        </div>
+                    </div>
+                    <!-- Card 3: Lịch hôm nay -->
+                    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                        <div class="flex items-start justify-between">
+                            <div class="flex flex-col">
+                                <span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary">Lịch hôm nay</span>
+                                <div class="flex items-baseline gap-2 mt-1">
+                                    <span id="kpiToday" class="font-headline text-headline-md font-bold text-primary">--</span>
+                                    <span class="font-body-md text-body-md text-secondary">buổi học</span>
+                                </div>
+                            </div>
+                            <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined">event_available</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2">
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+                            <span id="todayLabel" class="font-label-md text-label-md text-on-surface font-medium">--</span>
+                        </div>
+                    </div>
+                    <!-- Card 4: Buổi kế tiếp -->
+                    <div class="bg-primary text-on-primary rounded-xl p-space-md shadow-md flex flex-col justify-between relative overflow-hidden">
+                        <div class="absolute -right-4 -bottom-4 w-28 h-28 rounded-full bg-on-primary/10 pointer-events-none"></div>
+                        <div class="flex items-start justify-between z-10">
+                            <div class="flex flex-col">
+                                <span class="font-label-caps text-label-caps uppercase tracking-wider text-on-primary-container font-semibold">Buổi học kế tiếp</span>
+                                <div class="flex items-center gap-1.5 mt-1">
+                                    <span class="material-symbols-outlined text-lg text-primary-fixed">schedule</span>
+                                    <span id="nextTime" class="font-title-md text-title-md font-bold text-on-primary">--</span>
+                                </div>
+                            </div>
+                            <span id="nextBadge" class="px-2 py-0.5 rounded-full font-label-caps text-label-caps bg-on-primary/20 text-on-primary font-bold">--</span>
+                        </div>
+                        <div class="mt-3 z-10">
+                            <div id="nextSubject" class="font-label-lg text-label-lg font-bold truncate text-on-primary">--</div>
+                            <p id="nextDetail" class="font-body-sm text-body-sm text-on-primary/80 truncate">--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State Notice if no schedule exists yet -->
+                <div id="ttEmptyAlert" class="hidden mb-space-md p-4 rounded-xl bg-blue-50 border border-blue-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary text-2xl">info</span>
+                        <div>
+                            <div class="font-label-md text-label-md font-bold text-on-surface">Chưa có dữ liệu thời khóa biểu</div>
+                            <div class="font-body-sm text-body-sm text-secondary">Hệ thống chưa tìm thấy lịch học cho tài khoản của bạn. Nhấn nút bên cạnh để nạp dữ liệu mẫu thử nghiệm hoặc đến trang Học vụ để liên kết cổng trường.</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button onclick="triggerSync()" class="px-3.5 py-1.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-semibold hover:bg-primary-container transition-colors shadow-xs" type="button">
+                            Nạp dữ liệu mẫu Demo
+                        </button>
+                        <a href="/academic/sync" class="px-3.5 py-1.5 rounded-lg border border-slate-300 text-slate-700 bg-white font-label-md text-label-md font-medium hover:bg-slate-50 transition-colors">
+                            Cổng học vụ
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Section 4: Lịch học Hôm nay (Day View) -->
+                <div id="viewDayContainer" class="bg-surface-container-lowest rounded-xl shadow-sm p-5 sm:p-6 border border-outline-variant/30 flex flex-col gap-5">
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant/20 pb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                                <span class="material-symbols-outlined text-2xl">event_available</span>
+                            </div>
+                            <div>
+                                <h2 id="dayViewTitle" class="font-headline text-headline-sm font-bold text-on-surface">Đang tải lịch hôm nay...</h2>
+                                <p class="text-xs text-secondary mt-0.5">Lịch học trong ngày hôm nay theo thời gian thực</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="dayClassCountBadge" class="px-3.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">-- buổi học</span>
+                        </div>
+                    </div>
+                    <div id="dayViewList" class="space-y-3.5"></div>
+                </div>
+
+                <!-- Section 4b: Danh sách Môn học (List View) -->
+                <div id="viewListContainer" class="hidden bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden border border-outline-variant/30">
+                    <div class="p-4 sm:p-5 border-b border-outline-variant/20 flex items-center justify-between flex-wrap gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-secondary-container flex items-center justify-center text-on-secondary-fixed">
+                                <span class="material-symbols-outlined text-xl">format_list_bulleted</span>
+                            </div>
+                            <div>
+                                <h2 class="font-headline text-headline-sm font-bold text-on-surface">Toàn bộ môn học trong học kỳ</h2>
+                                <p class="text-xs text-secondary mt-0.5">Sắp xếp theo thứ tự các thứ trong tuần (Thứ 2 &rarr; Chủ nhật)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left" id="listTable">
+                            <thead>
+                                <tr class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps uppercase text-xs">
+                                    <th class="py-3 px-4">Thứ</th>
+                                    <th class="py-3 px-4">Tiết / Giờ học</th>
+                                    <th class="py-3 px-4">Đợt / Tuần</th>
+                                    <th class="py-3 px-4">Mã môn</th>
+                                    <th class="py-3 px-4">Tên môn học</th>
+                                    <th class="py-3 px-4">Phòng học</th>
+                                    <th class="py-3 px-4">Giảng viên</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listTableBody" class="divide-y divide-outline-variant/20 text-body-md text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Section 5: Legend -->
+                <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md border border-outline-variant/30">
+                    <div class="flex flex-wrap items-center gap-space-md">
+                        <span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary font-bold">Chú thích:</span>
+                        <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded bg-primary"></span><span class="font-label-md text-label-md text-on-surface">Lý thuyết</span></div>
+                        <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded bg-tertiary"></span><span class="font-label-md text-label-md text-on-surface">Thực hành / Lab</span></div>
+                        <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded bg-primary-container"></span><span class="font-label-md text-label-md text-on-surface">Đồ án</span></div>
+                        <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded bg-error"></span><span class="font-label-md text-label-md text-on-surface">Đang diễn ra</span></div>
+                        <div class="flex items-center gap-1.5"><span class="px-1.5 py-0.5 rounded font-label-caps text-[10px] font-bold bg-amber-100 text-amber-800">Đợt 1</span><span class="font-label-md text-label-md text-on-surface">Tuần 1–10</span></div>
+                        <div class="flex items-center gap-1.5"><span class="px-1.5 py-0.5 rounded font-label-caps text-[10px] font-bold bg-purple-100 text-purple-800">Đợt 2</span><span class="font-label-md text-label-md text-on-surface">Tuần 11–20</span></div>
+                    </div>
+                    <div class="flex items-center gap-2 text-secondary max-w-lg">
+                        <span class="material-symbols-outlined text-primary text-base shrink-0">info</span>
+                        <p class="font-body-sm text-body-sm text-[12px]">Lịch học được đồng bộ từ <strong>Cổng Đào tạo HCMUTE</strong>. Rê chuột vào môn học để xem chi tiết.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- ═══════════════════════════ SCRIPTS ═══════════════════════════ -->
+    <script>
+    // ── Header dropdown ──────────────────────────────────────────────────────
+    (function () {
+        const btn = document.getElementById('ttAccountToggle');
+        const menu = document.getElementById('ttDropdownMenu');
+        if (!btn || !menu) return;
+        btn.addEventListener('click', e => { e.stopPropagation(); const h = menu.classList.contains('hidden'); menu.classList.toggle('hidden'); btn.setAttribute('aria-expanded', h ? 'true' : 'false'); });
+        document.addEventListener('click', e => { if (!btn.contains(e.target) && !menu.contains(e.target)) { menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); } });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && !menu.classList.contains('hidden')) { menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); btn.focus(); } });
+    })();
+    function toggleMobileNav() { document.getElementById('mobileNavDrawer')?.classList.toggle('hidden'); }
+
+    // ── Constants ─────────────────────────────────────────────────────────────
+    const DAYS = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ Nhật'];
+    const DAY_MAP = { 'Monday':0,'Tuesday':1,'Wednesday':2,'Thursday':3,'Friday':4,'Saturday':5,'Sunday':6,
+                      'Thứ Hai':0,'Thứ Ba':1,'Thứ Tư':2,'Thứ Năm':3,'Thứ Sáu':4,'Thứ Bảy':5,'Chủ Nhật':6,
+                      'Thứ 2':0,'Thứ 3':1,'Thứ 4':2,'Thứ 5':3,'Thứ 6':4,'Thứ 7':5,'CN':6 };
+
+    // HCMUTE tiết → giờ bắt đầu (chuẩn hệ 15 tiết/ngày)
+    const TIET_START = {
+        1:'07:30', 2:'08:15', 3:'09:00', 4:'09:45', 5:'10:30', 6:'11:15',
+        7:'13:00', 8:'13:45', 9:'14:30', 10:'15:15', 11:'16:00', 12:'16:45',
+        13:'17:30', 14:'18:15', 15:'19:00'
+    };
+    const TIET_END = {
+        1:'08:15', 2:'09:00', 3:'09:45', 4:'10:30', 5:'11:15', 6:'12:00',
+        7:'13:45', 8:'14:30', 9:'15:15', 10:'16:00', 11:'16:45', 12:'17:30',
+        13:'18:15', 14:'19:00', 15:'19:45'
+    };
+
+    /** Parse "Tiết 1-3", "Tiết 7-9" hoặc dạng Cổng trường HCMUTE "7 (12g45)", "1 (07g30)" → { startTime, endTime } */
+    function parseShift(shift) {
+        if (!shift) return { startTime: null, endTime: null };
+        const mPortal = shift.match(/(\d+)\s*\(\s*(\d{1,2})[gGhH:](\d{2})\s*\)/);
+        if (mPortal) {
+            const h = parseInt(mPortal[2]), m = parseInt(mPortal[3]);
+            const start = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+            const endMins = h * 60 + m + 135;
+            const end = `${String(Math.floor(endMins / 60)).padStart(2,'0')}:${String(endMins % 60).padStart(2,'0')}`;
+            return { startTime: start, endTime: end };
+        }
+        const m = shift.match(/(\d+)\s*[-–]\s*(\d+)/);
+        if (m) {
+            const s = parseInt(m[1]), e = parseInt(m[2]);
+            return { startTime: TIET_START[s] || null, endTime: TIET_END[e] || null };
+        }
+        const single = shift.match(/(\d+)/);
+        if (single) {
+            const t = parseInt(single[1]);
+            return { startTime: TIET_START[t] || null, endTime: TIET_END[t] || null };
+        }
+        return { startTime: null, endTime: null };
+    }
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    let allSchedules = [];
+    let currentView = 'day'; // 'day' (Hôm nay), 'list' (Danh sách)
+    let currentPhase = 'DOT_1'; // 'DOT_1' (Đợt 1), 'DOT_2' (Đợt 2), 'ALL' (Cả kỳ)
+
+    // ── Phase filter helpers (Đợt học HCMUTE) ─────────────────────────────────
+    function setPhase(phase) {
+        currentPhase = phase;
+        const p1 = document.getElementById('phase1');
+        const p2 = document.getElementById('phase2');
+        const pAll = document.getElementById('phaseAll');
+        const activeCls = 'px-3.5 py-1.5 rounded-md font-label-md text-label-md font-semibold bg-surface-container-lowest text-primary shadow-sm transition-colors';
+        const inactiveCls = 'px-3.5 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors';
+
+        if (p1) p1.className = phase === 'DOT_1' ? activeCls : inactiveCls;
+        if (p2) p2.className = phase === 'DOT_2' ? activeCls : inactiveCls;
+        if (pAll) pAll.className = phase === 'ALL' ? activeCls : inactiveCls;
+
+        const statusText = document.getElementById('scheduleStatusText');
+        if (statusText) {
+            statusText.textContent = phase === 'DOT_1'
+                ? 'Đang xem: Đợt 1 (Tuần 1 - 10) · Nửa đầu học kỳ'
+                : (phase === 'DOT_2' ? 'Đang xem: Đợt 2 (Tuần 11 - 20) · Nửa sau học kỳ' : 'Đang xem: Toàn bộ môn học trong kỳ');
+        }
+
+        updateKPIs();
+        if (currentView === 'day') renderDayView();
+        else if (currentView === 'list') renderListView();
+    }
+
+    function matchesPhase(s) {
+        if (!s) return false;
+        if (currentPhase === 'ALL') return true;
+        const p = (s.phase || '').trim();
+        if (!p || p === 'Cả học kỳ' || p.toLowerCase().includes('cả kỳ')) return true;
+        if (currentPhase === 'DOT_1') {
+            return p === 'Đợt 1' || p.toLowerCase().includes('đợt 1') || p.toLowerCase().includes('dot 1');
+        }
+        if (currentPhase === 'DOT_2') {
+            return p === 'Đợt 2' || p.toLowerCase().includes('đợt 2') || p.toLowerCase().includes('dot 2');
+        }
+        return true;
+    }
+
+    function onSemesterFilterChange() {
+        const year = document.getElementById('filterYear')?.value || '2026-2027';
+        const term = document.getElementById('filterTerm')?.value || 'HK01';
+        let termLabel = term === 'HK01' ? 'Học kỳ 1' : (term === 'HK02' ? 'Học kỳ 2' : 'Học kỳ 3 (Hè)');
+        loadSchedule(`${termLabel} (${year})`);
+    }
+
+    // ── Date range & Schedule Active Helpers ─────────────────────────────────
+    function parseDateRange(weeks) {
+        if (!weeks) return null;
+        const m = weeks.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s*->\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if (!m) return null;
+        return {
+            start: new Date(parseInt(m[3], 10), parseInt(m[2], 10) - 1, parseInt(m[1], 10), 0, 0, 0),
+            end: new Date(parseInt(m[6], 10), parseInt(m[5], 10) - 1, parseInt(m[4], 10), 23, 59, 59)
+        };
+    }
+
+    /** Kiểm tra xem môn học có thực sự diễn ra vào ngày dateObj hay không (xét thứ và khoảng ngày hiệu lực) */
+    function isScheduleActiveOnDate(s, dateObj, respectPhaseFilter = false) {
+        if (!s) return false;
+        const dow = (dateObj.getDay() + 6) % 7; // Mon=0 .. Sun=6
+        if ((DAY_MAP[s.dayOfWeek] ?? -1) !== dow) return false;
+
+        const range = parseDateRange(s.weeks);
+        if (range) {
+            const cur = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), 12, 0, 0);
+            return cur >= range.start && cur <= range.end;
+        }
+        // Trường hợp chuỗi tuần chung không có ngày tháng cụ thể (ví dụ: Tuần 1 - 10)
+        return respectPhaseFilter ? matchesPhase(s) : true;
+    }
+
+    // ── Day View (Hôm nay) ───────────────────────────────────────────────────
+    function renderDayView() {
+        const today = new Date();
+        const todayDow = (today.getDay() + 6) % 7; // Mon=0 .. Sun=6
+        const nowMins = today.getHours() * 60 + today.getMinutes();
+
+        const dayTitle = document.getElementById('dayViewTitle');
+        if (dayTitle) {
+            dayTitle.textContent = `${DAYS[todayDow]}, ngày ${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${today.getFullYear()}`;
+        }
+
+        const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
+        const daySchedules = allSchedules.filter(s => {
+            // Xác thực chính xác theo ngày thực tế: vừa đúng thứ vừa nằm trong khoảng tuần học (weeks)
+            if (!isScheduleActiveOnDate(s, today, false)) return false;
+            if (!search) return true;
+            return (s.courseName||'').toLowerCase().includes(search) ||
+                   (s.courseCode||'').toLowerCase().includes(search) ||
+                   (s.room||'').toLowerCase().includes(search) ||
+                   (s.lecturer||'').toLowerCase().includes(search);
+        }).sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
+
+        const countBadge = document.getElementById('dayClassCountBadge');
+        if (countBadge) countBadge.textContent = `${daySchedules.length} buổi học`;
+
+        const container = document.getElementById('dayViewList');
+        if (!container) return;
+
+        if (daySchedules.length === 0) {
+            container.innerHTML = `
+                <div class="py-12 px-4 text-center flex flex-col items-center justify-center bg-surface-container-low/40 rounded-2xl border border-dashed border-outline-variant/40">
+                    <div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-secondary mb-3">
+                        <span class="material-symbols-outlined text-3xl">celebration</span>
+                    </div>
+                    <h3 class="font-bold text-base text-on-surface">Hôm nay không có buổi học nào!</h3>
+                    <p class="text-xs text-secondary mt-1 max-w-md">Bạn có thể chuyển sang tab <strong>Danh sách môn</strong> để tra cứu toàn bộ môn học trong kỳ, hoặc chuẩn bị bài cho ngày học kế tiếp.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = daySchedules.map(s => {
+            const [sh, sm] = (s.startTime||'00:00').split(':').map(Number);
+            const [eh, em] = (s.endTime||'00:00').split(':').map(Number);
+            const startMins = sh*60 + sm, endMins = eh*60 + em;
+            const isOngoing = nowMins >= startMins && nowMins < endMins;
+            const isDone = nowMins >= endMins;
+
+            const isLab = (s.courseCode||'').toLowerCase().includes('lab') || (s.room||'').toLowerCase().includes('lab') || (s.courseName||'').toLowerCase().includes('thực hành');
+
+            return `
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4.5 rounded-2xl border transition-all ${
+                    isOngoing ? 'bg-primary/5 border-primary shadow-md ring-1 ring-primary/30' :
+                    isDone ? 'bg-surface-container-low/50 border-outline-variant/20 opacity-75' :
+                    'bg-surface-container-lowest border-outline-variant/30 hover:border-primary/40 hover:shadow-xs'
+                }">
+                    <div class="flex items-start gap-4 min-w-0 flex-1">
+                        <div class="shrink-0 text-center w-24 py-2 px-2.5 rounded-xl ${
+                            isOngoing ? 'bg-primary text-on-primary shadow-sm' :
+                            isDone ? 'bg-surface-container text-secondary' :
+                            'bg-surface-container-low border border-outline-variant/30 text-on-surface'
+                        }">
+                            <div class="font-bold text-sm tracking-tight">${s.startTime || '--:--'}</div>
+                            <div class="text-[11px] opacity-75 mt-0.5">${s.endTime || '--:--'}</div>
+                            <div class="text-[10px] font-medium mt-1 pt-1 border-t ${isOngoing ? 'border-on-primary/20' : 'border-outline-variant/30'}">${s.shift || ''}</div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                                <span class="px-2 py-0.5 rounded font-label-caps text-[10px] font-bold ${
+                                    isLab ? 'bg-tertiary-fixed text-on-tertiary-fixed' : 'bg-primary-fixed text-on-primary-fixed'
+                                }">${s.courseCode || '--'}</span>
+                                ${s.groupCode ? `<span class="text-xs font-semibold text-secondary">Nhóm ${s.groupCode}</span>` : ''}
+                                ${s.phase ? `<span class="px-2 py-0.5 rounded font-label-caps text-[10px] font-bold ${
+                                    s.phase.includes('1') ? 'bg-amber-100 text-amber-800' : (s.phase.includes('2') ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-700')
+                                }">${s.phase}</span>` : ''}
+                                ${isOngoing ? '<span class="inline-flex items-center gap-1 text-[10px] font-bold text-error bg-error/10 px-2.5 py-0.5 rounded-full"><span class="w-2 h-2 rounded-full bg-error animate-ping"></span>Đang diễn ra</span>' : ''}
+                                ${isDone ? '<span class="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full"><span class="material-symbols-outlined text-[12px]">check</span>Đã học xong</span>' : ''}
+                            </div>
+                            <h3 class="font-bold text-base text-on-surface truncate">${s.courseName || '--'}</h3>
+                            <div class="flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-2 text-xs text-secondary">
+                                <span class="flex items-center gap-1.5 text-primary font-semibold">
+                                    <span class="material-symbols-outlined text-sm">meeting_room</span>Phòng: <strong>${s.room || '--'}</strong>
+                                </span>
+                                <span class="flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-sm">person</span>${s.lecturer || 'Giảng viên bộ môn'}
+                                </span>
+                                ${s.credits ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">award_star</span>${s.credits} tín chỉ</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // ── List View (Toàn bộ môn) ──────────────────────────────────────────────
+    function renderListView() {
+        const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
+        const visible = allSchedules.filter(s => matchesPhase(s) && (!search ||
+            (s.courseName||'').toLowerCase().includes(search) ||
+            (s.courseCode||'').toLowerCase().includes(search) ||
+            (s.room||'').toLowerCase().includes(search) ||
+            (s.lecturer||'').toLowerCase().includes(search)));
+
+        const sorted = [...visible].sort((a,b) => (DAY_MAP[a.dayOfWeek]??9) - (DAY_MAP[b.dayOfWeek]??9) || (a.startTime||'').localeCompare(b.startTime||''));
+        const body = document.getElementById('listTableBody');
+        if (!body) return;
+
+        body.innerHTML = sorted.length === 0
+            ? '<tr><td colspan="7" class="py-12 text-center text-secondary font-body-md text-body-md">Chưa tìm thấy môn học nào phù hợp</td></tr>'
+            : sorted.map(s => {
+                const isLab = (s.courseCode||'').toLowerCase().includes('lab') || (s.room||'').toLowerCase().includes('lab') || (s.courseName||'').toLowerCase().includes('thực hành');
+                return `
+                    <tr class="hover:bg-surface-container-low transition-colors">
+                        <td class="py-3.5 px-4 font-label-md text-label-md font-bold text-on-surface">${s.dayOfWeek||'--'}</td>
+                        <td class="py-3.5 px-4">
+                            <div class="font-semibold text-xs text-primary">${s.startTime || ''} – ${s.endTime || ''}</div>
+                            <div class="text-[11px] text-secondary mt-0.5">${s.shift || ''}</div>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <span class="px-2 py-0.5 rounded font-label-caps text-[10px] font-bold ${
+                                s.phase && s.phase.includes('1') ? 'bg-amber-100 text-amber-800' : (s.phase && s.phase.includes('2') ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-700')
+                            }">${s.phase || 'Cả kỳ'}</span>
+                            ${s.weeks ? `<div class="text-[11px] text-secondary mt-0.5">${s.weeks}</div>` : ''}
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <span class="px-2 py-0.5 rounded font-label-caps text-label-caps font-bold ${isLab ? 'bg-tertiary-fixed text-on-tertiary-fixed' : 'bg-primary-fixed text-on-primary-fixed'}">${s.courseCode||'--'}</span>
+                            ${s.groupCode ? `<div class="text-[10px] text-secondary mt-0.5">Nhóm ${s.groupCode}</div>` : ''}
+                        </td>
+                        <td class="py-3.5 px-4 font-label-md text-label-md font-bold text-on-surface">${s.courseName||'--'}</td>
+                        <td class="py-3.5 px-4 font-body-sm text-body-sm text-primary font-bold">${s.room||'--'}</td>
+                        <td class="py-3.5 px-4 font-body-sm text-body-sm text-secondary">${s.lecturer||'--'}</td>
+                    </tr>
+                `;
+            }).join('');
+    }
+
+    // ── KPI cards ─────────────────────────────────────────────────────────────
+    function updateKPIs() {
+        const today = new Date();
+        const todayDow = (today.getDay() + 6) % 7;
+        const activeSchedules = allSchedules.filter(s => matchesPhase(s));
+        // Lịch hôm nay: chỉ tính những môn thực sự có lịch học vào ngày hôm nay
+        const todaySchedules = allSchedules.filter(s => isScheduleActiveOnDate(s, today, false));
+        const subjects = new Set(activeSchedules.map(s => s.courseCode).filter(Boolean));
+
+        const kpiTotal = document.getElementById('kpiTotal');
+        if (kpiTotal) kpiTotal.textContent = activeSchedules.length;
+        const kpiTotalBar = document.getElementById('kpiTotalBar');
+        if (kpiTotalBar) kpiTotalBar.style.width = Math.min(100, activeSchedules.length * 10) + '%';
+        const kpiSubjects = document.getElementById('kpiSubjects');
+        if (kpiSubjects) kpiSubjects.textContent = subjects.size;
+        const kpiToday = document.getElementById('kpiToday');
+        if (kpiToday) kpiToday.textContent = todaySchedules.length;
+        const todayLabel = document.getElementById('todayLabel');
+        if (todayLabel) todayLabel.textContent = `Hôm nay: ${DAYS[todayDow]} (${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')})`;
+
+        const kpiCredits = document.getElementById('kpiCredits');
+        if (kpiCredits) kpiCredits.textContent = subjects.size * 3 + ' TC';
+
+        // Buổi học kế tiếp: tìm ca học tiếp theo theo thời gian thực
+        const nowMins = today.getHours() * 60 + today.getMinutes();
+        const todaySorted = todaySchedules.sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
+        let next = null;
+        let nextBadgeText = 'Hôm nay';
+
+        // 1. Kiểm tra các ca còn lại trong ngày hôm nay
+        for (const s of todaySorted) {
+            const [h,m] = (s.startTime||'00:00').split(':').map(Number);
+            if (h*60 + m > nowMins) {
+                next = s;
+                break;
+            }
+        }
+
+        // 2. Nếu hôm nay không còn ca nào (hoặc trống lịch hôm nay), quét tìm ngày học thực tế gần nhất trong tương lai (tối đa 60 ngày)
+        if (!next) {
+            for (let dayOffset = 1; dayOffset <= 60; dayOffset++) {
+                const targetDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + dayOffset, 12, 0, 0);
+                const matches = allSchedules.filter(s => isScheduleActiveOnDate(s, targetDate, false))
+                    .sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
+                if (matches.length > 0) {
+                    next = matches[0];
+                    const dow = (targetDate.getDay() + 6) % 7;
+                    const d = String(targetDate.getDate()).padStart(2, '0');
+                    const mo = String(targetDate.getMonth() + 1).padStart(2, '0');
+                    nextBadgeText = dayOffset === 1 ? 'Ngày mai' : `${DAYS[dow]} (${d}/${mo})`;
+                    break;
+                }
+            }
+        }
+
+        if (next) {
+            document.getElementById('nextTime').textContent = `${next.startTime} – ${next.endTime||''}`;
+            document.getElementById('nextSubject').textContent = next.courseName||'--';
+            document.getElementById('nextDetail').textContent = `${next.room||''}${next.lecturer ? ' · ' + next.lecturer : ''}`;
+            document.getElementById('nextBadge').textContent = nextBadgeText;
+        } else {
+            document.getElementById('nextTime').textContent = '--:--';
+            document.getElementById('nextSubject').textContent = 'Không có ca tiếp theo';
+            document.getElementById('nextDetail').textContent = 'Học kỳ đã hoàn thành hoặc chưa có lịch';
+            document.getElementById('nextBadge').textContent = 'Trống lịch';
+        }
+    }
+
+    // ── View switcher ─────────────────────────────────────────────────────────
+    function setView(view) {
+        currentView = view;
+        const dayCont = document.getElementById('viewDayContainer');
+        const listCont = document.getElementById('viewListContainer');
+        if (dayCont) dayCont.classList.toggle('hidden', view !== 'day');
+        if (listCont) listCont.classList.toggle('hidden', view !== 'list');
+
+        const dayBtn = document.getElementById('viewDay');
+        const listBtn = document.getElementById('viewList');
+        const activeCls = 'px-4 py-1.5 rounded-md font-label-md text-label-md font-semibold bg-surface-container-lowest text-primary shadow-sm transition-colors flex items-center gap-1.5';
+        const inactiveCls = 'px-4 py-1.5 rounded-md font-label-md text-label-md font-medium text-secondary hover:text-on-surface transition-colors flex items-center gap-1.5';
+
+        if (dayBtn) dayBtn.className = view === 'day' ? activeCls : inactiveCls;
+        if (listBtn) listBtn.className = view === 'list' ? activeCls : inactiveCls;
+
+        if (view === 'day') renderDayView();
+        else if (view === 'list') renderListView();
+    }
+
+    function filterSchedule() {
+        if (currentView === 'day') renderDayView();
+        else if (currentView === 'list') renderListView();
+    }
+
+    // ── Load data (Lấy dữ liệu thật từ Portal qua API) ────────────────────────
+    async function loadSchedule(semesterParam) {
+        try {
+            let url = '/api/academic/schedules';
+            if (semesterParam) {
+                url += '?semester=' + encodeURIComponent(semesterParam);
+            }
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            allSchedules = await res.json();
+            if (!Array.isArray(allSchedules)) allSchedules = [];
+        } catch (e) {
+            console.warn('Tải lịch học thất bại:', e.message);
+            allSchedules = [];
+        }
+
+        allSchedules.forEach(s => {
+            const parsed = parseShift(s.shift);
+            if (!s.startTime || !s.endTime || (parsed.startTime && s.startTime === '07:30' && parsed.startTime !== '07:30')) {
+                s.startTime = parsed.startTime || s.startTime || '07:30';
+                s.endTime = parsed.endTime || s.endTime || '09:45';
+            }
+        });
+
+        const emptyAlert = document.getElementById('ttEmptyAlert');
+        if (emptyAlert) {
+            emptyAlert.classList.toggle('hidden', allSchedules.length > 0);
+        }
+
+        updateKPIs();
+        setView(currentView);
+    }
+
+    // ── Kích hoạt đồng bộ thông minh từ Portal ────────────────────────────────
+    async function triggerSync() {
+        const syncBtn = document.getElementById('syncBtn');
+        const origContent = syncBtn ? syncBtn.innerHTML : '';
+        if (syncBtn) {
+            syncBtn.disabled = true;
+            syncBtn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">refresh</span> Đang đồng bộ...`;
+        }
+        try {
+            const studentId = document.body.dataset.studentId || '';
+            const portalLinked = document.body.dataset.portalLinked === 'true';
+            const portalUser = document.body.dataset.portalUser || '';
+
+            if (!portalLinked) {
+                const confirmed = confirm('Bạn chưa liên kết tài khoản Cổng trường HCMUTE trong Hồ sơ cá nhân (Profile).\n\nNhấn "OK" để chuyển đến trang Profile để liên kết và lấy dữ liệu thật, hoặc nhấn "Cancel" để tiếp tục xem dữ liệu mô phỏng.');
+                if (confirmed) {
+                    window.location.href = '/profile';
+                    return;
+                }
+            }
+
+            const targetStudentId = portalUser || studentId || '21110001';
+            const res = await fetch('/api/academic/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    studentId: targetStudentId,
+                    password: '' // Server tự nạp mật khẩu Portal đã lưu trong DB
+                })
+            });
+            const data = await res.json();
+            if (data && data.success) {
+                const year = document.getElementById('filterYear')?.value || '2026-2027';
+                const term = document.getElementById('filterTerm')?.value || 'HK01';
+                let termLabel = term === 'HK01' ? 'Học kỳ 1' : (term === 'HK02' ? 'Học kỳ 2' : 'Học kỳ 3 (Hè)');
+                await loadSchedule(`${termLabel} (${year})`);
+                alert('✅ ' + (data.message || 'Đồng bộ thời khóa biểu trực tiếp từ HCMUTE Portal thành công!'));
+            } else {
+                await loadSchedule();
+                alert(data.message || 'Đã làm mới danh sách môn học.');
+            }
+        } catch (err) {
+            console.error('Lỗi khi đồng bộ:', err);
+            await loadSchedule();
+        } finally {
+            if (syncBtn) {
+                syncBtn.disabled = false;
+                syncBtn.innerHTML = origContent;
+            }
+        }
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        setView('day');
+        loadSchedule();
+    });
+    </script>
+</body>
+</html>
