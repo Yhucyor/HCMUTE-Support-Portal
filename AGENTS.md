@@ -31,11 +31,21 @@ Dev A toàn quyền quản lý và phát triển toàn diện hệ thống Sprin
   + AI **TỰ ĐỘNG** chạy lệnh `git push origin <feature-branch>` lên GitHub theo nhánh tương ứng.
   + **KHÔNG CẦN CHỜ LỆNH THỦ CÔNG TỪ USER** cho các thao tác commit & push trên nhánh tính năng này.
 
-### B. Quy tắc Gộp Nhánh (`merge`) - BẮT BUỘC CHỜ LỆNH:
-- ⛔ **CHỈ KHI NGƯỜI DÙNG BẢO "HOÀN THIỆN" / RA LỆNH MERGE:**
-  * AI mới được phép chuyển sang nhánh `dev`, thực hiện merge `feature/*` vào `dev` (`git merge --no-ff`), kiểm tra build và push lên `origin dev`.
-  * Và chỉ khi người dùng bảo release/hoàn thành module lớn mới tiếp tục merge từ `dev` vào `main` (`git merge --no-ff dev`), gắn Tag phiên bản và push `main` + `tags`.
-- ⛔ **TUYỆT ĐỐI KHÔNG TỰ ĐỘNG MERGE VÀO `dev` HOẶC `main` KHI NGƯỜI DÙNG CHƯA RA TÍN HIỆU HOÀN THIỆN!**
+### B. Quy tắc Gộp Nhánh (`merge`) - BẮT BUỘC CHỜ LỆNH TỪ USER:
+- ⛔ **CHỈ KHI NGƯỜI DÙNG BẢO "HOÀN THIỆN" / RA LỆNH MERGE TÍNH NĂNG VÀO DEV:**
+  * AI chuyển sang nhánh `dev`: `git checkout dev && git pull origin dev`.
+  * Áp dụng **SQUASH AND MERGE** để làm sạch lịch sử: `git merge --squash <feature-branch>`.
+  * Chạy kiểm tra biên dịch an toàn: `mvn test-compile`.
+  * AI tự động tạo **1 COMMIT DUY NHẤT** tổng hợp toàn bộ tính năng theo chuẩn:
+    `feat(<scope>): <tóm tắt tính năng hoàn chỉnh>` kèm danh sách bullet points các thay đổi chính trong body commit.
+  * Push commit lên nhánh phát triển: `git push origin dev`.
+  * (Tùy chọn) Xóa nhánh local tính năng nếu người dùng yêu cầu dọn dẹp.
+- ⛔ **KHI NGƯỜI DÙNG RA LỆNH RELEASE LÊN `main` (BẢO VỆ ĐỒ ÁN / GIAI ĐOẠN LỚN):**
+  * AI chuyển sang `main`: `git checkout main && git pull origin main`.
+  * Thực hiện **Merge Commit bảo toàn mốc phát hành**: `git merge --no-ff dev -m "release: phiên bản <vX.Y.Z> - <tên milestone>"`.
+  * Gắn Git Tag: `git tag -a vX.Y.Z -m "<mô tả tag>"`.
+  * Push lên GitHub: `git push origin main --tags`.
+- ⛔ **TUYỆT ĐỐI KHÔNG TỰ ĐỘNG MERGE KHI NGƯỜI DÙNG CHƯA RA TÍN HIỆU HOÀN THIỆN!**
 
 ---
 
