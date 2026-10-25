@@ -552,13 +552,25 @@
                                 </div>
                             </div>
 
+                            <!-- Google OAuth Notification if user logged in via OAuth2 -->
+                            <div th:if="${currentUser != null and currentUser.isOAuth2User()}" class="p-3.5 bg-sky-500/10 border border-sky-500/30 rounded-xl flex items-start gap-3">
+                                <span class="material-symbols-outlined text-[22px] text-sky-600 mt-0.5 shrink-0">account_circle</span>
+                                <div class="flex flex-col gap-0.5">
+                                    <span class="text-xs font-bold text-sky-800 uppercase tracking-wide">Tài khoản liên kết Google OAuth</span>
+                                    <p class="font-body-sm text-body-sm text-on-surface-variant">
+                                        Bạn đang đăng nhập an toàn bằng tài khoản Google (<strong class="text-sky-700" th:text="${user.email}">user@gmail.com</strong>).
+                                        Nếu muốn thiết lập mật khẩu riêng để đăng nhập bằng tên tài khoản, chỉ cần nhập mật khẩu mới và xác thực OTP gửi về Gmail (không cần mật khẩu hiện tại).
+                                    </p>
+                                </div>
+                            </div>
+
                             <!-- Change Password Form -->
                             <form th:action="@{/profile/change-password}" method="post" th:object="${changePasswordRequest}" autocomplete="off" novalidate
                                   class="flex flex-col gap-space-md">
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-                                <!-- Mật khẩu hiện tại -->
-                                <div class="flex flex-col gap-1.5">
+                                <!-- Mật khẩu hiện tại (ẩn đối với tài khoản Google OAuth) -->
+                                <div th:unless="${currentUser != null and currentUser.isOAuth2User()}" class="flex flex-col gap-1.5">
                                     <label class="font-label-caps text-label-caps uppercase font-bold text-on-surface-variant flex items-center gap-1" for="currentPassword">
                                         Mật khẩu hiện tại <span class="text-error">*</span>
                                     </label>
@@ -646,7 +658,6 @@
                                         Hệ thống gửi mã OTP bảo vệ vào hòm thư Gmail của bạn (<strong class="text-primary font-semibold" th:text="${user.email}">email@hcmute.edu.vn</strong>). Sau khi đổi mật khẩu, bạn cần đăng nhập lại.
                                     </p>
                                 </div>
-                                </div>
 
                                 <!-- Action Buttons -->
                                 <div class="flex items-center justify-end gap-space-sm pt-space-md border-t border-surface-container-high/60">
@@ -657,7 +668,7 @@
                                     <button class="flex items-center gap-space-xs px-space-xl py-2.5 rounded-lg font-label-lg text-label-lg font-semibold bg-error text-on-error hover:bg-on-error-container shadow-md hover:shadow-lg active:scale-95 transition-all"
                                             type="submit">
                                         <span class="material-symbols-outlined text-[18px]">lock_reset</span>
-                                        <span>Cập nhật mật khẩu</span>
+                                        <span th:text="${currentUser != null and currentUser.isOAuth2User()} ? 'Thiết lập mật khẩu' : 'Cập nhật mật khẩu'">Cập nhật mật khẩu</span>
                                     </button>
                                 </div>
                             </form>

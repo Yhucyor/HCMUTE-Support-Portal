@@ -2,9 +2,11 @@ package com.school.counseling.module.auth.service;
 
 import com.school.counseling.common.exception.AppException;
 import com.school.counseling.common.storage.IStorageService;
+import com.school.counseling.common.util.SecurityUtils;
 import com.school.counseling.module.auth.dto.ChangePasswordRequest;
 import com.school.counseling.module.auth.dto.UpdateProfileRequest;
 import com.school.counseling.module.auth.dto.UserProfileDto;
+import com.school.counseling.module.auth.dto.UserPrincipal;
 import com.school.counseling.module.auth.entity.Department;
 import com.school.counseling.module.auth.entity.User;
 import com.school.counseling.module.auth.repository.DepartmentRepository;
@@ -108,8 +110,23 @@ public class ProfileService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException("Không tìm thấy người dùng"));
 
-        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
-            throw new AppException("Mật khẩu hiện tại không chính xác");
+        boolean isOAuthSession = SecurityUtils.getCurrentUser()
+                .map(UserPrincipal::isOAuth2User)
+                .orElse(false);
+
+        // Với tài khoản thường (không phải OAuth), bắt buộc phải có mật khẩu hiện tại và kiểm tra khớp
+        if (!isOAuthSession) {
+            if (request.getCurrentPassword() == null || request.getCurrentPassword().isBlank()) {
+                throw new AppException("Vui lòng nhập mật khẩu hiện tại");
+            }
+            if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
+                throw new AppException("Mật khẩu hiện tại không chính xác");
+            }
+        } else if (request.getCurrentPassword() != null && !request.getCurrentPassword().isBlank()) {
+            // Nếu người dùng OAuth chủ động nhập mật khẩu hiện tại (đã từng đổi mật khẩu trước đó)
+            if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
+                throw new AppException("Mật khẩu hiện tại không chính xác");
+            }
         }
 
         // Xác thực mã OTP 2FA gửi qua Gmail
@@ -124,7 +141,7 @@ public class ProfileService {
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
-        log.info("User {} successfully changed password with 2FA OTP verification", user.getUsername());
+        log.info("User {} successfully updated password with 2FA OTP verification (isOAuth={})", user.getUsername(), isOAuthSession);
     }
 
     @Transactional

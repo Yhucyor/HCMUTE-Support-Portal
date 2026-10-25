@@ -131,6 +131,10 @@ public class UserPrincipal implements UserDetails, OAuth2User, OidcUser {
         return attributes != null ? attributes : Collections.emptyMap();
     }
 
+    public boolean isOAuth2User() {
+        return attributes != null && !attributes.isEmpty();
+    }
+
     @Override
     public Map<String, Object> getClaims() {
         return idToken != null ? idToken.getClaims() : (attributes != null ? attributes : Collections.emptyMap());
