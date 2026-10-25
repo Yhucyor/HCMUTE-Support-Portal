@@ -106,7 +106,7 @@ def rewrite_query(question: str, history: List[Dict[str, str]]) -> str:
             
             prompt = f"{REWRITE_SYSTEM_PROMPT}\n\nLịch sử hội thoại:\n{history_text}\n\nFollow-up: {clean_q}\n\nStandalone Query:"
             
-            for m_name in ["gemini-2.5-flash", "gemini-3.5-flash", "gemini-2.5-pro"]:
+            for m_name in ["gemini-2.5-flash", "gemini-3.5-flash-lite", "gemini-3.5-flash"]:
                 try:
                     model = genai.GenerativeModel(m_name)
                     response = model.generate_content(

@@ -12,9 +12,12 @@ RUN pip install --default-timeout=1000 --no-cache-dir -r requirements.txt
 # 3. Copy toàn bộ mã nguồn
 COPY . .
 
-# 4. Cấu hình cổng động nhận từ Render ($PORT)
+# 4. Tạo thư mục storage và logs nếu chưa có
+RUN mkdir -p qdrant_storage logs
+
+# 5. Cấu hình cổng động nhận từ Render ($PORT)
 ENV PORT=8000
 EXPOSE 8000
 
-# 5. Khởi chạy Web Server Uvicorn
+# 6. Khởi chạy Web Server Uvicorn
 CMD ["sh", "-c", "uvicorn api.app:app --host 0.0.0.0 --port ${PORT:-8000}"]

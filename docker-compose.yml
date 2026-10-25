@@ -1,4 +1,3 @@
-
 services:
   # Container cho Database MySQL
   db:
@@ -14,9 +13,7 @@ services:
       # Map port 3307 trên máy host vào port 3306 của container
       - "3307:3306"
     volumes:
-      # Lưu trữ data xuống ổ cứng thật để không bị mất dữ liệu khi xóa container
       - qaute_db_data:/var/lib/mysql
-      # Tự động nạp toàn bộ 17 bảng và dữ liệu ban đầu khi tạo container lần đầu
       - ./docs/database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
@@ -24,6 +21,25 @@ services:
       timeout: 5s
       retries: 10
       start_period: 15s
+    networks:
+      - qaute_network
+
+  # Container cho AI Microservice (FastAPI + Gemini / Ollama RAG)
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: qaute_ai_service
+    restart: on-failure
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./ai-service/.env
+    environment:
+      - APP_ENV=production
+      - LLM_BASE_URL=http://host.docker.internal:11434
+    volumes:
+      - ./ai-service:/app
     networks:
       - qaute_network
 
@@ -46,9 +62,14 @@ services:
       - SPRING_DATASOURCE_USERNAME=qaute_user
       - SPRING_DATASOURCE_PASSWORD=qautepassword
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - AI_CHATBOT_URL=http://ai-service:8000/api/chat
+      - AI_MICROSERVICE_AUTO_START=false
+      - DIFY_API_KEY=app-4RqpdjhJVvBcYRlRfnI5kdtD
     depends_on:
       db:
         condition: service_healthy
+      ai-service:
+        condition: service_started
     networks:
       - qaute_network
 
