@@ -297,6 +297,11 @@ public class OfficialFeedController {
                         break;
                     }
                 }
+                // Nếu tệp nằm ngoài thư mục upload mặc định (vd: tài liệu mẫu / thư mục đồ án / tài liệu AI)
+                // Cho phép phục vụ nếu là tệp an toàn (không thuộc thư mục hệ thống nhạy cảm và đúng định dạng)
+                if (file == null && isSafeDocumentOrMedia(rawFile)) {
+                    file = rawFile;
+                }
             } catch (Exception ignored) {}
         }
 
@@ -327,6 +332,33 @@ public class OfficialFeedController {
         } catch (Exception e) {
             log.warn("Lỗi khi truyền tệp đính kèm: {}", e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private boolean isSafeDocumentOrMedia(File candidate) {
+        if (candidate == null || !candidate.exists() || !candidate.isFile()) {
+            return false;
+        }
+        try {
+            String path = candidate.getCanonicalPath().toLowerCase();
+            // Ngăn chặn tuyệt đối các thư mục nhạy cảm hệ điều hành
+            if (path.contains("\\windows\\") || path.contains("/windows/")
+                    || path.contains("\\system32") || path.contains("/system32")
+                    || path.contains("\\program files") || path.contains("/program files")
+                    || path.startsWith("/etc") || path.startsWith("/bin") || path.startsWith("/sbin")
+                    || path.contains(".m2") || path.contains(".git")) {
+                return false;
+            }
+
+            // Chỉ cho phép định dạng tài liệu, hình ảnh, video học vụ an toàn
+            String name = candidate.getName().toLowerCase();
+            return name.endsWith(".pdf") || name.endsWith(".docx") || name.endsWith(".doc")
+                    || name.endsWith(".xlsx") || name.endsWith(".xls") || name.endsWith(".pptx")
+                    || name.endsWith(".txt") || name.endsWith(".png") || name.endsWith(".jpg")
+                    || name.endsWith(".jpeg") || name.endsWith(".webp") || name.endsWith(".mp4")
+                    || name.endsWith(".zip") || name.endsWith(".rar");
+        } catch (Exception e) {
+            return false;
         }
     }
 

@@ -129,6 +129,12 @@ public class FileAttachmentController {
 
         File fileOnDisk = findFileOnDisk(storedFileName);
         if (fileOnDisk == null || !fileOnDisk.exists()) {
+            File directFile = new File(fileUrl);
+            if (directFile.exists() && directFile.isFile() && isSafeDocumentOrMedia(directFile)) {
+                fileOnDisk = directFile;
+            }
+        }
+        if (fileOnDisk == null || !fileOnDisk.exists()) {
             log.warn("Tệp không tồn tại trên ổ đĩa: {} (từ URL: {})", storedFileName, fileUrl);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -220,6 +226,31 @@ public class FileAttachmentController {
             return tika.detect(file);
         } catch (Exception ignored) {
             return "application/octet-stream";
+        }
+    }
+
+    private boolean isSafeDocumentOrMedia(File candidate) {
+        if (candidate == null || !candidate.exists() || !candidate.isFile()) {
+            return false;
+        }
+        try {
+            String path = candidate.getCanonicalPath().toLowerCase();
+            if (path.contains("\\windows\\") || path.contains("/windows/")
+                    || path.contains("\\system32") || path.contains("/system32")
+                    || path.contains("\\program files") || path.contains("/program files")
+                    || path.startsWith("/etc") || path.startsWith("/bin") || path.startsWith("/sbin")
+                    || path.contains(".m2") || path.contains(".git")) {
+                return false;
+            }
+
+            String name = candidate.getName().toLowerCase();
+            return name.endsWith(".pdf") || name.endsWith(".docx") || name.endsWith(".doc")
+                    || name.endsWith(".xlsx") || name.endsWith(".xls") || name.endsWith(".pptx")
+                    || name.endsWith(".txt") || name.endsWith(".png") || name.endsWith(".jpg")
+                    || name.endsWith(".jpeg") || name.endsWith(".webp") || name.endsWith(".mp4")
+                    || name.endsWith(".zip") || name.endsWith(".rar");
+        } catch (Exception e) {
+            return false;
         }
     }
 }
