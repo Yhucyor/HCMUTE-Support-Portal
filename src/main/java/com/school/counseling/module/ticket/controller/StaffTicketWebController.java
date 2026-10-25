@@ -2,8 +2,8 @@ package com.school.counseling.module.ticket.controller;
 
 import com.school.counseling.common.exception.TicketAlreadyClaimedException;
 import com.school.counseling.common.util.SecurityUtils;
-import com.school.counseling.module.auth.entity.Department;
-import com.school.counseling.module.auth.repository.DepartmentRepository;
+import com.school.counseling.module.admin.dto.DepartmentAdminDto;
+import com.school.counseling.module.admin.service.AdminDepartmentService;
 import com.school.counseling.module.ticket.dto.TicketResponseDto;
 import com.school.counseling.module.ticket.dto.TicketSummaryDto;
 import com.school.counseling.module.ticket.service.TicketService;
@@ -31,7 +31,7 @@ import java.util.List;
 public class StaffTicketWebController {
 
     private final TicketService ticketService;
-    private final DepartmentRepository departmentRepository;
+    private final AdminDepartmentService adminDepartmentService;
 
     @GetMapping
     @PreAuthorize("#departmentId == null or @deptSecurity.canAccessDepartment(#departmentId)")
@@ -56,16 +56,16 @@ public class StaffTicketWebController {
             return "error/403";
         }
 
-        List<Department> allDepartments = departmentRepository.findAll();
+        List<DepartmentAdminDto> allDepartments = adminDepartmentService.getAllDepartments();
         model.addAttribute("allDepartments", allDepartments);
         model.addAttribute("isAdmin", isAdmin);
 
-        Department dept = null;
+        DepartmentAdminDto dept = null;
         List<TicketSummaryDto> allTickets;
         List<TicketSummaryDto> filteredTickets;
 
         if (currentDeptId != null) {
-            dept = departmentRepository.findById(currentDeptId).orElse(null);
+            dept = adminDepartmentService.findDepartmentDtoById(currentDeptId).orElse(null);
             allTickets = ticketService.getTicketSummaryByDepartment(currentDeptId, "ALL");
         } else {
             // Admin xem toàn bộ vé toàn trường
