@@ -103,7 +103,7 @@
                                 </span>
                                 <div class="fw-bold text-dark text-truncate" th:text="${rep.post != null ? rep.post.title : 'Bài viết đã bị xóa'}">Tiêu đề bài viết</div>
                             </div>
-                            <small class="text-muted text-truncate d-block" th:text="${rep.post != null ? (rep.post.plainTextSummary != null ? rep.post.plainTextSummary : rep.post.content) : ''}">Nội dung bài viết...</small>
+                            <small class="text-muted text-truncate d-block" th:text="${rep.post != null ? rep.post.plainTextSummary : ''}">Nội dung bài viết...</small>
                             <div class="d-flex align-items-center justify-content-between mt-1">
                                 <small class="text-muted">Tác giả: <strong th:text="${rep.post != null and rep.post.author != null ? rep.post.author.fullName : 'N/A'}">Sinh viên A</strong></small>
                                 <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none text-primary" data-bs-toggle="modal" th:data-bs-target="'#postDetailModal_' + ${rep.id}" th:if="${rep.post != null}">
