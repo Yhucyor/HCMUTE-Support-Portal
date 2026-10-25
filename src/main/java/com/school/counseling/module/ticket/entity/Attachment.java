@@ -1,8 +1,6 @@
-package com.school.counseling.module.chat.entity;
+package com.school.counseling.module.ticket.entity;
 
 import com.school.counseling.common.entity.BaseEntity;
-import com.school.counseling.module.ticket.entity.Ticket;
-import com.school.counseling.module.ticket.entity.TicketHistory;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -1,6 +1,6 @@
-package com.school.counseling.module.chat.repository;
+package com.school.counseling.module.ticket.repository;
 
-import com.school.counseling.module.chat.entity.Attachment;
+import com.school.counseling.module.ticket.entity.Attachment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

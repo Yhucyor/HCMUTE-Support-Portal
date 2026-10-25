@@ -2,8 +2,8 @@ package com.school.counseling.module.ticket.controller;
 
 import com.school.counseling.common.storage.IStorageService;
 import com.school.counseling.common.util.Constant;
-import com.school.counseling.module.chat.entity.Attachment;
-import com.school.counseling.module.chat.repository.AttachmentRepository;
+import com.school.counseling.module.ticket.entity.Attachment;
+import com.school.counseling.module.ticket.repository.AttachmentRepository;
 import com.school.counseling.module.feed.entity.PostAttachment;
 import com.school.counseling.module.feed.repository.PostAttachmentRepository;
 import lombok.RequiredArgsConstructor;

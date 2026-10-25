@@ -3,7 +3,6 @@ package com.school.counseling.module.ticket.entity;
 import com.school.counseling.common.entity.BaseEntity;
 import com.school.counseling.module.auth.entity.Department;
 import com.school.counseling.module.auth.entity.User;
-import com.school.counseling.module.chat.entity.Attachment;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
