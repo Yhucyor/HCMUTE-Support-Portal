@@ -85,7 +85,7 @@ public class ProfileService {
     }
 
     @Transactional
-    public void sendChangePasswordOtp(Long userId) {
+    public String sendChangePasswordOtp(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException("Không tìm thấy người dùng"));
 
@@ -94,8 +94,9 @@ public class ProfileService {
         }
 
         String otp = otpService.generateOtp(user.getEmail(), "CHANGE_PASSWORD");
-        log.info("Change password OTP generated for user {}: {}", user.getUsername(), otp);
+        log.info("Change password OTP generated for user {}: {} (Destination email: {})", user.getUsername(), otp, user.getEmail());
         emailAsyncService.sendOtpEmail(user.getEmail(), user.getFullName(), otp, "xác thực đổi mật khẩu tài khoản");
+        return user.getEmail();
     }
 
     @Transactional
