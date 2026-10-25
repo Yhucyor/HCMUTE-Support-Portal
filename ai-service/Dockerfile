@@ -1,35 +1,23 @@
-# Multi-stage build for optimized image size
-FROM python:3.12-slim as builder
-
-WORKDIR /app
-
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --default-timeout=1000 --no-cache-dir --user -r requirements.txt
-
-# Final stage
 FROM python:3.12-slim
 
 WORKDIR /app
 
-# Copy only the installed packages from builder
-COPY --from=builder /root/.local /root/.local
+# 1. Cai dat PyTorch CPU-only truoc (nhe hon 2.5GB, khong tai cac goi cuda/nvidia thua)
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 
-# Copy application code
+# 2. Cai dat cac dependencies con lai
+COPY requirements.txt .
+RUN pip install --default-timeout=1000 --no-cache-dir -r requirements.txt
+
+# 3. Copy source code
 COPY . .
 
-# Make sure scripts in .local are usable
-ENV PATH=/root/.local/bin:$PATH
+# 4. Tao thu muc logs
+RUN mkdir -p logs
 
-# Create non-root user for security
-RUN useradd -m -u 1000 chatbot && \
-    chown -R chatbot:chatbot /app
+ENV PORT=8000
+EXPOSE 8000
 
-USER chatbot
+# 5. Khoi chay Uvicorn theo cong Render ($PORT)
+CMD ["sh", "-c", "uvicorn api.app:app --host 0.0.0.0 --port ${PORT:-8000}"]
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD python -c "import requests; requests.get('http://localhost:8000/health', timeout=5)" || exit 1
-
-# Run the application
-CMD ["python", "-m", "api.main"]

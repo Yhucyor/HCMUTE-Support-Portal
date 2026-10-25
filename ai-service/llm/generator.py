@@ -60,8 +60,8 @@ def generate_answer(context: str, question: str, provider: str = None, history: 
             
             genai.configure(api_key=api_key)
             
-            # Danh sách model Gemini 3.5 thế hệ mới nhất có quota dồi dào
-            candidate_models = ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-2.5-pro"]
+            # Danh sách model Gemini thế hệ mới nhất có quota dồi dào
+            candidate_models = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite"]
             answer = None
             last_err = None
             

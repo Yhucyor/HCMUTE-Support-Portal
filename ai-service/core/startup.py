@@ -1,4 +1,10 @@
 import logging
+import torch
+
+try:
+    torch.set_num_threads(1)  # Giảm mức tiêu thụ RAM của PyTorch
+except Exception:
+    pass
 from typing import Optional
 
 from qdrant_client import QdrantClient
@@ -100,11 +106,31 @@ def initialize_rag_components():
         _bm25.compute_average_document_length(documents_texts)
         logger.info(f"BM25 initialized with avg doc length: {_bm25.average_document_length:.2f}")
         
-        # Step 4: Initialize Reranker
-        logger.info("Step 4: Initializing CrossEncoder Reranker...")
-        cross_encoder = CrossEncoderModel(RERANKER_MODEL, device=RERANKER_DEVICE)
-        _reranker = CrossEncoderReranker(cross_encoder)
-        logger.info(f"Reranker initialized with model: {RERANKER_MODEL}")
+        # Giải phóng bộ nhớ tạm của danh sách văn bản để tiết kiệm RAM
+        del documents_texts
+        import gc, os
+        gc.collect()
+
+        # Step 4: Initialize Reranker (Tắt trên Render Free để không bị vượt quá 512MB RAM)
+        # Đoạn code cũ:
+        # logger.info("Step 4: Initializing CrossEncoder Reranker...")
+        # cross_encoder = CrossEncoderModel(RERANKER_MODEL, device=RERANKER_DEVICE)
+        # _reranker = CrossEncoderReranker(cross_encoder)
+        # logger.info(f"Reranker initialized with model: {RERANKER_MODEL}")
+
+        enable_reranker = os.getenv("ENABLE_RERANKER", "false").lower() == "true"
+        if enable_reranker:
+            try:
+                logger.info("Step 4: Initializing CrossEncoder Reranker...")
+                cross_encoder = CrossEncoderModel(RERANKER_MODEL, device=RERANKER_DEVICE)
+                _reranker = CrossEncoderReranker(cross_encoder)
+                logger.info(f"Reranker initialized with model: {RERANKER_MODEL}")
+            except Exception as re:
+                logger.warning(f"Bỏ qua Reranker do giới hạn bộ nhớ: {re}")
+                _reranker = None
+        else:
+            logger.info("Step 4: Bỏ qua Reranker (tiết kiệm 250MB RAM cho Render Free, dùng trực tiếp Qdrant Hybrid Score)")
+            _reranker = None
         
         _initialized = True
         
