@@ -252,6 +252,7 @@ public class AiChatbotService {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("ngrok-skip-browser-warning", "true");
 
             AiChatRequest requestPayload = AiChatRequest.builder()
                 .query(query)
