@@ -37,6 +37,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class HcmuteCrawlerService {
@@ -49,6 +51,7 @@ public class HcmuteCrawlerService {
     private static final Duration TIMEOUT = Duration.ofSeconds(15);
 
     private final Map<String, CacheEntry<List<PortalAnnouncementDto>>> announcementCache = new ConcurrentHashMap<>();
+    private final Map<String, ReentrantLock> studentLocks = new ConcurrentHashMap<>();
 
     private final StudentGradeRepository gradeRepository;
     private final CourseScheduleRepository scheduleRepository;
@@ -112,9 +115,23 @@ public class HcmuteCrawlerService {
             return syncDemoData(studentId);
         }
 
-        log.info("Bắt đầu xác thực và đồng bộ dữ liệu học vụ HCMUTE qua Portal API cho sinh viên: {}", studentId);
-
+        ReentrantLock lock = studentLocks.computeIfAbsent(studentId, k -> new ReentrantLock());
+        boolean acquired = false;
         try {
+            acquired = lock.tryLock(25, TimeUnit.SECONDS);
+            if (!acquired) {
+                log.warn("MSSV {} đang được đồng bộ bởi một luồng khác, bỏ qua để tránh xung đột dữ liệu.", studentId);
+                return HcmuteSyncResponse.builder()
+                        .success(true)
+                        .message("Dữ liệu đang được đồng bộ ở tiến trình song song...")
+                        .studentId(studentId)
+                        .studentName("Sinh viên " + studentId)
+                        .syncMode("LIVE_PORTAL")
+                        .syncedAt(LocalDateTime.now())
+                        .build();
+            }
+
+            log.info("Bắt đầu xác thực và đồng bộ dữ liệu học vụ HCMUTE qua Portal API cho sinh viên: {}", studentId);
             // 1. Xác thực tài khoản trực tiếp qua /api/authenticate/authpsc
             JsonNode authResult = authenticateWithHcmute(studentId, password);
 
@@ -211,6 +228,10 @@ public class HcmuteCrawlerService {
                     .syncMode("FAILED")
                     .syncedAt(LocalDateTime.now())
                     .build();
+        } finally {
+            if (acquired) {
+                lock.unlock();
+            }
         }
     }
 
