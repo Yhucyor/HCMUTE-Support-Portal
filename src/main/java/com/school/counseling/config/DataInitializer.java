@@ -720,7 +720,7 @@ public class DataInitializer implements CommandLineRunner {
     private void cleanupDuplicateComments() {
         try {
             int deleted = jdbcTemplate.update(
-                "DELETE c1 FROM comments c1 INNER JOIN comments c2 " +
+                "DELETE c1 FROM post_comments c1 INNER JOIN post_comments c2 " +
                 "WHERE c1.id > c2.id AND c1.post_id = c2.post_id AND c1.author_id = c2.author_id AND c1.content = c2.content"
             );
             if (deleted > 0) {

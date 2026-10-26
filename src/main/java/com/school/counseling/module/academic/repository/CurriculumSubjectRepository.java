@@ -9,5 +9,7 @@ import java.util.List;
 @Repository
 public interface CurriculumSubjectRepository extends JpaRepository<CurriculumSubject, Long> {
     List<CurriculumSubject> findByStudentIdOrderBySemesterRecommendedAsc(String studentId);
-    void deleteByStudentId(String studentId);
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("DELETE FROM CurriculumSubject c WHERE c.studentId = :studentId")
+    void deleteByStudentId(@org.springframework.data.repository.query.Param("studentId") String studentId);
 }

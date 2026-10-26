@@ -14,5 +14,7 @@ public interface StudentGradeRepository extends JpaRepository<StudentGrade, Long
     @org.springframework.data.jpa.repository.Query("SELECT DISTINCT g.semester FROM StudentGrade g WHERE g.studentId = :studentId ORDER BY g.semester DESC")
     List<String> findDistinctSemestersByStudentId(@org.springframework.data.repository.query.Param("studentId") String studentId);
 
-    void deleteByStudentId(String studentId);
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("DELETE FROM StudentGrade g WHERE g.studentId = :studentId")
+    void deleteByStudentId(@org.springframework.data.repository.query.Param("studentId") String studentId);
 }

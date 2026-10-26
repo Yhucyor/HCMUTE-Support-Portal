@@ -252,9 +252,12 @@ public class AiChatbotService {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.add("ngrok-skip-browser-warning", "true");
+            headers.add("User-Agent", "HCMUTE-Support-Portal/1.0");
 
+            String queryForAi = (query != null && query.length() > 500) ? query.substring(0, 500) : query;
             AiChatRequest requestPayload = AiChatRequest.builder()
-                .query(query)
+                .query(queryForAi)
                 .sessionId(sessionId)
                 .provider(provider != null ? provider : "gemini")
                 .history(history)

@@ -1,35 +1,20 @@
-# Multi-stage build for optimized image size
-FROM python:3.12-slim as builder
-
-WORKDIR /app
-
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --default-timeout=1000 --no-cache-dir --user -r requirements.txt
-
-# Final stage
 FROM python:3.12-slim
 
 WORKDIR /app
 
-# Copy only the installed packages from builder
-COPY --from=builder /root/.local /root/.local
+# 1. Cài đặt PyTorch bản CPU-only trước (giúp nhẹ hơn 2.5GB, không tải các file cuda/nvidia thừa)
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 
-# Copy application code
+# 2. Cài đặt các thư viện còn lại trực tiếp vào môi trường (không dùng --user để tránh lỗi quyền hạn)
+COPY requirements.txt .
+RUN pip install --default-timeout=1000 --no-cache-dir -r requirements.txt
+
+# 3. Copy toàn bộ mã nguồn
 COPY . .
 
-# Make sure scripts in .local are usable
-ENV PATH=/root/.local/bin:$PATH
+# 4. Cấu hình cổng động nhận từ Render ($PORT)
+ENV PORT=8000
+EXPOSE 8000
 
-# Create non-root user for security
-RUN useradd -m -u 1000 chatbot && \
-    chown -R chatbot:chatbot /app
-
-USER chatbot
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD python -c "import requests; requests.get('http://localhost:8000/health', timeout=5)" || exit 1
-
-# Run the application
-CMD ["python", "-m", "api.main"]
+# 5. Khởi chạy Web Server Uvicorn
+CMD ["sh", "-c", "uvicorn api.app:app --host 0.0.0.0 --port ${PORT:-8000}"]

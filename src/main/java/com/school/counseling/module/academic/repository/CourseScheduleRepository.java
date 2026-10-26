@@ -11,5 +11,7 @@ public interface CourseScheduleRepository extends JpaRepository<CourseSchedule, 
     List<CourseSchedule> findByStudentIdOrderByDayOfWeekAsc(String studentId);
     List<CourseSchedule> findByStudentIdAndSemesterOrderByDayOfWeekAsc(String studentId, String semester);
     List<CourseSchedule> findByStudentIdAndSemesterAndPhaseOrderByDayOfWeekAsc(String studentId, String semester, String phase);
-    void deleteByStudentId(String studentId);
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("DELETE FROM CourseSchedule s WHERE s.studentId = :studentId")
+    void deleteByStudentId(@org.springframework.data.repository.query.Param("studentId") String studentId);
 }
