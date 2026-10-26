@@ -30,7 +30,7 @@ public class AiChatbotService {
     @Value("${app.dify.base-url:https://api.dify.ai/v1}")
     private String difyBaseUrl;
 
-    @Value("${app.dify.api-key:app-Ku5Tbg0u2r7AD6ev5P6sQmlk}")
+    @Value("${app.dify.api-key:app-4RqpdjhJVvBcYRlRfnI5kdtD}")
     private String difyApiKey;
 
     private final RestTemplate restTemplate;
