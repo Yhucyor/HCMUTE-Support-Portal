@@ -54,8 +54,8 @@ def hybrid_retrieve(query: str, bm25: BM25) -> List[RetrievedDocument]:
             if not text:
                 continue
 
-            bm25_score = bm25.score(query, text)
-            hybrid_score = (DENSE_WEIGHT * point.score + BM25_WEIGHT * bm25_score)
+            bm25_score = bm25.score(query, text) if bm25 is not None else 0.0
+            hybrid_score = (DENSE_WEIGHT * point.score + BM25_WEIGHT * bm25_score) if bm25 is not None else point.score
 
             documents.append(
                 RetrievedDocument(
