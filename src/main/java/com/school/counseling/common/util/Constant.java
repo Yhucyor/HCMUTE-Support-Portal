@@ -8,8 +8,10 @@ import java.io.File;
 public final class Constant {
     private Constant() {}
 
-    // Thư mục lưu trữ ảnh và file upload cục bộ trên máy tính
-    public static final String DIR = "C:" + File.separator + "upload";
+    // Thư mục lưu trữ ảnh và file upload cục bộ trên máy tính (Hỗ trợ đa nền tảng Windows & Linux Cloud)
+    public static final String DIR = System.getProperty("os.name", "").toLowerCase().contains("win")
+            ? "C:" + File.separator + "upload"
+            : "/tmp/upload";
     
     // Các thư mục con
     public static final String DIR_IMAGES = DIR + File.separator + "images";
