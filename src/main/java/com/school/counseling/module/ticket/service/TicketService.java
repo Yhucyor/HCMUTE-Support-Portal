@@ -27,6 +27,8 @@ import com.school.counseling.module.ticket.repository.TicketTransferHistoryRepos
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -61,6 +63,7 @@ public class TicketService {
     // ─── NHÓM TẠO TICKET ───────────────────────────────────────────────────
 
     @Transactional
+    @CacheEvict(value = "user_ticket_counts", allEntries = true)
     public TicketResponseDto createTicket(CreateTicketRequest request, Long creatorId, List<MultipartFile> files) {
         Department department = departmentRepository.findById(request.getDepartmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Đơn vị", "id", request.getDepartmentId()));
@@ -205,6 +208,7 @@ public class TicketService {
     // ─── NHÓM THAO TÁC TRẠNG THÁI ──────────────────────────────────────────
 
     @Transactional
+    @CacheEvict(value = "user_ticket_counts", allEntries = true)
     public TicketResponseDto claimTicket(Long ticketId, Long staffId) {
         User staff = userRepository.findById(staffId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cán bộ", "id", staffId));
@@ -247,6 +251,7 @@ public class TicketService {
      * Quản trị viên (Admin) can thiệp khẩn cấp tiếp quản vé bị quá hạn SLA từ các đơn vị.
      */
     @Transactional
+    @CacheEvict(value = "user_ticket_counts", allEntries = true)
     public TicketResponseDto adminTakeoverTicket(Long ticketId, Long adminId) {
         User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin", "id", adminId));
@@ -277,6 +282,7 @@ public class TicketService {
      * Cán bộ của đơn vị hiện tại hoặc Quản trị viên (Admin) mới có quyền chuyển giao.
      */
     @Transactional
+    @CacheEvict(value = "user_ticket_counts", allEntries = true)
     public TicketResponseDto transferTicket(Long ticketId, TicketTransferRequest request, UserPrincipal currentUser) {
         if (currentUser == null) {
             throw new AccessDeniedBusinessException("Vui lòng đăng nhập để thực hiện chuyển giao ticket!");
@@ -410,6 +416,7 @@ public class TicketService {
     }
 
     @Transactional
+    @CacheEvict(value = "user_ticket_counts", allEntries = true)
     public TicketResponseDto resolveTicket(Long ticketId, Long staffId, String resolutionNote) {
         Ticket ticket = ticketRepository.findByIdWithRelations(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
@@ -446,6 +453,7 @@ public class TicketService {
     }
 
     @Transactional
+    @CacheEvict(value = "user_ticket_counts", allEntries = true)
     public TicketResponseDto closeTicket(Long ticketId, Long userId, Integer rating, String feedback) {
         Ticket ticket = ticketRepository.findByIdWithRelations(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
@@ -593,6 +601,7 @@ public class TicketService {
     /**
      * Đếm số lượng ticket của sinh viên theo các trạng thái phục vụ hiển thị Badges trên Tab
      */
+    @Cacheable(value = "user_ticket_counts", key = "#userId", unless = "#userId == null")
     public Map<String, Long> getMyTicketStatusCounts(Long userId) {
         Map<String, Long> counts = new HashMap<>();
         if (userId == null) {

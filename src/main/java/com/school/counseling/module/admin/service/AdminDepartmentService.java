@@ -54,6 +54,7 @@ public class AdminDepartmentService {
     }
 
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = "departments_active", allEntries = true)
     public DepartmentAdminDto saveDepartment(SaveDepartmentDto dto) {
         String normalizedCode = dto.getCode().trim().toUpperCase();
         String normalizedName = dto.getName().trim();
@@ -92,6 +93,7 @@ public class AdminDepartmentService {
     }
 
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = "departments_active", allEntries = true)
     public DepartmentAdminDto toggleDepartmentStatus(Long id) {
         Department dept = departmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy Đơn vị với ID: " + id));

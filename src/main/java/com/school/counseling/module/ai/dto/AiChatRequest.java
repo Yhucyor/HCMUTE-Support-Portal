@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 public class AiChatRequest {
     
     @NotBlank(message = "Câu hỏi không được để trống")
-    @Size(min = 3, max = 500, message = "Câu hỏi phải từ 3 đến 500 ký tự")
+    @Size(min = 2, max = 2000, message = "Câu hỏi phải từ 2 đến 2000 ký tự")
     @com.fasterxml.jackson.annotation.JsonAlias({"message", "question", "prompt", "text", "content"})
     private String query;
     

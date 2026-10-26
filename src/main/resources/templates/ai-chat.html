@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
@@ -7,10 +8,15 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@500;600;700;800&amp;display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
     <style>
-        html, body {
+        html,
+        body {
             height: 100%;
             max-height: 100vh;
             overflow: hidden;
@@ -24,16 +30,20 @@
             scrollbar-width: thin;
             scrollbar-color: #cbd5e1 #f8fafc;
         }
+
         .sidebar-scroll::-webkit-scrollbar {
             width: 6px;
         }
+
         .sidebar-scroll::-webkit-scrollbar-track {
             background: #f8fafc;
         }
+
         .sidebar-scroll::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 9999px;
         }
+
         .sidebar-scroll::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
@@ -43,26 +53,40 @@
             scrollbar-width: thin;
             scrollbar-color: #cbd5e1 transparent;
         }
+
         .chat-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
+
         .chat-scrollbar::-webkit-scrollbar-track {
             background: transparent;
         }
+
         .chat-scrollbar::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 9999px;
         }
+
         .chat-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
 
         /* Print styles for PDF export */
         @media print {
-            header, aside, .floating-composer, #modelSelectBtn, .action-buttons, #ticketModal, #citationDrawer {
+
+            header,
+            aside,
+            .floating-composer,
+            #modelSelectBtn,
+            .action-buttons,
+            #ticketModal,
+            #citationDrawer {
                 display: none !important;
             }
-            main, .chat-arena, #chatStream {
+
+            main,
+            .chat-arena,
+            #chatStream {
                 height: auto !important;
                 overflow: visible !important;
                 padding: 0 !important;
@@ -105,7 +129,9 @@
         };
     </script>
 </head>
-<body class="bg-[#f8fafc] font-sans text-sm text-[#0f172a] antialiased h-screen overflow-hidden flex flex-col selection:bg-[#991b1e] selection:text-white">
+
+<body
+    class="bg-[#f8fafc] font-sans text-sm text-[#0f172a] antialiased h-screen overflow-hidden flex flex-col selection:bg-[#991b1e] selection:text-white">
 
     <!-- 1. UNIFIED TOP GLOBAL HEADER -->
     <div th:replace="~{layout/navbar :: navbar}"></div>
@@ -117,39 +143,51 @@
             <div class="flex-1 h-full flex overflow-hidden bg-white shadow-sm border-t border-[#e2e8f0]">
 
                 <!-- ================= LEFT PANEL: CONVERSATION HISTORY (~280px CỐ ĐỊNH, CÓ THANH TRƯỢT) ================= -->
-                <aside id="historySidebar" class="w-[280px] shrink-0 h-full flex flex-col bg-[#f8fafc] border-r border-[#e2e8f0] hidden md:flex transition-all duration-200 z-30 max-md:fixed max-md:top-[74px] max-md:bottom-0 max-md:left-0 max-md:shadow-2xl">
+                <aside id="historySidebar"
+                    class="w-[280px] shrink-0 h-full flex flex-col bg-[#f8fafc] border-r border-[#e2e8f0] hidden md:flex transition-all duration-200 z-30 max-md:fixed max-md:top-[74px] max-md:bottom-0 max-md:left-0 max-md:shadow-2xl">
                     <!-- Sidebar Header & Action (Cố định phía trên) -->
                     <div class="p-3.5 shrink-0 flex flex-col gap-2.5 bg-white border-b border-[#e2e8f0]">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <div class="w-7 h-7 rounded-lg bg-[#eff6ff] flex items-center justify-center text-[#1d4ed8]">
+                                <div
+                                    class="w-7 h-7 rounded-lg bg-[#eff6ff] flex items-center justify-center text-[#1d4ed8]">
                                     <span class="material-symbols-outlined text-lg">forum</span>
                                 </div>
-                                <span class="font-heading font-semibold text-xs tracking-tight text-[#0f172a]">Hội thoại của bạn</span>
+                                <span class="font-heading font-semibold text-xs tracking-tight text-[#0f172a]">Hội thoại
+                                    của bạn</span>
                             </div>
-                            <button class="p-1 text-[#94a3b8] hover:text-[#0f172a] hover:bg-[#f1f5f9] rounded-md transition-colors md:hidden" onclick="toggleMobileSidebar()" title="Đóng danh sách">
+                            <button
+                                class="p-1 text-[#94a3b8] hover:text-[#0f172a] hover:bg-[#f1f5f9] rounded-md transition-colors md:hidden"
+                                onclick="toggleMobileSidebar()" title="Đóng danh sách">
                                 <span class="material-symbols-outlined text-base">close</span>
                             </button>
                         </div>
 
                         <!-- "+ Cuộc trò chuyện mới" button -->
-                        <button onclick="startNewChat()" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-[#1d4ed8] text-white font-semibold text-xs shadow-xs hover:bg-[#1e40af] transition-all active:scale-[0.99] cursor-pointer" type="button">
+                        <button onclick="startNewChat()"
+                            class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-[#1d4ed8] text-white font-semibold text-xs shadow-xs hover:bg-[#1e40af] transition-all active:scale-[0.99] cursor-pointer"
+                            type="button">
                             <span class="material-symbols-outlined text-base">add_circle</span>
                             <span>+ Cuộc trò chuyện mới</span>
                         </button>
 
                         <!-- Search Conversations Input -->
                         <div class="relative flex items-center">
-                            <span class="material-symbols-outlined absolute left-2.5 text-[#94a3b8] text-base pointer-events-none">search</span>
-                            <input id="historySearchInput" oninput="filterHistoryList(this.value)" class="w-full pl-8 pr-2.5 py-1.5 rounded-lg bg-[#f1f5f9] border border-[#e2e8f0] text-[#0f172a] placeholder-[#94a3b8] text-xs focus:outline-none focus:border-[#1d4ed8] focus:bg-white transition-all" placeholder="Tìm kiếm hội thoại..." type="text"/>
+                            <span
+                                class="material-symbols-outlined absolute left-2.5 text-[#94a3b8] text-base pointer-events-none">search</span>
+                            <input id="historySearchInput" oninput="filterHistoryList(this.value)"
+                                class="w-full pl-8 pr-2.5 py-1.5 rounded-lg bg-[#f1f5f9] border border-[#e2e8f0] text-[#0f172a] placeholder-[#94a3b8] text-xs focus:outline-none focus:border-[#1d4ed8] focus:bg-white transition-all"
+                                placeholder="Tìm kiếm hội thoại..." type="text" />
                         </div>
                     </div>
 
                     <!-- Scrollable Grouped History (Thanh trượt riêng biệt) -->
-                    <div class="flex-1 min-h-0 overflow-y-auto px-2 py-3 space-y-4 sidebar-scroll" id="historyGroupContainer">
+                    <div class="flex-1 min-h-0 overflow-y-auto px-2 py-3 space-y-4 sidebar-scroll"
+                        id="historyGroupContainer">
                         <!-- Group: HÔM NAY -->
                         <div class="space-y-1" id="group-today">
-                            <div class="px-2.5 py-1 text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wider flex items-center justify-between">
+                            <div
+                                class="px-2.5 py-1 text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wider flex items-center justify-between">
                                 <span class="flex items-center gap-1.5">
                                     <span class="w-1.5 h-1.5 rounded-full bg-[#1d4ed8]"></span>Hôm nay
                                 </span>
@@ -162,7 +200,8 @@
 
                         <!-- Group: 7 NGÀY GẦN ĐÂY -->
                         <div class="space-y-1" id="group-recent">
-                            <div class="px-2.5 py-1 text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wider flex items-center justify-between">
+                            <div
+                                class="px-2.5 py-1 text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wider flex items-center justify-between">
                                 <span>7 ngày gần đây</span>
                                 <span class="text-[10px] text-[#94a3b8] font-mono" id="recentCount">0</span>
                             </div>
@@ -173,7 +212,8 @@
 
                         <!-- Group: TRƯỚC ĐÓ -->
                         <div class="space-y-1" id="group-older">
-                            <div class="px-2.5 py-1 text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wider flex items-center justify-between">
+                            <div
+                                class="px-2.5 py-1 text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wider flex items-center justify-between">
                                 <span>Trước đó</span>
                                 <span class="text-[10px] text-[#94a3b8] font-mono" id="olderCount">0</span>
                             </div>
@@ -184,10 +224,13 @@
                     </div>
 
                     <!-- Bottom User Status (Cố định phía dưới) -->
-                    <div class="p-3 shrink-0 bg-white border-t border-[#e2e8f0] flex items-center justify-between text-xs text-[#64748b]">
+                    <div
+                        class="p-3 shrink-0 bg-white border-t border-[#e2e8f0] flex items-center justify-between text-xs text-[#64748b]">
                         <div class="flex items-center gap-2 truncate">
                             <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                            <span class="truncate" th:text="${currentUserFullName != null ? currentUserFullName : 'Khách vãng lai'}">Nguyễn Văn An</span>
+                            <span class="truncate"
+                                th:text="${currentUserFullName != null ? currentUserFullName : 'Khách vãng lai'}">Nguyễn
+                                Văn An</span>
                         </div>
                         <span class="text-[10px] font-mono text-[#94a3b8]">v2.5 RAG</span>
                     </div>
@@ -196,21 +239,28 @@
                 <!-- ================= RIGHT PANEL: CHAT ARENA ================= -->
                 <section class="chat-arena flex-1 flex flex-col h-full bg-white overflow-hidden relative">
                     <!-- Chat Header -->
-                    <header class="h-14 px-4 md:px-6 shrink-0 flex items-center justify-between bg-white border-b border-[#e2e8f0] z-20">
+                    <header
+                        class="h-14 px-4 md:px-6 shrink-0 flex items-center justify-between bg-white border-b border-[#e2e8f0] z-20">
                         <!-- Assistant Identity -->
                         <div class="flex items-center gap-3 min-w-0">
-                            <div class="relative w-9 h-9 rounded-full bg-[#eff6ff] flex items-center justify-center p-0.5 border border-[#1d4ed8]/20 shrink-0 shadow-xs">
-                                <img alt="HCMUTE AI Mascot" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg"/>
-                                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#10b981] rounded-full ring-2 ring-white animate-pulse"></span>
+                            <div
+                                class="relative w-9 h-9 rounded-full bg-[#eff6ff] flex items-center justify-center p-0.5 border border-[#1d4ed8]/20 shrink-0 shadow-xs">
+                                <img alt="HCMUTE AI Mascot" class="w-full h-full object-contain"
+                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg" />
+                                <span
+                                    class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#10b981] rounded-full ring-2 ring-white animate-pulse"></span>
                             </div>
                             <div class="flex flex-col min-w-0">
                                 <div class="flex items-center gap-2">
-                                    <h2 class="font-heading font-bold text-sm text-[#0f172a] truncate">Trợ lý AI học vụ</h2>
-                                    <span class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#ecfdf5] text-[#047857] border border-[#a7f3d0]">
+                                    <h2 class="font-heading font-bold text-sm text-[#0f172a] truncate">Trợ lý AI học vụ
+                                    </h2>
+                                    <span
+                                        class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#ecfdf5] text-[#047857] border border-[#a7f3d0]">
                                         <span class="w-1.5 h-1.5 rounded-full bg-[#10b981]"></span>Đang hoạt động
                                     </span>
                                 </div>
-                                <p class="text-[11px] text-[#64748b] truncate">Tra cứu quy chế đào tạo, học bổng &amp; thủ tục sinh viên</p>
+                                <p class="text-[11px] text-[#64748b] truncate">Tra cứu quy chế đào tạo, học bổng &amp;
+                                    thủ tục sinh viên</p>
                             </div>
                         </div>
 
@@ -218,52 +268,85 @@
                         <div class="flex items-center gap-2">
                             <!-- Refined Model Selector Dropdown -->
                             <div class="relative">
-                                <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#f8fafc] border border-[#e2e8f0] text-[#0f172a] text-xs font-medium hover:bg-[#f1f5f9] transition-colors cursor-pointer" id="modelSelectBtn" type="button" onclick="toggleModelDropdown(event)">
+                                <button
+                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#f8fafc] border border-[#e2e8f0] text-[#0f172a] text-xs font-medium hover:bg-[#f1f5f9] transition-colors cursor-pointer"
+                                    id="modelSelectBtn" type="button" onclick="toggleModelDropdown(event)">
                                     <span class="w-2 h-2 rounded-full bg-[#10b981]"></span>
                                     <span id="currentModelLabel">Gemini 1.5 Pro</span>
                                     <span class="material-symbols-outlined text-base text-[#94a3b8]">expand_more</span>
                                 </button>
-                                <div class="hidden absolute right-0 mt-1.5 w-80 p-1.5 rounded-xl bg-white shadow-xl border border-[#e2e8f0] z-30 max-h-[420px] overflow-y-auto" id="modelDropdown">
+                                <div class="hidden absolute right-0 mt-1.5 w-80 p-1.5 rounded-xl bg-white shadow-xl border border-[#e2e8f0] z-30 max-h-[420px] overflow-y-auto"
+                                    id="modelDropdown">
                                     <div class="p-1 space-y-1.5">
                                         <!-- 1. Google Gemini -->
-                                        <button class="w-full flex flex-col p-2.5 rounded-lg bg-[#eff6ff] text-left border border-[#bfdbfe] transition-colors group cursor-pointer" onclick="selectModel('gemini', 'Gemini 1.5 Pro (Cloud)')" type="button">
-                                            <div class="flex items-center justify-between text-xs font-semibold text-[#1d4ed8]">
+                                        <button
+                                            class="w-full flex flex-col p-2.5 rounded-lg bg-[#eff6ff] text-left border border-[#bfdbfe] transition-colors group cursor-pointer"
+                                            onclick="selectModel('gemini', 'Gemini 1.5 Pro (Cloud)')" type="button">
+                                            <div
+                                                class="flex items-center justify-between text-xs font-semibold text-[#1d4ed8]">
                                                 <span class="flex items-center gap-1.5">
-                                                    <span class="material-symbols-outlined text-sm">cloud_done</span> Gemini Cloud (1.5 Pro)
+                                                    <span class="material-symbols-outlined text-sm">cloud_done</span>
+                                                    Gemini Cloud (1.5 Pro)
                                                 </span>
-                                                <span class="px-1.5 py-0.5 rounded text-[10px] bg-[#ecfdf5] text-[#047857] font-semibold border border-[#a7f3d0]">Khuyên dùng</span>
+                                                <span
+                                                    class="px-1.5 py-0.5 rounded text-[10px] bg-[#ecfdf5] text-[#047857] font-semibold border border-[#a7f3d0]">Khuyên
+                                                    dùng</span>
                                             </div>
-                                            <span class="text-[11px] text-[#64748b] mt-0.5">Phản hồi nhanh, suy luận sâu rộng quy chế toàn trường</span>
+                                            <span class="text-[11px] text-[#64748b] mt-0.5">Phản hồi nhanh, suy luận sâu
+                                                rộng quy chế toàn trường</span>
                                         </button>
                                         <!-- 2. Ollama Local -->
-                                        <button class="w-full flex flex-col p-2.5 rounded-lg hover:bg-[#f8fafc] text-left border border-transparent hover:border-[#e2e8f0] transition-colors group cursor-pointer" onclick="selectModel('ollama', 'Ollama Local (Qwen 2.5)')" type="button">
-                                            <div class="flex items-center justify-between text-xs font-semibold text-[#0f172a]">
+                                        <button
+                                            class="w-full flex flex-col p-2.5 rounded-lg hover:bg-[#f8fafc] text-left border border-transparent hover:border-[#e2e8f0] transition-colors group cursor-pointer"
+                                            onclick="selectModel('ollama', 'Ollama Local (Qwen 2.5)')" type="button">
+                                            <div
+                                                class="flex items-center justify-between text-xs font-semibold text-[#0f172a]">
                                                 <span class="flex items-center gap-1.5">
-                                                    <span class="material-symbols-outlined text-sm text-[#475569]">dns</span> Ollama Local (Qwen 2.5)
+                                                    <span
+                                                        class="material-symbols-outlined text-sm text-[#475569]">dns</span>
+                                                    Ollama Local (Qwen 2.5)
                                                 </span>
-                                                <span class="px-1.5 py-0.5 rounded text-[10px] bg-[#eff6ff] text-[#1d4ed8] font-semibold border border-[#bfdbfe]">On-Premise</span>
+                                                <span
+                                                    class="px-1.5 py-0.5 rounded text-[10px] bg-[#eff6ff] text-[#1d4ed8] font-semibold border border-[#bfdbfe]">On-Premise</span>
                                             </div>
-                                            <span class="text-[11px] text-[#64748b] mt-0.5">Bảo mật dữ liệu, vận hành trên máy chủ nội bộ trường</span>
+                                            <span class="text-[11px] text-[#64748b] mt-0.5">Bảo mật dữ liệu, vận hành
+                                                trên máy chủ nội bộ trường</span>
                                         </button>
                                         <!-- 3. Dify AI Agent -->
-                                        <button class="w-full flex flex-col p-2.5 rounded-lg hover:bg-[#f8fafc] text-left border border-transparent hover:border-[#e2e8f0] transition-colors group cursor-pointer" onclick="selectModel('dify', 'Dify AI Agent (Workflow RAG)')" type="button">
-                                            <div class="flex items-center justify-between text-xs font-semibold text-[#0f172a]">
+                                        <button
+                                            class="w-full flex flex-col p-2.5 rounded-lg hover:bg-[#f8fafc] text-left border border-transparent hover:border-[#e2e8f0] transition-colors group cursor-pointer"
+                                            onclick="selectModel('dify', 'Dify AI Agent (Workflow RAG)')" type="button">
+                                            <div
+                                                class="flex items-center justify-between text-xs font-semibold text-[#0f172a]">
                                                 <span class="flex items-center gap-1.5">
-                                                    <span class="material-symbols-outlined text-sm text-[#7c3aed]">psychology</span> Dify AI Agent (Workflow)
+                                                    <span
+                                                        class="material-symbols-outlined text-sm text-[#7c3aed]">psychology</span>
+                                                    Dify AI Agent (Workflow)
                                                 </span>
-                                                <span class="px-1.5 py-0.5 rounded text-[10px] bg-[#f5f3ff] text-[#7c3aed] font-semibold border border-[#ddd6fe]">Agentic RAG</span>
+                                                <span
+                                                    class="px-1.5 py-0.5 rounded text-[10px] bg-[#f5f3ff] text-[#7c3aed] font-semibold border border-[#ddd6fe]">Agentic
+                                                    RAG</span>
                                             </div>
-                                            <span class="text-[11px] text-[#64748b] mt-0.5">Quy trình Agent trích xuất &amp; trả lời chuyên sâu nhiều bước</span>
+                                            <span class="text-[11px] text-[#64748b] mt-0.5">Quy trình Agent trích xuất
+                                                &amp; trả lời chuyên sâu nhiều bước</span>
                                         </button>
                                         <!-- 4. QAUTE Academic FAQ -->
-                                        <button class="w-full flex flex-col p-2.5 rounded-lg hover:bg-[#f8fafc] text-left border border-transparent hover:border-[#e2e8f0] transition-colors group cursor-pointer" onclick="selectModel('qaute', 'QAUTE Academic FAQ (Nội bộ)')" type="button">
-                                            <div class="flex items-center justify-between text-xs font-semibold text-[#0f172a]">
+                                        <button
+                                            class="w-full flex flex-col p-2.5 rounded-lg hover:bg-[#f8fafc] text-left border border-transparent hover:border-[#e2e8f0] transition-colors group cursor-pointer"
+                                            onclick="selectModel('qaute', 'QAUTE Academic FAQ (Nội bộ)')" type="button">
+                                            <div
+                                                class="flex items-center justify-between text-xs font-semibold text-[#0f172a]">
                                                 <span class="flex items-center gap-1.5">
-                                                    <span class="material-symbols-outlined text-sm text-[#059669]">menu_book</span> QAUTE Academic FAQ
+                                                    <span
+                                                        class="material-symbols-outlined text-sm text-[#059669]">menu_book</span>
+                                                    QAUTE Academic FAQ
                                                 </span>
-                                                <span class="px-1.5 py-0.5 rounded text-[10px] bg-[#ecfdf5] text-[#059669] font-semibold border border-[#a7f3d0]">Database Nội Bộ</span>
+                                                <span
+                                                    class="px-1.5 py-0.5 rounded text-[10px] bg-[#ecfdf5] text-[#059669] font-semibold border border-[#a7f3d0]">Database
+                                                    Nội Bộ</span>
                                             </div>
-                                            <span class="text-[11px] text-[#64748b] mt-0.5">Bộ tri thức câu hỏi thường gặp HCMUTE sẵn sàng 100%</span>
+                                            <span class="text-[11px] text-[#64748b] mt-0.5">Bộ tri thức câu hỏi thường
+                                                gặp HCMUTE sẵn sàng 100%</span>
                                         </button>
                                     </div>
                                 </div>
@@ -273,22 +356,40 @@
 
                             <!-- 3-dots Overflow Menu -->
                             <div class="relative">
-                                <button class="p-1.5 text-[#64748b] hover:text-[#0f172a] hover:bg-[#f1f5f9] rounded-lg transition-colors cursor-pointer" onclick="toggleHeaderOverflow(event)" title="Tùy chọn khác" type="button">
+                                <button
+                                    class="p-1.5 text-[#64748b] hover:text-[#0f172a] hover:bg-[#f1f5f9] rounded-lg transition-colors cursor-pointer"
+                                    onclick="toggleHeaderOverflow(event)" title="Tùy chọn khác" type="button">
                                     <span class="material-symbols-outlined text-lg">more_vert</span>
                                 </button>
-                                <div class="hidden absolute right-0 mt-1.5 w-48 bg-white rounded-xl shadow-xl border border-[#e2e8f0] p-1.5 z-30 text-xs text-[#0f172a]" id="headerOverflow">
-                                    <button class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer" onclick="window.print()" type="button">
-                                        <span class="material-symbols-outlined text-base text-[#64748b]">picture_as_pdf</span> Xuất PDF hội thoại
+                                <div class="hidden absolute right-0 mt-1.5 w-48 bg-white rounded-xl shadow-xl border border-[#e2e8f0] p-1.5 z-30 text-xs text-[#0f172a]"
+                                    id="headerOverflow">
+                                    <button
+                                        class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer"
+                                        onclick="window.print()" type="button">
+                                        <span
+                                            class="material-symbols-outlined text-base text-[#64748b]">picture_as_pdf</span>
+                                        Xuất PDF hội thoại
                                     </button>
-                                    <button class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer" onclick="shareCurrentChat()" type="button">
-                                        <span class="material-symbols-outlined text-base text-[#64748b]">share</span> Chia sẻ liên kết
+                                    <button
+                                        class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer"
+                                        onclick="shareCurrentChat()" type="button">
+                                        <span class="material-symbols-outlined text-base text-[#64748b]">share</span>
+                                        Chia sẻ liên kết
                                     </button>
-                                    <button class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer" onclick="openTicketModal()" type="button">
-                                        <span class="material-symbols-outlined text-base text-[#1d4ed8]">confirmation_number</span> Tạo Ticket từ phiên chat
+                                    <button
+                                        class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#f8fafc] flex items-center gap-2 cursor-pointer"
+                                        onclick="openTicketModal()" type="button">
+                                        <span
+                                            class="material-symbols-outlined text-base text-[#1d4ed8]">confirmation_number</span>
+                                        Tạo Ticket từ phiên chat
                                     </button>
                                     <div class="my-1 border-t border-[#e2e8f0]"></div>
-                                    <button class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-red-50 text-red-600 flex items-center gap-2 cursor-pointer" onclick="clearCurrentConversation()" type="button">
-                                        <span class="material-symbols-outlined text-base text-red-500">delete_sweep</span> Xóa lịch sử đoạn chat
+                                    <button
+                                        class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-red-50 text-red-600 flex items-center gap-2 cursor-pointer"
+                                        onclick="clearCurrentConversation()" type="button">
+                                        <span
+                                            class="material-symbols-outlined text-base text-red-500">delete_sweep</span>
+                                        Xóa lịch sử đoạn chat
                                     </button>
                                 </div>
                             </div>
@@ -296,41 +397,65 @@
                     </header>
 
                     <!-- Main Conversation Stream (Scrollable, Clean ChatGPT/Claude whitespace) -->
-                    <div id="chatStream" class="flex-1 min-h-0 overflow-y-auto px-4 md:px-8 lg:px-12 py-6 space-y-6 scroll-smooth chat-scrollbar">
+                    <div id="chatStream"
+                        class="flex-1 min-h-0 overflow-y-auto px-4 md:px-8 lg:px-12 py-6 space-y-6 scroll-smooth chat-scrollbar">
                         <div class="max-w-[860px] mx-auto space-y-6 pb-48" id="messageContainer">
-                            
+
                             <!-- Initial Welcome Assistant Message -->
                             <div class="flex items-start gap-3.5 pr-2" id="welcomeMessage">
-                                <div class="w-8 h-8 rounded-full bg-[#eff6ff] p-0.5 border border-[#1d4ed8]/20 flex items-center justify-center shrink-0 shadow-xs mt-1">
-                                    <img alt="HCMUTE AI Mascot" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg"/>
+                                <div
+                                    class="w-8 h-8 rounded-full bg-[#eff6ff] p-0.5 border border-[#1d4ed8]/20 flex items-center justify-center shrink-0 shadow-xs mt-1">
+                                    <img alt="HCMUTE AI Mascot" class="w-full h-full object-contain"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL3J_BiPwWcjSiuhpfgKHAM8O0Nn8j4-TRLaxsSGhcQj7Q7ql0ve-QCbKgxddJysjtHibPRDZixwA6ut7G-4cvGHmLfBPz--f2b0mHubxbvdI2_pZ7Lz5jvx519QnHtFxx2QV7d6k_YkiWTGgvwIVW0OWXxa2H2jOL2INtl66jcr6sS2aVFmafAwUAUj6FaROHObrvV9bTNeL5HDgpLQsrjYPJwJp_mVftqATTpOMa1RYuYHESGTEVjP_SyiWFTzu7Rg" />
                                 </div>
                                 <div class="flex-1 flex flex-col space-y-3 min-w-0">
                                     <div class="flex items-center gap-2">
-                                        <span class="font-heading font-bold text-xs text-[#1d4ed8]">Trợ lý AI học vụ HCMUTE</span>
-                                        <span class="px-2 py-0.2 rounded-full text-[10px] font-medium bg-[#eff6ff] text-[#1d4ed8] border border-[#bfdbfe]">QAUTE Bot</span>
+                                        <span class="font-heading font-bold text-xs text-[#1d4ed8]">Trợ lý AI học vụ
+                                            HCMUTE</span>
+                                        <span
+                                            class="px-2 py-0.2 rounded-full text-[10px] font-medium bg-[#eff6ff] text-[#1d4ed8] border border-[#bfdbfe]">QAUTE
+                                            Bot</span>
                                         <span class="text-[11px] text-[#94a3b8]">• Trực tuyến</span>
                                     </div>
-                                    <div class="text-sm text-[#0f172a] leading-relaxed space-y-3 bg-white p-4 rounded-2xl rounded-tl-xs border border-slate-200/80 shadow-xs">
-                                        <p>Xin chào <strong th:text="${currentUserFullName != null ? currentUserFullName : 'bạn'}">bạn</strong>! 👋 Tôi là trợ lý ảo chính thức của Trường Đại học Sư phạm Kỹ thuật TP.HCM.</p>
-                                        <p>Tôi được huấn luyện trên toàn bộ cơ sở dữ liệu quy chế đào tạo, sổ tay học vụ và quy định học bổng của Nhà trường. Bạn có thể hỏi tôi bất kỳ điều gì hoặc chọn các gợi ý bên dưới:</p>
-                                        
+                                    <div
+                                        class="text-sm text-[#0f172a] leading-relaxed space-y-3 bg-white p-4 rounded-2xl rounded-tl-xs border border-slate-200/80 shadow-xs">
+                                        <p>Xin chào <strong
+                                                th:text="${currentUserFullName != null ? currentUserFullName : 'bạn'}">bạn</strong>!
+                                            👋 Tôi là trợ lý ảo chính thức của Trường Đại học Sư phạm Kỹ thuật TP.HCM.
+                                        </p>
+                                        <p>Tôi được huấn luyện trên toàn bộ cơ sở dữ liệu quy chế đào tạo, sổ tay học vụ
+                                            và quy định học bổng của Nhà trường. Bạn có thể hỏi tôi bất kỳ điều gì hoặc
+                                            chọn các gợi ý bên dưới:</p>
+
                                         <!-- Quick Suggestion Buttons Grid -->
                                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
-                                            <button onclick="fillAndSend('Điều kiện xét học bổng khuyến khích học tập (KKHT) của trường là gì?')" class="text-left p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#eff6ff] border border-slate-200 hover:border-[#1d4ed8]/40 transition-colors text-xs font-medium text-slate-800 flex items-center justify-between group cursor-pointer">
+                                            <button
+                                                onclick="fillAndSend('Điều kiện xét học bổng khuyến khích học tập (KKHT) của trường là gì?')"
+                                                class="text-left p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#eff6ff] border border-slate-200 hover:border-[#1d4ed8]/40 transition-colors text-xs font-medium text-slate-800 flex items-center justify-between group cursor-pointer">
                                                 <span>🎓 Tiêu chuẩn học bổng KKHT</span>
-                                                <span class="material-symbols-outlined text-sm text-slate-400 group-hover:text-[#1d4ed8]">arrow_forward</span>
+                                                <span
+                                                    class="material-symbols-outlined text-sm text-slate-400 group-hover:text-[#1d4ed8]">arrow_forward</span>
                                             </button>
-                                            <button onclick="fillAndSend('Cách tính điểm trung bình tích lũy GPA và điểm rèn luyện ĐRL')" class="text-left p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#eff6ff] border border-slate-200 hover:border-[#1d4ed8]/40 transition-colors text-xs font-medium text-slate-800 flex items-center justify-between group cursor-pointer">
+                                            <button
+                                                onclick="fillAndSend('Cách tính điểm trung bình tích lũy GPA và điểm rèn luyện ĐRL')"
+                                                class="text-left p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#eff6ff] border border-slate-200 hover:border-[#1d4ed8]/40 transition-colors text-xs font-medium text-slate-800 flex items-center justify-between group cursor-pointer">
                                                 <span>📊 Quy chế tính điểm GPA &amp; ĐRL</span>
-                                                <span class="material-symbols-outlined text-sm text-slate-400 group-hover:text-[#1d4ed8]">arrow_forward</span>
+                                                <span
+                                                    class="material-symbols-outlined text-sm text-slate-400 group-hover:text-[#1d4ed8]">arrow_forward</span>
                                             </button>
-                                            <button onclick="fillAndSend('Thủ tục xin hoãn thi kết thúc học phần khi gặp sự cố đột xuất')" class="text-left p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#eff6ff] border border-slate-200 hover:border-[#1d4ed8]/40 transition-colors text-xs font-medium text-slate-800 flex items-center justify-between group cursor-pointer">
+                                            <button
+                                                onclick="fillAndSend('Thủ tục xin hoãn thi kết thúc học phần khi gặp sự cố đột xuất')"
+                                                class="text-left p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#eff6ff] border border-slate-200 hover:border-[#1d4ed8]/40 transition-colors text-xs font-medium text-slate-800 flex items-center justify-between group cursor-pointer">
                                                 <span>📝 Hướng dẫn hoãn thi học kỳ</span>
-                                                <span class="material-symbols-outlined text-sm text-slate-400 group-hover:text-[#1d4ed8]">arrow_forward</span>
+                                                <span
+                                                    class="material-symbols-outlined text-sm text-slate-400 group-hover:text-[#1d4ed8]">arrow_forward</span>
                                             </button>
-                                            <button onclick="fillAndSend('Quy trình gửi Ticket yêu cầu hỗ trợ tới các Khoa/Phòng')" class="text-left p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#eff6ff] border border-slate-200 hover:border-[#1d4ed8]/40 transition-colors text-xs font-medium text-slate-800 flex items-center justify-between group cursor-pointer">
+                                            <button
+                                                onclick="fillAndSend('Quy trình gửi Ticket yêu cầu hỗ trợ tới các Khoa/Phòng')"
+                                                class="text-left p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#eff6ff] border border-slate-200 hover:border-[#1d4ed8]/40 transition-colors text-xs font-medium text-slate-800 flex items-center justify-between group cursor-pointer">
                                                 <span>🎫 Quy trình gửi Ticket SLA</span>
-                                                <span class="material-symbols-outlined text-sm text-slate-400 group-hover:text-[#1d4ed8]">arrow_forward</span>
+                                                <span
+                                                    class="material-symbols-outlined text-sm text-slate-400 group-hover:text-[#1d4ed8]">arrow_forward</span>
                                             </button>
                                         </div>
                                     </div>
@@ -341,46 +466,63 @@
                     </div>
 
                     <!-- ================= FLOATING MESSAGE COMPOSER ================= -->
-                    <div class="floating-composer absolute bottom-0 left-0 right-0 p-4 md:px-8 bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-xs z-20">
+                    <div
+                        class="floating-composer absolute bottom-0 left-0 right-0 p-4 md:px-8 bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-xs z-20">
                         <div class="max-w-[860px] mx-auto space-y-2.5">
-                            
+
                             <!-- Suggested Quick Prompts Bar (Scrollable horizontally) -->
                             <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
-                                <button onclick="fillPrompt('Điều kiện để nhận học bổng loại Xuất sắc?')" class="shrink-0 px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-[#1d4ed8] hover:text-[#1d4ed8] text-slate-600 shadow-2xs transition-colors cursor-pointer">
+                                <button onclick="fillPrompt('Điều kiện để nhận học bổng loại Xuất sắc?')"
+                                    class="shrink-0 px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-[#1d4ed8] hover:text-[#1d4ed8] text-slate-600 shadow-2xs transition-colors cursor-pointer">
                                     💡 Học bổng Xuất sắc
                                 </button>
-                                <button onclick="fillPrompt('Khi nào bị cảnh báo học vụ mức 1 và mức 2?')" class="shrink-0 px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-[#1d4ed8] hover:text-[#1d4ed8] text-slate-600 shadow-2xs transition-colors cursor-pointer">
+                                <button onclick="fillPrompt('Khi nào bị cảnh báo học vụ mức 1 và mức 2?')"
+                                    class="shrink-0 px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-[#1d4ed8] hover:text-[#1d4ed8] text-slate-600 shadow-2xs transition-colors cursor-pointer">
                                     ⚠️ Cảnh báo học vụ
                                 </button>
-                                <button onclick="fillPrompt('Chuẩn đầu ra Tiếng Anh cho K22 Khoa CNTT')" class="shrink-0 px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-[#1d4ed8] hover:text-[#1d4ed8] text-slate-600 shadow-2xs transition-colors cursor-pointer">
+                                <button onclick="fillPrompt('Chuẩn đầu ra Tiếng Anh cho K22 Khoa CNTT')"
+                                    class="shrink-0 px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-[#1d4ed8] hover:text-[#1d4ed8] text-slate-600 shadow-2xs transition-colors cursor-pointer">
                                     🇬🇧 Chuẩn đầu ra Tiếng Anh
                                 </button>
-                                <button onclick="fillPrompt('Cách nộp đơn phúc khảo bài thi kết thúc môn')" class="shrink-0 px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-[#1d4ed8] hover:text-[#1d4ed8] text-slate-600 shadow-2xs transition-colors cursor-pointer">
+                                <button onclick="fillPrompt('Cách nộp đơn phúc khảo bài thi kết thúc môn')"
+                                    class="shrink-0 px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-[#1d4ed8] hover:text-[#1d4ed8] text-slate-600 shadow-2xs transition-colors cursor-pointer">
                                     📑 Phúc khảo bài thi
                                 </button>
                             </div>
 
                             <!-- Input Box -->
-                            <div class="rounded-2xl bg-white border border-[#cbd5e1] shadow-lg p-2.5 focus-within:border-[#1d4ed8] focus-within:ring-2 focus-within:ring-[#1d4ed8]/15 transition-all">
-                                <textarea class="w-full bg-transparent border-none text-[#0f172a] placeholder-[#94a3b8] text-sm focus:outline-none resize-none px-2 py-1 leading-relaxed" 
-                                          id="chatInput" onkeydown="handleInputKey(event)" 
-                                          placeholder="Đặt câu hỏi về học vụ, quy chế, học bổng, đăng ký học phần... (Enter để gửi, Shift + Enter xuống dòng)" rows="2"></textarea>
-                                
+                            <div
+                                class="rounded-2xl bg-white border border-[#cbd5e1] shadow-lg p-2.5 focus-within:border-[#1d4ed8] focus-within:ring-2 focus-within:ring-[#1d4ed8]/15 transition-all">
+                                <textarea
+                                    class="w-full bg-transparent border-none text-[#0f172a] placeholder-[#94a3b8] text-sm focus:outline-none resize-none px-2 py-1 leading-relaxed"
+                                    id="chatInput" onkeydown="handleInputKey(event)"
+                                    placeholder="Đặt câu hỏi về học vụ, quy chế, học bổng, đăng ký học phần... (Enter để gửi, Shift + Enter xuống dòng)"
+                                    rows="2"></textarea>
+
                                 <div class="flex items-center justify-between pt-1.5 px-1 border-t border-[#f1f5f9]">
                                     <div class="flex items-center gap-1.5">
                                         <!-- Paperclip Attachment Info -->
-                                        <button class="p-1.5 rounded-lg text-[#64748b] hover:text-[#1d4ed8] hover:bg-[#f1f5f9] transition-colors cursor-pointer" title="Đính kèm tài liệu minh chứng" type="button" onclick="alert('Tính năng tải tài liệu đính kèm đang kết nối với hệ thống lưu trữ HCMUTE Cloud.')">
+                                        <button
+                                            class="p-1.5 rounded-lg text-[#64748b] hover:text-[#1d4ed8] hover:bg-[#f1f5f9] transition-colors cursor-pointer"
+                                            title="Đính kèm tài liệu minh chứng" type="button"
+                                            onclick="alert('Tính năng tải tài liệu đính kèm đang kết nối với hệ thống lưu trữ HCMUTE Cloud.')">
                                             <span class="material-symbols-outlined text-lg">attach_file</span>
                                         </button>
                                         <div class="h-4 w-px bg-[#e2e8f0] mx-0.5"></div>
                                         <!-- Model Chip Indicator -->
-                                        <span class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-[#f1f5f9] text-[#64748b] flex items-center gap-1" id="activeModelChip">
-                                            <span class="material-symbols-outlined text-xs text-[#1d4ed8]">auto_awesome</span> Gemini 1.5 Pro
+                                        <span
+                                            class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-[#f1f5f9] text-[#64748b] flex items-center gap-1"
+                                            id="activeModelChip">
+                                            <span
+                                                class="material-symbols-outlined text-xs text-[#1d4ed8]">auto_awesome</span>
+                                            Gemini 1.5 Pro
                                         </span>
                                     </div>
 
                                     <!-- Circular Blue Send Button with upward arrow -->
-                                    <button id="sendBtn" class="w-9 h-9 rounded-full bg-[#1d4ed8] text-white flex items-center justify-center shadow-xs hover:bg-[#1e40af] active:scale-95 transition-all shrink-0 cursor-pointer disabled:opacity-50" onclick="sendMessage()" title="Gửi câu hỏi" type="button">
+                                    <button id="sendBtn"
+                                        class="w-9 h-9 rounded-full bg-[#1d4ed8] text-white flex items-center justify-center shadow-xs hover:bg-[#1e40af] active:scale-95 transition-all shrink-0 cursor-pointer disabled:opacity-50"
+                                        onclick="sendMessage()" title="Gửi câu hỏi" type="button">
                                         <span class="material-symbols-outlined text-lg">arrow_upward</span>
                                     </button>
                                 </div>
@@ -388,8 +530,10 @@
 
                             <!-- Subtle Disclaimer -->
                             <p class="text-center text-[11px] text-[#94a3b8]">
-                                Trợ lý AI có thể đưa ra thông tin cần đối chiếu. Vui lòng tham khảo văn bản chính thức tại 
-                                <a class="text-[#1d4ed8] hover:underline" href="https://daotao.hcmute.edu.vn" target="_blank">daotao.hcmute.edu.vn</a>.
+                                Trợ lý AI có thể đưa ra thông tin cần đối chiếu. Vui lòng tham khảo văn bản chính thức
+                                tại
+                                <a class="text-[#1d4ed8] hover:underline" href="https://daotao.hcmute.edu.vn"
+                                    target="_blank">daotao.hcmute.edu.vn</a>.
                             </p>
                         </div>
                     </div>
@@ -399,40 +543,50 @@
     </div>
 
     <!-- ================= 8. CONVERT-TO-TICKET MODAL ================= -->
-    <div class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs" id="ticketModal">
-        <div class="w-full max-w-lg rounded-2xl bg-white shadow-2xl border border-[#e2e8f0] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs"
+        id="ticketModal">
+        <div
+            class="w-full max-w-lg rounded-2xl bg-white shadow-2xl border border-[#e2e8f0] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <!-- Modal Header -->
             <div class="px-5 py-3.5 bg-[#003882] text-white flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-xl">confirmation_number</span>
                     <h3 class="font-heading font-semibold text-sm">Chuyển thành yêu cầu hỗ trợ (Create Ticket)</h3>
                 </div>
-                <button class="text-white/80 hover:text-white p-1 rounded-lg cursor-pointer" onclick="closeTicketModal()" type="button">
+                <button class="text-white/80 hover:text-white p-1 rounded-lg cursor-pointer"
+                    onclick="closeTicketModal()" type="button">
                     <span class="material-symbols-outlined text-lg leading-none">close</span>
                 </button>
             </div>
 
             <!-- Modal Body -->
-            <form th:action="@{/tickets/create}" method="post" id="convertTicketForm" class="p-5 space-y-3.5 text-[#0f172a] text-xs">
+            <form th:action="@{/tickets/create}" method="post" id="convertTicketForm"
+                class="p-5 space-y-3.5 text-[#0f172a] text-xs">
                 <!-- Tiêu đề -->
                 <div>
-                    <label class="block font-semibold mb-1 text-[#0f172a]">Tiêu đề yêu cầu <span class="text-rose-500">*</span></label>
-                    <input name="title" id="ticketTitleInput" required class="w-full px-3 py-2 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] text-xs focus:outline-none focus:border-[#003882] focus:bg-white" type="text" value="Cần tư vấn hỗ trợ quy chế học vụ từ phiên chat AI"/>
+                    <label class="block font-semibold mb-1 text-[#0f172a]">Tiêu đề yêu cầu <span
+                            class="text-rose-500">*</span></label>
+                    <input name="title" id="ticketTitleInput" required
+                        class="w-full px-3 py-2 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] text-xs focus:outline-none focus:border-[#003882] focus:bg-white"
+                        type="text" value="Cần tư vấn hỗ trợ quy chế học vụ từ phiên chat AI" />
                 </div>
 
                 <!-- Đơn vị tiếp nhận -->
                 <div>
                     <label class="block font-semibold mb-1 text-[#0f172a]">Đơn vị tiếp nhận (Khoa / Phòng)</label>
-                    <select name="departmentId" id="ticketDeptSelect" class="w-full px-3 py-2 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] text-xs focus:outline-none focus:border-[#003882] focus:bg-white">
+                    <select name="departmentId" id="ticketDeptSelect"
+                        class="w-full px-3 py-2 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] text-xs focus:outline-none focus:border-[#003882] focus:bg-white">
                         <option value="">-- Chọn Khoa / Phòng ban tiếp nhận --</option>
-                        <option th:if="${departments != null}" th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}">Phòng Đào tạo</option>
+                        <option th:if="${departments != null}" th:each="dept : ${departments}" th:value="${dept.id}"
+                            th:text="${dept.name}">Phòng Đào tạo</option>
                     </select>
                 </div>
 
                 <!-- Độ ưu tiên (Priority) -->
                 <div>
                     <label class="block font-semibold mb-1 text-[#0f172a]">Độ ưu tiên (SLA)</label>
-                    <select name="priority" class="w-full px-3 py-2 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] text-xs focus:outline-none focus:border-[#003882] focus:bg-white">
+                    <select name="priority"
+                        class="w-full px-3 py-2 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] text-xs focus:outline-none focus:border-[#003882] focus:bg-white">
                         <option value="LOW">Thấp (Phản hồi trong 7 ngày)</option>
                         <option value="MEDIUM" selected="">Trung bình (Phản hồi trong 72 giờ)</option>
                         <option value="HIGH">Cao (Phản hồi trong 48 giờ)</option>
@@ -442,12 +596,16 @@
 
                 <!-- Tóm tắt nội dung trích từ đoạn chat -->
                 <div>
-                    <label class="block font-semibold mb-1 text-[#0f172a]">Nội dung yêu cầu chi tiết <span class="text-rose-500">*</span></label>
-                    <textarea name="description" id="ticketDescriptionInput" required class="w-full px-3 py-2 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] text-xs focus:outline-none focus:border-[#003882] focus:bg-white leading-relaxed" rows="4" placeholder="Mô tả cụ thể vấn đề bạn cần giải quyết..."></textarea>
+                    <label class="block font-semibold mb-1 text-[#0f172a]">Nội dung yêu cầu chi tiết <span
+                            class="text-rose-500">*</span></label>
+                    <textarea name="description" id="ticketDescriptionInput" required
+                        class="w-full px-3 py-2 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] text-xs focus:outline-none focus:border-[#003882] focus:bg-white leading-relaxed"
+                        rows="4" placeholder="Mô tả cụ thể vấn đề bạn cần giải quyết..."></textarea>
                 </div>
 
                 <!-- Auto attach banner -->
-                <div class="p-2.5 rounded-xl bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-between text-[11px] text-[#003882]">
+                <div
+                    class="p-2.5 rounded-xl bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-between text-[11px] text-[#003882]">
                     <span class="flex items-center gap-1.5 font-medium">
                         <span class="material-symbols-outlined text-base">attach_email</span>
                         Tự động đính kèm lịch sử đoạn chat làm minh chứng
@@ -457,10 +615,14 @@
 
                 <!-- Actions -->
                 <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-[#e2e8f0]">
-                    <button class="px-4 py-2 rounded-xl border border-[#cbd5e1] text-[#475569] hover:bg-[#f1f5f9] transition-colors text-xs font-medium cursor-pointer" onclick="closeTicketModal()" type="button">
+                    <button
+                        class="px-4 py-2 rounded-xl border border-[#cbd5e1] text-[#475569] hover:bg-[#f1f5f9] transition-colors text-xs font-medium cursor-pointer"
+                        onclick="closeTicketModal()" type="button">
                         Hủy
                     </button>
-                    <button class="px-5 py-2 rounded-xl bg-[#003882] text-white hover:bg-[#002456] font-semibold text-xs shadow-xs transition-all cursor-pointer" type="submit">
+                    <button
+                        class="px-5 py-2 rounded-xl bg-[#003882] text-white hover:bg-[#002456] font-semibold text-xs shadow-xs transition-all cursor-pointer"
+                        type="submit">
                         Tạo Ticket
                     </button>
                 </div>
@@ -469,40 +631,52 @@
     </div>
 
     <!-- ================= 9. RAG CITATION SIDE DRAWER ================= -->
-    <div class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex justify-end transition-opacity" id="citationDrawer">
-        <div class="w-full max-w-lg h-full bg-white shadow-2xl flex flex-col border-l border-[#e2e8f0] animate-in slide-in-from-right duration-200">
+    <div class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex justify-end transition-opacity"
+        id="citationDrawer">
+        <div
+            class="w-full max-w-lg h-full bg-white shadow-2xl flex flex-col border-l border-[#e2e8f0] animate-in slide-in-from-right duration-200">
             <div class="p-4 border-b border-[#e2e8f0] flex items-center justify-between bg-[#f8fafc]">
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-[#1d4ed8]">menu_book</span>
-                    <h3 class="font-heading font-bold text-sm text-[#0f172a]" id="drawerDocTitle">Trích đoạn văn bản quy chế</h3>
+                    <h3 class="font-heading font-bold text-sm text-[#0f172a]" id="drawerDocTitle">Trích đoạn văn bản quy
+                        chế</h3>
                 </div>
-                <button class="p-1 text-[#64748b] hover:text-[#0f172a] hover:bg-[#e2e8f0] rounded-lg transition-colors cursor-pointer" onclick="closeCitationDrawer()" type="button">
+                <button
+                    class="p-1 text-[#64748b] hover:text-[#0f172a] hover:bg-[#e2e8f0] rounded-lg transition-colors cursor-pointer"
+                    onclick="closeCitationDrawer()" type="button">
                     <span class="material-symbols-outlined text-lg">close</span>
                 </button>
             </div>
             <div class="flex-1 overflow-y-auto p-5 space-y-4 text-xs leading-relaxed text-[#0f172a] chat-scrollbar">
-                <div class="p-3 rounded-xl bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-between text-[#1d4ed8]">
+                <div
+                    class="p-3 rounded-xl bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-between text-[#1d4ed8]">
                     <div class="flex items-center gap-2">
                         <span class="material-symbols-outlined text-base">verified</span>
                         <span class="font-semibold" id="drawerMeta">Cơ sở dữ liệu Đào tạo HCMUTE</span>
                     </div>
-                    <span class="text-[10px] bg-white px-2 py-0.5 rounded font-mono border border-[#bfdbfe]">RAG Verified</span>
+                    <span class="text-[10px] bg-white px-2 py-0.5 rounded font-mono border border-[#bfdbfe]">RAG
+                        Verified</span>
                 </div>
-                <div class="border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] font-mono text-[11px] text-[#475569] space-y-2 whitespace-pre-line" id="drawerContent">
+                <div class="border border-[#e2e8f0] rounded-xl p-4 bg-[#f8fafc] font-mono text-[11px] text-[#475569] space-y-2 whitespace-pre-line"
+                    id="drawerContent">
                     Đang tải nội dung văn bản gốc...
                 </div>
                 <div class="p-3 bg-amber-50/80 rounded-xl border border-[#f59e0b]/40 text-[#92400e]">
                     <p class="font-semibold flex items-center gap-1.5 mb-1">
                         <span class="material-symbols-outlined text-sm">gavel</span> Hiệu lực pháp lý:
                     </p>
-                    <p class="text-[11px]">Văn bản này được ban hành chính thức theo thẩm quyền của Hiệu trưởng Trường Đại học Sư phạm Kỹ thuật TP.HCM và áp dụng cho toàn bộ sinh viên hệ đào tạo chính quy.</p>
+                    <p class="text-[11px]">Văn bản này được ban hành chính thức theo thẩm quyền của Hiệu trưởng Trường
+                        Đại học Sư phạm Kỹ thuật TP.HCM và áp dụng cho toàn bộ sinh viên hệ đào tạo chính quy.</p>
                 </div>
             </div>
             <div class="p-4 border-t border-[#e2e8f0] bg-white flex items-center justify-between">
-                <a class="flex items-center gap-1.5 text-xs text-[#1d4ed8] font-semibold hover:underline" href="https://daotao.hcmute.edu.vn" target="_blank">
+                <a class="flex items-center gap-1.5 text-xs text-[#1d4ed8] font-semibold hover:underline"
+                    href="https://daotao.hcmute.edu.vn" target="_blank">
                     <span class="material-symbols-outlined text-base">download</span> Tải bản PDF chính thức
                 </a>
-                <button class="px-4 py-2 rounded-xl bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#0f172a] font-medium text-xs transition-colors cursor-pointer" onclick="closeCitationDrawer()" type="button">
+                <button
+                    class="px-4 py-2 rounded-xl bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#0f172a] font-medium text-xs transition-colors cursor-pointer"
+                    onclick="closeCitationDrawer()" type="button">
                     Đóng
                 </button>
             </div>
@@ -510,23 +684,23 @@
     </div>
 
     <!-- Toast Notification -->
-    <div class="hidden fixed bottom-6 right-6 z-50 bg-[#0f172a] text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-150" id="toastNotification">
+    <div class="hidden fixed bottom-6 right-6 z-50 bg-[#0f172a] text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-150"
+        id="toastNotification">
         <span class="material-symbols-outlined text-[#10b981] text-xl">check_circle</span>
         <div class="flex flex-col">
             <span class="text-xs font-semibold" id="toastTitle">Thành công!</span>
             <span class="text-[11px] text-white/80" id="toastMessage">Nội dung thông báo</span>
         </div>
-        <button class="p-1 text-white/60 hover:text-white cursor-pointer" onclick="document.getElementById('toastNotification').classList.add('hidden')" type="button">
+        <button class="p-1 text-white/60 hover:text-white cursor-pointer"
+            onclick="document.getElementById('toastNotification').classList.add('hidden')" type="button">
             <span class="material-symbols-outlined text-sm">close</span>
         </button>
     </div>
 
     <!-- Hidden Context for Client Script -->
-    <div id="aiUserContext" 
-         th:data-fullname="${currentUserFullName != null ? currentUserFullName : 'Sinh viên'}"
-         th:data-avatar="${currentUserAvatar != null ? currentUserAvatar : ''}"
-         th:data-role="${currentUserRole != null ? currentUserRole : 'STUDENT'}"
-         class="hidden"></div>
+    <div id="aiUserContext" th:data-fullname="${currentUserFullName != null ? currentUserFullName : 'Sinh viên'}"
+        th:data-avatar="${currentUserAvatar != null ? currentUserAvatar : ''}"
+        th:data-role="${currentUserRole != null ? currentUserRole : 'STUDENT'}" class="hidden"></div>
 
     <!-- INTERACTIVE SCRIPTS -->
     <script th:inline="none">
@@ -577,7 +751,7 @@
             if (provider === 'ollama') icon = 'dns';
             else if (provider === 'dify') icon = 'psychology';
             else if (provider === 'qaute') icon = 'menu_book';
-            document.getElementById('activeModelChip').innerHTML = 
+            document.getElementById('activeModelChip').innerHTML =
                 `<span class="material-symbols-outlined text-xs text-[#1d4ed8]">${icon}</span> ${label}`;
             document.getElementById('modelDropdown').classList.add('hidden');
             showToast('Chuyển mô hình', `Đã kích hoạt mô hình: ${label}`);
@@ -612,7 +786,7 @@
                         }));
                         saveSessions();
                         renderHistoryList();
-                        
+
                         // Nếu có sessionId từ URL, tự động khôi phục tin nhắn
                         if (_pathSess || _querySess) {
                             switchSession(currentSessionId, false);
@@ -645,7 +819,7 @@
         function saveSessions() {
             try {
                 localStorage.setItem('hcmute_ai_chat_sessions', JSON.stringify(sessions));
-            } catch (e) {}
+            } catch (e) { }
         }
 
         function renderHistoryList(filterText = '') {
@@ -681,9 +855,8 @@
 
                 const isActive = sess.id === currentSessionId;
                 const item = document.createElement('div');
-                item.className = `group relative flex items-center justify-between px-2.5 py-2 rounded-xl cursor-pointer transition-all ${
-                    isActive ? 'bg-[#eff6ff] text-[#1d4ed8] font-semibold border border-[#1d4ed8]/20' : 'text-[#475569] hover:bg-[#f1f5f9] hover:text-[#0f172a]'
-                }`;
+                item.className = `group relative flex items-center justify-between px-2.5 py-2 rounded-xl cursor-pointer transition-all ${isActive ? 'bg-[#eff6ff] text-[#1d4ed8] font-semibold border border-[#1d4ed8]/20' : 'text-[#475569] hover:bg-[#f1f5f9] hover:text-[#0f172a]'
+                    }`;
                 item.onclick = () => switchSession(sess.id);
 
                 item.innerHTML = `
@@ -790,7 +963,7 @@
                             try {
                                 const meta = typeof m.metadata === 'string' ? JSON.parse(m.metadata) : m.metadata;
                                 if (meta.sources) sources = meta.sources;
-                            } catch (e) {}
+                            } catch (e) { }
                         }
                         appendAiMessage(m.content, sources, "0.1", "");
                     }
@@ -817,7 +990,7 @@
                         credentials: 'include',
                         body: JSON.stringify({ title: clean })
                     });
-                } catch (e) {}
+                } catch (e) { }
                 saveSessions();
                 renderHistoryList();
             }
@@ -832,7 +1005,7 @@
             if (confirm('Bạn có chắc chắn muốn xóa hội thoại này khỏi lịch sử?')) {
                 try {
                     await fetch('/api/ai/conversations/' + sessId, { method: 'DELETE', credentials: 'include' });
-                } catch (e) {}
+                } catch (e) { }
                 sessions = sessions.filter(s => s.id !== sessId);
                 saveSessions();
                 if (currentSessionId === sessId) startNewChat();
@@ -927,7 +1100,7 @@
                 // [NEW_CODE]: Trích xuất an toàn từ ApiResponse<AiChatResponse> (data.data) hoặc trực tiếp (data)
                 const answerText = (data.data && data.data.answer) ? data.data.answer : (data.answer || '');
                 const sourcesList = (data.data && data.data.sources) ? data.data.sources : (data.sources || []);
-                
+
                 // [LEGACY_CODE - ROLLBACK IF NEEDED]:
                 // appendAiMessage(data.answer, data.sources, duration, query);
                 appendAiMessage(answerText, sourcesList, duration, query);
@@ -1040,11 +1213,7 @@
                                 </button>
                             </div>
 
-                            <!-- Convert to Ticket Button -->
-                            <button class="px-2.5 py-1 rounded-lg bg-blue-50 text-[#003882] hover:bg-blue-100 font-medium text-[11px] flex items-center gap-1 transition-colors border border-blue-200 cursor-pointer" 
-                                    onclick="openTicketModalWithData('${escapeHtml(originalQuery)}', '${escapeHtml(answer.substring(0, 200))}')">
-                                <span class="material-symbols-outlined text-[14px]">confirmation_number</span>
-                                <span>Chuyển thành Ticket</span>
+                            
                             </button>
                         </div>
                     </div>
@@ -1150,23 +1319,23 @@
         });
 
         // Header Account Dropdown Toggle
-        (function() {
+        (function () {
             const toggle = document.getElementById('headerAccountToggle');
             const dropdown = document.getElementById('headerDropdownMenu');
             if (!toggle || !dropdown) return;
-            toggle.addEventListener('click', function(e) {
+            toggle.addEventListener('click', function (e) {
                 e.stopPropagation();
                 const isHidden = dropdown.classList.contains('hidden');
                 dropdown.classList.toggle('hidden');
                 toggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
             });
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 if (!dropdown.classList.contains('hidden') && !toggle.contains(e.target) && !dropdown.contains(e.target)) {
                     dropdown.classList.add('hidden');
                     toggle.setAttribute('aria-expanded', 'false');
                 }
             });
-            document.addEventListener('keydown', function(e) {
+            document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape' && !dropdown.classList.contains('hidden')) {
                     dropdown.classList.add('hidden');
                     toggle.setAttribute('aria-expanded', 'false');
@@ -1181,4 +1350,5 @@
         }
     </script>
 </body>
+
 </html>
