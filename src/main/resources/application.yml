@@ -1,5 +1,6 @@
 server:
   port: 8080
+  forward-headers-strategy: framework # Hỗ trợ nhận diện HTTPS & Custom Domain (portal-hcmute.tech) qua Reverse Proxy
   servlet:
     session:
       timeout: 60m
@@ -7,7 +8,7 @@ server:
         name: JSESSIONID
         http-only: true
         same-site: lax
-        secure: false # Set true khi chạy HTTPS
+        secure: ${COOKIE_SECURE:false} # Bật true khi chạy HTTPS trên production domain
 
 spring:
   config:
@@ -26,12 +27,12 @@ spring:
       max-request-size: 105MB
       file-size-threshold: 2MB
 
-  # Cấu hình Database (Mặc định MySQL Local, comment Aiven Cloud để deploy sau)
+  # Cấu hình Database (Đọc từ file .env: TiDB Cloud hoặc MySQL Local)
   datasource:
-    # ── Aiven Cloud (Khi cần deploy thì đổi sang: jdbc:mysql://portal-hcmute-lequoccuong31126-f025.i.aivencloud.com:25013/defaultdb?sslMode=REQUIRED) ──
+    # ── TiDB Cloud Serverless / Local fallback ──
     url: ${DB_URL:jdbc:mysql://localhost:3306/qaute_portal?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&characterEncoding=UTF-8}
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:caucuong}
+    password: ${DB_PASS:${DB_PASSWORD:caucuong}}
     driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
     # ── HikariCP: Cấu hình Connection Pool tối ưu cho Local & Cloud ──
     hikari:
@@ -53,6 +54,15 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
+
+  # Cấu hình Bộ nhớ đệm L1 Caffeine
+  cache:
+    type: caffeine
+    cache-names:
+      - departments_active
+      - faqs_all_active
+      - user_ticket_counts
+      - system_stats
 
   # Cấu hình Thymeleaf (Tắt cache ở Local để sửa HTML là F5 thấy ngay)
   thymeleaf:
