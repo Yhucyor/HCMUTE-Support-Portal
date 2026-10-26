@@ -10,9 +10,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <style>
-        @layer base {
-            html, body { margin: 0; padding: 0; }
-            body { overscroll-behavior: none; }
+        html, body { 
+            margin: 0; 
+            padding: 0; 
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden !important;
+        }
+        *, ::before, ::after {
+            box-sizing: border-box;
         }
         ::-webkit-scrollbar { display: none; }
         .hero-slide-bg {
@@ -50,7 +56,7 @@
     <!-- 1. UNIFIED TOP GLOBAL HEADER -->
     <div th:replace="~{layout/navbar :: navbar}"></div>
 
-    <main class="w-full">
+    <main class="w-full max-w-full overflow-x-hidden">
         <!-- 2. HERO SECTION -->
         <section class="relative w-full min-h-[640px] lg:min-h-[700px] bg-slate-900 overflow-hidden flex items-center pt-8 pb-20">
             <!-- Hero Image Background: Cổng & toà nhà trung tâm HCMUTE -->
@@ -530,22 +536,22 @@
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
                 <!-- Khối Trái: Nghiên cứu (Banner Xanh Đậm) -->
-                <div class="lg:col-span-6 bg-gradient-to-br from-[#002456] via-[#003882] to-[#0b4d9c] rounded-2xl p-6 sm:p-8 text-white flex flex-col justify-between relative overflow-hidden shadow-lg">
+                <div class="lg:col-span-6 bg-gradient-to-br from-[#002456] via-[#003882] to-[#0b4d9c] rounded-2xl p-5 sm:p-8 text-white flex flex-col justify-between relative overflow-hidden shadow-lg">
                     <div class="relative z-10">
                         <div class="text-[11px] font-semibold tracking-wider text-blue-200 uppercase mb-2">Nghiên cứu &amp; Đổi mới sáng tạo</div>
-                        <h3 class="font-headline font-bold text-2xl sm:text-3xl text-white mb-3">
+                        <h3 class="font-headline font-bold text-xl sm:text-3xl text-white mb-3">
                             Khoa học công nghệ<br>kiến tạo giá trị thực tiễn
                         </h3>
                         <p class="text-xs sm:text-sm text-blue-100/90 leading-relaxed max-w-md mb-6">
                             Hệ thống phòng thí nghiệm hiện đại, đội ngũ chuyên gia giàu kinh nghiệm và nhiều dự án nghiên cứu có tầm ảnh hưởng.
                         </p>
-                        <a class="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-md transition-colors" href="#">
+                        <a class="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-white bg-white/15 hover:bg-white/25 border border-white/30 px-5 py-2.5 rounded-lg shadow-sm transition-all active:scale-95" href="#">
                             <span>Tìm hiểu thêm</span>
-                            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
                         </a>
                     </div>
-                    <div class="mt-6 pt-4 relative z-10 flex justify-end">
-                        <img alt="Sinh viên nghiên cứu khoa học" class="w-full sm:w-80 h-44 object-cover rounded-xl shadow-md border-2 border-white/20" 
+                    <div class="mt-6 pt-2 relative z-10 flex justify-end">
+                        <img alt="Sinh viên nghiên cứu khoa học" class="w-full sm:w-80 h-44 sm:h-48 object-cover rounded-xl shadow-md border-2 border-white/20" 
                              src="https://lh3.googleusercontent.com/aida-public/AB6AXuD55kuWbFgNNaNgeEdQEwrcSVhGvGlyV6Kc4tQA0bn_wxDDPZAHPZwlp3E7WTMsftnQ03bRLRU_QA3hhT_u1LepJsCrG6ZbTWzT3D9ylOBrEdE7NNNslkvVffD7ODjvs3UVpNz0-IZgkGTK6LkRHpchMbgCSGl9Bejpfnbq3TaVnM3A9jONR2o9-fVZBoaKSkErgAdLCUrW8KyLA0EuwSybLsvde9LkwmtiZDAWMsiiTvKUD9l8cm4J">
                     </div>
                 </div>

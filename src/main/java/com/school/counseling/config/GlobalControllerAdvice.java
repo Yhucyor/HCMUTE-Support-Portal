@@ -19,6 +19,16 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 public class GlobalControllerAdvice {
     
     private final UserAccountMenuService userAccountMenuService;
+    private final com.school.counseling.module.auth.service.DepartmentQueryService departmentQueryService;
+
+    /**
+     * Inject danh mục Department từ Caffeine Cache L1 vào mọi View
+     * Giúp loại bỏ hoàn toàn các truy vấn lặp lại tới Database khi chuyển trang
+     */
+    @ModelAttribute("departments")
+    public java.util.List<com.school.counseling.module.auth.entity.Department> globalDepartments() {
+        return departmentQueryService.getActiveDepartments();
+    }
     
     /**
      * Inject userAccountMenu vào tất cả các View

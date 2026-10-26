@@ -26,6 +26,7 @@
 
         .hcmute-topbar-container {
             max-width: 1536px;
+            width: 100%;
             height: 100%;
             margin: 0 auto;
             padding: 0 1.25rem;
@@ -69,6 +70,58 @@
             color: #003882;
             opacity: 0.85;
             letter-spacing: 0.01em;
+        }
+
+        /* Responsive Mobile Topbar */
+        @media (max-width: 768px) {
+            .hcmute-topbar-container {
+                padding: 0 0.75rem;
+                gap: 0.5rem;
+            }
+            .hcmute-brand-logo {
+                height: 38px;
+            }
+            .hcmute-brand-title-full {
+                display: none !important;
+            }
+            .hcmute-brand-title-short {
+                display: inline-block !important;
+                font-size: 1.15rem;
+                font-weight: 800;
+                color: #003882;
+                letter-spacing: 0.02em;
+            }
+            .hcmute-brand-sub {
+                display: none !important;
+            }
+            .hcmute-user-toggle {
+                padding: 0.35rem 0.65rem;
+                font-size: 0.78rem;
+                max-width: 140px;
+            }
+            .hcmute-user-name {
+                max-width: 80px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                display: inline-block;
+                vertical-align: middle;
+            }
+            .btn-topbar-admin-red, .btn-topbar-staff-blue {
+                padding: 0.35rem 0.65rem;
+                font-size: 0.72rem;
+            }
+            .btn-topbar-admin-red span, .btn-topbar-staff-blue span {
+                display: none;
+            }
+        }
+        @media (min-width: 769px) {
+            .hcmute-brand-title-short {
+                display: none !important;
+            }
+            .hcmute-brand-title-full {
+                display: inline-block !important;
+            }
         }
 
         /* Horizontal Nav Links */
@@ -277,7 +330,10 @@
                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKSHNb9YZP8QFQKzZ-_B_glnPE615kLoTh0DIZM9-id7Eb1Z7EZXRKcjBeCckK7VOaTPGdnMs7Cl7qdtjr1Mry3Y7d1U0S8maxw8fAHipOBnT-HFyaVBuqc6xe0fMZJf4fPlHw6UIkL0vHJV2kfl-tnjJgobCtm7Cy-KazrUCaEZefkxCcT9HC_-zWiT9twVqKg6xymALE7_hrVpAjI-XYdTFsbm3wyDRY8PxAR-vjOB00BqpW9wX9dVryQuIfZgdSA" 
                  alt="HCMUTE Logo">
             <div class="hcmute-brand-text">
-                <span class="hcmute-brand-title">Trường Đại học Sư phạm Kỹ thuật Tp. Hồ Chí Minh</span>
+                <span class="hcmute-brand-title">
+                    <span class="hcmute-brand-title-full">Trường Đại học Sư phạm Kỹ thuật Tp. Hồ Chí Minh</span>
+                    <span class="hcmute-brand-title-short">HCMUTE</span>
+                </span>
                 <span class="hcmute-brand-sub">HCMC University of Technology and Education</span>
             </div>
         </a>
@@ -301,7 +357,7 @@
             <div sec:authorize="isAuthenticated()" class="hcmute-dropdown-wrapper">
                 <button type="button" class="hcmute-user-toggle" id="hcmuteUserDropdownBtn" onclick="toggleHcmuteUserMenu(event)">
                     <i class="bi bi-person-circle"></i>
-                    <span th:text="${userAccountMenu != null and userAccountMenu.fullName != null ? userAccountMenu.fullName : (currentUserFullName != null ? currentUserFullName : (currentUser != null ? currentUser.fullName : #authentication.name))}">Họ Tên</span>
+                    <span class="hcmute-user-name" th:text="${userAccountMenu != null and userAccountMenu.fullName != null ? userAccountMenu.fullName : (currentUserFullName != null ? currentUserFullName : (currentUser != null ? currentUser.fullName : #authentication.name))}">Họ Tên</span>
                     <i class="bi bi-chevron-down" style="font-size: 0.75rem;"></i>
                 </button>
 
@@ -497,6 +553,38 @@
             } else {
                 updateActiveNavbar();
             }
+        })();
+
+        // Instant Navigation: Tự động prefetch trang khi hover chuột hoặc chạm trên mobile để chuyển trang tức thì (< 50ms)
+        (function() {
+            var prefetchedUrls = new Set();
+            function prefetchPage(url) {
+                if (!url || prefetchedUrls.has(url) || url.startsWith('javascript:') || url.startsWith('#') || url.includes('/logout')) return;
+                try {
+                    var parsed = new URL(url, window.location.origin);
+                    if (parsed.origin !== window.location.origin) return;
+                    prefetchedUrls.add(url);
+                    var link = document.createElement('link');
+                    link.rel = 'prefetch';
+                    link.href = url;
+                    link.as = 'document';
+                    document.head.appendChild(link);
+                } catch (e) {}
+            }
+
+            document.addEventListener('mouseover', function(e) {
+                var anchor = e.target.closest('a');
+                if (anchor && anchor.href) {
+                    prefetchPage(anchor.href);
+                }
+            }, { passive: true });
+
+            document.addEventListener('touchstart', function(e) {
+                var anchor = e.target.closest('a');
+                if (anchor && anchor.href) {
+                    prefetchPage(anchor.href);
+                }
+            }, { passive: true });
         })();
     </script>
 </header>
