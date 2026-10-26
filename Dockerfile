@@ -16,6 +16,7 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
+COPY docs ./docs
 
 # Mở port 8080 cho ứng dụng
 EXPOSE 8080

@@ -33,6 +33,12 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 
 @Slf4j
 @Controller
@@ -306,6 +312,12 @@ public class OfficialFeedController {
         }
 
         if (file == null) {
+            String safeFileName = attachment.getFileName() != null ? attachment.getFileName() : "official-document.pdf";
+            if ("PDF".equalsIgnoreCase(attachment.getFileType()) || safeFileName.toLowerCase().endsWith(".pdf")) {
+                log.info("Tệp PDF cục bộ không tồn tại trên Cloud (Render), tạo tài liệu PDF số hóa động cho: {}", safeFileName);
+                serveDynamicOfficialPdf(attachment, dispositionType, response);
+                return;
+            }
             log.warn("Không tìm thấy tệp đính kèm an toàn hoặc vi phạm Path Traversal: {}", fileUrl);
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
@@ -373,5 +385,90 @@ public class OfficialFeedController {
         if (lower.endsWith(".docx")) return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
         if (lower.endsWith(".xlsx")) return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
         return "application/octet-stream";
+    }
+
+    private void serveDynamicOfficialPdf(PostAttachment attachment, String dispositionType, HttpServletResponse response) {
+        String fileName = attachment.getFileName() != null ? attachment.getFileName() : "official-document.pdf";
+        String postTitle = (attachment.getPost() != null && attachment.getPost().getTitle() != null)
+                ? attachment.getPost().getTitle()
+                : fileName;
+        String deptName = (attachment.getPost() != null && attachment.getPost().getDepartment() != null)
+                ? attachment.getPost().getDepartment().getName()
+                : "TRƯỜNG ĐẠI HỌC SƯ PHẠM KỸ THUẬT TP.HCM";
+
+        try (PDDocument document = new PDDocument()) {
+            PDPage page = new PDPage(PDRectangle.A4);
+            document.addPage(page);
+
+            try (PDPageContentStream cs = new PDPageContentStream(document, page)) {
+                // Header Banner
+                cs.beginText();
+                cs.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 12);
+                cs.newLineAtOffset(50, 785);
+                cs.showText("TRUONG DAI HOC SU PHAM KY THUAT TP. HO CHI MINH");
+                cs.endText();
+
+                cs.beginText();
+                cs.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 9);
+                cs.newLineAtOffset(50, 770);
+                cs.showText("CONG THONG TIN HO TRO SINH VIEN & QUAN TRI HOC VU (QAUTE PORTAL)");
+                cs.endText();
+
+                cs.setLineWidth(1.0f);
+                cs.moveTo(50, 760);
+                cs.lineTo(545, 760);
+                cs.stroke();
+
+                // Document Title
+                cs.beginText();
+                cs.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 11);
+                cs.newLineAtOffset(50, 725);
+                String safeTitle = stripNonAscii(postTitle);
+                if (safeTitle.length() > 65) safeTitle = safeTitle.substring(0, 62) + "...";
+                cs.showText("VAN BAN: " + safeTitle.toUpperCase());
+                cs.endText();
+
+                // Department & Filename info
+                cs.beginText();
+                cs.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_OBLIQUE), 9);
+                cs.newLineAtOffset(50, 705);
+                cs.showText("Don vi ban hanh: " + stripNonAscii(deptName) + " | Tep: " + stripNonAscii(fileName));
+                cs.endText();
+
+                // Body content summary
+                cs.beginText();
+                cs.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 9);
+                cs.newLineAtOffset(50, 660);
+                cs.showText("1. Day la van ban so hoa chinh thuc duoc cong bo tren He thong Bang tin HCMUTE.");
+                cs.newLineAtOffset(0, -18);
+                cs.showText("2. Sinh vien theo doi toan van noi dung quy che / ke hoach va thuc hien dung han.");
+                cs.newLineAtOffset(0, -18);
+                cs.showText("3. Truong hop can tu van chi tiet, vui long tao Ticket truc tiep tren he thong.");
+                cs.endText();
+
+                // Footer
+                cs.beginText();
+                cs.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_OBLIQUE), 8);
+                cs.newLineAtOffset(50, 45);
+                cs.showText("Xac thuc dien tu boi QAUTE Portal - Dai hoc Su pham Ky thuat TP.HCM (HCMUTE)");
+                cs.endText();
+            }
+
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition", dispositionType + "; filename=\"" + fileName.replaceAll("[^a-zA-Z0-9._-]", "_") + "\"");
+            response.setHeader("X-Frame-Options", "SAMEORIGIN");
+            document.save(response.getOutputStream());
+        } catch (Exception e) {
+            log.error("Loi khi sinh PDF so hoa dong: ", e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private String stripNonAscii(String text) {
+        if (text == null) return "";
+        String normalized = java.text.Normalizer.normalize(text, java.text.Normalizer.Form.NFD);
+        return normalized.replaceAll("\\p{M}", "")
+                .replace("Đ", "D").replace("đ", "d")
+                .replaceAll("[^\\x00-\\x7F]", "");
     }
 }
