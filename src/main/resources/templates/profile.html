@@ -506,6 +506,7 @@
                                             <div class="relative">
                                                 <input class="w-full h-11 pl-space-md pr-10 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
                                                        id="portalPassword" name="portalPassword" type="password"
+                                                       autocomplete="new-password" value=""
                                                        th:placeholder="${user.portalLinked} ? '••••••• (giữ nguyên nếu không đổi)' : 'Nhập mật khẩu Portal'">
                                                 <button type="button"
                                                         onclick="togglePwd('portalPassword','eyePortal')"
@@ -763,6 +764,11 @@
         (function () {
             const hasPwdError = document.querySelector('#tab-content-security p.text-error');
             if (hasPwdError) switchTab('security');
+            const portalPwdInput = document.getElementById('portalPassword');
+            if (portalPwdInput) {
+                portalPwdInput.value = '';
+                setTimeout(() => { portalPwdInput.value = ''; }, 200);
+            }
         })();
 
         /* ── Kiểm tra kết nối Portal (gọi API thật) ── */
