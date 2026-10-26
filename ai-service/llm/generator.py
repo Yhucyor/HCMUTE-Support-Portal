@@ -60,11 +60,24 @@ def generate_answer(context: str, question: str, provider: str = None, history: 
             
             genai.configure(api_key=api_key)
             
-            # Danh sách model Gemini 3.5 thế hệ mới nhất có quota dồi dào
-            candidate_models = ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-2.5-pro"]
+            # Ưu tiên gemini-2.5-flash trước, dự phòng bằng các model flash nhanh khác
+            candidate_models = [
+                "gemini-2.5-flash",
+                "gemini-3.5-flash-lite",
+                "gemini-3.5-flash"
+            ]
             answer = None
             last_err = None
             
+            # Tắt bộ lọc an toàn quá mức (tránh cắt câu trả lời khi có bảng học phí/số liệu)
+            from google.generativeai.types import HarmCategory, HarmBlockThreshold
+            safety_settings = {
+                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+            }
+
             for m_name in candidate_models:
                 try:
                     logger.info(f"Generating answer with Gemini model: {m_name}")
@@ -73,13 +86,18 @@ def generate_answer(context: str, question: str, provider: str = None, history: 
                         prompt,
                         generation_config=genai.types.GenerationConfig(
                             temperature=MODEL_TEMPERATURE,
-                            max_output_tokens=2048,
-                        )
+                            max_output_tokens=4096,
+                        ),
+                        safety_settings=safety_settings
                     )
-                    if response and response.text:
-                        answer = response.text.strip()
-                        logger.info(f"Generated answer successfully with model: {m_name}")
-                        break
+                    if response and response.candidates:
+                        candidate = response.candidates[0]
+                        finish_reason = getattr(candidate, "finish_reason", None)
+                        logger.info(f"Gemini response finish_reason: {finish_reason}")
+                        if response.text and response.text.strip():
+                            answer = response.text.strip()
+                            logger.info(f"Generated answer successfully with model: {m_name} (Length: {len(answer)})")
+                            break
                 except Exception as ex:
                     last_err = ex
                     logger.warning(f"Model {m_name} failed: {ex}. Trying next model...")
@@ -90,7 +108,7 @@ def generate_answer(context: str, question: str, provider: str = None, history: 
                 return "Chào bạn! Hiện tại dịch vụ AI đang tạm thời đạt hạn mức gọi API. Bạn vui lòng thử lại sau ít phút hoặc tra cứu câu hỏi tương tự trên hệ thống nhé! 😊"
         elif selected_provider == "dify":
             dify_url = os.getenv("DIFY_BASE_URL", "https://api.dify.ai/v1").rstrip("/") + "/chat-messages"
-            dify_key = os.getenv("DIFY_API_KEY", "app-Ku5Tbg0u2r7AD6ev5P6sQmlk")
+            dify_key = os.getenv("DIFY_API_KEY", "app-4RqpdjhJVvBcYRlRfnI5kdtD")
             try:
                 import requests
                 headers = {

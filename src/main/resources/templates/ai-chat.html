@@ -509,14 +509,82 @@
                                             <span class="material-symbols-outlined text-lg">attach_file</span>
                                         </button>
                                         <div class="h-4 w-px bg-[#e2e8f0] mx-0.5"></div>
-                                        <!-- Model Chip Indicator -->
-                                        <span
-                                            class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-[#f1f5f9] text-[#64748b] flex items-center gap-1"
-                                            id="activeModelChip">
-                                            <span
-                                                class="material-symbols-outlined text-xs text-[#1d4ed8]">auto_awesome</span>
-                                            Gemini 1.5 Pro
-                                        </span>
+                                        
+                                        <!-- Model Selector Dropdown trực tiếp ở khung chat dưới cùng -->
+                                        <div class="relative">
+                                            <button
+                                                class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#1e293b] flex items-center gap-1.5 transition-all cursor-pointer border border-[#cbd5e1]/60 shadow-2xs"
+                                                id="bottomModelSelectBtn" type="button" onclick="toggleBottomModelDropdown(event)">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse"></span>
+                                                <span id="activeModelChip" class="flex items-center gap-1">
+                                                    <span class="material-symbols-outlined text-xs text-[#1d4ed8]">auto_awesome</span>
+                                                    Gemini 1.5 Pro
+                                                </span>
+                                                <span class="material-symbols-outlined text-sm text-[#64748b]">expand_less</span>
+                                            </button>
+
+                                            <!-- Menu 4 Models mở vươn lên phía trên (bottom-full) -->
+                                            <div class="hidden absolute left-0 bottom-full mb-2 w-80 p-2 rounded-2xl bg-white shadow-2xl border border-[#cbd5e1] z-40 max-h-[420px] overflow-y-auto animate-in fade-in slide-in-from-bottom-2 duration-150"
+                                                id="bottomModelDropdown">
+                                                <div class="text-[10px] font-bold text-[#94a3b8] uppercase tracking-wider px-2 py-1 mb-1">
+                                                    Chọn Mô Hình Trợ Lý AI
+                                                </div>
+                                                <div class="space-y-1.5">
+                                                    <!-- 1. Google Gemini -->
+                                                    <button
+                                                        class="w-full flex flex-col p-2.5 rounded-xl bg-[#eff6ff] text-left border border-[#bfdbfe] hover:border-[#3b82f6] transition-all group cursor-pointer"
+                                                        onclick="selectModel('gemini', 'Gemini 1.5 Pro')" type="button">
+                                                        <div class="flex items-center justify-between text-xs font-semibold text-[#1d4ed8]">
+                                                            <span class="flex items-center gap-1.5">
+                                                                <span class="material-symbols-outlined text-sm">cloud_done</span>
+                                                                Gemini Cloud (1.5 Pro)
+                                                            </span>
+                                                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-[#ecfdf5] text-[#047857] font-semibold border border-[#a7f3d0]">Khuyên dùng</span>
+                                                        </div>
+                                                        <span class="text-[11px] text-[#64748b] mt-0.5 leading-snug">Phản hồi nhanh, suy luận sâu rộng quy chế toàn trường</span>
+                                                    </button>
+                                                    <!-- 2. Ollama Local -->
+                                                    <button
+                                                        class="w-full flex flex-col p-2.5 rounded-xl hover:bg-[#f8fafc] text-left border border-slate-100 hover:border-[#cbd5e1] transition-all group cursor-pointer"
+                                                        onclick="selectModel('ollama', 'Ollama Local (Qwen 2.5)')" type="button">
+                                                        <div class="flex items-center justify-between text-xs font-semibold text-[#0f172a]">
+                                                            <span class="flex items-center gap-1.5">
+                                                                <span class="material-symbols-outlined text-sm text-[#475569]">dns</span>
+                                                                Ollama Local (Qwen 2.5)
+                                                            </span>
+                                                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-[#eff6ff] text-[#1d4ed8] font-semibold border border-[#bfdbfe]">On-Premise</span>
+                                                        </div>
+                                                        <span class="text-[11px] text-[#64748b] mt-0.5 leading-snug">Bảo mật dữ liệu, vận hành trên máy chủ nội bộ trường</span>
+                                                    </button>
+                                                    <!-- 3. Dify AI Agent -->
+                                                    <button
+                                                        class="w-full flex flex-col p-2.5 rounded-xl hover:bg-[#f8fafc] text-left border border-slate-100 hover:border-[#cbd5e1] transition-all group cursor-pointer"
+                                                        onclick="selectModel('dify', 'Dify AI Agent')" type="button">
+                                                        <div class="flex items-center justify-between text-xs font-semibold text-[#0f172a]">
+                                                            <span class="flex items-center gap-1.5">
+                                                                <span class="material-symbols-outlined text-sm text-[#7c3aed]">psychology</span>
+                                                                Dify AI Agent (Workflow)
+                                                            </span>
+                                                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-[#f5f3ff] text-[#7c3aed] font-semibold border border-[#ddd6fe]">Agentic RAG</span>
+                                                        </div>
+                                                        <span class="text-[11px] text-[#64748b] mt-0.5 leading-snug">Quy trình Agent trích xuất &amp; trả lời chuyên sâu nhiều bước</span>
+                                                    </button>
+                                                    <!-- 4. QAUTE Academic FAQ -->
+                                                    <button
+                                                        class="w-full flex flex-col p-2.5 rounded-xl hover:bg-[#f8fafc] text-left border border-slate-100 hover:border-[#cbd5e1] transition-all group cursor-pointer"
+                                                        onclick="selectModel('qaute', 'QAUTE Academic FAQ')" type="button">
+                                                        <div class="flex items-center justify-between text-xs font-semibold text-[#0f172a]">
+                                                            <span class="flex items-center gap-1.5">
+                                                                <span class="material-symbols-outlined text-sm text-[#059669]">menu_book</span>
+                                                                QAUTE Academic FAQ
+                                                            </span>
+                                                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-[#ecfdf5] text-[#059669] font-semibold border border-[#a7f3d0]">Database Nội Bộ</span>
+                                                        </div>
+                                                        <span class="text-[11px] text-[#64748b] mt-0.5 leading-snug">Bộ tri thức câu hỏi thường gặp HCMUTE sẵn sàng 100%</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <!-- Circular Blue Send Button with upward arrow -->
@@ -741,19 +809,36 @@
         // --- Model Selector Logic ---
         function toggleModelDropdown(e) {
             e.stopPropagation();
-            document.getElementById('modelDropdown').classList.toggle('hidden');
+            const md = document.getElementById('modelDropdown');
+            if (md) md.classList.toggle('hidden');
+        }
+
+        function toggleBottomModelDropdown(e) {
+            e.stopPropagation();
+            const bmd = document.getElementById('bottomModelDropdown');
+            if (bmd) bmd.classList.toggle('hidden');
         }
 
         function selectModel(provider, label) {
             currentProvider = provider;
-            document.getElementById('currentModelLabel').innerText = label;
+            const curLabelEl = document.getElementById('currentModelLabel');
+            if (curLabelEl) curLabelEl.innerText = label;
+            
             let icon = 'auto_awesome';
             if (provider === 'ollama') icon = 'dns';
             else if (provider === 'dify') icon = 'psychology';
             else if (provider === 'qaute') icon = 'menu_book';
-            document.getElementById('activeModelChip').innerHTML =
-                `<span class="material-symbols-outlined text-xs text-[#1d4ed8]">${icon}</span> ${label}`;
-            document.getElementById('modelDropdown').classList.add('hidden');
+            
+            const chip = document.getElementById('activeModelChip');
+            if (chip) {
+                chip.innerHTML = `<span class="material-symbols-outlined text-xs text-[#1d4ed8]">${icon}</span> ${label}`;
+            }
+            
+            const md = document.getElementById('modelDropdown');
+            if (md) md.classList.add('hidden');
+            const bmd = document.getElementById('bottomModelDropdown');
+            if (bmd) bmd.classList.add('hidden');
+            
             showToast('Chuyển mô hình', `Đã kích hoạt mô hình: ${label}`);
         }
 
@@ -765,6 +850,8 @@
         document.addEventListener('click', () => {
             const md = document.getElementById('modelDropdown');
             if (md) md.classList.add('hidden');
+            const bmd = document.getElementById('bottomModelDropdown');
+            if (bmd) bmd.classList.add('hidden');
             const ho = document.getElementById('headerOverflow');
             if (ho) ho.classList.add('hidden');
         });

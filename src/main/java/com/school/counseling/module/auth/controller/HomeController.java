@@ -11,14 +11,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class HomeController {
 
-    private final DepartmentRepository departmentRepository;
+    private final com.school.counseling.module.auth.service.DepartmentQueryService departmentQueryService;
     private final com.school.counseling.module.academic.service.HcmuteCrawlerService crawlerService;
     private final com.school.counseling.module.ticket.service.TicketService ticketService;
 
-    public HomeController(DepartmentRepository departmentRepository,
+    public HomeController(com.school.counseling.module.auth.service.DepartmentQueryService departmentQueryService,
                           com.school.counseling.module.academic.service.HcmuteCrawlerService crawlerService,
                           com.school.counseling.module.ticket.service.TicketService ticketService) {
-        this.departmentRepository = departmentRepository;
+        this.departmentQueryService = departmentQueryService;
         this.crawlerService = crawlerService;
         this.ticketService = ticketService;
     }
@@ -41,7 +41,6 @@ public class HomeController {
 
     @GetMapping({"/", "/home"})
     public String home(Model model) {
-        model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
         SecurityUtils.getCurrentUser().ifPresent(user -> model.addAttribute("currentUser", user));
         return "index";
     }
@@ -63,7 +62,6 @@ public class HomeController {
 
     @GetMapping("/explore")
     public String explore(Model model) {
-        model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
         return "explore";
     }
 
