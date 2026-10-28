@@ -17,7 +17,7 @@ import java.io.File; // cong cu kt tep tin va thu muc
 public class QautePortalApplication {
 
     public static void main(String[] args) {
-        // Tự động khởi tạo các thư mục upload cục bộ C:/upload nếu chưa tồn tại
+        // Tự động khởi tạo các thư mục upload cục bộ D:/portal/upload nếu chưa tồn tại
         initUploadDirectories(); // kt va tao san cac thu muc luu anh video tren may
         SpringApplication.run(QautePortalApplication.class, args); // bat cong tac khoi dong web ,
         // bat may chu noi bo len thuong o 8080 , de b co the mo trinh duyet go vao xem

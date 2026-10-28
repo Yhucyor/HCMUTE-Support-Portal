@@ -42,7 +42,7 @@ public class LocalStorageServiceImpl implements IStorageService {
             String detectedMimeType = tika.detect(file.getInputStream());
             String fileType = resolveFileType(detectedMimeType, originalFilename);
 
-            // 3. Chuan bi thu muc luu tru C:/upload/{folder}
+            // 3. Chuan bi thu muc luu tru D:/portal/upload/{folder}
             String targetDir = Constant.DIR;
             if ("images".equalsIgnoreCase(folder) || "IMAGE".equalsIgnoreCase(fileType)) {
                 targetDir = Constant.DIR_IMAGES;
