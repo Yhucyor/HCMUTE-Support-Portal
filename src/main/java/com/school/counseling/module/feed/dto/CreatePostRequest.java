@@ -28,8 +28,24 @@ public class CreatePostRequest {
     @Builder.Default
     private Boolean isPinned = false;
 
+    public Boolean getIsPinned() {
+        return Boolean.TRUE.equals(isPinned);
+    }
+
+    public void setIsPinned(Boolean isPinned) {
+        this.isPinned = isPinned;
+    }
+
     public Boolean isPinned() {
         return Boolean.TRUE.equals(isPinned);
+    }
+
+    public Boolean getPinned() {
+        return Boolean.TRUE.equals(isPinned);
+    }
+
+    public void setPinned(Boolean pinned) {
+        this.isPinned = pinned;
     }
 
     // Video thông báo (Link nhúng YouTube/Drive hoặc URL file nội bộ)

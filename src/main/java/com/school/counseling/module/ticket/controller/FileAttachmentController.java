@@ -44,11 +44,7 @@ public class FileAttachmentController {
             Constant.DIR_IMAGES,
             Constant.DIR_DOCUMENTS,
             Constant.DIR_VIDEOS,
-            Constant.DIR,
-            "D:/portal/upload/images",
-            "D:/portal/upload/documents",
-            "D:/portal/upload/videos",
-            "D:/portal/upload"
+            Constant.DIR
     };
 
     /**

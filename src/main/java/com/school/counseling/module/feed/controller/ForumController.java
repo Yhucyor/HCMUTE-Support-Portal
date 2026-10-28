@@ -3,8 +3,8 @@ package com.school.counseling.module.feed.controller;
 import com.school.counseling.common.util.SecurityUtils;
 import com.school.counseling.module.auth.entity.Department;
 import com.school.counseling.module.auth.entity.User;
-import com.school.counseling.module.auth.repository.DepartmentRepository;
 import com.school.counseling.module.auth.repository.UserRepository;
+import com.school.counseling.module.auth.service.DepartmentQueryService;
 import com.school.counseling.module.feed.entity.Post;
 import com.school.counseling.module.feed.service.LikeService;
 import com.school.counseling.module.feed.service.PostService;
@@ -29,13 +29,13 @@ public class ForumController {
     private final PostService postService;
     private final UserRepository userRepository;
     private final LikeService likeService;
-    private final DepartmentRepository departmentRepository;
+    private final DepartmentQueryService departmentQueryService;
 
-    public ForumController(PostService postService, UserRepository userRepository, LikeService likeService, DepartmentRepository departmentRepository) {
+    public ForumController(PostService postService, UserRepository userRepository, LikeService likeService, DepartmentQueryService departmentQueryService) {
         this.postService = postService;
         this.userRepository = userRepository;
         this.likeService = likeService;
-        this.departmentRepository = departmentRepository;
+        this.departmentQueryService = departmentQueryService;
     }
 
     /**
@@ -65,7 +65,7 @@ public class ForumController {
             tab = "all";
         }
 // ds khoa phòng đang hoạt động 
-        List<Department> departments = departmentRepository.findByIsActiveTrue();
+        List<Department> departments = departmentQueryService.getActiveDepartments();
 
     // giao dien avatar thong tin 
         if (currentUserId != null) {
@@ -130,7 +130,7 @@ public class ForumController {
                 model.addAttribute("currentUserDept", user.getDepartment() != null ? user.getDepartment().getName() : "Toàn trường");
             });
         }
-        List<Department> departments = departmentRepository.findByIsActiveTrue();
+        List<Department> departments = departmentQueryService.getActiveDepartments();
         model.addAttribute("departments", departments);
         model.addAttribute("currentUserId", currentUserId);
 

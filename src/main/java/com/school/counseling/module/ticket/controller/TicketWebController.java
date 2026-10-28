@@ -2,11 +2,11 @@ package com.school.counseling.module.ticket.controller;
 
 import com.school.counseling.common.dto.ApiResponse;
 import com.school.counseling.common.util.SecurityUtils;
-import com.school.counseling.module.auth.repository.DepartmentRepository;
 import com.school.counseling.module.ticket.dto.CreateTicketRequest;
 import com.school.counseling.module.ticket.dto.TicketReplyRequest;
 import com.school.counseling.module.ticket.dto.TicketResponseDto;
 import com.school.counseling.module.ticket.dto.TicketSummaryDto;
+import com.school.counseling.module.ticket.entity.TicketCategoryEnum;
 import com.school.counseling.module.ticket.service.TicketService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,20 +36,17 @@ import java.util.Map;
  * - GET /tickets/detail/{ticketId}: Chi tiết vé trao đổi 2 chiều
  * - GET /tickets/guest-track: Tra cứu vé vãng lai không cần đăng nhập
  */
-import com.school.counseling.module.ticket.entity.TicketCategoryEnum;
-
 @Controller
 @RequestMapping("/tickets")
 @RequiredArgsConstructor
 public class TicketWebController {
 
     private final TicketService ticketService;
-    private final DepartmentRepository departmentRepository;
 
     @GetMapping("/create")
     @PreAuthorize("isAuthenticated()")
     public String createTicketPage(@RequestParam(value = "title", required = false, defaultValue = "") String title, Model model) {
-        model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
+        model.addAttribute("departments", ticketService.getActiveDepartments());
         model.addAttribute("initialTitle", title);
         model.addAttribute("categories", TicketCategoryEnum.values());
         return "ticket/create";
@@ -65,7 +62,7 @@ public class TicketWebController {
             Model model) {
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
+            model.addAttribute("departments", ticketService.getActiveDepartments());
             model.addAttribute("categories", TicketCategoryEnum.values());
             model.addAttribute("initialTitle", request.getTitle());
             return "ticket/create";
@@ -108,7 +105,7 @@ public class TicketWebController {
         model.addAttribute("currentStatus", status != null ? status : "ALL");
         model.addAttribute("selectedDept", departmentId);
         model.addAttribute("keyword", keyword != null ? keyword : "");
-        model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
+        model.addAttribute("departments", ticketService.getActiveDepartments());
         SecurityUtils.getCurrentUser().ifPresent(u -> model.addAttribute("currentUser", u));
 
         return "ticket/my-tickets";
@@ -156,7 +153,7 @@ public class TicketWebController {
         model.addAttribute("ticket", ticket);
         model.addAttribute("currentUserId", currentUserId);
         model.addAttribute("isStaffOrAdmin", isStaffOrAdmin);
-        model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
+        model.addAttribute("departments", ticketService.getActiveDepartments());
         return "ticket/detail";
     }
 

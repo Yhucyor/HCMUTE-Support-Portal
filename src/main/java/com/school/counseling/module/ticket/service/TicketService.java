@@ -31,10 +31,13 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.school.counseling.module.admin.dto.DepartmentAdminDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -623,6 +626,76 @@ public class TicketService {
     }
 
     /**
+     * Lấy danh sách các đơn vị/khoa đang hoạt động dạng DTO chuẩn MVC
+     */
+    public List<DepartmentAdminDto> getActiveDepartments() {
+        return departmentRepository.findByIsActiveTrue().stream()
+                .map(d -> DepartmentAdminDto.builder()
+                        .id(d.getId())
+                        .name(d.getName())
+                        .code(d.getCode())
+                        .officeLocation(d.getOfficeLocation())
+                        .contactEmail(d.getContactEmail())
+                        .contactPhone(d.getContactPhone())
+                        .description(d.getDescription())
+                        .isActive(d.getIsActive())
+                        .build())
+                .toList();
+    }
+
+    /**
+     * Xử lý thống kê trạng thái và phân trang cho Bàn làm việc Cán bộ (Staff Dashboard)
+     */
+    public StaffDashboardDataDto getStaffDashboardData(Long departmentId, String status, int page, int size) {
+        List<TicketSummaryDto> allTickets;
+        if (departmentId != null) {
+            allTickets = getTicketSummaryByDepartment(departmentId, "ALL");
+        } else {
+            allTickets = getAllTicketSummaries("ALL");
+        }
+
+        long countOpen = allTickets.stream().filter(t -> "OPEN".equalsIgnoreCase(t.getStatus())).count();
+        long countInProgress = allTickets.stream().filter(t -> "IN_PROGRESS".equalsIgnoreCase(t.getStatus())).count();
+        long countOverdue = allTickets.stream().filter(TicketSummaryDto::isOverdue).count();
+        long countResolved = allTickets.stream().filter(t -> "RESOLVED".equalsIgnoreCase(t.getStatus()) || "CLOSED".equalsIgnoreCase(t.getStatus())).count();
+        long countNewReplies = allTickets.stream().filter(TicketSummaryDto::getHasStudentReply).count();
+
+        List<TicketSummaryDto> filteredTickets;
+        if ("ALL".equalsIgnoreCase(status) || status == null || status.isBlank()) {
+            filteredTickets = allTickets;
+        } else if ("NEW_REPLY".equalsIgnoreCase(status)) {
+            filteredTickets = allTickets.stream().filter(TicketSummaryDto::getHasStudentReply).toList();
+        } else if ("OVERDUE".equalsIgnoreCase(status)) {
+            filteredTickets = allTickets.stream().filter(TicketSummaryDto::isOverdue).toList();
+        } else {
+            filteredTickets = allTickets.stream().filter(t -> status.equalsIgnoreCase(t.getStatus())).toList();
+        }
+
+        int totalElements = filteredTickets.size();
+        int safePage = Math.max(0, page);
+        int safeSize = Math.max(1, size);
+        int fromIndex = Math.min(safePage * safeSize, totalElements);
+        int toIndex = Math.min(fromIndex + safeSize, totalElements);
+        List<TicketSummaryDto> pagedContent = filteredTickets.subList(fromIndex, toIndex);
+
+        Page<TicketSummaryDto> ticketPage =
+                new PageImpl<>(pagedContent, PageRequest.of(safePage, safeSize), totalElements);
+
+        return StaffDashboardDataDto.builder()
+                .tickets(ticketPage.getContent())
+                .ticketPage(ticketPage)
+                .currentPage(safePage)
+                .totalPages(ticketPage.getTotalPages())
+                .totalElements(totalElements)
+                .countOpen(countOpen)
+                .countInProgress(countInProgress)
+                .countOverdue(countOverdue)
+                .countResolved(countResolved)
+                .countNewReplies(countNewReplies)
+                .build();
+    }
+
+    /**
      * Map gọn phục vụ hiển thị danh sách (không tải lịch sử hay tệp đính kèm nặng)
      */
     public TicketResponseDto mapToSummaryResponseDto(Ticket t) {
@@ -702,6 +775,7 @@ public class TicketService {
         }
     }
 
+    //bảo mật dữ liệu phòng ban và chống lỗi idor , tối ưu hiệu năng dùng select đúng trường của vé qua dto thày vi load entity nặng 
     private void validateTicketAccess(Long ticketId, User staff) {
         if (staff.getRole() != null && "ROLE_ADMIN".equalsIgnoreCase(staff.getRole().getName())) return;
         ticketRepository.findAccessAuthInfoById(ticketId).ifPresent(authInfo -> {

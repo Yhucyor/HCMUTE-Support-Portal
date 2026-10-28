@@ -20,6 +20,4 @@ public interface TicketTransferHistoryRepository extends JpaRepository<TicketTra
         ORDER BY tth.createdAt DESC
     """)
     List<TicketTransferHistory> findByTicketIdWithRelations(@Param("ticketId") Long ticketId);
-
-    List<TicketTransferHistory> findByTicketIdOrderByCreatedAtDesc(Long ticketId);
 }

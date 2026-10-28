@@ -181,12 +181,6 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     // ─── Truy vấn SLA Engine ───
 
-    @Query("SELECT t FROM Ticket t WHERE t.status IN ('OPEN', 'IN_PROGRESS') AND t.dueDate BETWEEN :now AND :threshold AND t.isDeleted = false")
-    List<Ticket> findDueSoonTickets(@Param("now") LocalDateTime now, @Param("threshold") LocalDateTime threshold);
-
-    @Query("SELECT t FROM Ticket t WHERE t.status IN ('OPEN', 'IN_PROGRESS') AND t.dueDate < :now AND t.isDeleted = false")
-    List<Ticket> findOverdueTickets(@Param("now") LocalDateTime now);
-
     @Query("""
         SELECT t FROM Ticket t
         LEFT JOIN FETCH t.department
@@ -221,53 +215,6 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     // ─── SLA Analytics & Dashboard Queries ───
 
     long countByDepartmentId(Long departmentId);
-
-    @Query("""
-        SELECT COUNT(t) FROM Ticket t
-        WHERE t.isDeleted = false
-          AND (:since IS NULL OR t.createdAt >= :since)
-          AND (:deptId IS NULL OR t.department.id = :deptId)
-    """)
-    long countTicketsFiltered(@Param("since") LocalDateTime since, @Param("deptId") Long deptId);
-
-    @Query("""
-        SELECT COUNT(t) FROM Ticket t
-        WHERE t.isDeleted = false
-          AND t.status = :status
-          AND (:since IS NULL OR t.createdAt >= :since)
-          AND (:deptId IS NULL OR t.department.id = :deptId)
-    """)
-    long countTicketsByStatusFiltered(@Param("status") String status,
-                                      @Param("since") LocalDateTime since,
-                                      @Param("deptId") Long deptId);
-
-    @Query("""
-        SELECT COUNT(t) FROM Ticket t
-        WHERE t.isDeleted = false
-          AND (t.status = 'OVERDUE' OR (t.status IN ('OPEN', 'IN_PROGRESS') AND t.dueDate < CURRENT_TIMESTAMP))
-          AND (:since IS NULL OR t.createdAt >= :since)
-          AND (:deptId IS NULL OR t.department.id = :deptId)
-    """)
-    long countOverdueTicketsFiltered(@Param("since") LocalDateTime since, @Param("deptId") Long deptId);
-
-    @Query("""
-        SELECT COUNT(t) FROM Ticket t
-        WHERE t.isDeleted = false
-          AND t.status IN ('RESOLVED', 'CLOSED')
-          AND (t.resolvedAt IS NOT NULL AND t.resolvedAt <= t.dueDate)
-          AND (:since IS NULL OR t.createdAt >= :since)
-          AND (:deptId IS NULL OR t.department.id = :deptId)
-    """)
-    long countResolvedOnTimeFiltered(@Param("since") LocalDateTime since, @Param("deptId") Long deptId);
-
-    @Query("""
-        SELECT AVG(t.rating) FROM Ticket t
-        WHERE t.isDeleted = false
-          AND t.rating IS NOT NULL
-          AND (:since IS NULL OR t.createdAt >= :since)
-          AND (:deptId IS NULL OR t.department.id = :deptId)
-    """)
-    Double getAverageRatingFiltered(@Param("since") LocalDateTime since, @Param("deptId") Long deptId);
 
     /**
      * Tối ưu hóa Dashboard SLA: Gom 7 truy vấn đếm riêng lẻ thành 1 truy vấn Conditional Aggregation duy nhất.

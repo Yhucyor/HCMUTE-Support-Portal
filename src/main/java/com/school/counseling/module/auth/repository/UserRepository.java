@@ -26,8 +26,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByIdWithRoleAndDepartment(@Param("id") Long id);
 
     long countByDepartmentId(Long departmentId);
-    List<User> findByDepartmentId(Long departmentId);
-    List<User> findByRoleName(String roleName);
 
     @Query(
         value = """
