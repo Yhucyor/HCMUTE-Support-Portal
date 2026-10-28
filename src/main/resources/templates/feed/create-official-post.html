@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
 <head>
     <title>Đăng Thông Báo Chính Thức - QAUTE Portal</title>
 </head>
@@ -104,7 +104,7 @@
             <!-- Options Row (Chỉ ADMIN được quyền ghim bài viết lên đầu) -->
             <div sec:authorize="hasRole('ADMIN')" class="card p-3 bg-light border-0 rounded-3 mb-4">
                 <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" role="switch" id="isPinned" th:field="*{pinned}">
+                    <input class="form-check-input" type="checkbox" role="switch" id="isPinned" th:field="*{isPinned}">
                     <label class="form-check-label fw-semibold text-dark" for="isPinned">
                         <i class="bi bi-pin-angle-fill text-danger me-1"></i>Ghim thông báo này lên đầu trang
                     </label>

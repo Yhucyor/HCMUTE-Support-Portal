@@ -101,4 +101,19 @@ class FeedControllerRefactorTest {
         assertTrue(model.containsAttribute("departments"));
         verify(departmentQueryService, times(1)).getActiveDepartments();
     }
+
+    @Test
+    @DisplayName("OfficialFeedController showCreateForm should prepare CreatePostRequest and departments")
+    void testOfficialFeedShowCreateForm() {
+        Department dept = Department.builder().id(2L).name("Phòng Đào tạo").code("DT").isActive(true).build();
+        when(departmentQueryService.getActiveDepartments()).thenReturn(List.of(dept));
+
+        Model model = new ExtendedModelMap();
+        String view = officialFeedController.showCreateForm(model);
+
+        assertEquals("feed/create-official-post", view);
+        assertTrue(model.containsAttribute("postRequest"));
+        assertTrue(model.containsAttribute("departments"));
+        verify(departmentQueryService, times(1)).getActiveDepartments();
+    }
 }
