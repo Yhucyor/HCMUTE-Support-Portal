@@ -698,7 +698,7 @@ public class TicketService {
     /**
      * Map gọn phục vụ hiển thị danh sách (không tải lịch sử hay tệp đính kèm nặng)
      */
-    private TicketResponseDto mapToSummaryResponseDto(Ticket t) {
+    public TicketResponseDto mapToSummaryResponseDto(Ticket t) {
         boolean isOverdue = slaCalculatorService.isOverdue(t.getDueDate(), t.getStatus());
         boolean isDueSoon = slaCalculatorService.isDueSoon(t.getDueDate(), t.getStatus());
 
