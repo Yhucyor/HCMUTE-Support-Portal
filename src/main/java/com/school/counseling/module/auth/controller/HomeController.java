@@ -2,8 +2,6 @@ package com.school.counseling.module.auth.controller;
 
 import com.school.counseling.common.util.SecurityUtils;
 import com.school.counseling.module.auth.dto.UserPrincipal;
-import com.school.counseling.module.auth.repository.DepartmentRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,17 +9,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class HomeController {
 
-    private final com.school.counseling.module.auth.service.DepartmentQueryService departmentQueryService;
-    private final com.school.counseling.module.academic.service.HcmuteCrawlerService crawlerService;
-    private final com.school.counseling.module.ticket.service.TicketService ticketService;
-
-    public HomeController(com.school.counseling.module.auth.service.DepartmentQueryService departmentQueryService,
-                          com.school.counseling.module.academic.service.HcmuteCrawlerService crawlerService,
-                          com.school.counseling.module.ticket.service.TicketService ticketService) {
-        this.departmentQueryService = departmentQueryService;
-        this.crawlerService = crawlerService;
-        this.ticketService = ticketService;
-    }
 
     @GetMapping({"/dashboard", "/student/dashboard"})
     public String dashboard(Model model) {

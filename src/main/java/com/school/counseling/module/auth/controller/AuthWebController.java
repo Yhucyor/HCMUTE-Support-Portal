@@ -3,8 +3,8 @@ package com.school.counseling.module.auth.controller;
 import com.school.counseling.common.exception.AppException;
 import com.school.counseling.common.util.SecurityUtils;
 import com.school.counseling.module.auth.dto.RegisterRequest;
-import com.school.counseling.module.auth.repository.DepartmentRepository;
 import com.school.counseling.module.auth.service.AuthService;
+import com.school.counseling.module.auth.service.DepartmentQueryService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -22,11 +22,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AuthWebController {
 
     private final AuthService authService;
-    private final DepartmentRepository departmentRepository;
+    private final DepartmentQueryService departmentQueryService;
 
-    public AuthWebController(AuthService authService, DepartmentRepository departmentRepository) {
+    public AuthWebController(AuthService authService, DepartmentQueryService departmentQueryService) {
         this.authService = authService;
-        this.departmentRepository = departmentRepository;
+        this.departmentQueryService = departmentQueryService;
     }
 
     @GetMapping("/login")
@@ -92,7 +92,7 @@ public class AuthWebController {
         if (!model.containsAttribute("registerRequest")) {
             model.addAttribute("registerRequest", new RegisterRequest());
         }
-        model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
+        model.addAttribute("departments", departmentQueryService.getActiveDepartments());
         return "register";
     }
 
@@ -102,7 +102,7 @@ public class AuthWebController {
                                  RedirectAttributes redirectAttributes,
                                  Model model) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
+            model.addAttribute("departments", departmentQueryService.getActiveDepartments());
             return "register";
         }
 
@@ -115,12 +115,12 @@ public class AuthWebController {
                     + java.net.URLEncoder.encode(request.getEmail().trim(), java.nio.charset.StandardCharsets.UTF_8);
         } catch (AppException ex) {
             model.addAttribute("errorMessage", ex.getMessage());
-            model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
+            model.addAttribute("departments", departmentQueryService.getActiveDepartments());
             return "register";
         } catch (Exception ex) {
             log.error("Registration failed", ex);
             model.addAttribute("errorMessage", "Đã có lỗi xảy ra trong quá trình đăng ký: " + ex.getMessage());
-            model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
+            model.addAttribute("departments", departmentQueryService.getActiveDepartments());
             return "register";
         }
     }
