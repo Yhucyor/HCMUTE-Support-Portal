@@ -775,6 +775,7 @@ public class TicketService {
         }
     }
 
+    //bảo mật dữ liệu phòng ban và chống lỗi idor , tối ưu hiệu năng dùng select đúng trường của vé qua dto thày vi load entity nặng 
     private void validateTicketAccess(Long ticketId, User staff) {
         if (staff.getRole() != null && "ROLE_ADMIN".equalsIgnoreCase(staff.getRole().getName())) return;
         ticketRepository.findAccessAuthInfoById(ticketId).ifPresent(authInfo -> {
