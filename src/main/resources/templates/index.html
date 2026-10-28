@@ -93,27 +93,26 @@
                         </a>
                     </div>
 
-                    <!-- Search Box Floating Pill -->
+                    <!-- Search Box Floating Pill (Chuyển hướng trực tiếp sang tra cứu FAQs) -->
                     <div class="mt-8 max-w-2xl">
-                        <div class="bg-white/95 backdrop-blur-md p-1.5 rounded-full shadow-2xl border border-white/80 flex items-center gap-2">
+                        <form action="/faqs" method="get" class="bg-white/95 backdrop-blur-md p-1.5 rounded-full shadow-2xl border border-white/80 flex items-center gap-2">
                             <div class="flex items-center pl-3 text-slate-400">
                                 <span class="material-symbols-outlined text-[20px] text-[#003882]">search</span>
                             </div>
-                            <input id="heroSearchInput" type="text" placeholder="Tìm kiếm thông tin tuyển sinh, ngành học, FAQ, quy chế học vụ..." 
-                                   onkeydown="if(event.key === 'Enter') executeSearch();"
+                            <input id="heroSearchInput" name="q" type="text" placeholder="Tìm kiếm thông tin tuyển sinh, ngành học, FAQ, quy chế học vụ..." 
                                    class="flex-1 bg-transparent border-none outline-none text-xs sm:text-sm text-slate-800 placeholder-slate-400 px-2 py-1.5 focus:ring-0">
-                            <button onclick="executeSearch()" class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#003882] hover:bg-[#002456] text-white text-xs sm:text-sm font-semibold rounded-full shadow-md transition-all active:scale-95">
+                            <button type="submit" class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#003882] hover:bg-[#002456] text-white text-xs sm:text-sm font-semibold rounded-full shadow-md transition-all active:scale-95">
                                 <span>Tìm kiếm</span>
                                 <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
                             </button>
-                        </div>
+                        </form>
                         <div class="flex flex-wrap items-center gap-1.5 mt-2.5 px-2 text-[11px]">
                             <span class="text-slate-300 font-medium">Gợi ý:</span>
-                            <a href="javascript:void(0)" onclick="quickSearch('Điểm chuẩn 2026')" class="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 transition-colors border border-white/10">Điểm chuẩn 2026</a>
-                            <a href="javascript:void(0)" onclick="quickSearch('Học phí & Miễn giảm')" class="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 transition-colors border border-white/10">Học phí &amp; Miễn giảm</a>
-                            <a href="javascript:void(0)" onclick="quickSearch('Học bổng khuyến khích')" class="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 transition-colors border border-white/10">Học bổng</a>
-                            <a href="javascript:void(0)" onclick="quickSearch('Ký túc xá')" class="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 transition-colors border border-white/10">Ký túc xá</a>
-                            <a href="javascript:void(0)" onclick="quickSearch('Đề án tuyển sinh')" class="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 transition-colors border border-white/10">Đề án tuyển sinh</a>
+                            <a href="/faqs?q=%C4%90i%E1%BB%83m%20chu%E1%BA%A9n%202026" class="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 transition-colors border border-white/10">Điểm chuẩn 2026</a>
+                            <a href="/faqs?q=H%E1%BB%8Dc%20ph%C3%AD%20%26%20Mi%E1%BB%85n%20gi%E1%BA%A3m" class="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 transition-colors border border-white/10">Học phí &amp; Miễn giảm</a>
+                            <a href="/faqs?q=H%E1%BB%8Dc%20b%E1%BB%95ng" class="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 transition-colors border border-white/10">Học bổng</a>
+                            <a href="/faqs?q=K%C3%BD%20t%C3%BAc%20x%C3%A1" class="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 transition-colors border border-white/10">Ký túc xá</a>
+                            <a href="/faqs?q=%C4%90%E1%BB%81%20%C3%A1n%20tuy%E1%BB%83n%20sinh" class="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 transition-colors border border-white/10">Đề án tuyển sinh</a>
                         </div>
                     </div>
                 </div>
@@ -850,10 +849,11 @@
         function executeSearch() {
             const input = document.getElementById('heroSearchInput');
             const q = input ? input.value.trim() : '';
-            if (!q) return;
-            // Open chatbot with query or navigate to explore
-            toggleChatWindow(true);
-            handleQuickClick(q);
+            if (q) {
+                window.location.href = '/faqs?q=' + encodeURIComponent(q);
+            } else {
+                window.location.href = '/faqs';
+            }
         }
 
         // Mascot AI Chat Window Controls
