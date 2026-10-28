@@ -497,6 +497,17 @@ public class PostService {
     }
 
     /**
+     * Lấy tệp đính kèm theo ID
+     */
+    @Transactional(readOnly = true)
+    public PostAttachment getAttachmentById(Long attachmentId) {
+        if (attachmentId == null) {
+            return null;
+        }
+        return attachmentRepository.findById(attachmentId).orElse(null);
+    }
+
+    /**
      * Lấy chi tiết Post Entity trực tiếp
      */
     @Transactional(readOnly = true)
