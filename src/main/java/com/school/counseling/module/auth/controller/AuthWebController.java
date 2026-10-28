@@ -59,7 +59,7 @@ public class AuthWebController {
         if (logout != null) {
             model.addAttribute("successMessage", "Bạn đã đăng xuất thành công khỏi hệ thống.");
         }
-        return "login";
+        return "auth/login";
     }
 
     @PostMapping("/portal-login")
@@ -93,7 +93,7 @@ public class AuthWebController {
             model.addAttribute("registerRequest", new RegisterRequest());
         }
         model.addAttribute("departments", departmentQueryService.getActiveDepartments());
-        return "register";
+        return "auth/register";
     }
 
     @PostMapping("/register")
@@ -103,7 +103,7 @@ public class AuthWebController {
                                  Model model) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("departments", departmentQueryService.getActiveDepartments());
-            return "register";
+            return "auth/register";
         }
 
         try {
@@ -116,12 +116,12 @@ public class AuthWebController {
         } catch (AppException ex) {
             model.addAttribute("errorMessage", ex.getMessage());
             model.addAttribute("departments", departmentQueryService.getActiveDepartments());
-            return "register";
+            return "auth/register";
         } catch (Exception ex) {
             log.error("Registration failed", ex);
             model.addAttribute("errorMessage", "Đã có lỗi xảy ra trong quá trình đăng ký: " + ex.getMessage());
             model.addAttribute("departments", departmentQueryService.getActiveDepartments());
-            return "register";
+            return "auth/register";
         }
     }
 
@@ -134,7 +134,7 @@ public class AuthWebController {
             return "redirect:/home";
         }
         model.addAttribute("email", email);
-        return "activate";
+        return "auth/activate";
     }
 
     @PostMapping("/activate")
@@ -145,7 +145,7 @@ public class AuthWebController {
         if (email == null || email.isBlank() || otpCode == null || otpCode.isBlank()) {
             model.addAttribute("errorMessage", "Vui lòng nhập đầy đủ Email và Mã OTP 6 chữ số.");
             model.addAttribute("email", email);
-            return "activate";
+            return "auth/activate";
         }
 
         try {
@@ -156,12 +156,12 @@ public class AuthWebController {
         } catch (AppException ex) {
             model.addAttribute("errorMessage", ex.getMessage());
             model.addAttribute("email", email.trim());
-            return "activate";
+            return "auth/activate";
         } catch (Exception ex) {
             log.error("Activation failed", ex);
             model.addAttribute("errorMessage", "Không thể kích hoạt tài khoản. Vui lòng thử lại!");
             model.addAttribute("email", email.trim());
-            return "activate";
+            return "auth/activate";
         }
     }
 
@@ -205,9 +205,9 @@ public class AuthWebController {
         model.addAttribute("step", step);
         model.addAttribute("otpCode", otpCode);
         if (step == 2 || step == 3) {
-            return "reset-password";
+            return "auth/reset-password";
         }
-        return "forgot-password";
+        return "auth/forgot-password";
     }
 
     @GetMapping("/reset-password")
@@ -221,7 +221,7 @@ public class AuthWebController {
         }
         model.addAttribute("email", email);
         model.addAttribute("otpCode", otpCode);
-        return "reset-password";
+        return "auth/reset-password";
     }
 
     @PostMapping("/forgot-password/send-otp")

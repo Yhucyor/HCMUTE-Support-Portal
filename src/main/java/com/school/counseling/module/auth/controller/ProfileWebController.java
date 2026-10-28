@@ -58,7 +58,7 @@ public class ProfileWebController {
             model.addAttribute("changePasswordRequest", new ChangePasswordRequest());
         }
 
-        return "profile";
+        return "auth/profile";
     }
 
     @PostMapping("/update")

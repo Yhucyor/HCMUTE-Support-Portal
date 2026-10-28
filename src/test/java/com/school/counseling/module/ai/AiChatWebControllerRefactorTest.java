@@ -47,7 +47,7 @@ class AiChatWebControllerRefactorTest {
         Model model = new ExtendedModelMap();
         String view = controller.chatPage(model);
 
-        assertEquals("ai-chat", view);
+        assertEquals("ai/ai-chat", view);
         assertTrue(model.containsAttribute("departments"));
         @SuppressWarnings("unchecked")
         List<Department> depts = (List<Department>) model.getAttribute("departments");

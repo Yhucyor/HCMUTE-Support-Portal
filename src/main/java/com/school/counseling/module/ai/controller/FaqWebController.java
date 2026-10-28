@@ -51,6 +51,6 @@ public class FaqWebController {
         model.addAttribute("query", query != null ? query : "");
         model.addAttribute("totalCount", allFaqs.size());
 
-        return "faqs";
+        return "ai/faqs";
     }
 }

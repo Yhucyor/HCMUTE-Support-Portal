@@ -75,7 +75,7 @@ class AuthWebControllerRefactorTest {
         Model model = new ExtendedModelMap();
         String view = authWebController.registerPage(request, model);
 
-        assertEquals("register", view);
+        assertEquals("auth/register", view);
         assertTrue(model.containsAttribute("departments"));
         @SuppressWarnings("unchecked")
         List<Department> result = (List<Department>) model.getAttribute("departments");
@@ -110,7 +110,7 @@ class AuthWebControllerRefactorTest {
         Model model = new ExtendedModelMap();
         String view = profileWebController.viewProfile(model);
 
-        assertEquals("profile", view);
+        assertEquals("auth/profile", view);
         assertTrue(model.containsAttribute("departments"));
         verify(departmentQueryService, times(1)).getActiveDepartments();
     }

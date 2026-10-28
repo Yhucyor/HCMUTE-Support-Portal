@@ -78,7 +78,7 @@ public class AiChatWebController {
         }
         
         model.addAttribute("pageTitle", "QAUTE - Trợ Lý AI HCMUTE");
-        return "ai-chat";
+        return "ai/ai-chat";
     }
 
     /**
@@ -112,6 +112,6 @@ public class AiChatWebController {
         model.addAttribute("messages", messages);
         model.addAttribute("pageTitle", conversation.getTitle() != null ? conversation.getTitle() : "Cuộc trò chuyện");
         
-        return "ai-chat";
+        return "ai/ai-chat";
     }
 }
