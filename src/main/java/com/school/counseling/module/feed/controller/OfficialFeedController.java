@@ -4,12 +4,11 @@ import com.school.counseling.common.util.Constant;
 import com.school.counseling.common.util.SecurityUtils;
 import com.school.counseling.module.auth.entity.Department;
 import com.school.counseling.module.auth.entity.User;
-import com.school.counseling.module.auth.repository.DepartmentRepository;
 import com.school.counseling.module.auth.repository.UserRepository;
+import com.school.counseling.module.auth.service.DepartmentQueryService;
 import com.school.counseling.module.feed.dto.CreatePostRequest;
 import com.school.counseling.module.feed.dto.PostResponseDto;
 import com.school.counseling.module.feed.entity.PostAttachment;
-import com.school.counseling.module.feed.repository.PostAttachmentRepository;
 import com.school.counseling.module.feed.service.PostService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -47,9 +46,8 @@ import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 public class OfficialFeedController {
 
     private final PostService postService;
-    private final DepartmentRepository departmentRepository;
+    private final DepartmentQueryService departmentQueryService;
     private final UserRepository userRepository;
-    private final PostAttachmentRepository postAttachmentRepository;
 
     /**
      * Bảng tin thông báo chính thức công khai (Guest, Sinh viên, Cán bộ đều xem được)
@@ -63,7 +61,7 @@ public class OfficialFeedController {
 
         Pageable pageable = PageRequest.of(Math.max(0, page), 9);
         Page<PostResponseDto> posts = postService.getApprovedOfficialPosts(departmentId, query, pageable);
-        List<Department> departments = departmentRepository.findByIsActiveTrue();
+        List<Department> departments = departmentQueryService.getActiveDepartments();
 
         model.addAttribute("posts", posts);
         model.addAttribute("departments", departments);
@@ -89,7 +87,7 @@ public class OfficialFeedController {
     @GetMapping("/create")
     @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
     public String showCreateForm(Model model) {
-        List<Department> departments = departmentRepository.findByIsActiveTrue();
+        List<Department> departments = departmentQueryService.getActiveDepartments();
         Long staffDeptId = SecurityUtils.getCurrentDepartmentId().orElse(null);
 
         CreatePostRequest request = new CreatePostRequest();
@@ -119,7 +117,7 @@ public class OfficialFeedController {
             Model model) {
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
+            model.addAttribute("departments", departmentQueryService.getActiveDepartments());
             return "feed/create-official-post";
         }
 
@@ -145,7 +143,7 @@ public class OfficialFeedController {
     @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
     public String showEditForm(@PathVariable("id") Long id, Model model) {
         PostResponseDto post = postService.getPostById(id);
-        List<Department> departments = departmentRepository.findByIsActiveTrue();
+        List<Department> departments = departmentQueryService.getActiveDepartments();
 
         CreatePostRequest postRequest = CreatePostRequest.builder()
                 .title(post.getTitle())
@@ -180,7 +178,7 @@ public class OfficialFeedController {
         if (bindingResult.hasErrors()) {
             PostResponseDto post = postService.getPostById(id);
             model.addAttribute("post", post);
-            model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
+            model.addAttribute("departments", departmentQueryService.getActiveDepartments());
             return "feed/edit-official-post";
         }
 
@@ -248,7 +246,7 @@ public class OfficialFeedController {
     }
 
     private void serveAttachmentFile(Long attachmentId, String dispositionType, HttpServletRequest request, HttpServletResponse response) {
-        PostAttachment attachment = postAttachmentRepository.findById(attachmentId).orElse(null);
+        PostAttachment attachment = postService.getAttachmentById(attachmentId);
         if (attachment == null) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;

@@ -115,11 +115,11 @@ spring:
               - email
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
 
-# Cấu hình Lưu Trữ & Thư Mục Upload Cục Bộ (Tương thích chuẩn Constant.DIR = C:\upload)
+# Cấu hình Lưu Trữ & Thư Mục Upload Cục Bộ (Tương thích chuẩn Constant.DIR = D:\portal\upload)
 app:
   storage:
     provider: ${STORAGE_PROVIDER:cloudinary} # 'local' hoặc 'cloudinary'
-    upload-dir: ${UPLOAD_DIR:C:/upload} # Thư mục lưu ảnh/file cục bộ trên máy
+    upload-dir: ${UPLOAD_DIR:D:/portal/upload} # Thư mục lưu ảnh/file cục bộ trên máy
     max-image-size-mb: 10
     max-doc-size-mb: 100
     max-video-size-mb: 100

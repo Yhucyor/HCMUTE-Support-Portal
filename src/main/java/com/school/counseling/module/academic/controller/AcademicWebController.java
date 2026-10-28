@@ -57,7 +57,7 @@ public class AcademicWebController {
         model.addAttribute("announcements", crawlerService.getQuickAnnouncements(
                 portalUser != null ? portalUser : effectiveStudentId, portalPass));
 
-        return "academic-sync";
+        return "academic/academic-sync";
     }
 
     @GetMapping("/grades")
@@ -71,7 +71,7 @@ public class AcademicWebController {
             model.addAttribute("summary", crawlerService.getAcademicSummary(effectiveStudentId));
             crawlerService.getStudentProfile(effectiveStudentId).ifPresent(p -> model.addAttribute("studentProfile", p));
         }
-        return "grades";
+        return "academic/grades";
     }
 
     @GetMapping("/timetable")
@@ -79,7 +79,7 @@ public class AcademicWebController {
         populatePortalCredentials(model);
         SecurityUtils.getCurrentUser().ifPresent(user -> model.addAttribute("currentUser", user));
         model.addAttribute("currentStudentId", resolve(studentId));
-        return "timetable";
+        return "academic/timetable";
     }
 
     @GetMapping("/curriculum")
@@ -97,7 +97,7 @@ public class AcademicWebController {
             model.addAttribute("summary", crawlerService.getAcademicSummary(effectiveStudentId));
             crawlerService.getStudentProfile(effectiveStudentId).ifPresent(p -> model.addAttribute("studentProfile", p));
         }
-        return "curriculum";
+        return "academic/curriculum";
     }
 
     @GetMapping({"", "/", "/info"})

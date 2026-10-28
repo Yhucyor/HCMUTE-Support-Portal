@@ -10,7 +10,7 @@ public final class Constant {
 
     // Thư mục lưu trữ ảnh và file upload cục bộ trên máy tính (Hỗ trợ đa nền tảng Windows & Linux Cloud)
     public static final String DIR = System.getProperty("os.name", "").toLowerCase().contains("win")
-            ? "C:" + File.separator + "upload"
+            ? "D:" + File.separator + "portal" + File.separator + "upload"
             : "/tmp/upload";
     
     // Các thư mục con

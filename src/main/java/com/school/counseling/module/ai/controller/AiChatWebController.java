@@ -6,8 +6,8 @@ import com.school.counseling.module.ai.entity.Conversation;
 import com.school.counseling.module.ai.service.AiConversationService;
 import com.school.counseling.module.auth.dto.UserPrincipal;
 import com.school.counseling.module.auth.entity.User;
-import com.school.counseling.module.auth.repository.DepartmentRepository;
 import com.school.counseling.module.auth.repository.UserRepository;
+import com.school.counseling.module.auth.service.DepartmentQueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -29,7 +29,7 @@ public class AiChatWebController {
 
     private final AiConversationService conversationService;
     private final UserRepository userRepository;
-    private final DepartmentRepository departmentRepository;
+    private final DepartmentQueryService departmentQueryService;
 
     /**
      * Lấy thực thể User hiện tại từ SecurityContext
@@ -60,7 +60,7 @@ public class AiChatWebController {
             model.addAttribute("currentUserRole", role);
             model.addAttribute("currentUserDept", currentUser.getDepartment() != null ? currentUser.getDepartment().getName() : "Toàn trường");
         }
-        model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
+        model.addAttribute("departments", departmentQueryService.getActiveDepartments());
     }
 
     /**
@@ -78,7 +78,7 @@ public class AiChatWebController {
         }
         
         model.addAttribute("pageTitle", "QAUTE - Trợ Lý AI HCMUTE");
-        return "ai-chat";
+        return "ai/ai-chat";
     }
 
     /**
@@ -112,6 +112,6 @@ public class AiChatWebController {
         model.addAttribute("messages", messages);
         model.addAttribute("pageTitle", conversation.getTitle() != null ? conversation.getTitle() : "Cuộc trò chuyện");
         
-        return "ai-chat";
+        return "ai/ai-chat";
     }
 }

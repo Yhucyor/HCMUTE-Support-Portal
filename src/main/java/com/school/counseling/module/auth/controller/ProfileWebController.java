@@ -6,7 +6,7 @@ import com.school.counseling.module.auth.dto.ChangePasswordRequest;
 import com.school.counseling.module.auth.dto.UpdateProfileRequest;
 import com.school.counseling.module.auth.dto.UserProfileDto;
 import com.school.counseling.module.auth.dto.UserPrincipal;
-import com.school.counseling.module.auth.repository.DepartmentRepository;
+import com.school.counseling.module.auth.service.DepartmentQueryService;
 import com.school.counseling.module.auth.service.ProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class ProfileWebController {
 
     private final ProfileService profileService;
-    private final DepartmentRepository departmentRepository;
+    private final DepartmentQueryService departmentQueryService;
     private final HcmuteCrawlerService crawlerService;
 
     @GetMapping
@@ -40,7 +40,7 @@ public class ProfileWebController {
         UserProfileDto profile = profileService.getProfile(currentUser.getId());
         model.addAttribute("user", profile);
         model.addAttribute("currentUser", currentUser);
-        model.addAttribute("departments", departmentRepository.findByIsActiveTrue());
+        model.addAttribute("departments", departmentQueryService.getActiveDepartments());
 
         if (!model.containsAttribute("updateProfileRequest")) {
             UpdateProfileRequest updateRequest = UpdateProfileRequest.builder()
@@ -58,7 +58,7 @@ public class ProfileWebController {
             model.addAttribute("changePasswordRequest", new ChangePasswordRequest());
         }
 
-        return "profile";
+        return "auth/profile";
     }
 
     @PostMapping("/update")
