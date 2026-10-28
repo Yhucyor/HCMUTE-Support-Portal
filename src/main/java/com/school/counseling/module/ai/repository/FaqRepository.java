@@ -45,19 +45,4 @@ public interface FaqRepository extends JpaRepository<Faq, Long> {
            "LOWER(f.keywords) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
            "LOWER(f.answer) LIKE LOWER(CONCAT('%', :query, '%')))")
     List<Faq> searchFaqs(@Param("query") String query);
-
-    @Modifying
-    @Transactional
-    @Query(value = "DELETE FROM faqs WHERE is_deleted = true", nativeQuery = true)
-    void hardDeleteSoftDeletedFaqs();
-
-    @Modifying
-    @Transactional
-    @Query(value = "DELETE FROM faqs", nativeQuery = true)
-    void hardDeleteAllFaqs();
-
-    @Modifying
-    @Transactional
-    @Query(value = "ALTER TABLE faqs AUTO_INCREMENT = 1", nativeQuery = true)
-    void resetAutoIncrement();
 }
