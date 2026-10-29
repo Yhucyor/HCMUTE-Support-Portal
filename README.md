@@ -64,10 +64,10 @@ Giao diện cổng thông tin học đường hiện đại với thanh tìm ki�
 
 <div align="center">
 
-![Trang Chủ & Hero Search Portal](image-1.png)
+![Trang Chủ & Hero Search Portal](docs/images/image-1.png)
 
 
-![alt text](image-14.png)
+![alt text](docs/images/image-14.png)
 *Hình 2.1: Giao diện Trang chủ Cổng thông tin sinh viên QAUTE Portal*
 </div>
 
@@ -78,7 +78,7 @@ Trợ lý AI đa năng tích hợp bộ điều phối 4 mô hình: **Gemini 2.5
 
 <div align="center">
 
-![alt text](image-2.png)
+![alt text](docs/images/image-2.png)
 
 *Hình 2.2: Không gian trò chuyện đa lượt (Multi-turn), tự động gợi ý câu hỏi và trích dẫn nguồn PDF pháp lý*
 </div>
@@ -90,7 +90,7 @@ Trung tâm điều phối yêu cầu hỗ trợ sinh viên với thanh lọc tr�
 
 <div align="center">
 
-![alt text](image-3.png)
+![alt text](docs/images/image-3.png)
 
 *Hình 2.3: Danh sách Ticket trực quan với huy hiệu trạng thái (Open, In Progress, Resolved) và bộ đếm ngược SLA*
 </div>
@@ -102,7 +102,7 @@ Theo dõi toàn diện quá trình học tập: Điểm số từng môn, phân 
 
 <div align="center">
 
-![alt text](image-4.png)
+![alt text](docs/images/image-4.png)
 
 *Hình 2.4: Bảng điểm học vụ, tính toán GPA/CPA tự động và đồng bộ trực tiếp*
 </div>
@@ -114,8 +114,8 @@ Ma trận lịch học và lịch thi dạng lưới từ Thứ 2 đến Chủ n
 
 <div align="center">
 
-![alt text](image-5.png)
-![alt text](image-6.png)
+![alt text](docs/images/image-5.png)
+![alt text](docs/images/image-6.png)
 *Hình 2.5: Thời khóa biểu trực quan theo tuần với phân bổ phòng học và ca học*
 </div>
 
@@ -127,9 +127,9 @@ Ma trận lịch học và lịch thi dạng lưới từ Thứ 2 đến Chủ n
 
 <div align="center">
 
-![alt text](image-7.png)
+![alt text](docs/images/image-7.png)
 
-![alt text](image-8.png)
+![alt text](docs/images/image-8.png)
 *Hình 2.6: Cổng bảng tin thông báo chính thức và không gian thảo luận sinh viên*
 </div>
 
@@ -140,23 +140,23 @@ Khu vực dành riêng cho Quản trị viên và Cán bộ Khoa/Phòng: Báo c�
 
 <div align="center">
 
-![alt text](image-9.png)
+![alt text](docs/images/image-9.png)
 
-![alt text](image-10.png)
+![alt text](docs/images/image-10.png)
 
-![alt text](image-11.png)
+![alt text](docs/images/image-11.png)
 
-![alt text](image-12.png)
+![alt text](docs/images/image-12.png)
 
-![alt text](image-15.png)
+![alt text](docs/images/image-15.png)
 
-![alt text](image-16.png)
+![alt text](docs/images/image-16.png)
 
-![alt text](image-17.png)
+![alt text](docs/images/image-17.png)
 
-![alt text](image-18.png)
+![alt text](docs/images/image-18.png)
 
-![alt text](image-19.png)
+![alt text](docs/images/image-19.png)
 
 *Hình 2.7: Bảng điều khiển quản trị tập trung và thống kê chỉ số đo lường hiệu quả (KPIs)*
 </div>
@@ -168,7 +168,7 @@ Bảo mật đa tầng với Spring Security 6, mã hóa mật khẩu BCrypt, h�
 
 <div align="center">
 
-![alt text](image-13.png)
+![alt text](docs/images/image-13.png)
 
 
 
