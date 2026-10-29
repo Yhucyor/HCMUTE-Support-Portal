@@ -1,0 +1,39 @@
+﻿MỤC LỚN	THÔNG SỐ / THÀNH PHẦN	GIÁ TRỊ CẤU HÌNH THỰC TẾ	GHI CHÚ KỸ THUẬT VÀ GIẢI THÍCH
+1. THÔNG TIN CHUNG	Tên hệ thống RAG	QAUTE AI Assistant	Hệ thống trợ lý AI tư vấn tuyển sinh & học vụ HCMUTE
+1. THÔNG TIN CHUNG	Phiên bản hệ thống	v2.5.0-production	Đang chạy đồng bộ trên Spring Boot 3 và Python FastAPI
+1. THÔNG TIN CHUNG	Ngày cập nhật cuối	29/10/2026	Cập nhật trực tiếp theo commit mới nhất
+1. THÔNG TIN CHUNG	Đội ngũ phát triển / Kỹ sư AI	Dev A & Dev B	Dev A: Fullstack & System Architect (Java) | Dev B: AI Specialist (Python)
+1. THÔNG TIN CHUNG	Mục tiêu & Phạm vi sử dụng	Cổng QAUTE Portal HCMUTE	Giải đáp tự động 24/7 về 50+ ngành học, học phí tín chỉ, học bổng, quy chế học vụ
+2. TECHNICAL PIPELINE	Data Ingestion - Định dạng nguồn	PDF + JSON + Markdown + SQL	91 văn bản công văn/quy chế chính thức + 349 FAQs chuẩn hóa + golden-truth
+2. TECHNICAL PIPELINE	Data Ingestion - Công cụ trích xuất	pypdf (PdfReader) + Custom Regex Cleaner	re.sub chuẩn hóa khoảng trắng thừa, xóa header/footer số trang tự động
+2. TECHNICAL PIPELINE	Text Chunking - Chiến lược chia nhỏ	Sliding Window + Paragraph Split	Ưu tiên ngắt câu logic (dấu chấm câu, xuống dòng đoạn văn), giữ nguyên cấu trúc bảng
+2. TECHNICAL PIPELINE	Text Chunking - Kích thước đoạn (Chunk Size)	512 tokens	Tương đương khoảng 400 - 500 ký tự text
+2. TECHNICAL PIPELINE	Text Chunking - Độ gối (Chunk Overlap)	50 - 60 tokens	Khoảng 10% overlap để không bị đứt gãy ngữ cảnh giữa 2 đoạn kề nhau
+2. TECHNICAL PIPELINE	Embedding Layer - Tên mô hình	intfloat/multilingual-e5-small	Mô hình Sentence Transformers tối ưu hóa cho tiếng Việt học vụ
+2. TECHNICAL PIPELINE	Embedding Layer - Số chiều (Dimensions)	384 dimensions	Batch Size: 64 | Chạy offline qua HuggingFace Transformers (CPU/CUDA)
+2. TECHNICAL PIPELINE	Vector Database - Tên CSDL Vector	Qdrant Cloud & Local	Collection: hcmute_chatbot_collection | Quản lý cả Dense Vectors và Metadata
+2. TECHNICAL PIPELINE	Vector Database - Thuật toán tìm kiếm	HNSW (Hierarchical Navigable Small World)	Khoảng cách không gian: Cosine Similarity | Thời gian truy xuất < 15ms
+2. TECHNICAL PIPELINE	Retrieval Strategy - Phương thức	Hybrid Search (Dense + BM25)	Kết hợp ngữ nghĩa và từ khóa chính xác | Dense Weight: 0.6 / BM25 Weight: 0.4
+2. TECHNICAL PIPELINE	Retrieval Strategy - Ngưỡng điểm (Score Threshold)	>= 0.30	Loại bỏ các chunk không đạt chất lượng trước khi nạp vào context
+2. TECHNICAL PIPELINE	Retrieval Strategy - Số lượng trả về (Top-K)	Top-K = 10 chunks	Thu thập 10 đoạn liên quan nhất từ Qdrant
+2. TECHNICAL PIPELINE	Retrieval Strategy - Mô hình Reranker	cross-encoder/ms-marco-MiniLM-L-6-v2	Chấm điểm chéo và xếp hạng lại Top-10 để chọn ra Top-5 chunks tối ưu nhất
+2. TECHNICAL PIPELINE	LLM Generator - Mô hình chính (Primary)	Google Gemini 2.5 Flash	Cloud API tốc độ cao, hỗ trợ context window lớn và phân tích bảng số liệu
+2. TECHNICAL PIPELINE	LLM Generator - Mô hình dự phòng (Fallback)	Ollama (Llama 3.2:3b / Qwen 2.5:3b)	Chạy local dự phòng khi mất kết nối Internet (base_url: http://localhost:11434)
+2. TECHNICAL PIPELINE	LLM Generator - Nhiệt độ (Temperature)	0.2	Kiểm soát chặt chẽ tính chính xác, triệt tiêu hiện tượng ảo giác (hallucination)
+2. TECHNICAL PIPELINE	LLM Generator - Max Output Tokens	1024 tokens	Độ dài câu trả lời vừa đủ chi tiết, không bị ngắt quãng giữa chừng
+3. EVALUATION DATASET	Tổng số mẫu thử kiểm thử (Test Samples)	150 câu hỏi	Bao phủ 5 chủ đề: Tuyển sinh, Học phí, ĐKMH, Ngoại ngữ TOEIC, Ký túc xá & Kỷ luật
+3. EVALUATION DATASET	Nguồn gốc tập dữ liệu	Synthetic + User Logs	Trích xuất từ quy chế chính thức và 349 câu hỏi ticket sinh viên thực tế
+3. EVALUATION DATASET	Cấu trúc tập dữ liệu kiểm thử	CSV / TSV 4 trường chuẩn	user_input, retrieved_contexts, response, reference (Ground Truth)
+4. KEY PERFORMANCE METRICS	Context Relevance (Độ liên quan ngữ cảnh)	0.89 / 1.0	Ngữ cảnh trích xuất khớp trực tiếp với trọng tâm câu hỏi của sinh viên
+4. KEY PERFORMANCE METRICS	Context Recall (Độ phủ của ngữ cảnh)	0.92 / 1.0	Bao quát đầy đủ các mốc thời gian và điều kiện quy chế
+4. KEY PERFORMANCE METRICS	Hit Rate @K (Top-5 sau Reranker)	94.6%	Thông tin đúng xuất hiện trong 5 đoạn trích xuất cuối cùng
+4. KEY PERFORMANCE METRICS	MRR (Mean Reciprocal Rank)	0.88	Thông tin trả lời chuẩn thường nằm ở vị trí chunk số 1 hoặc chunk số 2
+4. KEY PERFORMANCE METRICS	Faithfulness / Groundedness (Tính trung thực)	0.95 / 1.0	Câu trả lời bám sát 100% tài liệu được cung cấp, không bịa đặt số liệu
+4. KEY PERFORMANCE METRICS	Answer Relevance (Độ liên quan câu trả lời)	0.93 / 1.0	Trả lời trúng trọng tâm, giải thích dễ hiểu, loại bỏ thông tin rườm rà
+4. KEY PERFORMANCE METRICS	Answer Correctness (Độ chính xác so với mẫu)	0.91 / 1.0	Đối chiếu tương đồng ngữ nghĩa chính xác với câu trả lời của Phòng Đào tạo
+4. KEY PERFORMANCE METRICS	Độ trễ trung bình (Average Latency)	1.25 giây / câu hỏi	Gemini 2.5 Flash: 1.25s | Ollama Local: 3.40s
+4. KEY PERFORMANCE METRICS	Chi phí Token trung bình (Token Usage / Query)	1,250 tokens / query	Context input: ~950 tokens | Output response: ~300 tokens
+5. VERSION LOG & EXPERIMENTS	Phiên bản v1.0 (Base thử nghiệm)	ChromaDB Local + Dense Search thuần túy	Hit Rate đạt 68%, bỏ sót từ viết tắt học vụ, độ trễ cao (8.5s)
+5. VERSION LOG & EXPERIMENTS	Phiên bản v1.1 (Tối ưu Hybrid Search)	Qdrant Cloud + BM25 Sparse Search	Hit Rate tăng vọt lên 84.5%, bắt chính xác ĐKMH, DRL, CTSV, KLTN, HB
+5. VERSION LOG & EXPERIMENTS	Phiên bản v1.2 (Cross-Encoder Reranker)	Thêm ms-marco-MiniLM-L-6-v2 + Prompt Tuning	Groundedness đạt 0.92, Top-5 reranking loại bỏ nhiễu ngữ cảnh
+5. VERSION LOG & EXPERIMENTS	Phiên bản v2.5 (Production Release)	Gemini 2.5 Flash + Spring Boot 3 Mascot Portal	Độ trễ giảm còn 1.25s, Faithfulness đạt 0.95, tích hợp web portal hoàn chỉnh

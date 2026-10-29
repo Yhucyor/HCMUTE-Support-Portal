@@ -67,3 +67,17 @@ Dev A toàn quyền quản lý và phát triển toàn diện hệ thống Sprin
 > 5. **Chế Độ Cảnh Báo Hao Phí (Fail-Safe Mode)**:
 >    - Nếu người dùng yêu cầu thao tác có nguy cơ ngốn lượng lớn token (như quét hàng trăm file lớn, phân tích log khổng lồ), BẮT BUỘC cảnh báo trước mức độ tiêu tốn token trước khi thực hiện.
 
+
+
+---
+
+## 📝 5. QUY TẮC MINH BẠCH THAY ĐỔI CODE & BÁO CÁO TẬP TIN (CODE CHANGE AUDIT)
+
+> [!IMPORTANT]
+> **BẮT BUỘC BÁO CÁO DANH SÁCH FILE VÀ DÒNG THAY ĐỔI**:
+> 1. **Tuyệt đối không tự ý sửa ngầm**: Trước hoặc ngay sau khi sửa code, AI BẮT BUỘC phải liệt kê chi tiết:
+>    - Đường dẫn file (file:///...)
+>    - Vị trí dòng code (Line numbers: L...-L...)
+>    - Nội dung cũ vs Nội dung mới (Code Diff rõ ràng).
+> 2. **Ghi nhận lịch sử thay đổi (Changelog/Progress file)**:
+>    - Mỗi khi thực hiện thay đổi tính năng hoặc cấu trúc, AI BẮT BUỘC phải cập nhật hoặc tạo file nhật ký/tiến độ (docs/analysis/ hoặc docs/tiendo/) liệt kê cụ thể tất cả các file và dòng code đã sửa, không được phép âm thầm commit mà không ghi nhận vết thay đổi.
