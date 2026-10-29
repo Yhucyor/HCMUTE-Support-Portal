@@ -31,4 +31,13 @@ public class CurriculumSubject extends BaseEntity {
 
     @Column(name = "semester_recommended")
     private Integer semesterRecommended;
+
+    @Column(name = "group_name", length = 150)
+    private String groupName;
+
+    @Column(name = "is_elective")
+    private Boolean isElective;
+
+    @Column(name = "required_credits_in_group")
+    private Integer requiredCreditsInGroup;
 }

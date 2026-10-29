@@ -384,6 +384,10 @@
                                 <span class="material-symbols-outlined text-[16px]">view_timeline</span>
                                 <span>Lộ trình theo học kỳ</span>
                             </button>
+                            <button id="btnViewGroups" onclick="switchView('groups')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-secondary hover:text-on-surface transition-all">
+                                <span class="material-symbols-outlined text-[16px]">folder_copy</span>
+                                <span>Nhóm tự chọn & Khối</span>
+                            </button>
                             <button id="btnViewFlat" onclick="switchView('flat')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-secondary hover:text-on-surface transition-all">
                                 <span class="material-symbols-outlined text-[16px]">table_rows</span>
                                 <span>Toàn khóa</span>
@@ -624,6 +628,120 @@
                     </div>
                 </div>
 
+                <!-- ═══════════════════════════ VIEW 4: NHÓM MÔN TỰ CHỌN & BẮT BUỘC (PHƯƠNG ÁN 2) ═══════════════════════════ -->
+                <div id="groupsViewContainer" class="hidden flex flex-col gap-space-md">
+                    <th:block th:if="${curriculum != null and curriculum.groups != null}">
+                        <th:block th:each="group, gStat : ${curriculum.groups}">
+                            <div class="group-section bg-surface-container-lowest rounded-xl border border-slate-200 shadow-card overflow-hidden transition-all">
+                                <!-- Accordion Header -->
+                                <div class="flex items-center justify-between px-space-md py-3.5 bg-slate-50/80 hover:bg-slate-100/80 border-b border-slate-200 cursor-pointer transition-colors"
+                                     th:onclick="'toggleGroupAccordion(' + ${gStat.index} + ')'">
+                                    <div class="flex items-center gap-3">
+                                        <span th:class="${group.isElective ? 'w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs' : 'w-8 h-8 rounded-lg bg-blue-100 text-brand-blue flex items-center justify-center font-bold text-xs'}">
+                                            <span class="material-symbols-outlined text-[18px]" th:text="${group.isElective ? 'tune' : 'menu_book'}">menu_book</span>
+                                        </span>
+                                        <div>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <h3 class="font-headline font-bold text-sm text-on-surface" th:text="${group.groupName}">Tên nhóm</h3>
+                                                <!-- Badge Hoàn Thành Nhóm -->
+                                                <span th:if="${group.isGroupCompleted}" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                    <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                                    <span>Đã đạt chỉ tiêu nhóm</span>
+                                                </span>
+                                                <span th:unless="${group.isGroupCompleted}" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                                                    <span class="material-symbols-outlined text-[14px]">pending</span>
+                                                    <span>Chưa đủ chỉ tiêu</span>
+                                                </span>
+                                            </div>
+                                            <p class="text-[11px] text-secondary mt-0.5">
+                                                <span th:if="${group.isElective}">
+                                                    Chỉ tiêu yêu cầu: <strong class="text-on-surface" th:text="${group.requiredCredits}">2</strong> TC &bull;
+                                                    Đã tích lũy: <strong class="text-emerald-700 font-semibold" th:text="${group.completedCredits}">2</strong> TC / <span th:text="${group.totalCreditsInGroup}">10</span> TC đề xuất
+                                                </span>
+                                                <span th:unless="${group.isElective}">
+                                                    Tổng khối: <strong class="text-on-surface" th:text="${group.totalCreditsInGroup}">30</strong> TC &bull;
+                                                    Đã hoàn thành: <strong class="text-emerald-700 font-semibold" th:text="${group.completedCredits}">20</strong> TC
+                                                </span>
+                                                &bull; <span th:text="${group.completedCoursesCount} + '/' + ${group.totalCoursesCount} + ' môn đã đạt'"></span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <!-- Mini Progress bar -->
+                                        <div class="hidden sm:flex flex-col items-end gap-1 w-28">
+                                            <span class="text-[11px] font-bold text-on-surface" th:text="${group.groupProgressPercentage} + '%'">100%</span>
+                                            <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                                                <div th:class="${group.isGroupCompleted ? 'h-full bg-emerald-500 rounded-full' : 'h-full bg-brand-blue rounded-full'}"
+                                                     th:style="'width: ' + ${group.groupProgressPercentage} + '%'"></div>
+                                            </div>
+                                        </div>
+                                        <span th:id="'group-chevron-' + ${gStat.index}" class="material-symbols-outlined text-slate-400 text-[20px] transition-transform duration-200">expand_more</span>
+                                    </div>
+                                </div>
+
+                                <!-- Group Table Body -->
+                                <div th:id="'group-content-' + ${gStat.index}" class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr class="bg-surface-container-low/60 text-[11px] font-semibold text-secondary uppercase tracking-wider border-b border-slate-200">
+                                                <th class="py-2.5 px-4 w-28">Mã môn</th>
+                                                <th class="py-2.5 px-4 min-w-[240px]">Tên môn học</th>
+                                                <th class="py-2.5 px-3 text-center w-20">Tín chỉ</th>
+                                                <th class="py-2.5 px-3 text-center w-20">Học kỳ</th>
+                                                <th class="py-2.5 px-4 text-center w-32">Trạng thái</th>
+                                                <th class="py-2.5 px-4 text-center w-24">Điểm chữ</th>
+                                                <th class="py-2.5 px-4 text-center w-28">Thang 10 / 4</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-100 text-xs">
+                                            <tr th:each="course : ${group.courses}" class="group-course-row hover:bg-blue-50/30 transition-colors"
+    th:data-semester="${course.semesterRecommended}"
+    th:data-block="${course.knowledgeBlock}"
+    th:data-status="${course.status}"
+    th:data-code="${course.courseCode}"
+    th:data-name="${course.courseName}"
+    th:data-credits="${course.credits}">
+                                                <td class="py-3 px-4 font-mono font-bold text-primary" th:text="${course.courseCode}">INT101</td>
+                                                <td class="py-3 px-4 font-medium text-on-surface">
+                                                    <div class="flex items-center gap-2">
+                                                        <span th:text="${course.courseName}">Toán 1</span>
+                                                        <span th:if="${course.isElective}" class="px-1.5 py-0.5 text-[10px] font-medium bg-amber-50 text-amber-800 rounded border border-amber-200">Tự chọn</span>
+                                                    </div>
+                                                </td>
+                                                <td class="py-3 px-3 text-center font-semibold" th:text="${course.credits}">3</td>
+                                                <td class="py-3 px-3 text-center text-secondary">Kỳ <span th:text="${course.semesterRecommended}">1</span></td>
+                                                <td class="py-3 px-4 text-center">
+                                                    <span th:if="${course.status == 'COMPLETED'}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                        <span class="material-symbols-outlined text-[13px]">check_circle</span>
+                                                        <span>Đã đạt</span>
+                                                    </span>
+                                                    <span th:if="${course.status == 'IN_PROGRESS'}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                                        <span class="material-symbols-outlined text-[13px]">pending</span>
+                                                        <span>Đang học</span>
+                                                    </span>
+                                                    <span th:if="${course.status == 'FAILED'}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                                                        <span class="material-symbols-outlined text-[13px]">cancel</span>
+                                                        <span>Chưa đạt</span>
+                                                    </span>
+                                                    <span th:if="${course.status == 'NOT_TAKEN'}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600">
+                                                        <span class="material-symbols-outlined text-[13px]">radio_button_unchecked</span>
+                                                        <span>Chưa học</span>
+                                                    </span>
+                                                </td>
+                                                <td class="py-3 px-4 text-center font-bold" th:text="${course.gradeLetter}">--</td>
+                                                <td class="py-3 px-4 text-center font-mono">
+                                                    <span th:if="${course.finalScore != null}" th:text="${#numbers.formatDecimal(course.finalScore, 1, 1)} + ' / ' + ${#numbers.formatDecimal(course.scale4Score, 1, 1)}">--</span>
+                                                    <span th:unless="${course.finalScore != null}" class="text-slate-400">--</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </th:block>
+                    </th:block>
+                </div>
+
                 <!-- Empty State (Khi bộ lọc không tìm thấy kết quả) -->
                 <div id="noResultsAlert" class="hidden bg-surface-container-lowest rounded-xl p-10 border border-slate-200 text-center flex flex-col items-center justify-center gap-2">
                     <span class="material-symbols-outlined text-4xl text-slate-400">search_off</span>
@@ -740,26 +858,32 @@
         function switchView(mode) {
             currentView = mode;
             const btnSem = document.getElementById('btnViewSemester');
+            const btnGroups = document.getElementById('btnViewGroups');
             const btnFlat = document.getElementById('btnViewFlat');
             const btnBlocks = document.getElementById('btnViewBlocks');
 
             const conSem = document.getElementById('semesterViewContainer');
+            const conGroups = document.getElementById('groupsViewContainer');
             const conFlat = document.getElementById('flatViewContainer');
             const conBlocks = document.getElementById('blocksViewContainer');
 
             // Reset buttons
-            [btnSem, btnFlat, btnBlocks].forEach(b => {
-                b.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-secondary hover:text-on-surface transition-all";
+            [btnSem, btnGroups, btnFlat, btnBlocks].forEach(b => {
+                if (b) b.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-secondary hover:text-on-surface transition-all";
             });
 
             // Hide containers
-            conSem.classList.add('hidden');
-            conFlat.classList.add('hidden');
-            conBlocks.classList.add('hidden');
+            if (conSem) conSem.classList.add('hidden');
+            if (conGroups) conGroups.classList.add('hidden');
+            if (conFlat) conFlat.classList.add('hidden');
+            if (conBlocks) conBlocks.classList.add('hidden');
 
             if (mode === 'semester') {
                 btnSem.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-primary bg-white shadow-2xs transition-all";
                 conSem.classList.remove('hidden');
+            } else if (mode === 'groups') {
+                if (btnGroups) btnGroups.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-primary bg-white shadow-2xs transition-all";
+                if (conGroups) conGroups.classList.remove('hidden');
             } else if (mode === 'flat') {
                 btnFlat.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-primary bg-white shadow-2xs transition-all";
                 conFlat.classList.remove('hidden');
@@ -769,6 +893,19 @@
             }
 
             applyFilters();
+        }
+
+        function toggleGroupAccordion(index) {
+            const content = document.getElementById('group-content-' + index);
+            const chevron = document.getElementById('group-chevron-' + index);
+            if (!content) return;
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            } else {
+                content.classList.add('hidden');
+                if (chevron) chevron.style.transform = 'rotate(-90deg)';
+            }
         }
 
         function updateSemesterSummaries() {
@@ -944,6 +1081,28 @@
                 const textMatch = (!query || rowCode.includes(query) || rowName.includes(query));
 
                 r.style.display = (semMatch && blockMatch && statusMatch && textMatch) ? '' : 'none';
+            });
+
+            // Filter groups view
+            document.querySelectorAll('.group-section').forEach(sec => {
+                let visibleInGroup = 0;
+                sec.querySelectorAll('.group-course-row').forEach(r => {
+                    const rowSem = r.getAttribute('data-semester');
+                    const rowBlock = r.getAttribute('data-block');
+                    const rowStatus = r.getAttribute('data-status');
+                    const rowCode = (r.getAttribute('data-code') || '').toLowerCase();
+                    const rowName = (r.getAttribute('data-name') || '').toLowerCase();
+
+                    const semMatch = (semVal === 'ALL' || semVal === rowSem);
+                    const blockMatch = (blockVal === 'ALL' || blockVal === rowBlock);
+                    const statusMatch = (statusVal === 'ALL' || statusVal === rowStatus);
+                    const textMatch = (!query || rowCode.includes(query) || rowName.includes(query));
+
+                    const rowVisible = semMatch && blockMatch && statusMatch && textMatch;
+                    r.style.display = rowVisible ? '' : 'none';
+                    if (rowVisible) visibleInGroup++;
+                });
+                sec.style.display = visibleInGroup > 0 ? '' : 'none';
             });
 
             // Update badge text

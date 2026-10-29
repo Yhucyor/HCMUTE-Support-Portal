@@ -20,4 +20,6 @@ public class CurriculumCourseDto {
     private Double finalScore;     // thang 10
     private Double scale4Score;    // thang 4
     private String prerequisiteCode;
+    private String groupName;
+    private Boolean isElective;
 }
