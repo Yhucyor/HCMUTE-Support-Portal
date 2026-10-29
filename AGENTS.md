@@ -81,3 +81,10 @@ Dev A toàn quyền quản lý và phát triển toàn diện hệ thống Sprin
 >    - Nội dung cũ vs Nội dung mới (Code Diff rõ ràng).
 > 2. **Ghi nhận lịch sử thay đổi (Changelog/Progress file)**:
 >    - Mỗi khi thực hiện thay đổi tính năng hoặc cấu trúc, AI BẮT BUỘC phải cập nhật hoặc tạo file nhật ký/tiến độ (docs/analysis/ hoặc docs/tiendo/) liệt kê cụ thể tất cả các file và dòng code đã sửa, không được phép âm thầm commit mà không ghi nhận vết thay đổi.
+
+> 3. **Bắt buộc xuất trực tiếp vào khung chat (In-Chat Change Log)**:
+>    - Ngay sau mỗi thao tác sửa code, AI BẮT BUỘC phải in trực tiếp một khối bảng/danh sách tóm tắt ngay trong câu phản hồi ở khung chat:
+>      + **File:** Đường dẫn file
+>      + **Dòng:** Dòng bắt đầu - Dòng kết thúc
+>      + **Mục đích:** Tóm tắt thay đổi
+>      + **Diff Code:** Đoạn code cũ $\rightarrow$ code mới.
