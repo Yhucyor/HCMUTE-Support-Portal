@@ -1,5 +1,14 @@
 package com.school.counseling.module.ai.service;
 
+import com.school.counseling.common.util.SecurityUtils;
+import com.school.counseling.module.academic.dto.AcademicSummaryResponse;
+import com.school.counseling.module.academic.dto.CurriculumSummaryDto;
+import com.school.counseling.module.academic.entity.StudentGrade;
+import com.school.counseling.module.academic.entity.StudentProfile;
+import com.school.counseling.module.academic.service.HcmuteCrawlerService;
+import com.school.counseling.module.auth.entity.User;
+import com.school.counseling.module.auth.service.ProfileService;
+import org.springframework.context.annotation.Lazy;
 import com.school.counseling.module.ai.dto.AiChatRequest;
 import com.school.counseling.module.ai.dto.AiChatResponse;
 import com.school.counseling.module.ai.dto.SourceDocument;
@@ -35,21 +44,38 @@ public class AiChatbotService {
 
     private final RestTemplate restTemplate;
     private final SmartFaqMatcherService smartFaqMatcherService;
+    private final HcmuteCrawlerService crawlerService;
+    private final ProfileService profileService;
+    private final com.school.counseling.module.academic.repository.StudentGradeRepository gradeRepository;
+    private final com.school.counseling.module.academic.repository.StudentProfileRepository studentProfileRepository;
 
-    public AiChatbotService(RestTemplate restTemplate, SmartFaqMatcherService smartFaqMatcherService) {
+    public AiChatbotService(RestTemplate restTemplate,
+                            SmartFaqMatcherService smartFaqMatcherService,
+                            @Lazy HcmuteCrawlerService crawlerService,
+                            @Lazy ProfileService profileService,
+                            @Lazy com.school.counseling.module.academic.repository.StudentGradeRepository gradeRepository,
+                            @Lazy com.school.counseling.module.academic.repository.StudentProfileRepository studentProfileRepository) {
         this.restTemplate = restTemplate;
         this.smartFaqMatcherService = smartFaqMatcherService;
+        this.crawlerService = crawlerService;
+        this.profileService = profileService;
+        this.gradeRepository = gradeRepository;
+        this.studentProfileRepository = studentProfileRepository;
     }
 
     public AiChatResponse getChatResponse(String query, String sessionId) {
-        return getChatResponse(query, sessionId, "gemini", Collections.emptyList());
+        return getChatResponse(query, sessionId, "gemini", Collections.emptyList(), null);
     }
 
     public AiChatResponse getChatResponse(String query, String sessionId, String provider) {
-        return getChatResponse(query, sessionId, provider, Collections.emptyList());
+        return getChatResponse(query, sessionId, provider, Collections.emptyList(), null);
     }
 
     public AiChatResponse getChatResponse(String query, String sessionId, String provider, List<Map<String, String>> history) {
+        return getChatResponse(query, sessionId, provider, history, null);
+    }
+
+    public AiChatResponse getChatResponse(String query, String sessionId, String provider, List<Map<String, String>> history, User currentUser) {
         if (query == null || query.trim().isEmpty()) {
             AiChatResponse emptyResp = new AiChatResponse();
             emptyResp.setAnswer("Xin chào! Bạn có thể đặt câu hỏi về tuyển sinh, học vụ, học phí hoặc quy trình của HCMUTE để mình giải đáp nhé.");
@@ -101,7 +127,7 @@ public class AiChatbotService {
 
         // 2. Nếu người dùng chọn provider AI thông minh (Gemini, Ollama...): Gọi ai-service (Python RAG) với history ngữ cảnh
         if (provider != null && !provider.equalsIgnoreCase("default") && !provider.equalsIgnoreCase("qaute") && !provider.equalsIgnoreCase("dify")) {
-            AiChatResponse aiResp = callAiService(cleanQuery, sessionId, provider, history);
+            AiChatResponse aiResp = callAiService(cleanQuery, sessionId, provider, history, currentUser);
             if (aiResp != null && aiResp.getAnswer() != null && !aiResp.getAnswer().isBlank()
                     && !aiResp.getAnswer().contains("Xin lỗi, hệ thống AI hiện không thể")) {
                 return aiResp;
@@ -246,9 +272,197 @@ public class AiChatbotService {
     }
 
     /**
+     * Lấy mã số sinh viên thực tế (portalUsername) hoặc username của tài khoản hiện tại
+     */
+    private String resolveStudentId(User currentUser) {
+        if (currentUser != null) {
+            if (currentUser.getPortalUsername() != null && !currentUser.getPortalUsername().isBlank()) {
+                return currentUser.getPortalUsername().trim();
+            }
+            if (currentUser.getUsername() != null && !currentUser.getUsername().isBlank()) {
+                String uname = currentUser.getUsername().trim();
+                if (uname.matches("^\\d+$")) {
+                    return uname;
+                }
+            }
+        }
+        try {
+            Long userId = SecurityUtils.getCurrentUserId().orElse(null);
+            if (userId != null && profileService != null) {
+                String portalUsername = profileService.getProfile(userId).getPortalUsername();
+                if (portalUsername != null && !portalUsername.isBlank()) {
+                    return portalUsername.trim();
+                }
+            }
+        } catch (Exception ignored) {}
+        return SecurityUtils.getCurrentUsername().orElse(null);
+    }
+
+    /**
+     * Tự động trích xuất bối cảnh học vụ cá nhân hóa (Personalized Academic Context)
+     * Tổng hợp điểm GPA tích lũy, kết quả học kỳ gần nhất, các môn học và môn cần cải thiện.
+     */
+    public String buildRichAcademicContext(String studentId) {
+        if (studentId == null || studentId.isBlank() || crawlerService == null) {
+            return "";
+        }
+        try {
+            List<StudentGrade> grades = gradeRepository != null
+                    ? gradeRepository.findByStudentIdOrderBySemesterDesc(studentId)
+                    : Collections.emptyList();
+
+            AcademicSummaryResponse summary = crawlerService.getAcademicSummary(studentId);
+
+            // 1. Trường hợp sinh viên chưa đồng bộ điểm hoặc chưa có dữ liệu học vụ:
+            // Trả về chuỗi rỗng để giữ câu hỏi nguyên bản, giúp AI trả lời tự nhiên nhất
+            // cho các câu hỏi thông thường (học phí, tuyển sinh, thủ tục, ký túc xá...).
+            if (grades.isEmpty() || summary == null || summary.getTotalCredits() == 0
+                    || "NOT_SYNCED".equalsIgnoreCase(summary.getSyncStatus())
+                    || summary.getGpa4() == null) {
+                return "";
+            }
+
+            // 2. Trường hợp sinh viên ĐÃ CÓ DỮ LIỆU ĐỒNG BỘ CHÍNH THỨC
+            CurriculumSummaryDto curriculum = crawlerService.getCurriculumSummary(studentId);
+            Optional<StudentProfile> profileOpt = studentProfileRepository != null
+                    ? studentProfileRepository.findByStudentId(studentId)
+                    : Optional.empty();
+
+            String studentName = summary.getStudentName() != null ? summary.getStudentName() : studentId;
+            String major = (curriculum != null && curriculum.getMajor() != null && !curriculum.getMajor().isBlank())
+                    ? curriculum.getMajor()
+                    : profileOpt.map(StudentProfile::getMajor).orElse("Công nghệ Thông tin");
+            String faculty = (curriculum != null && curriculum.getFaculty() != null && !curriculum.getFaculty().isBlank())
+                    ? curriculum.getFaculty()
+                    : profileOpt.map(StudentProfile::getFaculty).orElse("Khoa CNTT");
+            String className = profileOpt.map(StudentProfile::getStudentClass).filter(s -> !s.isBlank())
+                    .orElse(curriculum != null && curriculum.getClassName() != null && !curriculum.getClassName().equals("--")
+                            ? curriculum.getClassName() : "241103A");
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("\n[HỒ SƠ HỌC VỤ & KẾT QUẢ ĐÀO TẠO SINH VIÊN (DỮ LIỆU ĐỒNG BỘ HCMUTE)]:\n");
+            sb.append(String.format("- Sinh viên: %s | MSSV: %s | Ngành: %s | Khoa: %s | Lớp: %s\n",
+                    studentName, summary.getStudentId(), major, faculty, className));
+
+            // Tiến độ tích lũy & tốt nghiệp
+            if (curriculum != null && curriculum.getTotalRequiredCredits() > 0) {
+                sb.append(String.format("- Tiến độ tốt nghiệp: Đã hoàn thành %d/%d tín chỉ (Còn thiếu %d tín chỉ, đạt %.1f%%)\n",
+                        curriculum.getCompletedCredits(),
+                        curriculum.getTotalRequiredCredits(),
+                        curriculum.getRemainingCredits(),
+                        curriculum.getProgressPercentage()));
+            } else {
+                sb.append(String.format("- Tín chỉ đã tích lũy: %d tín chỉ\n", summary.getTotalCredits()));
+            }
+
+            // Điểm GPA & xếp loại
+            sb.append(String.format("- Điểm GPA tích lũy toàn khóa: %.2f/4.0 (Thang 10: %.2f) | Xếp loại: %s | Nợ tín chỉ: %d TC\n",
+                    summary.getGpa4(),
+                    summary.getGpa10() != null ? summary.getGpa10() : 0.0,
+                    summary.getAcademicStanding() != null ? summary.getAcademicStanding() : "Chưa xếp loại",
+                    (summary.getDebtCredits() != null ? summary.getDebtCredits() : 0)));
+
+            // Cảnh báo học vụ
+            if (Boolean.TRUE.equals(summary.getIsAcademicWarning())) {
+                sb.append(String.format("- CẢNH BÁO HỌC VỤ (HCMUTE 2025): CÓ (%s)\n", summary.getWarningReason()));
+            } else {
+                sb.append("- Tình trạng học vụ: Bình thường (Không bị cảnh báo học vụ)\n");
+            }
+
+            // 3. Kết quả học kỳ gần nhất (phục vụ xét học bổng khuyến khích và đánh giá kỳ học)
+            String latestSemester = null;
+            for (StudentGrade g : grades) {
+                if (g.getSemester() != null && !g.getSemester().isBlank()
+                        && !g.getSemester().toLowerCase().contains("toàn khóa")
+                        && !g.getSemester().toLowerCase().contains("đầu vào")) {
+                    latestSemester = g.getSemester();
+                    break;
+                }
+            }
+
+            if (latestSemester != null) {
+                List<StudentGrade> latestSemGrades = new ArrayList<>();
+                int semCredits = 0;
+                boolean hasFail = false;
+                for (StudentGrade g : grades) {
+                    if (latestSemester.equalsIgnoreCase(g.getSemester())) {
+                        latestSemGrades.add(g);
+                        int cr = g.getCredits() != null ? g.getCredits() : 0;
+                        semCredits += cr;
+                        if (Boolean.FALSE.equals(g.getIsPassed()) || "F".equalsIgnoreCase(g.getGradeLetter())) {
+                            hasFail = true;
+                        }
+                    }
+                }
+                sb.append(String.format("\n- Kết quả học kỳ gần nhất (%s): Tổng đăng ký %d tín chỉ | Tình trạng: %s\n",
+                        latestSemester, semCredits, hasFail ? "Có môn rớt" : "Không có môn rớt (Toàn bộ đều đạt)"));
+                sb.append("  Các môn học trong kỳ gần nhất:\n");
+                for (StudentGrade g : latestSemGrades) {
+                    sb.append(String.format("  + %s (%s, %d TC): %.1f điểm (%s) - %s\n",
+                            g.getCourseName(), g.getCourseCode(),
+                            g.getCredits() != null ? g.getCredits() : 0,
+                            g.getTotalScore() != null ? g.getTotalScore() : 0.0,
+                            g.getGradeLetter() != null ? g.getGradeLetter() : "--",
+                            Boolean.TRUE.equals(g.getIsPassed()) ? "Đạt" : "Chưa đạt"));
+                }
+            }
+
+            // 4. Các môn điểm thấp cần lưu ý / học cải thiện nâng GPA
+            List<StudentGrade> lowGrades = new ArrayList<>();
+            for (StudentGrade g : grades) {
+                String letter = g.getGradeLetter() != null ? g.getGradeLetter().trim().toUpperCase() : "";
+                Double score = g.getTotalScore();
+                if ("F".equals(letter) || "D".equals(letter) || "D+".equals(letter)
+                        || (score != null && score < 5.5 && !"P".equals(letter) && !"M".equals(letter))
+                        || Boolean.FALSE.equals(g.getIsPassed())) {
+                    lowGrades.add(g);
+                }
+            }
+            if (!lowGrades.isEmpty()) {
+                sb.append("\n- Các môn có thể đăng ký học cải thiện hoặc cần lưu ý:\n");
+                for (StudentGrade g : lowGrades) {
+                    sb.append(String.format("  + %s (%s, %d TC): %.1f điểm (%s) - Học kỳ: %s\n",
+                            g.getCourseName(), g.getCourseCode(),
+                            g.getCredits() != null ? g.getCredits() : 0,
+                            g.getTotalScore() != null ? g.getTotalScore() : 0.0,
+                            g.getGradeLetter() != null ? g.getGradeLetter() : "--",
+                            g.getSemester() != null ? g.getSemester() : "N/A"));
+                }
+            } else {
+                sb.append("\n- Môn học cải thiện: Toàn bộ các môn đều đạt kết quả tốt (không có môn bị điểm D hay F).\n");
+            }
+
+            // 5. Tóm tắt một số môn học đã hoàn thành (phục vụ hỏi đáp điểm từng môn)
+            sb.append("\n- Bảng điểm một số môn học tiêu biểu đã học:\n");
+            int count = 0;
+            for (StudentGrade g : grades) {
+                if (count >= 15) break; // Giới hạn 15 môn tiêu biểu để tối ưu token
+                if (g.getTotalScore() != null && g.getTotalScore() > 0) {
+                    sb.append(String.format("  + %s (%d TC): %.1f (%s)\n",
+                            g.getCourseName(),
+                            g.getCredits() != null ? g.getCredits() : 0,
+                            g.getTotalScore(),
+                            g.getGradeLetter() != null ? g.getGradeLetter() : ""));
+                    count++;
+                }
+            }
+
+            sb.append("\n[CHỈ DẪN DÀNH CHO AI]:\n");
+            sb.append("- Hãy xưng hô thân mật, gọi sinh viên bằng tên thân mật (hoặc bạn).\n");
+            sb.append("- Sử dụng số liệu GPA, tín chỉ, kết quả môn học ở trên kết hợp với Quy chế đào tạo HCMUTE 2025 để tư vấn chính xác.\n");
+            sb.append("- Lưu ý: Học bổng khuyến khích học tập xét theo kết quả từng học kỳ (yêu cầu GPA học kỳ từ 3.20 trở lên đối với loại Giỏi, từ 3.60 đối với Xuất sắc, không có môn rớt và đạt điểm rèn luyện theo quy chế).\n");
+
+            return sb.toString();
+        } catch (Exception e) {
+            log.warn("Không thể tải bối cảnh học vụ cho sinh viên {}: {}", studentId, e.getMessage());
+            return "";
+        }
+    }
+
+    /**
      * Gọi sang Python AI Microservice (FastAPI cổng 8000) với mô hình được chọn (Gemini / Ollama) và lịch sử ngữ cảnh
      */
-    private AiChatResponse callAiService(String query, String sessionId, String provider, List<Map<String, String>> history) {
+    private AiChatResponse callAiService(String query, String sessionId, String provider, List<Map<String, String>> history, User currentUser) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -256,6 +470,17 @@ public class AiChatbotService {
             headers.add("User-Agent", "HCMUTE-Support-Portal/1.0");
 
             String queryForAi = (query != null && query.length() > 500) ? query.substring(0, 500) : query;
+
+            // Chỉ tiêm bối cảnh học vụ cá nhân hóa khi câu hỏi thực sự liên quan đến điểm số / học vụ cá nhân.
+            // Với các câu hỏi thông thường (tuyển sinh, học phí chung, ký túc xá, thẻ SV...), giữ câu hỏi sạch 100%.
+            String currentStudentId = resolveStudentId(currentUser);
+            if (currentStudentId != null && !currentStudentId.isBlank() && isPersonalAcademicQuery(query)) {
+                String academicContext = buildRichAcademicContext(currentStudentId);
+                if (!academicContext.isBlank()) {
+                    queryForAi = academicContext + "\nCâu hỏi của sinh viên: " + queryForAi;
+                }
+            }
+
             AiChatRequest requestPayload = AiChatRequest.builder()
                 .query(queryForAi)
                 .sessionId(sessionId)
@@ -312,6 +537,40 @@ public class AiChatbotService {
             log.warn("⚠️ ai-service tại {} không phản hồi ({}), tự động fallback sang FAQ nội bộ.", chatbotApiUrl, e.getMessage());
         }
         return null;
+    }
+
+    /**
+     * Nhận diện xem câu hỏi có ý định liên quan đến điểm số, học bổng, tiến độ học vụ cá nhân hay không
+     */
+    private boolean isPersonalAcademicQuery(String query) {
+        if (query == null || query.isBlank()) return false;
+        String q = query.toLowerCase();
+        return q.contains("điểm")
+                || q.contains("gpa")
+                || q.contains("cpa")
+                || q.contains("học bổng")
+                || q.contains("xếp loại")
+                || q.contains("học lực")
+                || q.contains("tín chỉ")
+                || q.contains("nợ môn")
+                || q.contains("học lại")
+                || q.contains("cải thiện")
+                || q.contains("rớt")
+                || q.contains("qua môn")
+                || q.contains("tốt nghiệp")
+                || q.contains("ra trường")
+                || q.contains("cảnh báo")
+                || q.contains("học vụ")
+                || q.contains("kết quả học tập")
+                || q.contains("bảng điểm")
+                || q.contains("của tôi")
+                || q.contains("của em")
+                || q.contains("của mình")
+                || q.contains("tôi có")
+                || q.contains("em có")
+                || q.contains("mình có")
+                || q.contains("kỳ này")
+                || q.contains("học kỳ");
     }
 
     private boolean isGreeting(String q) {
