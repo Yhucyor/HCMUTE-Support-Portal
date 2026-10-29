@@ -87,12 +87,13 @@ public class AiConversationService {
         // 4. Lưu User message
         AiChatMessage userMessage = saveUserMessage(conversation, request.getQuery());
         
-        // 5. Gọi AI Engine (delegate sang AiChatbotService với history)
+        // 5. Gọi AI Engine (delegate sang AiChatbotService với history và thông tin currentUser)
         AiChatResponse aiResponse = aiChatbotService.getChatResponse(
             request.getQuery(),
             conversation.getSessionId(),
             request.getProvider(),
-            historyList
+            historyList,
+            currentUser
         );
         
         // 6. Enrich response với metadata
@@ -480,12 +481,13 @@ public class AiConversationService {
                 
                 long startTime = System.currentTimeMillis();
                 
-                // 6. Gọi AI Engine (blocking call với history context)
+                // 6. Gọi AI Engine (blocking call với history context và currentUser)
                 AiChatResponse aiResponse = aiChatbotService.getChatResponse(
                     request.getQuery(),
                     conversation.getSessionId(),
                     request.getProvider(),
-                    historyList
+                    historyList,
+                    currentUser
                 );
                 
                 // 6. Stream response theo chunks (simulate typing effect)
