@@ -315,9 +315,12 @@ public class AiChatbotService {
     }
 
     private boolean isGreeting(String q) {
-        if (q.length() > 30) return false;
+        if (q == null || q.isBlank() || q.length() > 30) return false;
         String clean = q.trim().toLowerCase().replaceAll("[!?.~,]+$", "").replaceAll("\\s+", " ");
-        return clean.matches("^(xin chào|chao|chào|hello|hi|helo|alo|hey|yo|hi+\\w*|he+l+o+|chào bạn|xin chao|chao ban|bạn là ai|ban la ai|tro ly|trợ lý|help|giúp với|giup voi)$");
+        String norm = java.text.Normalizer.normalize(clean, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+                .replace("đ", "d").replace("Đ", "D");
+        return norm.matches("^(xin chao|chao|hello|hi|helo|alo|hey|yo|hi+\\w*|he+l+o+|chao ban.*|chao b|hi ban.*|hi b|hello ban.*|hello b|ban la ai|tro ly|help|giup voi|hoi ti)$");
     }
 
     private boolean isPromptInjection(String q) {

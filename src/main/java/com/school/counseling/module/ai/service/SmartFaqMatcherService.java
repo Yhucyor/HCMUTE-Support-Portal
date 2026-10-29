@@ -129,6 +129,9 @@ public class SmartFaqMatcherService {
         if (query == null || query.trim().isEmpty()) {
             return Collections.emptyList();
         }
+        if (query.trim().length() < 4) {
+            return Collections.emptyList();
+        }
 
         checkAndSyncCache();
 
