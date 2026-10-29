@@ -942,30 +942,26 @@
 
                 const isActive = sess.id === currentSessionId;
                 const item = document.createElement('div');
+                item.id = 'sess-item-' + sess.id;
                 item.className = `group relative flex items-center justify-between px-2.5 py-2 rounded-xl cursor-pointer transition-all ${isActive ? 'bg-[#eff6ff] text-[#1d4ed8] font-semibold border border-[#1d4ed8]/20' : 'text-[#475569] hover:bg-[#f1f5f9] hover:text-[#0f172a]'
                     }`;
                 item.onclick = () => switchSession(sess.id);
 
                 item.innerHTML = `
-                    <div class="flex items-center gap-2 min-w-0 pr-1 flex-1">
+                    <div class="sess-title-container flex items-center gap-2 min-w-0 pr-1 flex-1">
                         <span class="material-symbols-outlined text-base shrink-0 ${isActive ? 'text-[#1d4ed8]' : 'text-[#94a3b8]'}">chat_bubble_outline</span>
                         <span class="text-xs truncate ${isActive ? 'text-[#1d4ed8]' : 'text-slate-800'}">${escapeHtml(sess.title)}</span>
                     </div>
-                    <div class="relative shrink-0">
-                        <button class="opacity-0 group-hover:opacity-100 p-1 text-[#64748b] hover:text-[#0f172a] hover:bg-white rounded transition-opacity cursor-pointer" onclick="event.stopPropagation(); toggleItemMenu(this)">
-                            <span class="material-symbols-outlined text-base leading-none">more_vert</span>
+                    <div class="sess-actions-container flex items-center gap-0.5 shrink-0 ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity">
+                        <button type="button" class="p-1 text-[#64748b] hover:text-[#1d4ed8] hover:bg-white/80 rounded transition-colors cursor-pointer" title="Đổi tên đoạn chat" onclick="event.stopPropagation(); startRenameSession('${sess.id}')">
+                            <span class="material-symbols-outlined text-[15px] leading-none">edit</span>
                         </button>
-                        <div class="hidden absolute right-0 top-full mt-1 w-36 bg-white rounded-xl shadow-lg border border-[#e2e8f0] p-1 z-30 text-xs text-[#0f172a]">
-                            <button class="w-full text-left px-2 py-1.5 rounded-lg hover:bg-[#f1f5f9] flex items-center gap-2 cursor-pointer" onclick="event.stopPropagation(); renameSession('${sess.id}')">
-                                <span class="material-symbols-outlined text-sm text-[#64748b]">edit</span> Đổi tên
-                            </button>
-                            <button class="w-full text-left px-2 py-1.5 rounded-lg hover:bg-[#f1f5f9] flex items-center gap-2 cursor-pointer" onclick="event.stopPropagation(); shareSession('${sess.id}')">
-                                <span class="material-symbols-outlined text-sm text-[#64748b]">share</span> Chia sẻ
-                            </button>
-                            <button class="w-full text-left px-2 py-1.5 rounded-lg hover:bg-red-50 text-red-600 flex items-center gap-2 cursor-pointer" onclick="event.stopPropagation(); deleteSession('${sess.id}')">
-                                <span class="material-symbols-outlined text-sm text-red-500">delete</span> Xóa
-                            </button>
-                        </div>
+                        <button type="button" class="p-1 text-[#64748b] hover:text-[#1d4ed8] hover:bg-white/80 rounded transition-colors cursor-pointer" title="Chia sẻ liên kết" onclick="event.stopPropagation(); shareSession('${sess.id}')">
+                            <span class="material-symbols-outlined text-[15px] leading-none">share</span>
+                        </button>
+                        <button type="button" class="p-1 text-[#64748b] hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer" title="Xóa đoạn chat" onclick="event.stopPropagation(); deleteSession('${sess.id}')">
+                            <span class="material-symbols-outlined text-[15px] leading-none">delete</span>
+                        </button>
                     </div>
                 `;
                 targetList.appendChild(item);
@@ -1063,7 +1059,75 @@
             }
         }
 
+        function startRenameSession(sessId) {
+            const sess = sessions.find(s => s.id === sessId);
+            if (!sess) return;
+            const itemElem = document.getElementById('sess-item-' + sessId);
+            if (!itemElem) {
+                renameSessionFallback(sessId);
+                return;
+            }
+            const titleContainer = itemElem.querySelector('.sess-title-container');
+            const actionsContainer = itemElem.querySelector('.sess-actions-container');
+            if (!titleContainer) return;
+
+            if (actionsContainer) actionsContainer.classList.add('hidden');
+
+            titleContainer.innerHTML = `
+                <div class="flex items-center gap-1 w-full" onclick="event.stopPropagation();">
+                    <input type="text" id="rename-input-${sessId}" class="w-full text-xs bg-white border border-[#1d4ed8] rounded px-1.5 py-0.5 outline-none font-medium text-slate-800 shadow-xs" value="${escapeHtml(sess.title)}" />
+                    <button type="button" onclick="event.stopPropagation(); confirmRenameSession('${sessId}')" class="p-1 text-emerald-600 hover:bg-emerald-50 rounded cursor-pointer" title="Lưu">
+                        <span class="material-symbols-outlined text-sm leading-none">check</span>
+                    </button>
+                    <button type="button" onclick="event.stopPropagation(); renderHistoryList()" class="p-1 text-slate-400 hover:bg-slate-100 rounded cursor-pointer" title="Hủy">
+                        <span class="material-symbols-outlined text-sm leading-none">close</span>
+                    </button>
+                </div>
+            `;
+            const input = document.getElementById('rename-input-' + sessId);
+            if (input) {
+                input.focus();
+                input.select();
+                input.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        confirmRenameSession(sessId);
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        renderHistoryList();
+                    }
+                };
+            }
+        }
+
+        async function confirmRenameSession(sessId) {
+            const sess = sessions.find(s => s.id === sessId);
+            if (!sess) return;
+            const input = document.getElementById('rename-input-' + sessId);
+            const newTitle = input ? input.value.trim() : '';
+            if (newTitle && newTitle !== sess.title) {
+                sess.title = newTitle;
+                saveSessions();
+                try {
+                    await fetch('/api/ai/conversations/' + sessId + '/title', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ title: newTitle })
+                    });
+                } catch (e) {
+                    console.warn('Lỗi cập nhật tiêu đề:', e);
+                }
+                showToast('Đã đổi tên', 'Đã cập nhật tiêu đề đoạn chat.');
+            }
+            renderHistoryList();
+        }
+
         async function renameSession(sessId) {
+            startRenameSession(sessId);
+        }
+
+        async function renameSessionFallback(sessId) {
             const sess = sessions.find(s => s.id === sessId);
             if (!sess) return;
             const newTitle = prompt('Nhập tiêu đề mới cho hội thoại:', sess.title);
@@ -1080,6 +1144,7 @@
                 } catch (e) { }
                 saveSessions();
                 renderHistoryList();
+                showToast('Đã đổi tên', 'Đã cập nhật tiêu đề đoạn chat.');
             }
         }
 
@@ -1089,14 +1154,22 @@
         }
 
         async function deleteSession(sessId) {
-            if (confirm('Bạn có chắc chắn muốn xóa hội thoại này khỏi lịch sử?')) {
-                try {
-                    await fetch('/api/ai/conversations/' + sessId, { method: 'DELETE', credentials: 'include' });
-                } catch (e) { }
+            const sess = sessions.find(s => s.id === sessId);
+            const title = sess ? sess.title : 'hội thoại này';
+            if (confirm(`Bạn có chắc chắn muốn xóa hội thoại "${title}" khỏi lịch sử?`)) {
                 sessions = sessions.filter(s => s.id !== sessId);
                 saveSessions();
-                if (currentSessionId === sessId) startNewChat();
-                else renderHistoryList();
+                try {
+                    await fetch('/api/ai/conversations/' + sessId, { method: 'DELETE', credentials: 'include' });
+                } catch (e) {
+                    console.warn('Lỗi xóa hội thoại trên server:', e);
+                }
+                showToast('Đã xóa', 'Hội thoại đã được xóa khỏi lịch sử.');
+                if (currentSessionId === sessId) {
+                    startNewChat();
+                } else {
+                    renderHistoryList();
+                }
             }
         }
 
