@@ -27,6 +27,7 @@ public class CurriculumSummaryDto {
     private int remainingCoursesCount;
     private int totalCoursesCount;
     private List<CurriculumCourseDto> courses;
+    private List<CurriculumGroupDto> groups;
     private LocalDateTime lastSyncedAt;
     private String syncStatus;
 }

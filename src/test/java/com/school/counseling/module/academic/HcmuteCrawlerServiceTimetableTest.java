@@ -134,4 +134,37 @@ class HcmuteCrawlerServiceTimetableTest {
         assertEquals("Đợt 1", HcmuteCrawlerService.determinePhase("18/08/2026->06/10/2026)", null));
         assertEquals("Đợt 2", HcmuteCrawlerService.determinePhase("03/11/2026->22/12/2026)", null));
     }
+
+    @Test
+    @DisplayName("getCurriculumSummary - Chuẩn hóa tổng tín chỉ yêu cầu 183 TC về chuẩn Kỹ sư 150 TC")
+    void testGetCurriculumSummary_NormalizesRawCreditsTo150() {
+        String studentId = "24110349";
+        List<com.school.counseling.module.academic.entity.CurriculumSubject> mockSubjects = new java.util.ArrayList<>();
+        for (int i = 1; i <= 61; i++) {
+            mockSubjects.add(com.school.counseling.module.academic.entity.CurriculumSubject.builder()
+                    .studentId(studentId)
+                    .courseCode("SUBJ" + i)
+                    .courseName("Môn học " + i)
+                    .credits(3)
+                    .semesterRecommended(1)
+                    .build());
+        }
+
+        when(curriculumRepository.findByStudentIdOrderBySemesterRecommendedAsc(studentId)).thenReturn(mockSubjects);
+        when(gradeRepository.findByStudentIdOrderBySemesterDesc(studentId)).thenReturn(java.util.Collections.emptyList());
+        when(profileRepository.findByStudentId(studentId)).thenReturn(java.util.Optional.of(
+                com.school.counseling.module.academic.entity.StudentProfile.builder()
+                        .studentId(studentId)
+                        .major("Kỹ thuật Phần mềm")
+                        .studyProgram("Kỹ sư")
+                        .build()));
+        when(syncHistoryRepository.findByStudentIdOrderBySyncedAtDesc(studentId)).thenReturn(java.util.Collections.emptyList());
+
+        com.school.counseling.module.academic.dto.CurriculumSummaryDto summary = crawlerService.getCurriculumSummary(studentId);
+
+        assertNotNull(summary);
+        assertEquals(150, summary.getTotalRequiredCredits(), "Tổng tín chỉ yêu cầu tốt nghiệp chuẩn Kỹ sư phải là 150 TC");
+        assertEquals(0, summary.getCompletedCredits());
+        assertEquals(150, summary.getRemainingCredits());
+    }
 }

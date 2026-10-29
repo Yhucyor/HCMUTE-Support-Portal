@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.school.counseling.module.academic.dto.AcademicSummaryResponse;
 import com.school.counseling.module.academic.dto.CurriculumCourseDto;
+import com.school.counseling.module.academic.dto.CurriculumGroupDto;
 import com.school.counseling.module.academic.dto.CurriculumSummaryDto;
 import com.school.counseling.module.academic.dto.HcmuteSyncRequest;
 import com.school.counseling.module.academic.dto.HcmuteSyncResponse;
@@ -784,6 +785,10 @@ public class HcmuteCrawlerService {
                 int credits = node.hasNonNull("Credits") ? node.get("Credits").asInt(0)
                         : (node.hasNonNull("STC") ? node.get("STC").asInt(0) : 0);
                 boolean isDone = passedCodes.contains(code);
+                String rawGroup = node.hasNonNull("TenNhom") ? node.get("TenNhom").asText().trim()
+                        : (node.hasNonNull("GroupName") ? node.get("GroupName").asText().trim()
+                        : (node.hasNonNull("NhomTuChon") ? node.get("NhomTuChon").asText().trim() : null));
+                SubjectGroupInfo groupInfo = resolveSubjectGroupInfo(code, name, sem, rawGroup);
 
                 map.put(code, CurriculumSubject.builder()
                         .studentId(studentId)
@@ -792,6 +797,9 @@ public class HcmuteCrawlerService {
                         .credits(credits)
                         .semesterRecommended(sem > 0 ? sem : 1)
                         .isCompleted(isDone)
+                        .groupName(groupInfo.groupName)
+                        .isElective(groupInfo.isElective)
+                        .requiredCreditsInGroup(groupInfo.requiredCredits)
                         .build());
             }
         }
@@ -1070,6 +1078,14 @@ public class HcmuteCrawlerService {
                 completedCount++;
             }
 
+            String groupName = cs.getGroupName();
+            Boolean isElective = cs.getIsElective();
+            if (groupName == null || groupName.isBlank()) {
+                SubjectGroupInfo info = resolveSubjectGroupInfo(cs.getCourseCode(), cs.getCourseName(), sem, null);
+                groupName = info.groupName;
+                isElective = info.isElective;
+            }
+
             courseDtos.add(CurriculumCourseDto.builder()
                     .id(cs.getId())
                     .courseCode(cs.getCourseCode())
@@ -1082,13 +1098,17 @@ public class HcmuteCrawlerService {
                     .gradeLetter(gradeLetter)
                     .finalScore(finalScore)
                     .scale4Score(scale4Score)
+                    .groupName(groupName)
+                    .isElective(isElective)
                     .build());
         }
 
-        // Đảm bảo tổng tín chỉ chuẩn theo ngành (tối thiểu 132 TC)
-        if (totalRequiredCredits < 132 && totalRequiredCredits > 0) {
-            totalRequiredCredits = 132;
-        }
+        StudentProfile profile = profileOpt.orElse(null);
+
+        // Chuẩn hóa tổng tín chỉ yêu cầu tốt nghiệp theo quy chế đào tạo HCMUTE:
+        // Cổng Portal trả về toàn bộ menu môn (gồm mọi môn tự chọn đề xuất & thể dục thay thế) khiến tổng dồn bị dội lên ~183 TC.
+        // Chuẩn hóa về đúng: Kỹ sư = 150 TC, Cử nhân = 132 TC.
+        totalRequiredCredits = resolveStandardRequiredCredits(totalRequiredCredits, profile);
 
         int remainingCredits = Math.max(0, totalRequiredCredits - completedCredits);
         double progressPercentage = totalRequiredCredits > 0
@@ -1098,7 +1118,55 @@ public class HcmuteCrawlerService {
         int totalCourses = courseDtos.size();
         int remainingCourses = Math.max(0, totalCourses - completedCount - inProgressCount);
 
-        StudentProfile profile = profileOpt.orElse(null);
+        // Gom nhóm môn học theo khối / nhóm tự chọn cho giao diện Phương án 2
+        Map<String, List<CurriculumCourseDto>> groupMap = new LinkedHashMap<>();
+        for (CurriculumCourseDto c : courseDtos) {
+            String gName = c.getGroupName() != null && !c.getGroupName().isBlank() ? c.getGroupName() : "Khối kiến thức Bắt buộc";
+            groupMap.computeIfAbsent(gName, k -> new ArrayList<>()).add(c);
+        }
+
+        List<CurriculumGroupDto> groupDtos = new ArrayList<>();
+        for (Map.Entry<String, List<CurriculumCourseDto>> entry : groupMap.entrySet()) {
+            String gName = entry.getKey();
+            List<CurriculumCourseDto> gCourses = entry.getValue();
+
+            int gTotalCredits = 0;
+            int gCompletedCredits = 0;
+            int gCompletedCount = 0;
+            boolean isElec = false;
+
+            for (CurriculumCourseDto c : gCourses) {
+                int cCred = c.getCredits() != null ? c.getCredits() : 0;
+                gTotalCredits += cCred;
+                if ("COMPLETED".equals(c.getStatus())) {
+                    gCompletedCredits += cCred;
+                    gCompletedCount++;
+                }
+                if (Boolean.TRUE.equals(c.getIsElective())) {
+                    isElec = true;
+                }
+            }
+
+            int reqCredits = resolveGroupRequiredCredits(gName, gTotalCredits, isElec);
+            boolean isGrpDone = gCompletedCredits >= reqCredits;
+            double grpProgress = reqCredits > 0
+                    ? Math.min(100.0, Math.round(((double) gCompletedCredits / reqCredits) * 1000.0) / 10.0)
+                    : 100.0;
+
+            groupDtos.add(CurriculumGroupDto.builder()
+                    .groupName(gName)
+                    .isElective(isElec)
+                    .requiredCredits(reqCredits)
+                    .completedCredits(gCompletedCredits)
+                    .totalCreditsInGroup(gTotalCredits)
+                    .isGroupCompleted(isGrpDone)
+                    .groupProgressPercentage(grpProgress)
+                    .completedCoursesCount(gCompletedCount)
+                    .totalCoursesCount(gCourses.size())
+                    .courses(gCourses)
+                    .build());
+        }
+
         SyncHistory latestHistory = histories.isEmpty() ? null : histories.get(0);
 
         return CurriculumSummaryDto.builder()
@@ -1118,6 +1186,7 @@ public class HcmuteCrawlerService {
                 .remainingCoursesCount(remainingCourses)
                 .totalCoursesCount(totalCourses)
                 .courses(courseDtos)
+                .groups(groupDtos)
                 .lastSyncedAt(latestHistory != null ? latestHistory.getSyncedAt() : LocalDateTime.now())
                 .syncStatus(latestHistory != null ? latestHistory.getStatus() : "LIVE_PORTAL")
                 .build();
@@ -1144,6 +1213,111 @@ public class HcmuteCrawlerService {
     private double convertScale10To4(Double score10, String letter) {
         HcmuteGradingEngine.GradeConversion conv = HcmuteGradingEngine.convertGrade(score10, letter, null, null, null);
         return conv.getGpa4() != null ? conv.getGpa4() : 0.0;
+    }
+
+    /**
+     * Chuẩn hóa tổng tín chỉ yêu cầu tốt nghiệp theo Quy chế Đào tạo HCMUTE.
+     * Khắc phục hiện tượng menu môn tự chọn và thể dục cộng dồn vượt quá chuẩn 150 TC (Kỹ sư) hoặc 132 TC (Cử nhân).
+     */
+    private int resolveStandardRequiredCredits(int rawTotalCredits, StudentProfile profile) {
+        if (profile != null) {
+            String prog = ((profile.getStudyProgram() != null ? profile.getStudyProgram() : "") + " "
+                    + (profile.getMajor() != null ? profile.getMajor() : "") + " "
+                    + (profile.getEducationType() != null ? profile.getEducationType() : "")).toLowerCase();
+            if (prog.contains("cử nhân") || prog.contains("kinh tế") || prog.contains("ngôn ngữ")
+                    || prog.contains("quản trị") || prog.contains("kế toán")) {
+                return 132;
+            }
+            if (prog.contains("kỹ sư") || prog.contains("công nghệ") || prog.contains("kỹ thuật")
+                    || prog.contains("phần mềm") || prog.contains("thông tin") || prog.contains("cơ khí")
+                    || prog.contains("điện")) {
+                return 150;
+            }
+        }
+
+        // Fallback theo ngưỡng tổng tín chỉ thô cộng dồn:
+        // Nếu tổng dồn >= 145 TC (điển hình 180 - 185 TC do dồn toàn bộ rổ môn tự chọn) -> Chuẩn Kỹ sư HCMUTE: 150 TC
+        if (rawTotalCredits >= 145) {
+            return 150;
+        } else if (rawTotalCredits >= 125) {
+            return 132;
+        } else if (rawTotalCredits > 0) {
+            return 132;
+        }
+        return 150;
+    }
+
+
+    public static class SubjectGroupInfo {
+        public final String groupName;
+        public final boolean isElective;
+        public final int requiredCredits;
+
+        public SubjectGroupInfo(String groupName, boolean isElective, int requiredCredits) {
+            this.groupName = groupName;
+            this.isElective = isElective;
+            this.requiredCredits = requiredCredits;
+        }
+    }
+
+    public static SubjectGroupInfo resolveSubjectGroupInfo(String code, String name, int sem, String rawGroup) {
+        if (rawGroup != null && !rawGroup.isBlank()) {
+            boolean elec = rawGroup.toLowerCase().contains("tự chọn") || rawGroup.toLowerCase().contains("elective");
+            int req = parseRequiredCreditsFromGroup(rawGroup, elec ? 2 : 0);
+            return new SubjectGroupInfo(rawGroup, elec, req);
+        }
+
+        String n = name != null ? name : "";
+        String c = code != null ? code.toUpperCase() : "";
+
+        // 1. Thể dục (*)
+        if (n.contains("(*)") || c.startsWith("BADM") || c.startsWith("BASK") || c.startsWith("CHES")
+                || c.startsWith("CHIN") || c.startsWith("FOOT") || c.startsWith("KARA") || c.startsWith("PICK")
+                || c.startsWith("TENN") || c.startsWith("VOLL") || c.startsWith("YOGA")) {
+            return new SubjectGroupInfo("Tự chọn - Giáo dục Thể chất (*) (Chọn 2 môn / 2 TC)", true, 2);
+        }
+
+        // 2. Kỹ năng & Xã hội (Đại cương)
+        if (c.startsWith("GEFC") || c.startsWith("INLO") || c.startsWith("INMA") || c.startsWith("INSO")
+                || c.startsWith("IQMA") || c.startsWith("IVNC") || c.startsWith("LESK") || c.startsWith("PLSK")
+                || c.startsWith("REME") || c.startsWith("SYTH") || n.toLowerCase().contains("logic học")
+                || n.toLowerCase().contains("quản trị học") || n.toLowerCase().contains("văn hóa việt nam")
+                || n.toLowerCase().contains("kỹ năng học tập") || n.toLowerCase().contains("kỹ năng xây dựng")
+                || n.toLowerCase().contains("phương pháp nghiên cứu khoa học") || n.toLowerCase().contains("tư duy hệ thống")) {
+            return new SubjectGroupInfo("Tự chọn - Kỹ năng & Xã hội (Chọn 2/10 tín chỉ)", true, 2);
+        }
+
+        // 3. Tự chọn chuyên ngành
+        if (n.toLowerCase().contains("tự chọn") || n.toLowerCase().contains("chuyên ngành nâng cao")) {
+            return new SubjectGroupInfo("Tự chọn - Chuyên ngành (Chọn 6/18 tín chỉ)", true, 6);
+        }
+
+        // 4. Các khối bắt buộc
+        if (sem <= 2) {
+            return new SubjectGroupInfo("Khối kiến thức Bắt buộc - Đại cương", false, 0);
+        } else if (sem <= 4) {
+            return new SubjectGroupInfo("Khối kiến thức Bắt buộc - Cơ sở ngành", false, 0);
+        } else if (sem <= 6) {
+            return new SubjectGroupInfo("Khối kiến thức Bắt buộc - Chuyên ngành", false, 0);
+        } else {
+            return new SubjectGroupInfo("Khối kiến thức Bắt buộc - Thực tập & Tốt nghiệp", false, 0);
+        }
+    }
+
+    public static int parseRequiredCreditsFromGroup(String groupName, int defaultReq) {
+        if (groupName == null || groupName.isBlank()) return defaultReq;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("chọn\\s+(\\d+)", java.util.regex.Pattern.CASE_INSENSITIVE).matcher(groupName);
+        if (m.find()) {
+            try {
+                return Integer.parseInt(m.group(1));
+            } catch (Exception ignored) {}
+        }
+        return defaultReq;
+    }
+
+    private int resolveGroupRequiredCredits(String groupName, int totalCreditsInGroup, boolean isElective) {
+        if (!isElective) return totalCreditsInGroup;
+        return parseRequiredCreditsFromGroup(groupName, 2);
     }
 
     private boolean isDemoMode(String studentId, String password) {
