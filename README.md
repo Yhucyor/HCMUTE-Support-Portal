@@ -17,6 +17,9 @@
 
   <p align="center">
     <b>Đại học Sư phạm Kỹ thuật TP. Hồ Chí Minh (HCMUTE)</b><br>
+    <i>   Link Web: </i> <br>
+    <i>AWS CE2: http://3.107.163.8:8080</i> <br>
+    <i>Render: https://hcmute-support-portal.onrender.com</i> <br>
     <i>Đồ án Phân hệ Web Doanh nghiệp & Nền tảng Hỗ trợ Sinh viên Toàn diện</i>
   </p>
 
